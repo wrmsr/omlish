@@ -14,7 +14,6 @@ from ..subtypes import is_structurally_equivalent
 from ..typekeys import TypeKeyPolicy
 from ..typekeys import _tuple_type_key
 from ..typekeys import _tuple_type_key_or_none
-from ..typekeys import _type_key_with_policy_or_none
 from ..typekeys import alpha_structural_type_key
 from ..typekeys import alpha_structural_type_key_or_none
 from ..typekeys import alpha_type_key
@@ -316,7 +315,7 @@ def test_type_key_policy_can_ignore_annotated_metadata_without_structural_keying
     typ = types.AnnotatedType(item, ([],))
 
     assert type_key_or_none(typ) is None
-    assert _type_key_with_policy_or_none(typ, TypeKeyPolicy(include_annotated_metadata=False)) == type_key(item)
+    assert type_key_with_policy_or_none(typ, TypeKeyPolicy(include_annotated_metadata=False)) == type_key(item)
 
 
 def test_type_key_policy_can_preserve_annotated_metadata_with_structural_keying() -> None:
@@ -328,8 +327,8 @@ def test_type_key_policy_can_preserve_annotated_metadata_with_structural_keying(
         preserve_alias_identity=False,
     )
 
-    assert _type_key_with_policy_or_none(typ, policy) == type_key(typ)
-    assert _type_key_with_policy_or_none(typ, policy) != structural_type_key(item)
+    assert type_key_with_policy_or_none(typ, policy) == type_key(typ)
+    assert type_key_with_policy_or_none(typ, policy) != structural_type_key(item)
 
 
 def test_type_key_policy_can_erase_alias_identity_without_structural_keying() -> None:
@@ -339,9 +338,9 @@ def test_type_key_policy_can_erase_alias_identity_without_structural_keying() ->
     policy = TypeKeyPolicy(preserve_alias_identity=False)
 
     assert type_key(types.TypeAliasType(left_alias, [])) != type_key(types.TypeAliasType(right_alias, []))
-    assert _type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) == type_key(target)
-    assert _type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) == (
-        _type_key_with_policy_or_none(types.TypeAliasType(right_alias, []), policy)
+    assert type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) == type_key(target)
+    assert type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) == (
+        type_key_with_policy_or_none(types.TypeAliasType(right_alias, []), policy)
     )
 
 
@@ -355,9 +354,9 @@ def test_type_key_policy_can_preserve_alias_identity_with_structural_keying() ->
         preserve_alias_identity=True,
     )
 
-    assert _type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) != structural_type_key(target)
-    assert _type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) != (
-        _type_key_with_policy_or_none(types.TypeAliasType(right_alias, []), policy)
+    assert type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) != structural_type_key(target)
+    assert type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) != (
+        type_key_with_policy_or_none(types.TypeAliasType(right_alias, []), policy)
     )
 
 
@@ -375,8 +374,8 @@ def test_type_key_policy_structural_recursive_alias_canonicalization_is_alias_po
     )
 
     assert structural_type_key(alias_type) == structural_type_key(one_unrolling)
-    assert _type_key_with_policy_or_none(alias_type, structural_preserving_alias) != (
-        _type_key_with_policy_or_none(one_unrolling, structural_preserving_alias)
+    assert type_key_with_policy_or_none(alias_type, structural_preserving_alias) != (
+        type_key_with_policy_or_none(one_unrolling, structural_preserving_alias)
     )
 
 
@@ -392,8 +391,8 @@ def test_type_key_policy_can_erase_core_newtype_identity_when_supertype_is_recor
 
     assert type_key(user_id) != type_key(account_id)
     assert type_key(user_id) != type_key(int_type)
-    assert _type_key_with_policy_or_none(user_id, policy) == type_key(int_type)
-    assert _type_key_with_policy_or_none(account_id, policy) == type_key(int_type)
+    assert type_key_with_policy_or_none(user_id, policy) == type_key(int_type)
+    assert type_key_with_policy_or_none(account_id, policy) == type_key(int_type)
 
 
 def test_type_key_policy_preserves_newtype_identity_by_default() -> None:
@@ -402,7 +401,7 @@ def test_type_key_policy_preserves_newtype_identity_by_default() -> None:
     user_info._new_type_supertype = int_type
     user_id = make_instance(user_info)
 
-    assert type_key(user_id) == _type_key_with_policy_or_none(user_id, TypeKeyPolicy())
+    assert type_key(user_id) == type_key_with_policy_or_none(user_id, TypeKeyPolicy())
     assert type_key(user_id) != type_key(int_type)
 
 
@@ -418,8 +417,8 @@ def test_reflected_type_key_policy_can_erase_newtype_identity() -> None:
     assert isinstance(user_type, types.Instance)
     assert user_type.type.new_type_supertype == int_type
     assert type_key(user_type) != type_key(account_type)
-    assert _type_key_with_policy_or_none(user_type, policy) == type_key(int_type)
-    assert _type_key_with_policy_or_none(account_type, policy) == type_key(int_type)
+    assert type_key_with_policy_or_none(user_type, policy) == type_key(int_type)
+    assert type_key_with_policy_or_none(account_type, policy) == type_key(int_type)
 
 
 def test_reflected_type_key_policy_can_erase_literal_backed_newtype_identity() -> None:
@@ -435,8 +434,8 @@ def test_reflected_type_key_policy_can_erase_literal_backed_newtype_identity() -
     assert mode_type.type.new_type_supertype == literal_type
     assert type_key(mode_type) != type_key(other_mode_type)
     assert type_key(mode_type) != type_key(literal_type)
-    assert _type_key_with_policy_or_none(mode_type, policy) == type_key(literal_type)
-    assert _type_key_with_policy_or_none(other_mode_type, policy) == type_key(literal_type)
+    assert type_key_with_policy_or_none(mode_type, policy) == type_key(literal_type)
+    assert type_key_with_policy_or_none(other_mode_type, policy) == type_key(literal_type)
 
 
 def test_type_key_policy_composes_annotation_alias_and_newtype_knobs() -> None:

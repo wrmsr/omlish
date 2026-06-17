@@ -1,4 +1,5 @@
 # ruff: noqa: SLF001
+import io
 import typing as ta
 
 from .symbols import TypeInfo
@@ -39,136 +40,211 @@ from .typevisitor import TypeVisitor
 ##
 
 
-class TypeStrVisitor(TypeVisitor[str]):
-    def visit_type_alias_type(self, typ: TypeAliasType) -> str:
+class TypeStrVisitor(TypeVisitor[None]):
+    def __init__(self, out: io.StringIO) -> None:
+        super().__init__()
+
+        self._out = out
+
+    def visit_type_alias_type(self, typ: TypeAliasType) -> None:
         if typ._alias is None:
-            return '<alias>'
-        if typ._args:
-            return f'{typ._alias._fullname}[{self.list_str(typ._args)}]'
-        return typ._alias._fullname
+            self._out.write('<alias>')
+        elif typ._args:
+            self._out.write(typ._alias._fullname)
+            self._out.write('[')
+            self.write_list(typ._args)
+            self._out.write(']')
+        else:
+            self._out.write(typ._alias._fullname)
 
-    def visit_type_guarded_type(self, typ: TypeGuardedType) -> str:
-        return typ._type_guard.accept(self)
+    def visit_type_guarded_type(self, typ: TypeGuardedType) -> None:
+        typ._type_guard.accept(self)
 
-    def visit_annotated_type(self, typ: AnnotatedType) -> str:
-        return f'Annotated[{typ._item.accept(self)}, ...]'
+    def visit_annotated_type(self, typ: AnnotatedType) -> None:
+        self._out.write('Annotated[')
+        typ._item.accept(self)
+        self._out.write(', ...]')
 
-    def visit_required_type(self, typ: RequiredType) -> str:
+    def visit_required_type(self, typ: RequiredType) -> None:
         if typ._required:
-            return f'Required[{typ._item.accept(self)}]'
-        return f'NotRequired[{typ._item.accept(self)}]'
+            self._out.write('Required[')
+            typ._item.accept(self)
+            self._out.write(']')
+        else:
+            self._out.write('NotRequired[')
+            typ._item.accept(self)
+            self._out.write(']')
 
-    def visit_read_only_type(self, typ: ReadOnlyType) -> str:
-        return f'ReadOnly[{typ._item.accept(self)}]'
+    def visit_read_only_type(self, typ: ReadOnlyType) -> None:
+        self._out.write('ReadOnly[')
+        typ._item.accept(self)
+        self._out.write(']')
 
-    def visit_type_var(self, typ: TypeVarType) -> str:
-        return typ._name
+    def visit_type_var(self, typ: TypeVarType) -> None:
+        self._out.write(typ._name)
 
-    def visit_param_spec(self, typ: ParamSpecType) -> str:
-        return typ._name
+    def visit_param_spec(self, typ: ParamSpecType) -> None:
+        self._out.write(typ._name)
 
-    def visit_type_var_tuple(self, typ: TypeVarTupleType) -> str:
-        return typ._name
+    def visit_type_var_tuple(self, typ: TypeVarTupleType) -> None:
+        self._out.write(typ._name)
 
-    def visit_unbound_type(self, typ: UnboundType) -> str:
+    def visit_unbound_type(self, typ: UnboundType) -> None:
         if typ._args:
-            return f'{typ._name}?[{self.list_str(typ._args)}]'
-        return f'{typ._name}?'
+            self._out.write(typ._name)
+            self._out.write('?[')
+            self.write_list(typ._args)
+            self._out.write(']')
+        else:
+            self._out.write(typ._name)
+            self._out.write('?')
 
-    def visit_callable_argument(self, typ: CallableArgument) -> str:
+    def visit_callable_argument(self, typ: CallableArgument) -> None:
         if typ._name is None:
-            return typ._typ.accept(self)
-        return f'{typ._name}: {typ._typ.accept(self)}'
+            typ._typ.accept(self)
+        else:
+            self._out.write(typ._name)
+            self._out.write(': ')
+            typ._typ.accept(self)
 
-    def visit_type_list(self, typ: TypeList) -> str:
-        return f'<TypeList {self.list_str(typ._items)}>'
+    def visit_type_list(self, typ: TypeList) -> None:
+        self._out.write('<TypeList ')
+        self.write_list(typ._items)
+        self._out.write('>')
 
-    def visit_unpack_type(self, typ: UnpackType) -> str:
-        return f'Unpack[{typ._type.accept(self)}]'
+    def visit_unpack_type(self, typ: UnpackType) -> None:
+        self._out.write('Unpack[')
+        typ._type.accept(self)
+        self._out.write(']')
 
-    def visit_any(self, typ: AnyType) -> str:
-        return 'Any'
+    def visit_any(self, typ: AnyType) -> None:
+        self._out.write('Any')
 
-    def visit_uninhabited_type(self, typ: UninhabitedType) -> str:
-        return 'Never'
+    def visit_uninhabited_type(self, typ: UninhabitedType) -> None:
+        self._out.write('Never')
 
-    def visit_none_type(self, typ: NoneType) -> str:
-        return 'None'
+    def visit_none_type(self, typ: NoneType) -> None:
+        self._out.write('None')
 
-    def visit_erased_type(self, typ: ErasedType) -> str:
-        return '<Erased>'
+    def visit_erased_type(self, typ: ErasedType) -> None:
+        self._out.write('<Erased>')
 
-    def visit_deleted_type(self, typ: DeletedType) -> str:
+    def visit_deleted_type(self, typ: DeletedType) -> None:
         if typ._source is None:
-            return '<Deleted>'
-        return f'<Deleted {typ._source!r}>'
+            self._out.write('<Deleted>')
+        else:
+            self._out.write('<Deleted ')
+            self._out.write(repr(typ._source))
+            self._out.write('>')
 
-    def visit_instance(self, typ: Instance) -> str:
-        ret = typ._type._fullname
+    def visit_instance(self, typ: Instance) -> None:
+        self._out.write(typ._type._fullname)
         if typ._args:
-            ret += f'[{self.list_str(typ._args)}]'
-        return ret
+            self._out.write('[')
+            self.write_list(typ._args)
+            self._out.write(']')
 
-    def visit_parameters(self, typ: Parameters) -> str:
-        return f'[{self.list_str(typ._arg_types)}]'
+    def visit_parameters(self, typ: Parameters) -> None:
+        self._out.write('[')
+        self.write_list(typ._arg_types)
+        self._out.write(']')
 
-    def visit_callable_type(self, typ: CallableType) -> str:
+    def visit_callable_type(self, typ: CallableType) -> None:
         if typ._is_ellipsis_args:
-            return f'def (...) -> {typ._ret_type.accept(self)}'
-        return f'def ({self.list_str(typ._arg_types)}) -> {typ._ret_type.accept(self)}'
+            self._out.write('def (...) -> ')
+            typ._ret_type.accept(self)
+        else:
+            self._out.write('def (')
+            self.write_list(typ._arg_types)
+            self._out.write(') -> ')
+            typ._ret_type.accept(self)
 
-    def visit_overloaded(self, typ: Overloaded) -> str:
-        return f'Overload({self.list_str(typ._items)})'
+    def visit_overloaded(self, typ: Overloaded) -> None:
+        self._out.write('Overload(')
+        self.write_list(typ._items)
+        self._out.write(')')
 
-    def visit_tuple_type(self, typ: TupleType) -> str:
+    def visit_tuple_type(self, typ: TupleType) -> None:
         if typ._items:
-            return f'tuple[{self.list_str(typ._items)}]'
-        return 'tuple[()]'
+            self._out.write('tuple[')
+            self.write_list(typ._items)
+            self._out.write(']')
+        else:
+            self._out.write('tuple[()]')
 
-    def visit_typeddict_type(self, typ: TypedDictType) -> str:
-        item_strs: list[str] = []
-        for name, item_typ in typ._items.items():
-            suffix = ''
+    def visit_typeddict_type(self, typ: TypedDictType) -> None:
+        self._out.write('TypedDict({')
+        for i, (name, item_typ) in enumerate(typ._items.items()):
+            if i:
+                self._out.write(', ')
+            self._out.write(repr(name))
             if name not in typ._required_keys:
-                suffix += '?'
+                self._out.write('?')
             if name in typ._readonly_keys:
-                suffix += '='
-            item_strs.append(f'{name!r}{suffix}: {item_typ.accept(self)}')
-        return f'TypedDict({{{", ".join(item_strs)}}})'
+                self._out.write('=')
+            self._out.write(': ')
+            item_typ.accept(self)
+        self._out.write('})')
 
-    def visit_raw_expression_type(self, typ: RawExpressionType) -> str:
-        return repr(typ._literal_value)
+    def visit_raw_expression_type(self, typ: RawExpressionType) -> None:
+        self._out.write(repr(typ._literal_value))
 
-    def visit_literal_type(self, typ: LiteralType) -> str:
+    def visit_literal_type(self, typ: LiteralType) -> None:
         if typ._fallback._type._is_enum and isinstance(typ._value, str):
-            return f'Literal[{typ._fallback._type._fullname}.{typ._value}]'
-        return f'Literal[{typ._value!r}]'
+            self._out.write('Literal[')
+            self._out.write(typ._fallback._type._fullname)
+            self._out.write('.')
+            self._out.write(str(typ._value))
+            self._out.write(']')
+        else:
+            self._out.write('Literal[')
+            self._out.write(repr(typ._value))
+            self._out.write(']')
 
-    def visit_union_type(self, typ: UnionType) -> str:
-        return f'Union[{self.list_str(typ._items)}]'
+    def visit_union_type(self, typ: UnionType) -> None:
+        self._out.write('Union[')
+        self.write_list(typ._items)
+        self._out.write(']')
 
-    def visit_partial_type(self, typ: PartialType) -> str:
+    def visit_partial_type(self, typ: PartialType) -> None:
         if typ._type is None:
-            return '<partial None>'
-        return f'<partial {typ._type._fullname}>'
+            self._out.write('<partial None>')
+        else:
+            self._out.write('<partial ')
+            self._out.write(typ._type._fullname)
+            self._out.write('>')
 
-    def visit_ellipsis_type(self, typ: EllipsisType) -> str:
-        return '...'
+    def visit_ellipsis_type(self, typ: EllipsisType) -> None:
+        self._out.write('...')
 
-    def visit_type_type(self, typ: TypeType) -> str:
-        return f'type[{typ._item.accept(self)}]'
+    def visit_type_type(self, typ: TypeType) -> None:
+        self._out.write('type[')
+        typ._item.accept(self)
+        self._out.write(']')
 
-    def visit_placeholder_type(self, typ: PlaceholderType) -> str:
+    def visit_placeholder_type(self, typ: PlaceholderType) -> None:
         if typ._args:
-            return f'<placeholder {typ._fullname}[{self.list_str(typ._args)}]>'
-        return f'<placeholder {typ._fullname}>'
+            self._out.write('<placeholder ')
+            self._out.write(typ._fullname)
+            self._out.write('[')
+            self.write_list(typ._args)
+            self._out.write(']>')
+        else:
+            self._out.write('<placeholder ')
+            self._out.write(typ._fullname)
+            self._out.write('>')
 
-    def list_str(self, typs: ta.Iterable[Type]) -> str:
-        return ', '.join(typ.accept(self) for typ in typs)
+    def write_list(self, typs: ta.Iterable[Type]) -> None:
+        for i, typ in enumerate(typs):
+            if i:
+                self._out.write(', ')
+            typ.accept(self)
 
 
 def type_str(typ: Type) -> str:
-    return typ.accept(TypeStrVisitor())
+    out = io.StringIO()
+    typ.accept(TypeStrVisitor(out))
+    return out.getvalue()
 
 
 def type_info_str(info: TypeInfo) -> str:

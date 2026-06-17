@@ -20,10 +20,10 @@ if ta.TYPE_CHECKING:
 T = ta.TypeVar('T')
 
 LiteralValue: ta.TypeAlias = ta.Union[
-    int,
-    str,
     bool,
+    int,
     float,
+    str,
     bytes,
     None,
 ]
@@ -31,8 +31,8 @@ LiteralValue: ta.TypeAlias = ta.Union[
 _LITERAL_VALUE_TYPES: ta.Final[tuple[type[LiteralValue], ...]] = (
     bool,
     int,
-    str,
     float,
+    str,
     bytes,
     type(None),
 )
