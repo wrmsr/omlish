@@ -50,6 +50,8 @@ from .names import CHAT_MODEL_NAMES
 from .protocol import OpenaiChatRequestHandler
 from .protocol import build_mc_ai_deltas
 from .protocol import build_mc_choices_response
+from .protocol import build_mc_stop_reason_output_
+from .protocol import build_mc_token_usage_output_
 
 
 ##
@@ -168,6 +170,9 @@ class OpenaiCompatChatChoicesStreamService(OpenaiCompatChatChoicesServiceBase, l
 
             self._joiner = AiChoicesDeltaJoiner()
 
+            self._finish_choices: dict[int, pt.ChatCompletionChunkChoice] = {}
+            self._final_chunk: pt.ChatCompletionChunk | None = None
+
         async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
             if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
                 return []
@@ -188,13 +193,13 @@ class OpenaiCompatChatChoicesStreamService(OpenaiCompatChatChoicesServiceBase, l
 
             ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
 
-            # FIXME: stop reason
             if not ccc.choices:
+                self._final_chunk = ccc
                 return []
 
-            if any(choice.finish_reason for choice in ccc.choices):
-                check.state(all(choice.finish_reason for choice in ccc.choices))
-                return [None]
+            for i, choice in enumerate(ccc.choices):
+                if choice.finish_reason is not None:
+                    self._finish_choices[i] = choice
 
             cds = AiChoicesDeltas([
                 AiChoiceDeltas(build_mc_ai_deltas(choice.delta))
@@ -207,10 +212,29 @@ class OpenaiCompatChatChoicesStreamService(OpenaiCompatChatChoicesServiceBase, l
 
         async def finish(self) -> ChatChoicesStreamResult:
             return ChatChoicesStreamResult(
-                ChatChoices([
-                    ChatGeneration(jc)
-                    for jc in self._joiner.build()
-                ]),
+                ChatChoices(
+                    [
+                        ChatGeneration(
+                            jc,
+
+                            tv.collect(
+                                *(
+                                    build_mc_stop_reason_output_(fch.finish_reason)
+                                    if (fch := self._finish_choices.get(i)) is not None else []
+                                ),
+                            ),
+                        )
+
+                        for i, jc in enumerate(self._joiner.build())
+                    ],
+
+                    tv.collect(
+                        *(
+                            build_mc_token_usage_output_(fcc.usage)
+                            if (fcc := self._final_chunk) is not None else []
+                        ),
+                    ),
+                ),
             )
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
