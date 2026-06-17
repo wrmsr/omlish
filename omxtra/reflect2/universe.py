@@ -213,6 +213,9 @@ class RuntimeTypeUniverse:
             return self._get_type_info(obj)
 
     def _get_new_type_info(self, obj: object) -> TypeInfo:
+        if not isinstance(obj, ta.NewType):  # noqa
+            raise TypeError('get_new_type_info only accepts `typing.NewType` objects')
+
         try:
             fullname = self._fullnames_by_type[obj]
         except KeyError:
@@ -243,9 +246,6 @@ class RuntimeTypeUniverse:
         return info
 
     def get_new_type_info(self, obj: object) -> TypeInfo:
-        if not isinstance(obj, ta.NewType):  # noqa
-            raise TypeError('get_new_type_info only accepts `typing.NewType` objects')
-
         try:
             fullname = self._fullnames_by_type[obj]
         except KeyError:
