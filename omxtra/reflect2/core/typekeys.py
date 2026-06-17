@@ -47,6 +47,13 @@ from .typevisitor import DefaultTypeVisitor
 TypeKey = ta.NewType('TypeKey', object)
 TupleTypeKey: ta.TypeAlias = tuple[object, ...]
 
+StandardTypeKeyPolicy: ta.TypeAlias = ta.Literal[
+    'default',
+    'alpha',
+    'structural',
+    'alpha_structural',
+]
+
 
 ##
 
@@ -82,6 +89,23 @@ ALPHA_STRUCTURAL_TYPE_KEY: ta.Final = dc.replace(
 #
 
 
+_STANDARD_TYPE_KEY_POLICIES: ta.Final[ta.Mapping[StandardTypeKeyPolicy, TypeKeyPolicy]] = {
+    'default': TYPE_KEY,
+    'alpha': ALPHA_TYPE_KEY,
+    'structural': STRUCTURAL_TYPE_KEY,
+    'alpha_structural': ALPHA_STRUCTURAL_TYPE_KEY,
+}
+
+
+def get_type_key_policy(policy: StandardTypeKeyPolicy | TypeKeyPolicy) -> TypeKeyPolicy:
+    if isinstance(policy, TypeKeyPolicy):
+        return policy
+    return _STANDARD_TYPE_KEY_POLICIES[policy]
+
+
+#
+
+
 _DEFAULT_TYPE_KEY_POLICY_DISPLAY: ta.Final = 'Specified type key'
 
 _TYPE_KEY_POLICY_DISPLAY: ta.Final[ta.Mapping[TypeKeyPolicy, str]] = {
@@ -96,22 +120,39 @@ def type_key_policy_display(policy: TypeKeyPolicy) -> str:
     return _TYPE_KEY_POLICY_DISPLAY.get(policy, _DEFAULT_TYPE_KEY_POLICY_DISPLAY)
 
 
-def make_type_key_not_implemented_exception(typ: Type, policy: TypeKeyPolicy) -> ReflectionTypeError:
-    return ReflectionTypeError(f'{type_key_policy_display(policy)} is not implemented for type: {typ!r}')
+#
+
+
+def make_type_key_not_implemented_exception(
+        typ: Type,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy,
+) -> ReflectionTypeError:
+    return ReflectionTypeError(
+        f'{type_key_policy_display(get_type_key_policy(policy))} is not implemented for type: {typ!r}',
+    )
 
 
 ##
 
 
-def type_key_or_none(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey | None:
-    return _TypeKeyBuilder(_StringTypeKeyWriter(), policy).key(typ)
+def type_key_or_none(
+        typ: Type,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+) -> TypeKey | None:
+    return _TypeKeyBuilder(_StringTypeKeyWriter(), get_type_key_policy(policy)).key(typ)
 
 
-def type_key(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey:
+def type_key(
+        typ: Type,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+) -> TypeKey:
     key = type_key_or_none(typ, policy)
     if key is None:
         raise make_type_key_not_implemented_exception(typ, policy)
     return key
+
+
+#
 
 
 def alpha_type_key_or_none(typ: Type) -> TypeKey | None:

@@ -42,13 +42,17 @@ from ..core.types import TypeVarLikeType
 from ..errors import ReflectionTypeError
 from ..errors import UnsupportedTypeOperationError
 from ..reflector import TypeReflector
-from ..reflector import or_default_reflector
+from ..api import global_api
 
 
 RuntimeSubstitutionMap: ta.TypeAlias = ta.Mapping[object, object]
 
 
 ##
+
+
+def or_default_reflector(reflector: TypeReflector | None = None) -> TypeReflector:
+    return reflector or global_api().reflector
 
 
 def reflect_join(

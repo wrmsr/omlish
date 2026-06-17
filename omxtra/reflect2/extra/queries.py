@@ -17,7 +17,7 @@ from ..core.types import Type
 from ..core.types import TypeAliasType
 from ..core.types import UnionType
 from ..errors import ReflectionTypeError
-from ..reflector import DEFAULT_REFLECTOR
+from ..api import global_api
 from ..reflector import TypeReflector
 from ..universe import TypeUniverse
 from ..universe import global_universe
@@ -123,7 +123,7 @@ class RuntimeDispatch:
 
 
 def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
-    return DEFAULT_REFLECTOR if reflector is None else reflector
+    return global_api().reflector if reflector is None else reflector
 
 
 def _get_universe(universe: TypeUniverse | None) -> TypeUniverse:
