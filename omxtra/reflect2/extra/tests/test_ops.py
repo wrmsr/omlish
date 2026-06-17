@@ -12,6 +12,9 @@ from ...core.constraints import infer_constraints
 from ...core.solve import solve_constraints
 from ...core.strconv import type_str
 from ...core.substitute import substitute_type
+from ...core.typekeys import ALPHA_STRUCTURAL_TYPE_KEY
+from ...core.typekeys import STRUCTURAL_TYPE_KEY
+from ...core.typekeys import TYPE_KEY
 from ...core.typeops import get_proper_type
 from ...errors import ReflectionError
 from ...errors import UnreflectableTypeError
@@ -832,13 +835,11 @@ def test_reflector_recursive_variadic_alias_structural_key_caches_are_hot_path_f
     assert reflect_structural_type_key(form, reflector) is key
     assert reflect_structural_type_key_or_none(form, reflector) is key
     assert reflector.structural_type_key(typ) is key
-    assert reflector._structural_type_key_cache[typ] is key
-    assert reflector._structural_type_key_or_none_cache[typ] is key
+    assert reflector._type_key_cache[(STRUCTURAL_TYPE_KEY, typ)] is key
     assert reflect_alpha_structural_type_key(form, reflector) is alpha_key
     assert reflect_alpha_structural_type_key_or_none(form, reflector) is alpha_key
     assert reflector.alpha_structural_type_key(typ) is alpha_key
-    assert reflector._alpha_structural_type_key_cache[typ] is alpha_key
-    assert reflector._alpha_structural_type_key_or_none_cache[typ] is alpha_key
+    assert reflector._type_key_cache[(ALPHA_STRUCTURAL_TYPE_KEY, typ)] is alpha_key
 
 
 def test_reflector_type_key_or_none_cache_reuses_none_for_unsupported_type() -> None:
@@ -847,14 +848,12 @@ def test_reflector_type_key_or_none_cache_reuses_none_for_unsupported_type() -> 
 
     assert reflector.type_key_or_none(typ) is None
     assert reflector.type_key_or_none(typ) is None
-    assert reflector._type_key_or_none_cache[typ] is None
-    assert typ not in reflector._type_key_cache
+    assert reflector._type_key_cache[(TYPE_KEY, typ)] is None
 
     with pytest.raises(ReflectionError, match='not implemented'):
         reflector.type_key(typ)
 
-    assert reflector._type_key_or_none_cache[typ] is None
-    assert typ not in reflector._type_key_cache
+    assert reflector._type_key_cache[(TYPE_KEY, typ)] is None
 
 
 def test_reflector_structural_type_key_or_none_cache_reuses_none_for_unsupported_recursive_alias() -> None:
@@ -865,16 +864,14 @@ def test_reflector_structural_type_key_or_none_cache_reuses_none_for_unsupported
 
     assert reflector.structural_type_key_or_none(typ) is None
     assert reflector.structural_type_key_or_none(typ) is None
-    assert reflector._structural_type_key_or_none_cache[typ] is None
-    assert typ not in reflector._structural_type_key_cache
+    assert reflector._type_key_cache[(STRUCTURAL_TYPE_KEY, typ)] is None
 
     with pytest.raises(ReflectionError, match='not implemented'):
         reflector.structural_type_key(typ)
 
     assert reflector.alpha_structural_type_key_or_none(typ) is None
     assert reflector.alpha_structural_type_key_or_none(typ) is None
-    assert reflector._alpha_structural_type_key_or_none_cache[typ] is None
-    assert typ not in reflector._alpha_structural_type_key_cache
+    assert reflector._type_key_cache[(ALPHA_STRUCTURAL_TYPE_KEY, typ)] is None
 
     with pytest.raises(ReflectionError, match='not implemented'):
         reflector.alpha_structural_type_key(typ)
@@ -905,16 +902,14 @@ def test_reflector_structural_type_key_or_none_cache_reuses_none_for_bad_recursi
     assert bad_typ.is_recursive
     assert reflector.structural_type_key_or_none(bad_typ) is None
     assert reflector.structural_type_key_or_none(bad_typ) is None
-    assert reflector._structural_type_key_or_none_cache[bad_typ] is None
-    assert bad_typ not in reflector._structural_type_key_cache
+    assert reflector._type_key_cache[(STRUCTURAL_TYPE_KEY, bad_typ)] is None
 
     with pytest.raises(ReflectionError, match='not implemented'):
         reflector.structural_type_key(bad_typ)
 
     assert reflector.alpha_structural_type_key_or_none(bad_typ) is None
     assert reflector.alpha_structural_type_key_or_none(bad_typ) is None
-    assert reflector._alpha_structural_type_key_or_none_cache[bad_typ] is None
-    assert bad_typ not in reflector._alpha_structural_type_key_cache
+    assert reflector._type_key_cache[(ALPHA_STRUCTURAL_TYPE_KEY, bad_typ)] is None
 
     with pytest.raises(ReflectionError, match='not implemented'):
         reflector.alpha_structural_type_key(bad_typ)
@@ -1251,13 +1246,11 @@ def test_reflect_structural_type_key_cache_reuses_recursive_alias_keys() -> None
     assert reflect_structural_type_key(alias, reflector) is key
     assert reflect_structural_type_key_or_none(alias, reflector) is key
     assert reflector.structural_type_key(typ) is key
-    assert reflector._structural_type_key_cache[typ] is key
-    assert reflector._structural_type_key_or_none_cache[typ] is key
+    assert reflector._type_key_cache[(STRUCTURAL_TYPE_KEY, typ)] is key
     assert reflect_alpha_structural_type_key(alias, reflector) is alpha_key
     assert reflect_alpha_structural_type_key_or_none(alias, reflector) is alpha_key
     assert reflector.alpha_structural_type_key(typ) is alpha_key
-    assert reflector._alpha_structural_type_key_cache[typ] is alpha_key
-    assert reflector._alpha_structural_type_key_or_none_cache[typ] is alpha_key
+    assert reflector._type_key_cache[(ALPHA_STRUCTURAL_TYPE_KEY, typ)] is alpha_key
 
 
 def test_reflect_structural_type_key_handles_variadic_recursive_tuple_alias() -> None:

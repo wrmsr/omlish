@@ -92,8 +92,12 @@ _TYPE_KEY_POLICY_DISPLAY: ta.Final[ta.Mapping[TypeKeyPolicy, str]] = {
 }
 
 
-def _type_key_policy_display(policy: TypeKeyPolicy) -> str:
+def type_key_policy_display(policy: TypeKeyPolicy) -> str:
     return _TYPE_KEY_POLICY_DISPLAY.get(policy, _DEFAULT_TYPE_KEY_POLICY_DISPLAY)
+
+
+def make_type_key_not_implemented_exception(typ: Type, policy: TypeKeyPolicy) -> ReflectionTypeError:
+    return ReflectionTypeError(f'{type_key_policy_display(policy)} is not implemented for type: {typ!r}')
 
 
 ##
@@ -106,7 +110,7 @@ def type_key_or_none(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey | N
 def type_key(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey:
     key = type_key_or_none(typ, policy)
     if key is None:
-        raise ReflectionTypeError(f'{_type_key_policy_display(policy)} is not implemented for type: {typ!r}')
+        raise make_type_key_not_implemented_exception(typ, policy)
     return key
 
 
@@ -144,7 +148,7 @@ def tuple_type_key_or_none(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> Tuple
 def tuple_type_key(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TupleTypeKey:
     key = tuple_type_key_or_none(typ, policy)
     if key is None:
-        raise ReflectionTypeError(f'{_type_key_policy_display(policy)} is not implemented for type: {typ!r}')
+        raise make_type_key_not_implemented_exception(typ, policy)
     return key
 
 

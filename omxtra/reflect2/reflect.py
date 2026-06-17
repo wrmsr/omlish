@@ -11,14 +11,13 @@ from .core.symbols import ArgKind
 from .core.symbols import TypeAlias
 from .core.symbols import TypeInfo
 from .core.symbols import VarianceKind
+from .core.typekeys import ALPHA_STRUCTURAL_TYPE_KEY
+from .core.typekeys import ALPHA_TYPE_KEY
+from .core.typekeys import STRUCTURAL_TYPE_KEY
+from .core.typekeys import TYPE_KEY
 from .core.typekeys import TypeKey
-from .core.typekeys import alpha_structural_type_key
-from .core.typekeys import alpha_structural_type_key_or_none
-from .core.typekeys import alpha_type_key
-from .core.typekeys import alpha_type_key_or_none
-from .core.typekeys import structural_type_key
-from .core.typekeys import structural_type_key_or_none
-from .core.typekeys import type_key
+from .core.typekeys import TypeKeyPolicy
+from .core.typekeys import make_type_key_not_implemented_exception
 from .core.typekeys import type_key_or_none
 from .core.typeops import make_union
 from .core.types import _ANY_TYPES
@@ -154,19 +153,9 @@ class RuntimeTypeReflector:
 
         self._lock = threading.RLock()
 
-        self._cache: dict[object, Type] = {}
-
+        self._type_cache: dict[object, Type] = {}
         self._annotation_cache: dict[tuple[Type, str], object] = {}
-
-        self._type_key_cache: dict[Type, TypeKey] = {}
-        self._type_key_or_none_cache: dict[Type, TypeKey | None] = {}
-        self._alpha_type_key_cache: dict[Type, TypeKey] = {}
-        self._alpha_type_key_or_none_cache: dict[Type, TypeKey | None] = {}
-        self._structural_type_key_cache: dict[Type, TypeKey] = {}
-        self._structural_type_key_or_none_cache: dict[Type, TypeKey | None] = {}
-        self._alpha_structural_type_key_cache: dict[Type, TypeKey] = {}
-        self._alpha_structural_type_key_or_none_cache: dict[Type, TypeKey | None] = {}
-
+        self._type_key_cache: dict[tuple[TypeKeyPolicy, Type], TypeKey | None] = {}
         self._inspection_cache: dict[tuple[str, object], object] = {}
 
         self._runtime_type_params_by_type: dict[TypeVarLikeType, object] = {}
@@ -192,7 +181,7 @@ class RuntimeTypeReflector:
 
     def _reflect_type(self, obj: object) -> Type:
         try:
-            return self._cache[obj]
+            return self._type_cache[obj]
         except KeyError:
             pass
         except TypeError:
@@ -201,7 +190,7 @@ class RuntimeTypeReflector:
         typ = self._reflect_type_uncached(obj)
 
         try:
-            self._cache[obj] = typ
+            self._type_cache[obj] = typ
         except TypeError:
             pass
 
@@ -209,7 +198,7 @@ class RuntimeTypeReflector:
 
     def reflect_type(self, obj: object) -> Type:
         try:
-            return self._cache[obj]
+            return self._type_cache[obj]
         except KeyError:
             pass
         except TypeError:
@@ -217,6 +206,8 @@ class RuntimeTypeReflector:
 
         with self._lock:
             return self._reflect_type(obj)
+
+    #
 
     def _cached_inspection(
             self,
@@ -256,6 +247,8 @@ class RuntimeTypeReflector:
         with self._lock:
             return self._cached_inspection(kind, obj, factory)
 
+    #
+
     def get_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
         return self._runtime_type_params_by_type.get(typ)
 
@@ -263,7 +256,7 @@ class RuntimeTypeReflector:
             self,
             typ: Type,
             *,
-            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',  # FIXME: pollutes cache - 2 level?
     ) -> object:
         key = (typ, type_alias_policy)
         try:
@@ -300,169 +293,52 @@ class RuntimeTypeReflector:
                 type_alias_policy=type_alias_policy,
             )
 
-    def _type_key(self, typ: Type) -> TypeKey:
+    #
+
+    def _type_key_or_none(self, typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey | None:
+        cache_key = (policy, typ)
         try:
-            return self._type_key_cache[typ]
+            return self._type_key_cache[cache_key]
         except KeyError:
             pass
 
-        key = type_key(typ)
-        self._type_key_cache[typ] = key
-        self._type_key_or_none_cache[typ] = key
+        key = type_key_or_none(typ, policy)
+        self._type_key_cache[cache_key] = key
         return key
 
-    def type_key(self, typ: Type) -> TypeKey:
+    def type_key_or_none(self, typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey | None:
+        cache_key = (policy, typ)
         try:
-            return self._type_key_cache[typ]
+            return self._type_key_cache[cache_key]
         except KeyError:
             pass
 
         with self._lock:
-            return self._type_key(typ)
+            return self._type_key_or_none(typ, policy)
 
-    def _type_key_or_none(self, typ: Type) -> TypeKey | None:
-        try:
-            return self._type_key_or_none_cache[typ]
-        except KeyError:
-            pass
-
-        key = type_key_or_none(typ)
-        self._type_key_or_none_cache[typ] = key
-        if key is not None:
-            self._type_key_cache[typ] = key
-        return key
-
-    def type_key_or_none(self, typ: Type) -> TypeKey | None:
-        try:
-            return self._type_key_or_none_cache[typ]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._type_key_or_none(typ)
-
-    def _alpha_type_key(self, typ: Type) -> TypeKey:
-        try:
-            return self._alpha_type_key_cache[typ]
-        except KeyError:
-            pass
-
-        key = alpha_type_key(typ)
-        self._alpha_type_key_cache[typ] = key
-        self._alpha_type_key_or_none_cache[typ] = key
-        return key
-
-    def alpha_type_key(self, typ: Type) -> TypeKey:
-        try:
-            return self._alpha_type_key_cache[typ]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._alpha_type_key(typ)
-
-    def _alpha_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        try:
-            return self._alpha_type_key_or_none_cache[typ]
-        except KeyError:
-            pass
-
-        key = alpha_type_key_or_none(typ)
-        self._alpha_type_key_or_none_cache[typ] = key
-        if key is not None:
-            self._alpha_type_key_cache[typ] = key
+    def type_key(self, typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey:
+        key = self.type_key_or_none(typ, policy)
+        if key is None:
+            raise make_type_key_not_implemented_exception(typ, policy)
         return key
 
     def alpha_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        try:
-            return self._alpha_type_key_or_none_cache[typ]
-        except KeyError:
-            pass
+        return self.type_key_or_none(typ, ALPHA_TYPE_KEY)
 
-        with self._lock:
-            return self._alpha_type_key_or_none(typ)
-
-    def _structural_type_key(self, typ: Type) -> TypeKey:
-        try:
-            return self._structural_type_key_cache[typ]
-        except KeyError:
-            pass
-
-        key = structural_type_key(typ)
-        self._structural_type_key_cache[typ] = key
-        self._structural_type_key_or_none_cache[typ] = key
-        return key
-
-    def structural_type_key(self, typ: Type) -> TypeKey:
-        try:
-            return self._structural_type_key_cache[typ]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._structural_type_key(typ)
-
-    def _structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        try:
-            return self._structural_type_key_or_none_cache[typ]
-        except KeyError:
-            pass
-
-        key = structural_type_key_or_none(typ)
-        self._structural_type_key_or_none_cache[typ] = key
-        if key is not None:
-            self._structural_type_key_cache[typ] = key
-        return key
+    def alpha_type_key(self, typ: Type) -> TypeKey:
+        return self.type_key(typ, ALPHA_TYPE_KEY)
 
     def structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        try:
-            return self._structural_type_key_or_none_cache[typ]
-        except KeyError:
-            pass
+        return self.type_key_or_none(typ, STRUCTURAL_TYPE_KEY)
 
-        with self._lock:
-            return self._structural_type_key_or_none(typ)
-
-    def _alpha_structural_type_key(self, typ: Type) -> TypeKey:
-        try:
-            return self._alpha_structural_type_key_cache[typ]
-        except KeyError:
-            pass
-
-        key = alpha_structural_type_key(typ)
-        self._alpha_structural_type_key_cache[typ] = key
-        self._alpha_structural_type_key_or_none_cache[typ] = key
-        return key
-
-    def alpha_structural_type_key(self, typ: Type) -> TypeKey:
-        try:
-            return self._alpha_structural_type_key_cache[typ]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._alpha_structural_type_key(typ)
-
-    def _alpha_structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        try:
-            return self._alpha_structural_type_key_or_none_cache[typ]
-        except KeyError:
-            pass
-
-        key = alpha_structural_type_key_or_none(typ)
-        self._alpha_structural_type_key_or_none_cache[typ] = key
-        if key is not None:
-            self._alpha_structural_type_key_cache[typ] = key
-        return key
+    def structural_type_key(self, typ: Type) -> TypeKey:
+        return self.type_key(typ, STRUCTURAL_TYPE_KEY)
 
     def alpha_structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        try:
-            return self._alpha_structural_type_key_or_none_cache[typ]
-        except KeyError:
-            pass
+        return self.type_key_or_none(typ, ALPHA_STRUCTURAL_TYPE_KEY)
 
-        with self._lock:
-            return self._alpha_structural_type_key_or_none(typ)
+    def alpha_structural_type_key(self, typ: Type) -> TypeKey:
+        return self.type_key(typ, ALPHA_STRUCTURAL_TYPE_KEY)
 
     #
 

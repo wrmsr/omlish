@@ -15,6 +15,7 @@ from ..core.subtypes import is_alpha_equivalent
 from ..core.subtypes import is_equivalent
 from ..core.subtypes import is_same_type
 from ..core.subtypes import is_subtype
+from ..core.typekeys import TYPE_KEY
 from ..core.typekeys import tuple_type_key
 from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
@@ -570,7 +571,7 @@ def test_new_type_reflection_is_cached_by_new_type_object() -> None:
     typ = reflector.reflect_type(user_id)
 
     assert reflector.reflect_type(user_id) is typ
-    assert reflector._cache[user_id] is typ
+    assert reflector._type_cache[user_id] is typ
 
 
 def test_new_type_literal_reflection_and_key_are_cache_friendly() -> None:
@@ -582,8 +583,8 @@ def test_new_type_literal_reflection_and_key_are_cache_friendly() -> None:
 
     assert reflector.reflect_type(mode) is typ
     assert reflector.type_key(typ) is key
-    assert reflector._cache[mode] is typ
-    assert reflector._type_key_cache[typ] is key
+    assert reflector._type_cache[mode] is typ
+    assert reflector._type_key_cache[(TYPE_KEY, typ)] is key
 
 
 def test_reflects_type_alias_type_by_preserving_alias_identity() -> None:
@@ -608,8 +609,8 @@ def test_type_alias_reflection_and_key_are_cache_friendly() -> None:
 
     assert reflector.reflect_type(mode_list) is typ
     assert reflector.type_key(typ) is key
-    assert reflector._cache[mode_list] is typ
-    assert reflector._type_key_cache[typ] is key
+    assert reflector._type_cache[mode_list] is typ
+    assert reflector._type_key_cache[(TYPE_KEY, typ)] is key
 
 
 def test_type_alias_keys_preserve_runtime_alias_object_identity() -> None:
@@ -733,8 +734,8 @@ def test_subscripted_type_alias_reflection_and_key_are_cache_friendly() -> None:
 
     assert reflector.reflect_type(form) is typ
     assert reflector.type_key(typ) is key
-    assert reflector._cache[form] is typ
-    assert reflector._type_key_cache[typ] is key
+    assert reflector._type_cache[form] is typ
+    assert reflector._type_key_cache[(TYPE_KEY, typ)] is key
 
 
 def test_subscripted_variadic_type_alias_reflection_and_key_are_cache_friendly() -> None:
@@ -749,8 +750,8 @@ def test_subscripted_variadic_type_alias_reflection_and_key_are_cache_friendly()
     assert isinstance(typ, types.TypeAliasType)
     assert reflector.reflect_type(form) is typ
     assert reflector.type_key(typ) is key
-    assert reflector._cache[form] is typ
-    assert reflector._type_key_cache[typ] is key
+    assert reflector._type_cache[form] is typ
+    assert reflector._type_key_cache[(TYPE_KEY, typ)] is key
 
 
 def test_reflects_direct_recursive_type_alias_type_as_alias_node() -> None:
