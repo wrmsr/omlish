@@ -9,8 +9,8 @@ from ...errors import ReflectionError
 from ...reflector import TypeReflector
 from ...typekeys import TypeKeys
 from ...universe import TypeUniverse
-from ..members import MembersReflector
 from ..members import MemberKind
+from ..members import MembersReflector
 
 
 def make_members_reflector() -> MembersReflector:
