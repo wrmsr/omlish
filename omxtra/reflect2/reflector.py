@@ -40,7 +40,6 @@ from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import UnreflectableTypeError
 from .locking import HasLock
-from .universe import DynamicTypeNameSuffix
 from .universe import HasUniverse
 from .universe import TypeUniverse
 
@@ -81,9 +80,6 @@ class _ContainsAnyTypeAlias(BoolTypeQuery):
 
         self.seen.add(typ._alias)
         return self.query_types([*typ._args, typ._alias._target])
-
-
-##
 
 
 def _make_any() -> AnyType:
@@ -127,6 +123,10 @@ def _contains_any_type_alias(
     return typ.accept(_ContainsAnyTypeAlias(aliases, seen))
 
 
+##
+
+
+@ta.final
 class TypeReflector(
     HasUniverse,
     HasLock,
@@ -850,45 +850,16 @@ class TypeReflector(
 ##
 
 
-_DEFAULT_REFLECTOR: ta.Final = TypeReflector()
-
-
-def default_reflector() -> TypeReflector:
-    return _DEFAULT_REFLECTOR
-
-
-def or_default_reflector(reflector: TypeReflector | None) -> TypeReflector:
-    return _DEFAULT_REFLECTOR if reflector is None else reflector
-
-
-def make_reflector(
-        *,
-        dynamic_type_name_suffix: DynamicTypeNameSuffix = 'id',
-        forward_ref_resolver: ForwardRefResolver | None = None,
-) -> TypeReflector:
-    return TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix=dynamic_type_name_suffix),
-        forward_ref_resolver=forward_ref_resolver,
-    )
-
-
-def reflect_type(obj: object) -> Type:
-    return _DEFAULT_REFLECTOR.reflect_type(obj)
-
-
-##
-
-
 class HasReflector:
     def __init__(
             self,
             *,
-            reflector: TypeReflector | None = None,
+            reflector: TypeReflector,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        self._reflector = or_default_reflector(reflector)
+        self._reflector = reflector
 
     @property
     def reflector(self) -> TypeReflector:

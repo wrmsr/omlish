@@ -19,6 +19,7 @@ ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]
 ##
 
 
+@ta.final
 class TypeKeys(HasLock):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)

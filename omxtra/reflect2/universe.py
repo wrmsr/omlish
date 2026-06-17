@@ -30,9 +30,6 @@ DynamicTypeNameSuffix: ta.TypeAlias = ta.Literal['id', 'counter']
 _DYNAMIC_TYPE_NAME_SEPARATOR: ta.Final = '@'
 
 
-##
-
-
 @ta.final
 class TypeUniverse:
     def __init__(
@@ -288,12 +285,12 @@ class HasUniverse:
     def __init__(
             self,
             *,
-            universe: TypeUniverse | None = None,
+            universe: TypeUniverse,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        self._universe = or_default_universe(universe)
+        self._universe = universe
 
     @property
     def universe(self) -> TypeUniverse:

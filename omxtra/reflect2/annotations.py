@@ -281,6 +281,7 @@ def to_runtime_annotation(
 ##
 
 
+@ta.final
 class TypeAnnotations(
     HasReflector,
     HasLock,
