@@ -60,21 +60,21 @@ class TypeKeyPolicy:
     preserve_newtype_identity: bool = True
 
 
-TYPE_KEY_POLICY: ta.Final = TypeKeyPolicy()
+TYPE_KEY: ta.Final = TypeKeyPolicy()
 
-ALPHA_TYPE_KEY_POLICY: ta.Final = dc.replace(
-    TYPE_KEY_POLICY,
+ALPHA_TYPE_KEY: ta.Final = dc.replace(
+    TYPE_KEY,
     alpha=True,
 )
 
-STRUCTURAL_TYPE_KEY_POLICY: ta.Final = TypeKeyPolicy(
+STRUCTURAL_TYPE_KEY: ta.Final = TypeKeyPolicy(
     structural=True,
     include_annotated_metadata=False,
     preserve_alias_identity=False,
 )
 
-ALPHA_STRUCTURAL_TYPE_KEY_POLICY: ta.Final = dc.replace(
-    STRUCTURAL_TYPE_KEY_POLICY,
+ALPHA_STRUCTURAL_TYPE_KEY: ta.Final = dc.replace(
+    STRUCTURAL_TYPE_KEY,
     alpha=True,
 )
 
@@ -85,10 +85,10 @@ ALPHA_STRUCTURAL_TYPE_KEY_POLICY: ta.Final = dc.replace(
 _DEFAULT_TYPE_KEY_POLICY_DISPLAY: ta.Final = 'Specified type key'
 
 _TYPE_KEY_POLICY_DISPLAY: ta.Final[ta.Mapping[TypeKeyPolicy, str]] = {
-    TYPE_KEY_POLICY: 'Type key',
-    ALPHA_TYPE_KEY_POLICY: 'Alpha type key',
-    STRUCTURAL_TYPE_KEY_POLICY: 'Structural type key',
-    ALPHA_STRUCTURAL_TYPE_KEY_POLICY: 'Alpha structural type key',
+    TYPE_KEY: 'Type key',
+    ALPHA_TYPE_KEY: 'Alpha type key',
+    STRUCTURAL_TYPE_KEY: 'Structural type key',
+    ALPHA_STRUCTURAL_TYPE_KEY: 'Alpha structural type key',
 }
 
 
@@ -99,11 +99,11 @@ def _type_key_policy_display(policy: TypeKeyPolicy) -> str:
 ##
 
 
-def type_key_with_policy_or_none(typ: Type, policy: TypeKeyPolicy) -> TypeKey | None:
+def type_key_with_policy_or_none(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey | None:
     return _TypeKeyBuilder(_StringTypeKeyWriter(), policy).key(typ)
 
 
-def type_key_with_policy(typ: Type, policy: TypeKeyPolicy) -> TypeKey:
+def type_key_with_policy(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey:
     key = type_key_with_policy_or_none(typ, policy)
     if key is None:
         raise ReflectionTypeError(f'{_type_key_policy_display(policy)} is not implemented for type: {typ!r}')
@@ -114,60 +114,57 @@ def type_key_with_policy(typ: Type, policy: TypeKeyPolicy) -> TypeKey:
 
 
 def type_key_or_none(typ: Type) -> TypeKey | None:
-    return type_key_with_policy_or_none(typ, TYPE_KEY_POLICY)
+    return type_key_with_policy_or_none(typ, TYPE_KEY)
 
 
 def type_key(typ: Type) -> TypeKey:
-    return type_key_with_policy(typ, TYPE_KEY_POLICY)
+    return type_key_with_policy(typ, TYPE_KEY)
 
 
 def alpha_type_key_or_none(typ: Type) -> TypeKey | None:
-    return type_key_with_policy_or_none(typ, ALPHA_TYPE_KEY_POLICY)
+    return type_key_with_policy_or_none(typ, ALPHA_TYPE_KEY)
 
 
 def alpha_type_key(typ: Type) -> TypeKey:
-    return type_key_with_policy(typ, ALPHA_TYPE_KEY_POLICY)
+    return type_key_with_policy(typ, ALPHA_TYPE_KEY)
 
 
 def structural_type_key_or_none(typ: Type) -> TypeKey | None:
-    return type_key_with_policy_or_none(typ, STRUCTURAL_TYPE_KEY_POLICY)
+    return type_key_with_policy_or_none(typ, STRUCTURAL_TYPE_KEY)
 
 
 def structural_type_key(typ: Type) -> TypeKey:
-    return type_key_with_policy(typ, STRUCTURAL_TYPE_KEY_POLICY)
+    return type_key_with_policy(typ, STRUCTURAL_TYPE_KEY)
 
 
 def alpha_structural_type_key_or_none(typ: Type) -> TypeKey | None:
-    return type_key_with_policy_or_none(typ, ALPHA_STRUCTURAL_TYPE_KEY_POLICY)
+    return type_key_with_policy_or_none(typ, ALPHA_STRUCTURAL_TYPE_KEY)
 
 
 def alpha_structural_type_key(typ: Type) -> TypeKey:
-    return type_key_with_policy(typ, ALPHA_STRUCTURAL_TYPE_KEY_POLICY)
+    return type_key_with_policy(typ, ALPHA_STRUCTURAL_TYPE_KEY)
 
 
 #
 
 
-def tuple_type_key_with_policy_or_none(typ: Type, policy: TypeKeyPolicy) -> TupleTypeKey | None:
+def tuple_type_key_with_policy_or_none(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TupleTypeKey | None:
     return _TypeKeyBuilder(_TupleTypeKeyWriter(), policy).key(typ)
 
 
-def tuple_type_key_with_policy(typ: Type, policy: TypeKeyPolicy) -> TupleTypeKey:
+def tuple_type_key_with_policy(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TupleTypeKey:
     key = tuple_type_key_with_policy_or_none(typ, policy)
     if key is None:
-        raise ReflectionTypeError(f'Tuple type key is not implemented for type: {typ!r}')
+        raise ReflectionTypeError(f'{_type_key_policy_display(policy)} is not implemented for type: {typ!r}')
     return key
 
 
 def _tuple_type_key_or_none(typ: Type) -> TupleTypeKey | None:
-    return tuple_type_key_with_policy_or_none(typ, TYPE_KEY_POLICY)
+    return tuple_type_key_with_policy_or_none(typ, TYPE_KEY)
 
 
 def _tuple_type_key(typ: Type) -> TupleTypeKey:
-    key = _tuple_type_key_or_none(typ)
-    if key is None:
-        raise ReflectionTypeError(f'Tuple type key is not implemented for type: {typ!r}')
-    return key
+    return tuple_type_key_with_policy(typ, TYPE_KEY)
 
 
 ##
