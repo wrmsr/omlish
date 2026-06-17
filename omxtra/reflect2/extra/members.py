@@ -24,7 +24,7 @@ from ..typekeys import HasKeys
 ##
 
 
-class RuntimeMemberKind(enum.Enum):
+class MemberKind(enum.Enum):
     FUNCTION = 'function'
     STATICMETHOD = 'staticmethod'
     CLASSMETHOD = 'classmethod'
@@ -34,7 +34,7 @@ class RuntimeMemberKind(enum.Enum):
 
 @ta.final
 @dc.dataclass(frozen=True)
-class RuntimeMemberParameter:
+class MemberParameter:
     name: str
     kind: inspect._ParameterKind
     typ: Type
@@ -43,40 +43,40 @@ class RuntimeMemberParameter:
 
 @ta.final
 @dc.dataclass(frozen=True)
-class RuntimeMemberSignature:
-    parameters: tuple[RuntimeMemberParameter, ...]
+class MemberSignature:
+    parameters: tuple[MemberParameter, ...]
     return_type: Type
 
 
 @ta.final
 @dc.dataclass(frozen=True)
-class RuntimeMember:
+class Member:
     name: str
-    kind: RuntimeMemberKind
+    kind: MemberKind
     owner: type
     obj: object
     signature: inspect.Signature | None
-    reflected_signature: RuntimeMemberSignature | None
-    reflected_overload_signatures: tuple[RuntimeMemberSignature, ...] = ()
+    reflected_signature: MemberSignature | None
+    reflected_overload_signatures: tuple[MemberSignature, ...] = ()
     value_type: Type | None = None
     unkeyable: bool = False
 
     #
 
-    def get_call_signature(self) -> RuntimeMemberSignature | None:
+    def get_call_signature(self) -> MemberSignature | None:
         signature = self.reflected_signature
         if signature is None:
             return None
 
-        if self.kind in (RuntimeMemberKind.FUNCTION, RuntimeMemberKind.CLASSMETHOD):
+        if self.kind in (MemberKind.FUNCTION, MemberKind.CLASSMETHOD):
             return _drop_first_parameter(signature)
 
-        if self.kind == RuntimeMemberKind.STATICMETHOD:
+        if self.kind == MemberKind.STATICMETHOD:
             return signature
 
         return None
 
-    def get_call_signatures(self) -> tuple[RuntimeMemberSignature, ...]:
+    def get_call_signatures(self) -> tuple[MemberSignature, ...]:
         if self.reflected_overload_signatures:
             signatures = self.reflected_overload_signatures
         elif (signature := self.reflected_signature) is not None:
@@ -84,10 +84,10 @@ class RuntimeMember:
         else:
             return ()
 
-        if self.kind in (RuntimeMemberKind.FUNCTION, RuntimeMemberKind.CLASSMETHOD):
+        if self.kind in (MemberKind.FUNCTION, MemberKind.CLASSMETHOD):
             return tuple(_drop_first_parameter(signature) for signature in signatures)
 
-        if self.kind == RuntimeMemberKind.STATICMETHOD:
+        if self.kind == MemberKind.STATICMETHOD:
             return signatures
 
         return ()
@@ -100,7 +100,7 @@ class RuntimeMember:
         if signature is None:
             return None
 
-        if self.kind == RuntimeMemberKind.PROPERTY:
+        if self.kind == MemberKind.PROPERTY:
             return signature.return_type
 
         return None
@@ -108,10 +108,10 @@ class RuntimeMember:
 
 @ta.final
 @dc.dataclass(frozen=True)
-class RuntimeMembersInspection:
+class MembersInspection:
     origin: type
-    members: tuple[RuntimeMember, ...]
-    members_by_name: dict[str, RuntimeMember]
+    members: tuple[Member, ...]
+    members_by_name: ta.Mapping[str, Member]
 
 
 ##
@@ -147,10 +147,10 @@ def _make_any() -> AnyType:
     return _ANY_TYPES[TypeOfAny.FROM_OMITTED_GENERICS]
 
 
-def _drop_first_parameter(signature: RuntimeMemberSignature) -> RuntimeMemberSignature:
+def _drop_first_parameter(signature: MemberSignature) -> MemberSignature:
     if not signature.parameters:
         return signature
-    return RuntimeMemberSignature(signature.parameters[1:], signature.return_type)
+    return MemberSignature(signature.parameters[1:], signature.return_type)
 
 
 @ta.final
@@ -162,7 +162,7 @@ class MembersReflector(
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
-        self._inspection_cache: dict[object, RuntimeMembersInspection] = {}
+        self._inspection_cache: dict[object, MembersInspection] = {}
 
     #
 
@@ -182,20 +182,20 @@ class MembersReflector(
             self,
             signature: inspect.Signature | None,
             replacements: SubstitutionMap,
-    ) -> RuntimeMemberSignature | None:
+    ) -> MemberSignature | None:
         if signature is None:
             return None
 
-        parameters: list[RuntimeMemberParameter] = []
+        parameters: list[MemberParameter] = []
         for parameter in signature.parameters.values():
-            parameters.append(RuntimeMemberParameter(
+            parameters.append(MemberParameter(
                 parameter.name,
                 parameter.kind,
                 self._reflect_annotation(parameter.annotation, replacements),
                 parameter.default is not inspect.Parameter.empty,
             ))
 
-        return RuntimeMemberSignature(
+        return MemberSignature(
             tuple(parameters),
             self._reflect_annotation(signature.return_annotation, replacements),
         )
@@ -204,8 +204,8 @@ class MembersReflector(
             self,
             obj: object,
             replacements: SubstitutionMap,
-    ) -> tuple[RuntimeMemberSignature, ...]:
-        ret: list[RuntimeMemberSignature] = []
+    ) -> tuple[MemberSignature, ...]:
+        ret: list[MemberSignature] = []
         try:
             overloads = ta.get_overloads(obj)  # type: ignore[arg-type]
         except AttributeError:
@@ -220,14 +220,14 @@ class MembersReflector(
     def _make_member(
             self,
             name: str,
-            kind: RuntimeMemberKind,
+            kind: MemberKind,
             owner: type,
             obj: object,
             signature: inspect.Signature | None,
             replacements: SubstitutionMap,
-    ) -> RuntimeMember:
-        reflected_signature: RuntimeMemberSignature | None
-        reflected_overload_signatures: tuple[RuntimeMemberSignature, ...]
+    ) -> Member:
+        reflected_signature: MemberSignature | None
+        reflected_overload_signatures: tuple[MemberSignature, ...]
 
         try:
             reflected_signature = self._reflect_signature(
@@ -244,7 +244,7 @@ class MembersReflector(
             reflected_signature = None
             reflected_overload_signatures = ()
 
-        return RuntimeMember(
+        return Member(
             name,
             kind,
             owner,
@@ -259,30 +259,30 @@ class MembersReflector(
             name: str,
             owner: type,
             replacements: SubstitutionMap,
-    ) -> RuntimeMember:
+    ) -> Member:
         obj = inspect.getattr_static(owner, name)
 
-        kind: RuntimeMemberKind
+        kind: MemberKind
         signature: inspect.Signature | None
 
         if isinstance(obj, staticmethod):
-            kind = RuntimeMemberKind.STATICMETHOD
+            kind = MemberKind.STATICMETHOD
             signature = _signature_or_none(obj.__func__)
 
         elif isinstance(obj, classmethod):
-            kind = RuntimeMemberKind.CLASSMETHOD
+            kind = MemberKind.CLASSMETHOD
             signature = _signature_or_none(obj.__func__)
 
         elif isinstance(obj, property):
-            kind = RuntimeMemberKind.PROPERTY
+            kind = MemberKind.PROPERTY
             signature = _signature_or_none(obj.fget)
 
         elif isinstance(obj, pytypes.FunctionType):
-            kind = RuntimeMemberKind.FUNCTION
+            kind = MemberKind.FUNCTION
             signature = _signature_or_none(obj)
 
         else:
-            kind = RuntimeMemberKind.DATA
+            kind = MemberKind.DATA
             signature = _signature_or_none(obj)
 
         return self._make_member(
@@ -318,13 +318,13 @@ class MembersReflector(
             )
         return dict(zip(entry._info._type_vars, entry._args))
 
-    def _inspect_runtime_members_uncached(
+    def _inspect_members_uncached(
             self,
             obj: object,
-    ) -> RuntimeMembersInspection:
+    ) -> MembersInspection:
         origin = _get_origin_type(obj)
         entries_by_info = self._get_mro_entries_by_info(obj)
-        members_by_name: dict[str, RuntimeMember] = {}
+        members_by_name: dict[str, Member] = {}
 
         for name, owner, _ in _iter_mro_members(origin):
             members_by_name[name] = self._classify_member(
@@ -333,29 +333,29 @@ class MembersReflector(
                 self._get_owner_replacements(owner, entries_by_info),
             )
 
-        return RuntimeMembersInspection(origin, tuple(members_by_name.values()), members_by_name)
+        return MembersInspection(origin, tuple(members_by_name.values()), members_by_name)
 
-    def _inspect_runtime_members(
+    def _inspect_members(
             self,
             obj: object,
-    ) -> RuntimeMembersInspection:
+    ) -> MembersInspection:
         try:
             return self._inspection_cache[obj]
         except KeyError:
             pass
 
-        ret = self._inspect_runtime_members_uncached(obj)
+        ret = self._inspect_members_uncached(obj)
         self._inspection_cache[obj] = ret
         return ret
 
-    def inspect_runtime_members(self, obj: object) -> RuntimeMembersInspection:
+    def inspect_members(self, obj: object) -> MembersInspection:
         try:
             return self._inspection_cache[obj]
         except KeyError:
             pass
 
         with self._lock:
-            return self._inspect_runtime_members(obj)
+            return self._inspect_members(obj)
 
     #
 
