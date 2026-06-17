@@ -4,7 +4,7 @@ import typing as ta
 import pytest
 
 from ...errors import UnsupportedTypeOperationError
-from ...reflect import TypeReflector
+from ...reflector import TypeReflector
 from ...universe import TypeUniverse
 from .. import symbols
 from .. import types
@@ -51,7 +51,7 @@ def test_meet_nominal_subtype_returns_subtype() -> None:
 
 
 def test_meet_reflected_generic_subclass_returns_subclass() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -68,7 +68,7 @@ def test_meet_reflected_generic_subclass_returns_subclass() -> None:
 
 
 def test_meet_reflected_generic_subclass_with_different_base_arg_returns_uninhabited() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
