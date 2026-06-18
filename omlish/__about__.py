@@ -39,7 +39,7 @@ class Project(ProjectBase):
             'anyio ~= 4.13',
             'sniffio ~= 1.3',
 
-            'greenlet ~= 3.5.1',
+            'greenlet ~= 3.5',
 
             'trio ~= 0.33',
             'trio-asyncio ~= 0.15',

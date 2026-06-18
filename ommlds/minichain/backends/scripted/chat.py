@@ -10,6 +10,7 @@ consecutive script turns, which is exactly what multi-round-trip (tool-looping) 
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
@@ -27,6 +28,9 @@ from ...chat.stream.choices.services import static_check_is_chat_choices_stream_
 from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.stream.joining import AiDeltaJoiner
+from ...chat.stream.transform.types import AiDeltasTransform
+from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
+from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform
 from ...configs import Config
 from ...resources import UseResources
 from ...services import StreamResponseSink
@@ -169,15 +173,30 @@ class ScriptedChatChoicesStreamService(_ScriptedChatChoicesServiceBase):
 
         async with UseResources.or_new(request.options) as rs:
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
+                dts: list[AiDeltasTransform] | None = None
                 joiner = AiChoicesDeltaJoiner()
 
-                for i, em in enumerate(turn.emissions):
+                for i, csds in enumerate(turn.emissions):
                     if gate is not None:
                         await gate(ChatScriptGatePoint(invocation_index, i))
 
-                    joiner.add(em.choices)
+                    if dts is None:
+                        dts = [
+                            # FIXME: YES THIS IS GETTING WORSE TO GET BETTER
+                            AiDeltaTransformAiDeltasTransform(
+                                TypeSequentialMessageUuidAddingAiDeltaTransform(),
+                            )
+                            for _ in range(len(csds.choices))
+                        ]
 
-                    await sink.emit(em)
+                    csds = dc.replace(csds, choices=[
+                        dc.replace(cds, deltas=dts[i].transform(cds.deltas))
+                        for i, cds in enumerate(csds.choices)
+                    ])
+
+                    joiner.add(csds.choices)
+
+                    await sink.emit(csds)
 
                 if gate is not None:
                     await gate(ChatScriptGatePoint(invocation_index, len(turn.emissions)))
