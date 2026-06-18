@@ -53,6 +53,7 @@ class Api:
         self._reflector: ta.Final = TypeReflector(
             forward_ref_resolver=forward_ref_resolver,
             universe=self._universe,
+            interner=self._interner,
             lock=self._lock,
         )
 

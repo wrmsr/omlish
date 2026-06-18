@@ -22,6 +22,7 @@ from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
 from ..core.types import Type
 from ..errors import UnreflectableTypeError
+from ..interning import Interner
 from ..reflector import TypeReflector
 from ..universe import TypeUniverse
 from ..universe import or_global_universe
@@ -33,7 +34,8 @@ def make_reflector(
 ) -> TypeReflector:
     return TypeReflector(
         universe=or_global_universe(universe),
-        lock=threading.RLock(),
+        lock=(lock := threading.RLock()),
+        interner=Interner(lock=lock),
         **kwargs,
     )
 

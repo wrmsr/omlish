@@ -39,6 +39,7 @@ from .core.types import is_literal_value
 from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import UnreflectableTypeError
+from .interning import NeedsInterner
 from .locking import NeedsLock
 from .universe import NeedsUniverse
 from .universe import TypeUniverse
@@ -129,6 +130,7 @@ def _contains_any_type_alias(
 @ta.final
 class TypeReflector(
     NeedsUniverse,
+    NeedsInterner,
     NeedsLock,
 ):
     def __init__(

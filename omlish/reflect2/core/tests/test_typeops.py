@@ -1,12 +1,10 @@
 # ruff: noqa: PLC0132 SLF001
-import threading
 import typing as ta
 
 import pytest
 
 from ...errors import ReflectionError
-from ...reflector import TypeReflector
-from ...universe import TypeUniverse
+from ...tests.helpers import make_reflector
 from .. import symbols
 from .. import typeops
 from .. import types
@@ -363,7 +361,7 @@ def test_make_simplified_union_keeps_any_with_other_items() -> None:
 
 
 def test_make_simplified_union_removes_reflected_generic_subclass_before_base() -> None:
-    reflector = TypeReflector(universe=TypeUniverse(), lock=threading.RLock())
+    reflector = make_reflector()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -381,7 +379,7 @@ def test_make_simplified_union_removes_reflected_generic_subclass_before_base() 
 
 
 def test_make_simplified_union_removes_reflected_generic_subclass_after_base() -> None:
-    reflector = TypeReflector(universe=TypeUniverse(), lock=threading.RLock())
+    reflector = make_reflector()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -399,7 +397,7 @@ def test_make_simplified_union_removes_reflected_generic_subclass_after_base() -
 
 
 def test_make_simplified_union_keeps_reflected_generic_subclass_with_different_base_arg() -> None:
-    reflector = TypeReflector(universe=TypeUniverse(), lock=threading.RLock())
+    reflector = make_reflector()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore

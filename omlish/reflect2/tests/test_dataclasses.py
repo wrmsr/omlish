@@ -16,6 +16,7 @@ from ..dataclasses import DataclassInspector
 from ..errors import ReflectionError
 from ..errors import UnreflectableTypeError
 from ..errors import UnsupportedTypeOperationError
+from ..interning import Interner
 from ..reflector import TypeReflector
 from ..universe import TypeUniverse
 
@@ -25,6 +26,7 @@ def make_dataclass_inspector() -> DataclassInspector:
         reflector=TypeReflector(
             universe=TypeUniverse(),
             lock=(lock := threading.RLock()),
+            interner=Interner(lock=lock),
         ),
         lock=lock,
     )

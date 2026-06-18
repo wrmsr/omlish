@@ -6,6 +6,7 @@ import typing as ta
 from ..core import types
 from ..core.strconv import type_str
 from ..errors import ReflectionError
+from ..interning import Interner
 from ..members import MemberKind
 from ..members import MembersInspector
 from ..reflector import TypeReflector
@@ -21,6 +22,7 @@ def make_members_inspector() -> MembersInspector:
         reflector=TypeReflector(
             universe=TypeUniverse(),
             lock=lock,
+            interner=Interner(lock=lock),
         ),
         lock=lock,
     )

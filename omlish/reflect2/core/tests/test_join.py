@@ -1,13 +1,11 @@
 # ruff: noqa: PLC0132 SLF001
-import threading
 import typing as ta
 
 import pytest
 
 from ...errors import ReflectionError
 from ...errors import UnsupportedTypeOperationError
-from ...reflector import TypeReflector
-from ...universe import TypeUniverse
+from ...tests.helpers import make_reflector
 from .. import symbols
 from .. import types
 from ..join import join_type_list
@@ -53,7 +51,7 @@ def test_join_nominal_subtype_returns_supertype() -> None:
 
 
 def test_join_reflected_generic_subclass_returns_matching_base() -> None:
-    reflector = TypeReflector(universe=TypeUniverse(), lock=threading.RLock())
+    reflector = make_reflector()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -70,7 +68,7 @@ def test_join_reflected_generic_subclass_returns_matching_base() -> None:
 
 
 def test_join_reflected_generic_subclass_with_different_base_arg_returns_union() -> None:
-    reflector = TypeReflector(universe=TypeUniverse(), lock=threading.RLock())
+    reflector = make_reflector()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore

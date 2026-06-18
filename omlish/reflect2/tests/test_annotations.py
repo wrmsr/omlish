@@ -10,6 +10,7 @@ from ..annotations import to_runtime_annotation
 from ..core import symbols
 from ..core import types
 from ..errors import ReflectionError
+from ..interning import Interner
 from ..reflector import TypeReflector
 from ..universe import TypeUniverse
 
@@ -17,8 +18,15 @@ from ..universe import TypeUniverse
 def _make_annotations() -> TypeAnnotations:
     universe = TypeUniverse(dynamic_type_name_suffix='counter')
     lock = threading.RLock()
-    reflector = TypeReflector(universe=universe, lock=lock)
-    annotations = TypeAnnotations(reflector=reflector, lock=lock)
+    reflector = TypeReflector(
+        universe=universe,
+        lock=lock,
+        interner=Interner(lock=lock),
+    )
+    annotations = TypeAnnotations(
+        reflector=reflector,
+        lock=lock,
+    )
     return annotations
 
 
@@ -222,6 +230,7 @@ def test_reflector_runtime_annotation_cache_reuses_recursive_variadic_alias_anno
         reflector=TypeReflector(
             universe=TypeUniverse(),
             lock=(lock := threading.RLock()),
+            interner=Interner(lock=lock),
         ),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
         lock=lock,
@@ -364,6 +373,7 @@ def test_to_runtime_annotation_preserves_recursive_alias_when_expand_policy_is_r
         reflector=TypeReflector(
             universe=TypeUniverse(),
             lock=(lock := threading.RLock()),
+            interner=Interner(lock=lock),
         ),
         forward_ref_resolver={'Node': alias}.__getitem__,
         lock=lock,
@@ -382,6 +392,7 @@ def test_to_runtime_annotation_preserves_variadic_recursive_alias_when_expand_po
         reflector=TypeReflector(
             universe=TypeUniverse(),
             lock=(lock := threading.RLock()),
+            interner=Interner(lock=lock),
         ),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
         lock=lock,
@@ -400,6 +411,7 @@ def test_to_runtime_annotation_preserves_generic_variadic_recursive_alias_with_t
         reflector=TypeReflector(
             universe=TypeUniverse(),
             lock=(lock := threading.RLock()),
+            interner=Interner(lock=lock),
         ),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
         lock=lock,
