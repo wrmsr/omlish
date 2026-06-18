@@ -4,8 +4,6 @@ import typing as ta
 
 from .core.substitute import substitute_type
 from .core.subtypes import MroEntry
-from .core.typekeys import TypeKey
-from .core.typekeys import type_key
 from .core.types import Type
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
@@ -31,11 +29,7 @@ class DataclassField:
 class DataclassInspection:
     origin: type
     fields: tuple[DataclassField, ...]
-    fields_by_name: dict[str, DataclassField]
-    field_types: dict[str, Type]
-    field_type_keys: dict[str, TypeKey]
-    field_structural_type_keys: dict[str, TypeKey]
-    field_annotations: dict[str, object]
+    fields_by_name: ta.Mapping[str, DataclassField]
 
 
 ##
@@ -81,7 +75,7 @@ def _get_mro_entries_by_info(
 ) -> dict[object, MroEntry]:
     return {
         entry._info: entry
-        for entry in reflect_mro_entries(obj, reflector)
+        for entry in reflect_mro_entries(obj, reflector=reflector)
     }
 
 
@@ -119,26 +113,10 @@ class DataclassInspector(
 
     #
 
-    def inspect_dataclass(
-            self,
-            obj: object,
-            reflector: TypeReflector | None = None,
-    ) -> DataclassInspection:
-        rt_reflector = _get_reflector(reflector)
-        return ta.cast(DataclassInspection, rt_reflector.cached_inspection(
-            'dataclass',
-            obj,
-            lambda: _inspect_dataclass_uncached(obj, rt_reflector),
-        ))
-
-    def _inspect_dataclass_uncached(
-            self,
-            obj: object,
-            rt_reflector: TypeReflector,
-    ) -> DataclassInspection:
+    def _inspect_dataclass_uncached(self, obj: object) -> DataclassInspection:
         origin = _get_origin_dataclass(obj)
         owners = _get_dataclass_field_owners(origin)
-        entries_by_info = _get_mro_entries_by_info(obj, rt_reflector)
+        entries_by_info = _get_mro_entries_by_info(obj, self._reflector)
 
         ret: list[DataclassField] = []
         for field in dc.fields(origin):
@@ -147,7 +125,7 @@ class DataclassInspector(
             except KeyError:
                 raise ReflectionTypeError(f'Missing dataclass field owner: {origin!r}.{field.name}') from None
 
-            owner_info = rt_reflector.universe.get_type_info(owner)
+            owner_info = self._reflector.universe.get_type_info(owner)
             try:
                 owner_entry = entries_by_info[owner_info]
             except KeyError:
@@ -155,7 +133,7 @@ class DataclassInspector(
                     f'Dataclass field owner is not in reflected MRO: {origin!r}.{field.name}',
                 ) from None
 
-            raw_type = rt_reflector.reflect_type(_get_field_annotation(field, owner))
+            raw_type = self._reflector.reflect_type(_get_field_annotation(field, owner))
             ret.append(DataclassField(
                 field,
                 field.name,
@@ -169,63 +147,27 @@ class DataclassInspector(
             field.name: field
             for field in fields
         }
-        field_types = {
-            field.name: field.replaced_type
-            for field in fields
-        }
-        field_type_keys = {
-            field.name: type_key(field.replaced_type)
-            for field in fields
-        }
-        field_structural_type_keys = {
-            field.name: rt_reflector.structural_type_key(field.replaced_type)
-            for field in fields
-        }
-        field_annotations = {
-            field.name: rt_reflector.to_runtime_annotation(field.replaced_type)
-            for field in fields
-        }
         return DataclassInspection(
             origin,
             fields,
             fields_by_name,
-            field_types,
-            field_type_keys,
-            field_structural_type_keys,
-            field_annotations,
         )
 
-    def reflect_dataclass_fields(
-            self,
-            obj: object,
-            reflector: TypeReflector | None = None,
-    ) -> list[DataclassField]:
-        return list(inspect_dataclass(obj, reflector).fields)
+    def _inspect_dataclass(self, obj: object) -> DataclassInspection:
+        try:
+            return self._inspection_cache[obj]
+        except KeyError:
+            pass
 
-    def reflect_dataclass_field_types(
-            self,
-            obj: object,
-            reflector: TypeReflector | None = None,
-    ) -> dict[str, Type]:
-        return dict(inspect_dataclass(obj, reflector).field_types)
+        ret = self._inspect_dataclass_uncached(obj)
+        self._inspection_cache[obj] = ret
+        return ret
 
-    def reflect_dataclass_field_type_keys(
-            self,
-            obj: object,
-            reflector: TypeReflector | None = None,
-    ) -> dict[str, TypeKey]:
-        return dict(inspect_dataclass(obj, reflector).field_type_keys)
+    def inspect_dataclass(self, obj: object) -> DataclassInspection:
+        try:
+            return self._inspection_cache[obj]
+        except KeyError:
+            pass
 
-    def reflect_dataclass_field_structural_type_keys(
-            self,
-            obj: object,
-            reflector: TypeReflector | None = None,
-    ) -> dict[str, TypeKey]:
-        return dict(inspect_dataclass(obj, reflector).field_structural_type_keys)
-
-    def reflect_dataclass_field_annotations(
-            self,
-            obj: object,
-            reflector: TypeReflector | None = None,
-    ) -> dict[str, object]:
-        return dict(inspect_dataclass(obj, reflector).field_annotations)
+        with self._lock:
+            return self._inspect_dataclass(obj)

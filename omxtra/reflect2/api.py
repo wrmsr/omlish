@@ -17,6 +17,8 @@ from .universe import or_global_universe
 
 
 if ta.TYPE_CHECKING:
+    from .dataclasses import DataclassInspection
+    from .dataclasses import DataclassInspector
     from .members import MembersInspection
     from .members import MembersInspector
 
@@ -145,6 +147,43 @@ class Api:
 
     def inspect_members(self, obj: object) -> MembersInspection:
         return self.members.inspect_members(obj)
+
+    #
+
+    _dataclasses: DataclassInspector
+
+    def _dataclasses_(self) -> DataclassInspector:
+        with self._lock:
+            try:
+                return self._dataclasses
+            except AttributeError:
+                pass
+
+        from .dataclasses import DataclassInspector
+
+        with self._lock:
+            try:
+                return self._dataclasses
+            except AttributeError:
+                pass
+
+            self._dataclasses = DataclassInspector(
+                reflector=self._reflector,
+                lock=self._lock,
+            )
+
+            return self._dataclasses
+
+    @property
+    def dataclasses(self) -> DataclassInspector:
+        try:
+            return self._dataclasses
+        except AttributeError:
+            pass
+        return self._dataclasses_()
+
+    def inspect_dataclass(self, obj: object) -> DataclassInspection:
+        return self.dataclasses.inspect_dataclass(obj)
 
 
 ##
