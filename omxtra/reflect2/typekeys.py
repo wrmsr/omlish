@@ -12,9 +12,6 @@ from .core.types import Type
 from .locking import NeedsLock
 
 
-ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]
-
-
 ##
 
 

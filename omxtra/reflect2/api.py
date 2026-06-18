@@ -254,3 +254,74 @@ def global_api() -> Api:
 
 def or_global_api(api: Api | None) -> Api:
     return _GLOBAL_API if api is None else api
+
+
+##
+
+
+def get_type_info(obj: type | str) -> TypeInfo:
+    return _GLOBAL_API.get_type_info(obj)
+
+
+#
+
+
+def intern(obj: T) -> T:
+    return _GLOBAL_API.intern(obj)
+
+
+#
+
+
+def reflect_type(obj: object) -> Type:
+    return _GLOBAL_API.reflect_type(obj)
+
+
+#
+
+
+def type_key_or_none(
+        typ: Type,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+) -> TypeKey | None:
+    return _GLOBAL_API.type_key_or_none(typ, policy)
+
+
+def type_key(
+        typ: Type,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+) -> TypeKey:
+    return _GLOBAL_API.type_key(typ, policy)
+
+
+#
+
+
+def to_runtime_annotation(
+        typ: Type,
+        *,
+        type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+) -> object:
+    return _GLOBAL_API.to_runtime_annotation(
+        typ,
+        type_alias_policy=type_alias_policy,
+    )
+
+
+#
+
+
+def inspect_members(obj: object) -> MembersInspection:
+    return _GLOBAL_API.inspect_members(obj)
+
+#
+
+
+def inspect_dataclass(obj: object) -> DataclassInspection:
+    return _GLOBAL_API.inspect_dataclass(obj)
+
+#
+
+
+def inspect_namedtuple(obj: object) -> NamedtupleInspection:
+    return _GLOBAL_API.inspect_namedtuple(obj)
