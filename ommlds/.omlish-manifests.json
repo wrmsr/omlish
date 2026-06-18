@@ -407,7 +407,7 @@
     "module": ".minichain.backends.llamacpp.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/stream.py",
-    "line": 38,
+    "line": 42,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -422,7 +422,7 @@
     "module": ".minichain.backends.llamacpp.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/stream.py",
-    "line": 47,
+    "line": 51,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.llamacpp.stream",
@@ -452,7 +452,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 43,
+    "line": 47,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -468,7 +468,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 137,
+    "line": 142,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.mlx.chat",
@@ -483,7 +483,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 167,
+    "line": 172,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.mlx.chat",
@@ -797,7 +797,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 120,
+    "line": 124,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.tinygrad.chat",
@@ -812,7 +812,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 140,
+    "line": 144,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.tinygrad.chat",
@@ -827,7 +827,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 182,
+    "line": 201,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [

@@ -3,6 +3,7 @@ import threading
 import typing as ta  # noqa
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
@@ -15,6 +16,9 @@ from ...chat.stream.choices.services import static_check_is_chat_choices_stream_
 from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.choices.types import ChatChoicesStreamResult
+from ...chat.stream.transform.types import AiDeltasTransform
+from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
+from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform
 from ...chat.stream.types import ContentAiDelta
 from ...configs import Config
 from ...models.configs import ModelPath
@@ -93,6 +97,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 last_role: ta.Any = None
 
+                dts: list[AiDeltasTransform] | None = None
                 joiner = AiChoicesDeltaJoiner()
 
                 for chunk in output:
@@ -110,15 +115,29 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
                     # FIXME: stop reason
 
                     if (content := delta.get('content', '')):
-                        cds = AiChoicesDeltas([
+                        csds = AiChoicesDeltas([
                             AiChoiceDeltas([
                                 ContentAiDelta(content),
                             ]),
                         ])
 
-                        joiner.add(cds.choices)
+                        if dts is None:
+                            dts = [
+                                # FIXME: YES THIS IS GETTING WORSE TO GET BETTER
+                                AiDeltaTransformAiDeltasTransform(
+                                    TypeSequentialMessageUuidAddingAiDeltaTransform(),
+                                )
+                                for _ in range(len(csds.choices))
+                            ]
 
-                        await sink.emit(cds)
+                        csds = dc.replace(csds, choices=[
+                            dc.replace(cds, deltas=dts[i].transform(cds.deltas))
+                            for i, cds in enumerate(csds.choices)
+                        ])
+
+                        joiner.add(csds.choices)
+
+                        await sink.emit(csds)
 
                 return ChatChoicesStreamResult(
                     ChatChoices([

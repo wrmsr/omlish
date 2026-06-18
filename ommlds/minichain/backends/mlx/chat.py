@@ -2,6 +2,7 @@ import contextlib
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
@@ -22,6 +23,9 @@ from ...chat.stream.choices.services import static_check_is_chat_choices_stream_
 from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.choices.types import ChatChoicesStreamResult
+from ...chat.stream.transform.types import AiDeltasTransform
+from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
+from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform
 from ...chat.stream.types import ContentAiDelta
 from ...configs import Config
 from ...llms.types import MaxTokens
@@ -55,7 +59,7 @@ class BaseMlxChatChoicesService(lang.ExitStacked):
         # 'mlx-community/Llama-3.3-70B-Instruct-4bit'
         # 'mlx-community/Llama-3.3-70B-Instruct-6bit'
         # ModelRepo('mlx-community', 'Llama-3.3-70B-Instruct-8bit')
-        ModelRepo('mlx-community', 'Qwen3-Next-80B-A3B-Thinking-8bit')
+        # ModelRepo('mlx-community', 'Qwen3-Next-80B-A3B-Thinking-8bit')
         # 'mlx-community/Mistral-Small-3.1-Text-24B-Instruct-2503-8bit'
         # 'mlx-community/Mixtral-8x7B-Instruct-v0.1'
         # 'mlx-community/QwQ-32B-Preview-8bit'
@@ -65,6 +69,7 @@ class BaseMlxChatChoicesService(lang.ExitStacked):
         # 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
         # 'mlx-community/Qwen3-30B-A3B-6bit'
         # 'mlx-community/mamba-2.8b-hf-f16'
+        ModelRepo('mlx-community', 'Llama-3.2-3B-Instruct-4bit')
     )
 
     def __init__(self, *configs: Config) -> None:
@@ -205,19 +210,34 @@ class MlxChatChoicesStreamService(BaseMlxChatChoicesService):
             )))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
+                dts: list[AiDeltasTransform] | None = None
                 joiner = AiChoicesDeltaJoiner()
 
                 for go in gen:
                     if go.text:
-                        cds = AiChoicesDeltas([
+                        csds = AiChoicesDeltas([
                             AiChoiceDeltas([
                                 ContentAiDelta(go.text),
                             ]),
                         ])
 
-                        joiner.add(cds.choices)
+                        if dts is None:
+                            dts = [
+                                # FIXME: YES THIS IS GETTING WORSE TO GET BETTER
+                                AiDeltaTransformAiDeltasTransform(
+                                    TypeSequentialMessageUuidAddingAiDeltaTransform(),
+                                )
+                                for _ in range(len(csds.choices))
+                            ]
 
-                        await sink.emit(cds)
+                        csds = dc.replace(csds, choices=[
+                            dc.replace(cds, deltas=dts[i].transform(cds.deltas))
+                            for i, cds in enumerate(csds.choices)
+                        ])
+
+                        joiner.add(csds.choices)
+
+                        await sink.emit(csds)
 
                 return ChatChoicesStreamResult(
                     ChatChoices([
