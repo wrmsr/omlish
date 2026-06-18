@@ -9,7 +9,7 @@ from .core.typekeys import get_type_key_policy
 from .core.typekeys import make_type_key_not_implemented_exception
 from .core.typekeys import type_key_or_none
 from .core.types import Type
-from .locking import HasLock
+from .locking import NeedsLock
 
 
 ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]
@@ -19,7 +19,7 @@ ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]
 
 
 @ta.final
-class TypeKeys(HasLock):
+class TypeKeys(NeedsLock):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
@@ -72,7 +72,7 @@ class TypeKeys(HasLock):
 ##
 
 
-class HasKeys:
+class NeedsKeys:
     def __init__(
             self,
             *,

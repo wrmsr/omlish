@@ -27,9 +27,9 @@ from .core.types import UnpackType
 from .core.typevisitor import DefaultTypeVisitor
 from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
-from .locking import HasLock
-from .reflector import HasReflector
-from .universe import HasUniverse
+from .locking import NeedsLock
+from .reflector import NeedsReflector
+from .universe import NeedsUniverse
 from .universe import TypeUniverse
 
 
@@ -40,7 +40,7 @@ TypeAliasAnnotationPolicy: ta.TypeAlias = ta.Literal['expand', 'preserve']
 ##
 
 
-class _AnnotationMaker(DefaultTypeVisitor[object], HasUniverse):
+class _AnnotationMaker(DefaultTypeVisitor[object], NeedsUniverse):
     def __init__(
             self,
             *,
@@ -282,8 +282,8 @@ def to_runtime_annotation(
 
 @ta.final
 class TypeAnnotations(
-    HasReflector,
-    HasLock,
+    NeedsReflector,
+    NeedsLock,
 ):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)

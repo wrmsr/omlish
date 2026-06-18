@@ -14,10 +14,10 @@ from .core.types import Type
 from .core.types import TypeOfAny
 from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
-from .locking import HasLock
-from .ops import reflect_mro_entries
-from .reflector import HasReflector
-from .typekeys import HasKeys
+from .locking import NeedsLock
+from .ops import reflect_mro_entries_by_info
+from .reflector import NeedsReflector
+from .typekeys import NeedsKeys
 
 
 ##
@@ -154,9 +154,9 @@ def _drop_first_parameter(signature: MemberSignature) -> MemberSignature:
 
 @ta.final
 class MembersInspector(
-    HasKeys,
-    HasReflector,
-    HasLock,
+    NeedsKeys,
+    NeedsReflector,
+    NeedsLock,
 ):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
@@ -293,12 +293,6 @@ class MembersInspector(
             replacements,
         )
 
-    def _get_mro_entries_by_info(self, obj: object) -> dict[object, MroEntry]:
-        return {
-            entry._info: entry
-            for entry in reflect_mro_entries(obj, reflector=self._reflector)
-        }
-
     def _get_owner_replacements(
             self,
             owner: type,
@@ -319,7 +313,7 @@ class MembersInspector(
             obj: object,
     ) -> MembersInspection:
         origin = _get_origin_type(obj)
-        entries_by_info = self._get_mro_entries_by_info(obj)
+        entries_by_info = reflect_mro_entries_by_info(obj, reflector=self._reflector)
         members_by_name: dict[str, Member] = {}
 
         for name, owner, _ in _iter_mro_members(origin):

@@ -1,6 +1,6 @@
 import typing as ta
 
-from .locking import HasLock
+from .locking import NeedsLock
 
 
 T = ta.TypeVar('T')
@@ -9,11 +9,20 @@ T = ta.TypeVar('T')
 ##
 
 
-class Interner(HasLock):
+class Interner(NeedsLock):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
         self._dict: dict[object, object] = {}
+
+    def _intern(self, obj: T) -> T:
+        try:
+            return self._dict[obj]  # type: ignore[return-value]
+        except KeyError:
+            pass
+
+        self._dict[obj] = obj
+        return obj
 
     def intern(self, obj: T) -> T:
         try:
@@ -22,19 +31,13 @@ class Interner(HasLock):
             pass
 
         with self._lock:
-            try:
-                return self._dict[obj]  # type: ignore[return-value]
-            except KeyError:
-                pass
-
-            self._dict[obj] = obj
-            return obj
+            return self._intern(obj)
 
 
 ##
 
 
-class HasInterner:
+class NeedsInterner:
     def __init__(
             self,
             *,

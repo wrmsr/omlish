@@ -4,8 +4,8 @@ import typing as ta
 from .annotations import TypeAliasAnnotationPolicy
 from .annotations import TypeAnnotations
 from .core.symbols import TypeInfo
-from .core.typekeys import StandardTypeKeyPolicy
 from .core.typekeys import TYPE_KEY
+from .core.typekeys import StandardTypeKeyPolicy
 from .core.typekeys import TypeKey
 from .core.typekeys import TypeKeyPolicy
 from .core.types import Type
@@ -22,6 +22,8 @@ if ta.TYPE_CHECKING:
     from .dataclasses import DataclassInspector
     from .members import MembersInspection
     from .members import MembersInspector
+    from .namedtuples import NamedtupleInspection
+    from .namedtuples import NamedtupleInspector
 
 
 T = ta.TypeVar('T')
@@ -201,6 +203,43 @@ class Api:
 
     def inspect_dataclass(self, obj: object) -> DataclassInspection:
         return self.dataclasses.inspect_dataclass(obj)
+
+    #
+
+    _namedtuples: NamedtupleInspector
+
+    def _namedtuples_(self) -> NamedtupleInspector:
+        with self._lock:
+            try:
+                return self._namedtuples
+            except AttributeError:
+                pass
+
+        from .namedtuples import NamedtupleInspector
+
+        with self._lock:
+            try:
+                return self._namedtuples
+            except AttributeError:
+                pass
+
+            self._namedtuples = NamedtupleInspector(
+                reflector=self._reflector,
+                lock=self._lock,
+            )
+
+            return self._namedtuples
+
+    @property
+    def namedtuples(self) -> NamedtupleInspector:
+        try:
+            return self._namedtuples
+        except AttributeError:
+            pass
+        return self._namedtuples_()
+
+    def inspect_namedtuple(self, obj: object) -> NamedtupleInspection:
+        return self.namedtuples.inspect_namedtuple(obj)
 
 
 ##

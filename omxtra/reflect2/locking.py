@@ -5,7 +5,7 @@ import typing as ta
 ##
 
 
-class HasLock:
+class NeedsLock:
     def __init__(
             self,
             *,

@@ -7,10 +7,9 @@ from .core.subtypes import MroEntry
 from .core.types import Type
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
-from .locking import HasLock
-from .ops import reflect_mro_entries
-from .reflector import HasReflector
-from .reflector import TypeReflector
+from .locking import NeedsLock
+from .ops import reflect_mro_entries_by_info
+from .reflector import NeedsReflector
 
 
 ##
@@ -69,16 +68,6 @@ def _get_dataclass_field_owners(origin: type) -> dict[str, type]:
     return owners
 
 
-def _get_mro_entries_by_info(
-        obj: object,
-        reflector: TypeReflector,
-) -> dict[object, MroEntry]:
-    return {
-        entry._info: entry
-        for entry in reflect_mro_entries(obj, reflector=reflector)
-    }
-
-
 def _get_field_annotation(field: dc.Field, owner: type) -> object:
     annotations = getattr(owner, '__annotations__', {})
     if not isinstance(annotations, dict):
@@ -103,8 +92,8 @@ def _replace_field_type(
 
 
 class DataclassInspector(
-    HasReflector,
-    HasLock,
+    NeedsReflector,
+    NeedsLock,
 ):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
@@ -116,7 +105,7 @@ class DataclassInspector(
     def _inspect_dataclass_uncached(self, obj: object) -> DataclassInspection:
         origin = _get_origin_dataclass(obj)
         owners = _get_dataclass_field_owners(origin)
-        entries_by_info = _get_mro_entries_by_info(obj, self._reflector)
+        entries_by_info = reflect_mro_entries_by_info(obj, reflector=self._reflector)
 
         ret: list[DataclassField] = []
         for field in dc.fields(origin):

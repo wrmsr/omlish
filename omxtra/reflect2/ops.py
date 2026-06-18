@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import typing as ta
 
 from .core.subtypes import MroEntry
@@ -22,3 +23,14 @@ def reflect_mro_entries(
     if not isinstance(source_type, Instance):
         raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
     return get_mro_entries(source_type)
+
+
+def reflect_mro_entries_by_info(
+        obj: object,
+        *,
+        reflector: TypeReflector,
+) -> dict[object, MroEntry]:
+    return {
+        entry._info: entry
+        for entry in reflect_mro_entries(obj, reflector=reflector)
+    }

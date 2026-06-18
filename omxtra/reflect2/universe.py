@@ -277,7 +277,7 @@ def or_global_universe(universe: TypeUniverse | None) -> TypeUniverse:
 ##
 
 
-class HasUniverse:
+class NeedsUniverse:
     def __init__(
             self,
             *,

@@ -39,8 +39,8 @@ from .core.types import is_literal_value
 from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import UnreflectableTypeError
-from .locking import HasLock
-from .universe import HasUniverse
+from .locking import NeedsLock
+from .universe import NeedsUniverse
 from .universe import TypeUniverse
 
 
@@ -128,8 +128,8 @@ def _contains_any_type_alias(
 
 @ta.final
 class TypeReflector(
-    HasUniverse,
-    HasLock,
+    NeedsUniverse,
+    NeedsLock,
 ):
     def __init__(
             self,
@@ -850,7 +850,7 @@ class TypeReflector(
 ##
 
 
-class HasReflector:
+class NeedsReflector:
     def __init__(
             self,
             *,
