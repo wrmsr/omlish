@@ -19,8 +19,8 @@ google-cloud-compute==1.48.0
 
 matplotlib==3.11.0
 
-torch==2.12.0
-torchvision==0.27.0
+torch==2.12.1
+torchvision==0.27.1
 # torchcodec==0.7.0
 
 diffusers==0.37.1  # @omlish-venv !14t !14dt !15t
@@ -54,7 +54,7 @@ tree-sitter-python==0.25.0
 watchdog==6.0.0
 
 pyright[nodejs]==1.1.410
-basedpyright==1.39.7
+basedpyright==1.39.8
 
 blobfile==3.2.0
 

@@ -1076,29 +1076,29 @@ def _process_dataclass__782e9b5d3cf1915925c20121ed1c830c7d6ccaf2():
         "iption', 'timeout', 'memory_size', 'last_modified', 'code_sha256', 'version', 'vpc_config', 'dead_letter_confi"
         "g', 'environment', 'kms_key_arn', 'tracing_config', 'master_arn', 'revision_id', 'layers', 'state', 'state_rea"
         "son', 'state_reason_code', 'last_update_status', 'last_update_status_reason', 'last_update_status_reason_code'"
-        ", 'file_system_configs', 'package_type', 'image_config_response', 'signing_profile_version_arn', 'signing_job_"
-        "arn', 'architectures', 'ephemeral_storage', 'snap_start', 'runtime_version_config', 'logging_config', 'capacit"
-        "y_provider_config', 'config_sha256', 'durable_config', 'tenancy_config')), EqPlan(fields=('function_name', 'fu"
+        ", 'file_system_configs', 'signing_profile_version_arn', 'signing_job_arn', 'package_type', 'image_config_respo"
+        "nse', 'architectures', 'ephemeral_storage', 'snap_start', 'runtime_version_config', 'logging_config', 'tenancy"
+        "_config', 'capacity_provider_config', 'config_sha256', 'durable_config')), EqPlan(fields=('function_name', 'fu"
         "nction_arn', 'runtime', 'role', 'handler', 'code_size', 'description', 'timeout', 'memory_size', 'last_modifie"
         "d', 'code_sha256', 'version', 'vpc_config', 'dead_letter_config', 'environment', 'kms_key_arn', 'tracing_confi"
         "g', 'master_arn', 'revision_id', 'layers', 'state', 'state_reason', 'state_reason_code', 'last_update_status',"
-        " 'last_update_status_reason', 'last_update_status_reason_code', 'file_system_configs', 'package_type', 'image_"
-        "config_response', 'signing_profile_version_arn', 'signing_job_arn', 'architectures', 'ephemeral_storage', 'sna"
-        "p_start', 'runtime_version_config', 'logging_config', 'capacity_provider_config', 'config_sha256', 'durable_co"
-        "nfig', 'tenancy_config')), FrozenPlan(fields=('__shape__', 'function_name', 'function_arn', 'runtime', 'role',"
+        " 'last_update_status_reason', 'last_update_status_reason_code', 'file_system_configs', 'signing_profile_versio"
+        "n_arn', 'signing_job_arn', 'package_type', 'image_config_response', 'architectures', 'ephemeral_storage', 'sna"
+        "p_start', 'runtime_version_config', 'logging_config', 'tenancy_config', 'capacity_provider_config', 'config_sh"
+        "a256', 'durable_config')), FrozenPlan(fields=('__shape__', 'function_name', 'function_arn', 'runtime', 'role',"
         " 'handler', 'code_size', 'description', 'timeout', 'memory_size', 'last_modified', 'code_sha256', 'version', '"
         "vpc_config', 'dead_letter_config', 'environment', 'kms_key_arn', 'tracing_config', 'master_arn', 'revision_id'"
         ", 'layers', 'state', 'state_reason', 'state_reason_code', 'last_update_status', 'last_update_status_reason', '"
-        "last_update_status_reason_code', 'file_system_configs', 'package_type', 'image_config_response', 'signing_prof"
-        "ile_version_arn', 'signing_job_arn', 'architectures', 'ephemeral_storage', 'snap_start', 'runtime_version_conf"
-        "ig', 'logging_config', 'capacity_provider_config', 'config_sha256', 'durable_config', 'tenancy_config'), allow"
+        "last_update_status_reason_code', 'file_system_configs', 'signing_profile_version_arn', 'signing_job_arn', 'pac"
+        "kage_type', 'image_config_response', 'architectures', 'ephemeral_storage', 'snap_start', 'runtime_version_conf"
+        "ig', 'logging_config', 'tenancy_config', 'capacity_provider_config', 'config_sha256', 'durable_config'), allow"
         "_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('function_name', 'function_arn', 'runtime', 'role"
         "', 'handler', 'code_size', 'description', 'timeout', 'memory_size', 'last_modified', 'code_sha256', 'version',"
         " 'vpc_config', 'dead_letter_config', 'environment', 'kms_key_arn', 'tracing_config', 'master_arn', 'revision_i"
         "d', 'layers', 'state', 'state_reason', 'state_reason_code', 'last_update_status', 'last_update_status_reason',"
-        " 'last_update_status_reason_code', 'file_system_configs', 'package_type', 'image_config_response', 'signing_pr"
-        "ofile_version_arn', 'signing_job_arn', 'architectures', 'ephemeral_storage', 'snap_start', 'runtime_version_co"
-        "nfig', 'logging_config', 'capacity_provider_config', 'config_sha256', 'durable_config', 'tenancy_config'), cac"
+        " 'last_update_status_reason_code', 'file_system_configs', 'signing_profile_version_arn', 'signing_job_arn', 'p"
+        "ackage_type', 'image_config_response', 'architectures', 'ephemeral_storage', 'snap_start', 'runtime_version_co"
+        "nfig', 'logging_config', 'tenancy_config', 'capacity_provider_config', 'config_sha256', 'durable_config'), cac"
         "he=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'"
         "), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None,"
         " validate=None, check_type=None), InitPlan.Field(name='function_name', annotation=OpRef(name='init.fields.01.a"
@@ -1165,14 +1165,14 @@ def _process_dataclass__782e9b5d3cf1915925c20121ed1c830c7d6ccaf2():
         "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='file_sy"
         "stem_configs', annotation=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'"
         "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='package_type', annotation=OpRef(name='init.fields.28.annotation'), def"
-        "ault=OpRef(name='init.fields.28.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_config_response', annota"
-        "tion=OpRef(name='init.fields.29.annotation'), default=OpRef(name='init.fields.29.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='signing_profile_version_arn', annotation=OpRef(name='init.fields.30.annotation'), default=O"
-        "pRef(name='init.fields.30.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='signing_job_arn', annotation=OpRef(n"
+        " check_type=None), InitPlan.Field(name='signing_profile_version_arn', annotation=OpRef(name='init.fields.28.an"
+        "notation'), default=OpRef(name='init.fields.28.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='signing_job_arn"
+        "', annotation=OpRef(name='init.fields.29.annotation'), default=OpRef(name='init.fields.29.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='package_type', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(n"
+        "ame='init.fields.30.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_config_response', annotation=OpRef(n"
         "ame='init.fields.31.annotation'), default=OpRef(name='init.fields.31.default'), default_factory=None, init=Tru"
         "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
         "(name='architectures', annotation=OpRef(name='init.fields.32.annotation'), default=OpRef(name='init.fields.32."
@@ -1187,23 +1187,23 @@ def _process_dataclass__782e9b5d3cf1915925c20121ed1c830c7d6ccaf2():
         "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='logging_config', annotation=OpRef(name="
         "'init.fields.36.annotation'), default=OpRef(name='init.fields.36.default'), default_factory=None, init=True, o"
         "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='capacity_provider_config', annotation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fie"
-        "lds.37.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='config_sha256', annotation=OpRef(name='init.fields.38.a"
-        "nnotation'), default=OpRef(name='init.fields.38.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='durable_config"
+        "e='tenancy_config', annotation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37.def"
+        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None), InitPlan.Field(name='capacity_provider_config', annotation=OpRef(name='init.fields.38."
+        "annotation'), default=OpRef(name='init.fields.38.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='config_sha256"
         "', annotation=OpRef(name='init.fields.39.annotation'), default=OpRef(name='init.fields.39.default'), default_f"
         "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='tenancy_config', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef"
+        "None), InitPlan.Field(name='durable_config', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef"
         "(name='init.fields.40.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
         "E, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('function_"
         "name', 'function_arn', 'runtime', 'role', 'handler', 'code_size', 'description', 'timeout', 'memory_size', 'la"
         "st_modified', 'code_sha256', 'version', 'vpc_config', 'dead_letter_config', 'environment', 'kms_key_arn', 'tra"
         "cing_config', 'master_arn', 'revision_id', 'layers', 'state', 'state_reason', 'state_reason_code', 'last_updat"
-        "e_status', 'last_update_status_reason', 'last_update_status_reason_code', 'file_system_configs', 'package_type"
-        "', 'image_config_response', 'signing_profile_version_arn', 'signing_job_arn', 'architectures', 'ephemeral_stor"
-        "age', 'snap_start', 'runtime_version_config', 'logging_config', 'capacity_provider_config', 'config_sha256', '"
-        "durable_config', 'tenancy_config'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns"
+        "e_status', 'last_update_status_reason', 'last_update_status_reason_code', 'file_system_configs', 'signing_prof"
+        "ile_version_arn', 'signing_job_arn', 'package_type', 'image_config_response', 'architectures', 'ephemeral_stor"
+        "age', 'snap_start', 'runtime_version_config', 'logging_config', 'tenancy_config', 'capacity_provider_config', "
+        "'config_sha256', 'durable_config'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns"
         "=()), ReprPlan(fields=(ReprPlan.Field(name='function_name', kw_only=True, fn=None), ReprPlan.Field(name='funct"
         "ion_arn', kw_only=True, fn=None), ReprPlan.Field(name='runtime', kw_only=True, fn=None), ReprPlan.Field(name='"
         "role', kw_only=True, fn=None), ReprPlan.Field(name='handler', kw_only=True, fn=None), ReprPlan.Field(name='cod"
@@ -1219,16 +1219,16 @@ def _process_dataclass__782e9b5d3cf1915925c20121ed1c830c7d6ccaf2():
         "state_reason_code', kw_only=True, fn=None), ReprPlan.Field(name='last_update_status', kw_only=True, fn=None), "
         "ReprPlan.Field(name='last_update_status_reason', kw_only=True, fn=None), ReprPlan.Field(name='last_update_stat"
         "us_reason_code', kw_only=True, fn=None), ReprPlan.Field(name='file_system_configs', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='package_type', kw_only=True, fn=None), ReprPlan.Field(name='image_config_response', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='signing_profile_version_arn', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='signing_job_arn', kw_only=True, fn=None), ReprPlan.Field(name='architectures', kw_only=True, fn=None), Repr"
+        "prPlan.Field(name='signing_profile_version_arn', kw_only=True, fn=None), ReprPlan.Field(name='signing_job_arn'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='package_type', kw_only=True, fn=None), ReprPlan.Field(name='ima"
+        "ge_config_response', kw_only=True, fn=None), ReprPlan.Field(name='architectures', kw_only=True, fn=None), Repr"
         "Plan.Field(name='ephemeral_storage', kw_only=True, fn=None), ReprPlan.Field(name='snap_start', kw_only=True, f"
         "n=None), ReprPlan.Field(name='runtime_version_config', kw_only=True, fn=None), ReprPlan.Field(name='logging_co"
-        "nfig', kw_only=True, fn=None), ReprPlan.Field(name='capacity_provider_config', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='config_sha256', kw_only=True, fn=None), ReprPlan.Field(name='durable_config', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='tenancy_config', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "nfig', kw_only=True, fn=None), ReprPlan.Field(name='tenancy_config', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='capacity_provider_config', kw_only=True, fn=None), ReprPlan.Field(name='config_sha256', kw_only=True, fn=N"
+        "one), ReprPlan.Field(name='durable_config', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='68443074cc7b41fde49e109e595f4cfb1847176d',
+    plan_repr_sha1='991a280c77951d2f7d6f4ac41957571807c76d74',
     op_ref_idents=(
         '__dataclass__init__fields__01__annotation',
         '__dataclass__init__fields__01__default',
@@ -1315,7 +1315,7 @@ def _process_dataclass__782e9b5d3cf1915925c20121ed1c830c7d6ccaf2():
         ('ominfra.clouds.aws.models.services.lambda_', 'FunctionConfiguration'),
     ),
 )
-def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
+def _process_dataclass__991a280c77951d2f7d6f4ac41957571807c76d74():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1444,19 +1444,19 @@ def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
                 last_update_status_reason=self.last_update_status_reason,
                 last_update_status_reason_code=self.last_update_status_reason_code,
                 file_system_configs=self.file_system_configs,
-                package_type=self.package_type,
-                image_config_response=self.image_config_response,
                 signing_profile_version_arn=self.signing_profile_version_arn,
                 signing_job_arn=self.signing_job_arn,
+                package_type=self.package_type,
+                image_config_response=self.image_config_response,
                 architectures=self.architectures,
                 ephemeral_storage=self.ephemeral_storage,
                 snap_start=self.snap_start,
                 runtime_version_config=self.runtime_version_config,
                 logging_config=self.logging_config,
+                tenancy_config=self.tenancy_config,
                 capacity_provider_config=self.capacity_provider_config,
                 config_sha256=self.config_sha256,
                 durable_config=self.durable_config,
-                tenancy_config=self.tenancy_config,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -1497,19 +1497,19 @@ def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
                 self.last_update_status_reason == other.last_update_status_reason and
                 self.last_update_status_reason_code == other.last_update_status_reason_code and
                 self.file_system_configs == other.file_system_configs and
-                self.package_type == other.package_type and
-                self.image_config_response == other.image_config_response and
                 self.signing_profile_version_arn == other.signing_profile_version_arn and
                 self.signing_job_arn == other.signing_job_arn and
+                self.package_type == other.package_type and
+                self.image_config_response == other.image_config_response and
                 self.architectures == other.architectures and
                 self.ephemeral_storage == other.ephemeral_storage and
                 self.snap_start == other.snap_start and
                 self.runtime_version_config == other.runtime_version_config and
                 self.logging_config == other.logging_config and
+                self.tenancy_config == other.tenancy_config and
                 self.capacity_provider_config == other.capacity_provider_config and
                 self.config_sha256 == other.config_sha256 and
-                self.durable_config == other.durable_config and
-                self.tenancy_config == other.tenancy_config
+                self.durable_config == other.durable_config
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -1546,19 +1546,19 @@ def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
             'last_update_status_reason',
             'last_update_status_reason_code',
             'file_system_configs',
-            'package_type',
-            'image_config_response',
             'signing_profile_version_arn',
             'signing_job_arn',
+            'package_type',
+            'image_config_response',
             'architectures',
             'ephemeral_storage',
             'snap_start',
             'runtime_version_config',
             'logging_config',
+            'tenancy_config',
             'capacity_provider_config',
             'config_sha256',
             'durable_config',
-            'tenancy_config',
         }
 
         def __setattr__(self, name, value):
@@ -1603,19 +1603,19 @@ def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
             'last_update_status_reason',
             'last_update_status_reason_code',
             'file_system_configs',
-            'package_type',
-            'image_config_response',
             'signing_profile_version_arn',
             'signing_job_arn',
+            'package_type',
+            'image_config_response',
             'architectures',
             'ephemeral_storage',
             'snap_start',
             'runtime_version_config',
             'logging_config',
+            'tenancy_config',
             'capacity_provider_config',
             'config_sha256',
             'durable_config',
-            'tenancy_config',
         }
 
         def __delattr__(self, name):
@@ -1660,19 +1660,19 @@ def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
                 self.last_update_status_reason,
                 self.last_update_status_reason_code,
                 self.file_system_configs,
-                self.package_type,
-                self.image_config_response,
                 self.signing_profile_version_arn,
                 self.signing_job_arn,
+                self.package_type,
+                self.image_config_response,
                 self.architectures,
                 self.ephemeral_storage,
                 self.snap_start,
                 self.runtime_version_config,
                 self.logging_config,
+                self.tenancy_config,
                 self.capacity_provider_config,
                 self.config_sha256,
                 self.durable_config,
-                self.tenancy_config,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -1708,19 +1708,19 @@ def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
             last_update_status_reason: __dataclass__init__fields__25__annotation = __dataclass__init__fields__25__default,
             last_update_status_reason_code: __dataclass__init__fields__26__annotation = __dataclass__init__fields__26__default,
             file_system_configs: __dataclass__init__fields__27__annotation = __dataclass__init__fields__27__default,
-            package_type: __dataclass__init__fields__28__annotation = __dataclass__init__fields__28__default,
-            image_config_response: __dataclass__init__fields__29__annotation = __dataclass__init__fields__29__default,
-            signing_profile_version_arn: __dataclass__init__fields__30__annotation = __dataclass__init__fields__30__default,
-            signing_job_arn: __dataclass__init__fields__31__annotation = __dataclass__init__fields__31__default,
+            signing_profile_version_arn: __dataclass__init__fields__28__annotation = __dataclass__init__fields__28__default,
+            signing_job_arn: __dataclass__init__fields__29__annotation = __dataclass__init__fields__29__default,
+            package_type: __dataclass__init__fields__30__annotation = __dataclass__init__fields__30__default,
+            image_config_response: __dataclass__init__fields__31__annotation = __dataclass__init__fields__31__default,
             architectures: __dataclass__init__fields__32__annotation = __dataclass__init__fields__32__default,
             ephemeral_storage: __dataclass__init__fields__33__annotation = __dataclass__init__fields__33__default,
             snap_start: __dataclass__init__fields__34__annotation = __dataclass__init__fields__34__default,
             runtime_version_config: __dataclass__init__fields__35__annotation = __dataclass__init__fields__35__default,
             logging_config: __dataclass__init__fields__36__annotation = __dataclass__init__fields__36__default,
-            capacity_provider_config: __dataclass__init__fields__37__annotation = __dataclass__init__fields__37__default,
-            config_sha256: __dataclass__init__fields__38__annotation = __dataclass__init__fields__38__default,
-            durable_config: __dataclass__init__fields__39__annotation = __dataclass__init__fields__39__default,
-            tenancy_config: __dataclass__init__fields__40__annotation = __dataclass__init__fields__40__default,
+            tenancy_config: __dataclass__init__fields__37__annotation = __dataclass__init__fields__37__default,
+            capacity_provider_config: __dataclass__init__fields__38__annotation = __dataclass__init__fields__38__default,
+            config_sha256: __dataclass__init__fields__39__annotation = __dataclass__init__fields__39__default,
+            durable_config: __dataclass__init__fields__40__annotation = __dataclass__init__fields__40__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'function_name', function_name)
             __dataclass__object_setattr(self, 'function_arn', function_arn)
@@ -1749,19 +1749,19 @@ def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
             __dataclass__object_setattr(self, 'last_update_status_reason', last_update_status_reason)
             __dataclass__object_setattr(self, 'last_update_status_reason_code', last_update_status_reason_code)
             __dataclass__object_setattr(self, 'file_system_configs', file_system_configs)
-            __dataclass__object_setattr(self, 'package_type', package_type)
-            __dataclass__object_setattr(self, 'image_config_response', image_config_response)
             __dataclass__object_setattr(self, 'signing_profile_version_arn', signing_profile_version_arn)
             __dataclass__object_setattr(self, 'signing_job_arn', signing_job_arn)
+            __dataclass__object_setattr(self, 'package_type', package_type)
+            __dataclass__object_setattr(self, 'image_config_response', image_config_response)
             __dataclass__object_setattr(self, 'architectures', architectures)
             __dataclass__object_setattr(self, 'ephemeral_storage', ephemeral_storage)
             __dataclass__object_setattr(self, 'snap_start', snap_start)
             __dataclass__object_setattr(self, 'runtime_version_config', runtime_version_config)
             __dataclass__object_setattr(self, 'logging_config', logging_config)
+            __dataclass__object_setattr(self, 'tenancy_config', tenancy_config)
             __dataclass__object_setattr(self, 'capacity_provider_config', capacity_provider_config)
             __dataclass__object_setattr(self, 'config_sha256', config_sha256)
             __dataclass__object_setattr(self, 'durable_config', durable_config)
-            __dataclass__object_setattr(self, 'tenancy_config', tenancy_config)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1798,19 +1798,19 @@ def _process_dataclass__68443074cc7b41fde49e109e595f4cfb1847176d():
             parts.append(f"last_update_status_reason={self.last_update_status_reason!r}")
             parts.append(f"last_update_status_reason_code={self.last_update_status_reason_code!r}")
             parts.append(f"file_system_configs={self.file_system_configs!r}")
-            parts.append(f"package_type={self.package_type!r}")
-            parts.append(f"image_config_response={self.image_config_response!r}")
             parts.append(f"signing_profile_version_arn={self.signing_profile_version_arn!r}")
             parts.append(f"signing_job_arn={self.signing_job_arn!r}")
+            parts.append(f"package_type={self.package_type!r}")
+            parts.append(f"image_config_response={self.image_config_response!r}")
             parts.append(f"architectures={self.architectures!r}")
             parts.append(f"ephemeral_storage={self.ephemeral_storage!r}")
             parts.append(f"snap_start={self.snap_start!r}")
             parts.append(f"runtime_version_config={self.runtime_version_config!r}")
             parts.append(f"logging_config={self.logging_config!r}")
+            parts.append(f"tenancy_config={self.tenancy_config!r}")
             parts.append(f"capacity_provider_config={self.capacity_provider_config!r}")
             parts.append(f"config_sha256={self.config_sha256!r}")
             parts.append(f"durable_config={self.durable_config!r}")
-            parts.append(f"tenancy_config={self.tenancy_config!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

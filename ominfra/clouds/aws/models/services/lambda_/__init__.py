@@ -93,6 +93,7 @@ class LastUpdateStatusReasonCode(_base.Enum):
     INVALID_RUNTIME = 'InvalidRuntime'
     INVALID_ZIP_FILE_EXCEPTION = 'InvalidZipFileException'
     FUNCTION_ERROR = 'FunctionError'
+    SERVICE_QUOTA_EXCEEDED_EXCEPTION = 'ServiceQuotaExceededException'
     VCPU_LIMIT_EXCEEDED = 'VcpuLimitExceeded'
     CAPACITY_PROVIDER_SCALING_LIMIT_EXCEEDED = 'CapacityProviderScalingLimitExceeded'
     INSUFFICIENT_CAPACITY = 'InsufficientCapacity'
@@ -156,44 +157,44 @@ class Runtime(_base.Enum):
     NODEJS12_X = 'nodejs12.x'
     NODEJS14_X = 'nodejs14.x'
     NODEJS16_X = 'nodejs16.x'
+    NODEJS18_X = 'nodejs18.x'
+    NODEJS20_X = 'nodejs20.x'
+    NODEJS22_X = 'nodejs22.x'
+    NODEJS24_X = 'nodejs24.x'
     JAVA8 = 'java8'
     JAVA8_AL2 = 'java8.al2'
     JAVA11 = 'java11'
+    JAVA17 = 'java17'
+    JAVA21 = 'java21'
+    JAVA25 = 'java25'
     PYTHON2_7 = 'python2.7'
     PYTHON3_6 = 'python3.6'
     PYTHON3_7 = 'python3.7'
     PYTHON3_8 = 'python3.8'
     PYTHON3_9 = 'python3.9'
+    PYTHON3_10 = 'python3.10'
+    PYTHON3_11 = 'python3.11'
+    PYTHON3_12 = 'python3.12'
+    PYTHON3_13 = 'python3.13'
+    PYTHON3_14 = 'python3.14'
     DOTNETCORE1_0 = 'dotnetcore1.0'
     DOTNETCORE2_0 = 'dotnetcore2.0'
     DOTNETCORE2_1 = 'dotnetcore2.1'
     DOTNETCORE3_1 = 'dotnetcore3.1'
     DOTNET6 = 'dotnet6'
     DOTNET8 = 'dotnet8'
+    DOTNET10 = 'dotnet10'
     NODEJS4_3_EDGE = 'nodejs4.3-edge'
     GO1_X = 'go1.x'
     RUBY2_5 = 'ruby2.5'
     RUBY2_7 = 'ruby2.7'
-    PROVIDED = 'provided'
-    PROVIDED_AL2 = 'provided.al2'
-    NODEJS18_X = 'nodejs18.x'
-    PYTHON3_10 = 'python3.10'
-    JAVA17 = 'java17'
     RUBY3_2 = 'ruby3.2'
     RUBY3_3 = 'ruby3.3'
     RUBY3_4 = 'ruby3.4'
-    PYTHON3_11 = 'python3.11'
-    NODEJS20_X = 'nodejs20.x'
-    PROVIDED_AL2023 = 'provided.al2023'
-    PYTHON3_12 = 'python3.12'
-    JAVA21 = 'java21'
-    PYTHON3_13 = 'python3.13'
-    NODEJS22_X = 'nodejs22.x'
-    NODEJS24_X = 'nodejs24.x'
-    PYTHON3_14 = 'python3.14'
-    JAVA25 = 'java25'
-    DOTNET10 = 'dotnet10'
     RUBY4_0 = 'ruby4.0'
+    PROVIDED = 'provided'
+    PROVIDED_AL2 = 'provided.al2'
+    PROVIDED_AL2023 = 'provided.al2023'
 
 
 RuntimeVersionArn = _ta.NewType('RuntimeVersionArn', str)
@@ -252,7 +253,7 @@ class StateReasonCode(_base.Enum):
     INVALID_RUNTIME = 'InvalidRuntime'
     INVALID_ZIP_FILE_EXCEPTION = 'InvalidZipFileException'
     FUNCTION_ERROR = 'FunctionError'
-    DRAINING_DURABLE_EXECUTIONS = 'DrainingDurableExecutions'
+    SERVICE_QUOTA_EXCEEDED_EXCEPTION = 'ServiceQuotaExceededException'
     VCPU_LIMIT_EXCEEDED = 'VcpuLimitExceeded'
     CAPACITY_PROVIDER_SCALING_LIMIT_EXCEEDED = 'CapacityProviderScalingLimitExceeded'
     INSUFFICIENT_CAPACITY = 'InsufficientCapacity'
@@ -266,6 +267,7 @@ class StateReasonCode(_base.Enum):
     FUNCTION_ERROR__TOO_MANY_EXTENSIONS = 'FunctionError.TooManyExtensions'
     FUNCTION_ERROR__INIT_RESOURCE_EXHAUSTED = 'FunctionError.InitResourceExhausted'
     DISALLOWED_BY_VPC_ENCRYPTION_CONTROL = 'DisallowedByVpcEncryptionControl'
+    DRAINING_DURABLE_EXECUTIONS = 'DrainingDurableExecutions'
 
 
 SubnetId = _ta.NewType('SubnetId', str)
@@ -881,16 +883,6 @@ class FunctionConfiguration(
         shape_name='FileSystemConfigList',
     ))
 
-    package_type: PackageType | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='PackageType',
-        shape_name='PackageType',
-    ))
-
-    image_config_response: ImageConfigResponse | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='ImageConfigResponse',
-        shape_name='ImageConfigResponse',
-    ))
-
     signing_profile_version_arn: Arn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SigningProfileVersionArn',
         shape_name='Arn',
@@ -899,6 +891,16 @@ class FunctionConfiguration(
     signing_job_arn: Arn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SigningJobArn',
         shape_name='Arn',
+    ))
+
+    package_type: PackageType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PackageType',
+        shape_name='PackageType',
+    ))
+
+    image_config_response: ImageConfigResponse | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ImageConfigResponse',
+        shape_name='ImageConfigResponse',
     ))
 
     architectures: ArchitecturesList | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -927,6 +929,11 @@ class FunctionConfiguration(
         shape_name='LoggingConfig',
     ))
 
+    tenancy_config: TenancyConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='TenancyConfig',
+        shape_name='TenancyConfig',
+    ))
+
     capacity_provider_config: CapacityProviderConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='CapacityProviderConfig',
         shape_name='CapacityProviderConfig',
@@ -940,11 +947,6 @@ class FunctionConfiguration(
     durable_config: DurableConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DurableConfig',
         shape_name='DurableConfig',
-    ))
-
-    tenancy_config: TenancyConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='TenancyConfig',
-        shape_name='TenancyConfig',
     ))
 
 
