@@ -87,10 +87,6 @@ def _make_any() -> AnyType:
     return _ANY_TYPES[TypeOfAny.FROM_OMITTED_GENERICS]
 
 
-def _make_tuple_fallback(universe: TypeUniverse) -> Instance:
-    return Instance(universe.get_type_info(tuple), [_make_any()])
-
-
 def _is_none_type(obj: object) -> bool:
     return obj is None or obj is type(None)
 
@@ -169,6 +165,17 @@ class TypeReflector(
 
     #
 
+    def reflect_type(self, obj: object) -> Type:
+        try:
+            return self._type_cache[obj]
+        except KeyError:
+            pass
+        except TypeError:
+            pass
+
+        with self._lock:
+            return self._reflect_type(obj)
+
     def _reflect_type(self, obj: object) -> Type:
         try:
             return self._type_cache[obj]
@@ -185,17 +192,6 @@ class TypeReflector(
             pass
 
         return typ
-
-    def reflect_type(self, obj: object) -> Type:
-        try:
-            return self._type_cache[obj]
-        except KeyError:
-            pass
-        except TypeError:
-            pass
-
-        with self._lock:
-            return self._reflect_type(obj)
 
     #
 
@@ -334,6 +330,9 @@ class TypeReflector(
 
         return TypeAliasType(self._get_type_alias_symbol(obj), args)
 
+    def _make_tuple_fallback(self) -> Instance:
+        return Instance(self._universe.get_type_info(tuple), [_make_any()])
+
     def _reflect_type_alias_forward_ref_arg(
             self,
             name: str,
@@ -352,7 +351,7 @@ class TypeReflector(
 
         return TupleType(
             [UnpackType(type_var_tuple)],
-            _make_tuple_fallback(self._universe),
+            self._make_tuple_fallback(),
         )
 
     def _reflect_type_alias(
@@ -406,7 +405,7 @@ class TypeReflector(
         variadic_end = len(args) - suffix_len
         reflected_args.append(TupleType(
             [self._reflect_type(arg) for arg in args[variadic_start:variadic_end]],
-            _make_tuple_fallback(self._universe),
+            self._make_tuple_fallback(),
         ))
 
         if suffix_len:

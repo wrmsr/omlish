@@ -40,7 +40,10 @@ TypeAliasAnnotationPolicy: ta.TypeAlias = ta.Literal['expand', 'preserve']
 ##
 
 
-class _AnnotationMaker(DefaultTypeVisitor[object], NeedsUniverse):
+class _AnnotationMaker(
+    DefaultTypeVisitor[object],
+    NeedsUniverse,
+):
     def __init__(
             self,
             *,

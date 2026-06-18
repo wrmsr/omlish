@@ -172,7 +172,7 @@ class MembersInspector(
     ) -> Type:
         if annotation is inspect.Signature.empty:
             return _make_any()
-        typ = self._reflector.reflect_type(annotation)
+        typ = self._reflector._reflect_type(annotation)
         if replacements:
             return substitute_type(typ, replacements)
         return typ
@@ -298,7 +298,7 @@ class MembersInspector(
             owner: type,
             entries_by_info: dict[object, MroEntry],
     ) -> SubstitutionMap:
-        owner_info = self._reflector.universe.get_type_info(owner)
+        owner_info = self._reflector._universe.get_type_info(owner)
         entry = entries_by_info.get(owner_info)
         if entry is None or not entry._info._type_vars:
             return {}
