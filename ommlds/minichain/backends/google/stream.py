@@ -2,6 +2,7 @@
 """https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models"""
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import marshal as msh
 from omlish.formats.json import all as json
 from omlish.http import all as http
@@ -16,6 +17,9 @@ from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.choices.types import ChatChoicesStreamResult
+from ...chat.stream.transform.types import AiDeltasTransform
+from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
+from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
@@ -41,6 +45,7 @@ class GoogleChatChoicesStreamService(BaseGoogleChatChoicesService):
 
             self._o = o
 
+            self._dts: list[AiDeltasTransform] | None = None
             self._joiner = AiChoicesDeltaJoiner()
 
         async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
@@ -57,8 +62,23 @@ class GoogleChatChoicesStreamService(BaseGoogleChatChoicesService):
 
             out = list(build_mc_ai_choices_deltas(msh.unmarshal(sj, pt.GenerateContentResponse)))
 
-            for cds in out:
-                self._joiner.add(cds.choices)
+            for csds in out:
+                # FIXME: lol its all doubled
+                if (dts := self._dts) is None:
+                    dts = self._dts = [
+                        # FIXME: YES THIS IS GETTING WORSE TO GET BETTER
+                        AiDeltaTransformAiDeltasTransform(
+                            TypeSequentialMessageUuidAddingAiDeltaTransform(),
+                        )
+                        for _ in range(len(csds.choices))
+                    ]
+
+                csds = dc.replace(csds, choices=[
+                    dc.replace(cds, deltas=dts[i].transform(cds.deltas))
+                    for i, cds in enumerate(csds.choices)
+                ])
+
+                self._joiner.add(csds.choices)
 
             return out
 
