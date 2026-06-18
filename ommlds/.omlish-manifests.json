@@ -529,7 +529,7 @@
     "module": ".minichain.backends.ollama.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/ollama/stream.py",
-    "line": 29,
+    "line": 33,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.ollama.stream",

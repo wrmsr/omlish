@@ -11,8 +11,6 @@ from ...chat.messages import Chat
 from ...chat.metadata import MessageUuid
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamService
-from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
-from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform
 from ...chat.stream.types import AiDelta
 from ...chat.transform.metadata import MessageUuidAddingMessageTransform
 from ...chat.transform.types import CompositeMessageTransform
@@ -87,15 +85,9 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
     ) -> AiChat:
         opts = self._options() if self._options is not None else []
 
-        dt = AiDeltaTransformAiDeltasTransform(
-            TypeSequentialMessageUuidAddingAiDeltaTransform(),
-        )
-
         async with (await self._service.invoke(ChatChoicesStreamRequest(args.chat, opts))).v as st_resp:
             async for o in st_resp:
                 ds = check.single(o.choices).deltas
-
-                ds = dt.transform(ds)
 
                 for delta in ds:
                     if delta_callback is not None:

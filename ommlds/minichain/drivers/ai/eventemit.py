@@ -62,7 +62,10 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
         end_exception: BaseException | None = None
 
         async def inner(delta: AiDelta) -> None:
-            mu = delta.metadata[MessageUuid].v
+            try:
+                mu = delta.metadata[MessageUuid].v
+            except BaseException:
+                raise
 
             nonlocal last_message_uuid
             if mu != last_message_uuid:
