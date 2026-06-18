@@ -15,6 +15,7 @@ this dialect and do not belong here.
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish import typedvalues as tv
@@ -34,6 +35,9 @@ from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.choices.types import ChatChoicesStreamOption
 from ...chat.stream.choices.types import ChatChoicesStreamResult
+from ...chat.stream.transform.types import AiDeltasTransform
+from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
+from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform
 from ...events.types import EventCallback
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceResponseEvent
@@ -170,6 +174,8 @@ class OpenaiCompatChatChoicesStreamService(OpenaiCompatChatChoicesServiceBase, l
 
             self._joiner = AiChoicesDeltaJoiner()
 
+            self._dts: list[AiDeltasTransform] | None = None
+
             self._finish_choices: dict[int, pt.ChatCompletionChunkChoice] = {}
             self._final_chunk: pt.ChatCompletionChunk | None = None
 
@@ -201,14 +207,28 @@ class OpenaiCompatChatChoicesStreamService(OpenaiCompatChatChoicesServiceBase, l
                 if choice.finish_reason is not None:
                     self._finish_choices[i] = choice
 
-            cds = AiChoicesDeltas([
+            csds = AiChoicesDeltas([
                 AiChoiceDeltas(build_mc_ai_deltas(choice.delta))
                 for choice in ccc.choices
             ])
 
-            self._joiner.add(cds.choices)
+            if (dts := self._dts) is None:
+                dts = self._dts = [
+                    # FIXME: YES THIS IS GETTING WORSE TO GET BETTER
+                    AiDeltaTransformAiDeltasTransform(
+                        TypeSequentialMessageUuidAddingAiDeltaTransform(),
+                    )
+                    for _ in range(len(csds.choices))
+                ]
 
-            return [cds]
+            csds = dc.replace(csds, choices=[
+                dc.replace(cds, deltas=dts[i].transform(cds.deltas))
+                for i, cds in enumerate(csds.choices)
+            ])
+
+            self._joiner.add(csds.choices)
+
+            return [csds]
 
         async def finish(self) -> ChatChoicesStreamResult:
             return ChatChoicesStreamResult(
