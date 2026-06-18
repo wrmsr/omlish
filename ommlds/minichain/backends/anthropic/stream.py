@@ -2,6 +2,7 @@
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import marshal as msh
 from omlish.formats.json import all as json
 from omlish.http import all as http
@@ -17,6 +18,9 @@ from ...chat.stream.choices.services import static_check_is_chat_choices_stream_
 from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.choices.types import ChatChoicesStreamResult
+from ...chat.stream.transform.types import AiDeltasTransform
+from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
+from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
@@ -46,6 +50,7 @@ class AnthropicChatChoicesStreamService(AnthropicChatChoicesServiceBase):
 
             self._translator = AnthropicSseDeltaTranslator()
             self._joiner = AiChoicesDeltaJoiner()
+            self._dts: list[AiDeltasTransform] | None = None
 
         async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
             if not isinstance(so, sse.SseEvent):
@@ -67,13 +72,27 @@ class AnthropicChatChoicesStreamService(AnthropicChatChoicesServiceBase):
             out: list[AiChoicesDeltas | None] = []
 
             if res.deltas:
-                cds = AiChoicesDeltas([
+                csds = AiChoicesDeltas([
                     AiChoiceDeltas(res.deltas),
                 ])
 
-                self._joiner.add(cds.choices)
+                if (dts := self._dts) is None:
+                    dts = self._dts = [
+                        # FIXME: YES THIS IS GETTING WORSE TO GET BETTER
+                        AiDeltaTransformAiDeltasTransform(
+                            TypeSequentialMessageUuidAddingAiDeltaTransform(),
+                        )
+                        for _ in range(len(csds.choices))
+                    ]
 
-                out.append(cds)
+                csds = dc.replace(csds, choices=[
+                    dc.replace(cds, deltas=dts[i].transform(cds.deltas))
+                    for i, cds in enumerate(csds.choices)
+                ])
+
+                self._joiner.add(csds.choices)
+
+                out.append(csds)
 
             if res.done:
                 out.append(None)
