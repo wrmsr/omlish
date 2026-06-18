@@ -287,7 +287,3 @@ class HasUniverse:
         super().__init__(**kwargs)
 
         self._universe = universe
-
-    @property
-    def universe(self) -> TypeUniverse:
-        return self._universe

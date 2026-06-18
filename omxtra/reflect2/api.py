@@ -4,11 +4,12 @@ import typing as ta
 from .annotations import TypeAliasAnnotationPolicy
 from .annotations import TypeAnnotations
 from .core.symbols import TypeInfo
-from .core.typekeys import TYPE_KEY
 from .core.typekeys import StandardTypeKeyPolicy
+from .core.typekeys import TYPE_KEY
 from .core.typekeys import TypeKey
 from .core.typekeys import TypeKeyPolicy
 from .core.types import Type
+from .interning import Interner
 from .reflector import ForwardRefResolver
 from .reflector import TypeReflector
 from .typekeys import TypeKeys
@@ -21,6 +22,9 @@ if ta.TYPE_CHECKING:
     from .dataclasses import DataclassInspector
     from .members import MembersInspection
     from .members import MembersInspector
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -39,6 +43,10 @@ class Api:
         self._universe: ta.Final = or_global_universe(universe)
 
         self._lock: ta.Final = threading.RLock()
+
+        self._interner = Interner(
+            lock=self._lock,
+        )
 
         self._reflector: ta.Final = TypeReflector(
             forward_ref_resolver=forward_ref_resolver,
@@ -63,6 +71,15 @@ class Api:
 
     def get_type_info(self, obj: type | str) -> TypeInfo:
         return self._universe.get_type_info(obj)
+
+    #
+
+    @property
+    def interner(self) -> Interner:
+        return self._interner
+
+    def intern(self, obj: T) -> T:
+        return self._interner.intern(obj)
 
     #
 

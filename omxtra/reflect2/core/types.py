@@ -49,6 +49,8 @@ def is_literal_value(value: object) -> bool:
 
 
 class Type:
+    """Strict single inheritance hierarchy. All non-final classes are considered abstract."""
+
     __slots__ = ()
 
     def __str__(self) -> str:
@@ -100,7 +102,7 @@ class TypeAliasType(Type):
 
             self._alias._is_recursive = is_recursive_alias(self._alias)
 
-        return self._alias._is_recursive
+        return self._alias._is_recursive  # noqa
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
         return visitor.visit_type_alias_type(self)
@@ -288,6 +290,7 @@ class TypeVarLikeType(ProperType):
         return self._default
 
 
+@ta.final
 class TypeVarType(TypeVarLikeType):
     __slots__ = (
         '_values',
