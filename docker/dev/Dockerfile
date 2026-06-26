@@ -354,7 +354,7 @@ export VCPKG_ROOT="$HOME/.vcpkg_root"\n\
 ## nvm
 
 RUN (\
-export NVM_VERSIONS='20 22 25' ;\
+export NVM_VERSIONS='20 22 24 26' ;\
 \
 set -ex ;\
 umask 0002 ;\
