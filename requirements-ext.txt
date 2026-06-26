@@ -10,8 +10,8 @@
 ##
 # infra
 
-google-api-python-client==2.197.0
-google-cloud-compute==1.48.0
+google-api-python-client==2.198.0
+google-cloud-compute==1.49.0
 
 
 ##
@@ -25,7 +25,7 @@ torchvision==0.27.1
 
 diffusers==0.37.1  # @omlish-venv !14t !14dt !15t
 
-scipy==1.17.1
+scipy==1.18.0
 scikit-learn==1.9.0
 scikit-image==0.26.0
 

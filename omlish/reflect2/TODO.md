@@ -1,0 +1,4 @@
+- give up on shared universes?
+- wire up interning
+- protocols
+- overloads

@@ -43,7 +43,7 @@ all = [
     'huggingface-hub ~= 1.19',
     'datasets ~= 5.0',
     'regex >= 2026.5',
-    'numpy >= 2.4',
+    'numpy >= 2.5',
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
     'pillow ~= 12.2',
@@ -76,7 +76,7 @@ nanochat = [
     'regex >= 2026.5',
 ]
 numpy = [
-    'numpy >= 2.4',
+    'numpy >= 2.5',
 ]
 ocr = [
     'pytesseract ~= 0.3',

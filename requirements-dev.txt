@@ -4,9 +4,9 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.47.0
 
-uv>=0.11.20
+uv>=0.11.24
 
-pytest==9.1.0
+pytest==9.1.1
 pytest-benchmark==5.2.3
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.4
-ruff==0.15.18
+ruff==0.15.20
 
 asyncpg-stubs==0.31.2
 docutils-stubs==0.0.22
@@ -42,14 +42,14 @@ guppy3==3.1.7  # @omlish-venv !14t !14dt !15 !15t
 objgraph==3.6.2
 memray==1.19.3
 
-ipython==9.14.1
+ipython==9.15.0
 
 pudb==2025.1.5
 
 
 ##
 
-cython==3.2.5
+cython==3.2.6
 
 lxml==6.1.1
 
@@ -57,7 +57,7 @@ lxml==6.1.1
 
 
 # Used for tests
-json5==0.14.0
+json5==0.15.0
 
 
 ##
@@ -80,7 +80,7 @@ uvicorn==0.49.0
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
 
-duckdb==1.5.3
+duckdb==1.5.4
 
 pycparser==3.0
 pcpp==1.30
@@ -96,12 +96,12 @@ mdit-py-plugins==0.6.1
 pygments==2.20.0
 
 mwparserfromhell==0.7.2
-wikitextparser==1.0.0  # !! GPL
+wikitextparser==1.0.2  # !! GPL
 
 executing==2.2.1
 asttokens==3.0.1
 
-numpy==2.4.6
+numpy==2.5.0
 
 # must be kept in sync
 textual==8.2.7
@@ -135,8 +135,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.43.33
-types-boto3>=1.43.33
+boto3>=1.43.36
+types-boto3>=1.43.36
 botocore-stubs>=1.43.14
 
 antlr4-python3-runtime==4.13.2

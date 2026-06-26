@@ -51,7 +51,7 @@ class Project(ProjectBase):
         ],
 
         'numpy': [
-            'numpy >= 2.4',
+            'numpy >= 2.5',
         ],
 
         'ocr': [
