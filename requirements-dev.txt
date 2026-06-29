@@ -4,7 +4,7 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.47.0
 
-uv>=0.11.24
+uv>=0.11.25
 
 pytest==9.1.1
 pytest-benchmark==5.2.3
@@ -116,7 +116,7 @@ snowflake-connector-python[secure-local-storage]==4.6.0  # @omlish-venv !15t
 
 trino==0.337.0  # @omlish-venv !14t !14dt !15t  # orjson
 
-huggingface-hub==1.19.0  # @omlish-venv !15t
+huggingface-hub==1.21.0  # @omlish-venv !15t
 hf-xet==1.5.1  # @omlish-venv !15t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
