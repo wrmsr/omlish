@@ -60,10 +60,11 @@ class GoogleChatChoicesStreamService(BaseGoogleChatChoicesService):
                     data=sj,
                 ))
 
-            out = list(build_mc_ai_choices_deltas(msh.unmarshal(sj, pt.GenerateContentResponse)))
+            built = list(build_mc_ai_choices_deltas(msh.unmarshal(sj, pt.GenerateContentResponse)))
 
-            for csds in out:
-                # FIXME: lol its all doubled
+            out: list[AiChoicesDeltas] = []
+
+            for csds in built:
                 if (dts := self._dts) is None:
                     dts = self._dts = [
                         # FIXME: YES THIS IS GETTING WORSE TO GET BETTER
@@ -78,6 +79,7 @@ class GoogleChatChoicesStreamService(BaseGoogleChatChoicesService):
                     for i, cds in enumerate(csds.choices)
                 ])
 
+                out.append(csds)
                 self._joiner.add(csds.choices)
 
             return out

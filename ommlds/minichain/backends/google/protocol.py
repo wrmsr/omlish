@@ -192,12 +192,15 @@ def build_mc_choices_response(resp: pt.GenerateContentResponse) -> ChatChoicesRe
 # Streaming
 
 
-def build_mc_part_ai_delta(part: pt.Part) -> AiDelta:
+def build_mc_part_ai_delta(part: pt.Part) -> AiDelta | None:
     ai_delta: AiDelta
 
     if (txt := part.text) is not None:
         check.none(part.function_call)
-        ai_delta = ContentAiDelta(check.not_none(txt))
+        s = check.not_none(txt)
+        if not s:
+            return None
+        ai_delta = ContentAiDelta(s)
 
     elif (fc := part.function_call) is not None:
         check.none(part.text)
@@ -220,6 +223,10 @@ def build_mc_ai_choices_deltas(resp: pt.GenerateContentResponse) -> list[AiChoic
     cnd = check.single(check.not_none(resp.candidates))
 
     return [
-        AiChoicesDeltas([AiChoiceDeltas([build_mc_part_ai_delta(part)])])
+        AiChoicesDeltas([
+            AiChoiceDeltas(
+                [ap] if (ap := build_mc_part_ai_delta(part)) is not None else [],
+            ),
+        ])
         for part in check.not_none(cnd.content).parts or []
     ]

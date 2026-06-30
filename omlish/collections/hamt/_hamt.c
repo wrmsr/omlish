@@ -38,7 +38,7 @@
 //
 // https://github.com/python/cpython/blob/main/Python/hamt.c
 //
-// original: https://github.com/python/cpython/commit/a4086d7f89e5d388e4ffcdb13e4fba0255234286
+// original: https://github.com/python/cpython/commit/32823af153b76b7042fbce28ea8a6e0c3c4f1ca8
 //
 #define PY_SSIZE_T_CLEAN
 
@@ -1024,6 +1024,7 @@ hamt_node_bitmap_assoc(HamtNode_Bitmap *self,
 
             HamtNode_Bitmap *ret = hamt_node_bitmap_clone(self);
             if (ret == NULL) {
+                Py_DECREF(sub_node);
                 return NULL;
             }
             Py_SETREF(ret->b_array[val_idx], (PyObject*)sub_node);
@@ -1320,6 +1321,7 @@ hamt_node_bitmap_without(HamtNode_Bitmap *self,
 
                 HamtNode_Bitmap *clone = hamt_node_bitmap_clone(self);
                 if (clone == NULL) {
+                    Py_DECREF(sub_node);
                     return W_ERROR;
                 }
 
