@@ -7,12 +7,11 @@ import os.path
 import typing as ta
 import urllib.request
 
-from omlish import marshal as msh
 from omlish.argparse import all as ap
 from omlish.formats.json import all as json
 
-from .cache import load_models
-from .types import Provider
+from .cache import load_providers
+from .cache import load_providers_raw
 
 
 ##
@@ -55,11 +54,7 @@ class Cli(ap.Cli):
         ap.arg('-m', '--marshal', action='store_true'),
     )
     def dump(self) -> None:
-        dct: ta.Any = load_models()
-
-        if self.args.marshal:
-            providers = msh.unmarshal(dct, dict[str, Provider])
-            dct = msh.marshal(providers)
+        dct: ta.Any = load_providers() if self.args.marshal else load_providers_raw()
 
         print(json.dumps_pretty(dct))
 

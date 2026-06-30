@@ -226,8 +226,6 @@ with _lang.auto_proxy_init(
         TurnUuid,
 
         ThoughtSignature,
-
-        MessageStopReason,
     )
 
     from .chat.services import (  # noqa

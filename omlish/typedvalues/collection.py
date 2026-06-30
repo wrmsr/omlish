@@ -323,11 +323,33 @@ class TypedValues(
         return ret
 
 
-collect = TypedValues
+#
+
+
+# Note that we don't try to return this from a `TypedValues.__new__` hook - that's proven to be more trouble than it's
+# worth for something used so pervasively in highly-typey code.
+_EMPTY: ta.Final[TypedValues] = TypedValues()
+
+
+def empty() -> TypedValues[TypedValueT]:
+    return _EMPTY
+
+
+#
+
+
+def collect(
+        *tvs: TypedValueT,
+        override: bool = False,
+        check_type: type | tuple[type, ...] | None = None,
+) -> TypedValues[TypedValueT]:
+    return TypedValues(*tvs, override=override, check_type=check_type) if tvs else _EMPTY
 
 
 def as_collection(src: ta.Sequence[TypedValueT]) -> TypedValues[TypedValueT]:
     if isinstance(src, TypedValues):
         return src
+    elif not src:
+        return _EMPTY
     else:
         return TypedValues(*src)

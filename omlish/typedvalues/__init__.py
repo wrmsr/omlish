@@ -15,6 +15,8 @@ with _lang.auto_proxy_init(globals()):
 
         collect,
         as_collection,
+
+        empty,
     )
 
     from .consumer import (  # noqa
