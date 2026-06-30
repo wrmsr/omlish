@@ -3,6 +3,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 from .._common import _set_class_marshal_options
 
@@ -94,6 +95,13 @@ class ResponsesUsage(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@msh.update_object_options(unknown_field='x')
+@_set_class_marshal_options
+class ResponseToolUsage(lang.Final):
+    x: ta.Mapping[str, ta.Any] | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
 class ResponsesResponse(lang.Final):
     id: str
@@ -145,6 +153,8 @@ class ResponsesResponse(lang.Final):
     service_tier: str | None = None
     billing: ta.Any | None = None
     output_text: str | None = None
+
+    tool_usage: ResponseToolUsage | None = None
 
     # FIXME: lol
     presence_penalty: ta.Any | None = None
