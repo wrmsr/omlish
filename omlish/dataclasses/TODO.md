@@ -1,3 +1,7 @@
+- diffs:
+  - https://github.com/python/cpython/pull/137711
+  - https://github.com/python/cpython/pull/142223
+  - https://github.com/python/cpython/pull/140541
 - `override=True` doesn't work with our early-checking `Abstract`
 - per-field frozen
 - option to freeze after `__post_init__` / `dc.init`'s?
