@@ -40,7 +40,7 @@ class Field(lang.Sealed):
         self._store_name = check.non_empty_str(_store_name)
         self._rty = check.isinstance(_rty, rfl.Type)
         self._backref_binding = _backref_binding
-        self._options = tv.TypedValues(*(_options or []))
+        self._options = tv.collect(*(_options or []))
 
         self._is_final = FinalFieldOption in self._options
 

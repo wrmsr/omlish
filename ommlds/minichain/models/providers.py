@@ -31,7 +31,7 @@ class StaticModelAttributesProvider(ModelAttributesProvider):
         self._by_model = {k: tuple(v) for k, v in by_model.items()}
 
     async def provide_model_attributes(self, model: str) -> ModelAttributes:
-        return tv.TypedValues(*self._by_model.get(model, ()))
+        return tv.collect(*self._by_model.get(model, ()))
 
 
 ##
@@ -50,7 +50,7 @@ class CompositeModelAttributesProvider(ModelAttributesProvider):
         for p in self._providers:
             for a in await p.provide_model_attributes(model):
                 by_ty.setdefault(type(a), a)
-        return tv.TypedValues(*by_ty.values())
+        return tv.collect(*by_ty.values())
 
 
 ##
@@ -92,4 +92,4 @@ class ModeldbModelAttributesProvider(ModelAttributesProvider):
         m = _modeldb_index().get(model)
         if m is None:
             return tv.empty()
-        return tv.TypedValues(*_extract_modeldb_attributes(m))
+        return tv.collect(*_extract_modeldb_attributes(m))

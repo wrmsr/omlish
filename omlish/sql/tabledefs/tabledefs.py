@@ -34,5 +34,5 @@ def table_def(
     return TableDef(
         name,
         Elements(*elements),
-        options=tv.TypedValues(*options),
+        options=tv.collect(*options),
     )

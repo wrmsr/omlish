@@ -47,7 +47,7 @@ def build_typed_values_unmarshaler(ctx: UnmarshalFactoryContext, rty: rfl.Type) 
     return IterableUnmarshaler(
         tv.TypedValues,
         ctx.make_unmarshaler(check.single(gty.args)),
-        ctor=lambda it: tv.TypedValues(*it),
+        ctor=lambda it: tv.collect(*it),
     )
 
 

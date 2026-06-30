@@ -307,6 +307,9 @@ class TypedValues(
     _any_dct: dict[type | tuple[type, ...], tuple[TypedValueT, ...]]
 
     def _typed_value_get_any(self, cls):
+        if not self._tup:
+            return ()
+
         try:
             any_dct = self._any_dct
         except AttributeError:

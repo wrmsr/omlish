@@ -58,7 +58,7 @@ class Mapper(ta.Generic[K, T]):
         self._indexes = indexes = list(indexes) if indexes is not None else []
         self._backrefs = backrefs = list(backrefs) if backrefs is not None else []
 
-        self._options = tv.TypedValues(*(options or []))
+        self._options = tv.collect(*(options or []))
 
         for f in fields:
             check.isinstance(f, Field)

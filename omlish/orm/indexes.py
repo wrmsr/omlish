@@ -43,7 +43,7 @@ class Index(lang.Final):
         self._given_store_name = _store_name
         if _store_name is not None:
             self._store_name = check.non_empty_str(_store_name)
-        self._options = tv.TypedValues(*(_options or []))
+        self._options = tv.collect(*(_options or []))
 
         check.unique(self._fields)
 

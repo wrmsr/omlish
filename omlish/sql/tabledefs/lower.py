@@ -75,7 +75,7 @@ def select_backend_options(td: TableDef, keep: type[BackendOption]) -> TableDef:
         kept = [o for o in opts if not isinstance(o, BackendOption) or isinstance(o, keep)]
         if len(kept) == len(opts):
             return opts
-        return tv.TypedValues(*kept)
+        return tv.collect(*kept)
 
     new_elements: list[Element] = []
     for e in td.elements:
@@ -99,7 +99,7 @@ def select_backend_options(td: TableDef, keep: type[BackendOption]) -> TableDef:
 def _sort_options(opts: tv.TypedValues) -> tv.TypedValues:
     if len(opts) <= 1:
         return opts
-    return tv.TypedValues(*sorted(opts, key=lambda o: type(o).__qualname__))
+    return tv.collect(*sorted(opts, key=lambda o: type(o).__qualname__))
 
 
 def _element_sort_key(e: Element) -> tuple[int, str]:
