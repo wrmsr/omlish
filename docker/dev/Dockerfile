@@ -412,7 +412,7 @@ done ;\
 RUN \
   --mount=target=/omlish/.pyenv_cache,type=cache,sharing=locked,uid=4317,gid=4317 \
 ( \
-export PYENV_VERSIONS='3.8.20 3.13.13 3.14.6 3.14.6t 3.15.0b3 3.15.0b3t' ;\
+export PYENV_VERSIONS='3.8.20 3.13.14 3.14.6 3.14.6t 3.15.0b3 3.15.0b3t' ;\
 \
 set -ex ;\
 umask 0002 ;\
