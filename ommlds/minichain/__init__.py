@@ -517,6 +517,7 @@ with _lang.auto_proxy_init(
         StopReasonOutput,
         InputTokenUsageOutput,
         TokenUsageOutput,
+        ModelNameOutput,
     )
 
     ##

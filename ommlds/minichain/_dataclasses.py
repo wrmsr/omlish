@@ -438,6 +438,7 @@ def _process_dataclass__5ff91637e71f103a7df9eb0cda9a79d689462daa():
         ('ommlds.minichain.llms.types', 'InputTokenUsageOutput'),
         ('ommlds.minichain.llms.types', 'MaxCompletionTokens'),
         ('ommlds.minichain.llms.types', 'MaxTokens'),
+        ('ommlds.minichain.llms.types', 'ModelNameOutput'),
         ('ommlds.minichain.llms.types', 'StopReasonOutput'),
         ('ommlds.minichain.llms.types', 'Temperature'),
         ('ommlds.minichain.llms.types', 'TokenUsageOutput'),

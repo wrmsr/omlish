@@ -35,6 +35,7 @@ from ...llms.stopreasons import EndTurnStopReason
 from ...llms.stopreasons import MaxTokensStopReason
 from ...llms.stopreasons import OtherStopReason
 from ...llms.stopreasons import StopReason
+from ...llms.types import ModelNameOutput
 from ...llms.types import StopReasonOutput
 from ...tools.types import ToolUse
 from .tools import build_tool_spec_schema
@@ -180,6 +181,8 @@ def build_mc_choices_response(resp: pt.GenerateContentResponse) -> ChatChoicesRe
                     if (fr := c.finish_reason) is not None and (sr := build_mc_stop_reason(fr)) is not None
                     else []
                 ),
+
+                *([ModelNameOutput(resp.model_version)] if resp.model_version else []),
             ),
         ))
 

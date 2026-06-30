@@ -36,6 +36,7 @@ from ...llms.stopreasons import OtherStopReason
 from ...llms.stopreasons import StopReason
 from ...llms.stopreasons import StopSequenceStopReason
 from ...llms.stopreasons import ToolUseStopReason
+from ...llms.types import ModelNameOutput
 from ...llms.types import StopReasonOutput
 from ...llms.types import TokenUsage
 from ...llms.types import TokenUsageOutput
@@ -178,6 +179,8 @@ def build_mc_choices_response(msg: pt.Message) -> ChatChoicesResponse:
                         output=u.output_tokens or 0,
                         total=(u.input_tokens or 0) + (u.output_tokens or 0),
                     ))] if (u := msg.usage) is not None else []),
+
+                    *([ModelNameOutput(msg.model)] if msg.model else []),
                 ),
             ),
         ]),

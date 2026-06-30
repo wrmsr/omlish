@@ -51,3 +51,11 @@ class InputTokenUsageOutput(LlmOutput, tv.UniqueScalarTypedValue[int]):
 
 class TokenUsageOutput(LlmOutput, tv.UniqueScalarTypedValue[TokenUsage]):
     pass
+
+
+class ModelNameOutput(LlmOutput, tv.UniqueScalarTypedValue[str]):
+    """The concrete model that actually served a response (as reported by the backend) - e.g. 'gpt-4o-2024-08-06'."""
+
+    # FIXME: have to normalize somehow.. whatever it's incremental
+    # TODO: ModelName newtype / box?
+    # TODO: move to mc/models? ModelOutputs?

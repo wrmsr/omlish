@@ -29,6 +29,7 @@ from ...llms.stopreasons import EndTurnStopReason
 from ...llms.stopreasons import MaxTokensStopReason
 from ...llms.stopreasons import OtherStopReason
 from ...llms.stopreasons import StopReason
+from ...llms.types import ModelNameOutput
 from ...llms.types import StopReasonOutput
 from ...tools.jsonschema import build_tool_spec_params_json_schema
 from ...tools.types import ToolUse
@@ -161,6 +162,8 @@ def build_mc_choices_response(ol_resp: pt.ChatResponse) -> ChatChoicesResponse:
 
                 tv.collect(
                     *([StopReasonOutput(sr)] if (sr := build_mc_stop_reason(ol_resp.done_reason)) is not None else []),
+
+                    *([ModelNameOutput(ol_resp.model)] if ol_resp.model else []),
                 ),
             ),
         ]),

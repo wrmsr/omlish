@@ -32,6 +32,7 @@ from ...llms.stopreasons import StopReason
 from ...llms.stopreasons import ToolUseStopReason
 from ...llms.types import MaxCompletionTokens
 from ...llms.types import MaxTokens
+from ...llms.types import ModelNameOutput
 from ...llms.types import StopReasonOutput
 from ...llms.types import Temperature
 from ...llms.types import TokenUsage
@@ -160,6 +161,8 @@ def build_mc_ai_choices(oai_resp: pt.ChatCompletionResponse) -> ChatChoices:
 
         tv.collect(
             *build_mc_token_usage_output_(oai_resp.usage),
+
+            *([ModelNameOutput(oai_resp.model)] if oai_resp.model else []),
         ),
     )
 
