@@ -2,3 +2,4 @@
 - wire up interning
 - protocols
 - overloads
+- infer_variance??

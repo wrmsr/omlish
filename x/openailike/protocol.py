@@ -33,7 +33,7 @@ class SystemOaiLikeChatCompletionMessage[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class UserOiaLikeChatCompletionMessage[
+class UserOaiLikeChatCompletionMessage[
     TextPartT: TextOaiLikeChatCompletionContentPart = TextOaiLikeChatCompletionContentPart,
 ](
     OaiLikeChatCompletionMessage,
@@ -43,7 +43,7 @@ class UserOiaLikeChatCompletionMessage[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class AssistantOiaLikeChatCompletionMessage[
+class AssistantOaiLikeChatCompletionMessage[
     PartT: OaiLikeChatCompletionContentPart = OaiLikeChatCompletionContentPart,
 ](
     OaiLikeChatCompletionMessage,
@@ -84,15 +84,92 @@ class OaiLikeChatCompletionResponse[
     usage: UsageT | None = None
 
 
+###
+
+
+class GroqChatCompletionContentPart(OaiLikeChatCompletionContentPart):
+    pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class TextGroqChatCompletionContentPart(
+    TextOaiLikeChatCompletionContentPart,
+    GroqChatCompletionContentPart,
+):
+    text: str
+    type: ta.Literal['text'] = 'text'
+
+
+##
+
+
+class GroqChatCompletionMessage(OaiLikeChatCompletionMessage):
+    pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class SystemGroqChatCompletionMessage(
+    SystemOaiLikeChatCompletionMessage[
+        TextGroqChatCompletionContentPart,
+    ],
+    GroqChatCompletionMessage,
+):
+    pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class UserGroqChatCompletionMessage(
+    UserOaiLikeChatCompletionMessage[
+        TextGroqChatCompletionContentPart,
+    ],
+    GroqChatCompletionMessage,
+):
+    pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class AssistantGroqChatCompletionMessage(
+    AssistantOaiLikeChatCompletionMessage[
+        GroqChatCompletionContentPart,
+    ],
+    GroqChatCompletionMessage,
+):
+    pass
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class GroqChatCompletionChoice(
+    OaiLikeChatCompletionChoice[
+        GroqChatCompletionMessage,
+    ],
+):
+    pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class GroqChatCompletionResponse(
+    OaiLikeChatCompletionResponse[
+        GroqChatCompletionChoice,
+    ],
+):
+    pass
+
+
 ##
 
 
 def _main() -> None:
     from omlish import reflect2 as rfl
 
-    rty = rfl.reflect_type(OaiLikeChatCompletionResponse)
-
-    print(rty)
+    for cls in [
+        OaiLikeChatCompletionResponse,
+        GroqChatCompletionResponse,
+    ]:
+        rty = rfl.reflect_type(cls)
+        print(rty)
 
 
 if __name__ == '__main__':
