@@ -35,6 +35,7 @@ def make_dataclass(  # noqa
         weakref_slot=False,
 
         module=None,
+        qualname=None,
 
         decorator=dataclass,
 
@@ -142,6 +143,9 @@ def make_dataclass(  # noqa
                 module = sys._getframe(_frame_offset).f_globals.get('__name__', '__main__')  # noqa
     if module is not None:
         cls.__module__ = module
+
+    if qualname:
+        cls.__qualname__ = qualname
 
     cls = decorator(
         cls,
