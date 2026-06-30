@@ -119,7 +119,7 @@ class ReprGenerator(Generator[ReprPlan]):
                     f'    parts = []',
                     *part_lines,
                     f'    return (',
-                    f'        f"{{self.__class__.__qualname__}}{'@{hex(id(self))[2:]}' if pl.id else ''}("',
+                    f'        f"{{self.__class__.__qualname__}}{'@{id(self):x}' if pl.id else ''}("',
                     f'        f"{{\', \'.join(parts)}}"',
                     f'        f")"',
                     f'    )',

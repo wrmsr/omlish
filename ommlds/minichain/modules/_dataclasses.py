@@ -43,7 +43,7 @@ def _register(**kwargs):
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -59,14 +59,14 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls()  # noqa
+            return __class__()  # noqa
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -75,50 +75,50 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
                 return NotImplemented
             return True
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash(())
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
         ) -> __dataclass__None:
             pass
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -129,10 +129,10 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -166,7 +166,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
 def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
@@ -185,18 +185,18 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 name=self.name,
                 config_cls=self.config_cls,
                 binder=self.binder,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -209,10 +209,10 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
                 self.binder == other.binder
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'name',
@@ -222,16 +222,16 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'name',
@@ -241,16 +241,16 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
@@ -259,8 +259,8 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
                 self.binder,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -273,10 +273,10 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
             __dataclass__object_setattr(self, 'config_cls', config_cls)
             __dataclass__object_setattr(self, 'binder', binder)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -290,10 +290,10 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -320,7 +320,7 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
 def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
         __dataclass__FieldFnValidationError,  # noqa
@@ -338,16 +338,16 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 enable_writes=self.enable_writes,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -358,10 +358,10 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
                 self.enable_writes == other.enable_writes
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'enable_writes',
@@ -369,16 +369,16 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'enable_writes',
@@ -386,24 +386,24 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
                 self.enable_writes,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -412,10 +412,10 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'enable_writes', enable_writes)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -427,10 +427,10 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -465,7 +465,7 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
 def _process_dataclass__0ffe7e6981ca897a53904accd1fc4d5bb759d34b():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
@@ -487,19 +487,19 @@ def _process_dataclass__0ffe7e6981ca897a53904accd1fc4d5bb759d34b():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 item=self.item,
                 d=self.d,
                 s=self.s,
                 children=self.children,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __init__(
             self,
@@ -514,10 +514,10 @@ def _process_dataclass__0ffe7e6981ca897a53904accd1fc4d5bb759d34b():
             self.s = s
             self.children = children
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
     return _process_dataclass
 
@@ -547,7 +547,7 @@ def _process_dataclass__0ffe7e6981ca897a53904accd1fc4d5bb759d34b():
 def _process_dataclass__68ec51656ec2810b10c4b88f8e5fa731750d733f():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
@@ -566,17 +566,17 @@ def _process_dataclass__68ec51656ec2810b10c4b88f8e5fa731750d733f():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 root=self.root,
                 soft_max_len=self.soft_max_len,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -588,12 +588,12 @@ def _process_dataclass__68ec51656ec2810b10c4b88f8e5fa731750d733f():
                 self.soft_max_len == other.soft_max_len
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
-        setattr(__dataclass__cls, '__hash__', None)
+        setattr(__class__, '__hash__', None)
 
         def __init__(
             self,
@@ -604,10 +604,10 @@ def _process_dataclass__68ec51656ec2810b10c4b88f8e5fa731750d733f():
             self.root = root
             self.soft_max_len = soft_max_len
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -620,10 +620,10 @@ def _process_dataclass__68ec51656ec2810b10c4b88f8e5fa731750d733f():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -656,7 +656,7 @@ def _process_dataclass__68ec51656ec2810b10c4b88f8e5fa731750d733f():
 def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
@@ -675,18 +675,18 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 name=self.name,
                 path=self.path,
                 children=self.children,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -699,10 +699,10 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
                 self.children == other.children
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'name',
@@ -712,16 +712,16 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'name',
@@ -731,16 +731,16 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
@@ -749,8 +749,8 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
                 self.children,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -762,10 +762,10 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
             __dataclass__object_setattr(self, 'path', path)
             __dataclass__object_setattr(self, 'children', children)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -779,10 +779,10 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -812,7 +812,7 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
 def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__FieldFnValidationError,  # noqa
@@ -830,17 +830,17 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 name=self.name,
                 path=self.path,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -852,10 +852,10 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
                 self.path == other.path
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'name',
@@ -864,16 +864,16 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'name',
@@ -882,16 +882,16 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
@@ -899,8 +899,8 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
                 self.path,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -910,10 +910,10 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
             __dataclass__object_setattr(self, 'name', name)
             __dataclass__object_setattr(self, 'path', path)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -926,10 +926,10 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -958,7 +958,7 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
 def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
         __dataclass__init__validate_fns__0,
@@ -977,16 +977,16 @@ def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 skill_paths=self.skill_paths,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -997,10 +997,10 @@ def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
                 self.skill_paths == other.skill_paths
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'skill_paths',
@@ -1008,16 +1008,16 @@ def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'skill_paths',
@@ -1025,24 +1025,24 @@ def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
                 self.skill_paths,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -1058,10 +1058,10 @@ def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
                     fn=__dataclass__init__validate_fns__0,
                 )
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -1073,10 +1073,10 @@ def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -1106,7 +1106,7 @@ def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
 def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__FieldFnValidationError,  # noqa
@@ -1124,17 +1124,17 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 header=self.header,
                 body=self.body,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -1146,10 +1146,10 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
                 self.body == other.body
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'header',
@@ -1158,16 +1158,16 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'header',
@@ -1176,16 +1176,16 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
@@ -1193,8 +1193,8 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
                 self.body,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -1204,10 +1204,10 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
             __dataclass__object_setattr(self, 'header', header)
             __dataclass__object_setattr(self, 'body', body)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -1220,10 +1220,10 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -1276,7 +1276,7 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
 def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
@@ -1303,9 +1303,9 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 name=self.name,
                 description=self.description,
                 license=self.license,
@@ -1314,10 +1314,10 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
                 allowed_tools=self.allowed_tools,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -1333,10 +1333,10 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
                 self.allowed_tools == other.allowed_tools
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'name',
@@ -1349,16 +1349,16 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'name',
@@ -1371,16 +1371,16 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
@@ -1392,8 +1392,8 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
                 self.allowed_tools,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -1412,10 +1412,10 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
             __dataclass__object_setattr(self, 'metadata', metadata)
             __dataclass__object_setattr(self, 'allowed_tools', allowed_tools)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -1438,10 +1438,10 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -1480,7 +1480,7 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
 def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
@@ -1501,19 +1501,19 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 id=self.id,
                 content=self.content,
                 priority=self.priority,
                 status=self.status,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -1527,10 +1527,10 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
                 self.status == other.status
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'id',
@@ -1541,16 +1541,16 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'id',
@@ -1561,16 +1561,16 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
@@ -1580,8 +1580,8 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
                 self.status,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -1596,10 +1596,10 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
             __dataclass__object_setattr(self, 'priority', priority)
             __dataclass__object_setattr(self, 'status', status)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -1614,10 +1614,10 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -1656,7 +1656,7 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
 def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
@@ -1678,18 +1678,18 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 max_fetch_chars=self.max_fetch_chars,
                 enable_search=self.enable_search,
                 max_search_results=self.max_search_results,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -1702,10 +1702,10 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
                 self.max_search_results == other.max_search_results
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'max_fetch_chars',
@@ -1715,16 +1715,16 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'max_fetch_chars',
@@ -1734,16 +1734,16 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
@@ -1752,8 +1752,8 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
                 self.max_search_results,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -1766,10 +1766,10 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
             __dataclass__object_setattr(self, 'enable_search', enable_search)
             __dataclass__object_setattr(self, 'max_search_results', max_search_results)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -1783,10 +1783,10 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass
 
@@ -1819,7 +1819,7 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
 def _process_dataclass__e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb():
     def _process_dataclass(
         *,
-        __dataclass__cls,
+        __class__,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
@@ -1838,18 +1838,18 @@ def _process_dataclass__e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb():
         __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
+            if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __dataclass__cls(  # noqa
+            return __class__(  # noqa
                 url=self.url,
                 status=self.status,
                 body=self.body,
             )
 
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
+        __copy__.__qualname__ = f"{__class__.__qualname__}.__copy__"
+        if '__copy__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__class__.__name__}")
+        setattr(__class__, '__copy__', __copy__)
 
         def __eq__(self, other):
             if self is other:
@@ -1862,10 +1862,10 @@ def _process_dataclass__e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb():
                 self.body == other.body
             )
 
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
+        __eq__.__qualname__ = f"{__class__.__qualname__}.__eq__"
+        if '__eq__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__class__.__name__}")
+        setattr(__class__, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
             'url',
@@ -1875,16 +1875,16 @@ def _process_dataclass__e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb():
 
         def __setattr__(self, name, value):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___setattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
+            super(__class__, self).__setattr__(name, value)
 
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
+        __setattr__.__qualname__ = f"{__class__.__qualname__}.__setattr__"
+        if '__setattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__class__.__name__}")
+        setattr(__class__, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
             'url',
@@ -1894,16 +1894,16 @@ def _process_dataclass__e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb():
 
         def __delattr__(self, name):
             if (
-                type(self) is __dataclass__cls
+                type(self) is __class__
                 or name in __dataclass___delattr_frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
+            super(__class__, self).__delattr__(name)
 
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
+        __delattr__.__qualname__ = f"{__class__.__qualname__}.__delattr__"
+        if '__delattr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__class__.__name__}")
+        setattr(__class__, '__delattr__', __delattr__)
 
         def __hash__(self):
             return hash((
@@ -1912,8 +1912,8 @@ def _process_dataclass__e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb():
                 self.body,
             ))
 
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        __hash__.__qualname__ = f"{__class__.__qualname__}.__hash__"
+        setattr(__class__, '__hash__', __hash__)
 
         def __init__(
             self,
@@ -1925,10 +1925,10 @@ def _process_dataclass__e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb():
             __dataclass__object_setattr(self, 'status', status)
             __dataclass__object_setattr(self, 'body', body)
 
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
+        __init__.__qualname__ = f"{__class__.__qualname__}.__init__"
+        if '__init__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__class__.__name__}")
+        setattr(__class__, '__init__', __init__)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
@@ -1942,9 +1942,9 @@ def _process_dataclass__e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb():
                 f")"
             )
 
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
+        __repr__.__qualname__ = f"{__class__.__qualname__}.__repr__"
+        if '__repr__' in __class__.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__class__.__name__}")
+        setattr(__class__, '__repr__', __repr__)
 
     return _process_dataclass

@@ -2948,29 +2948,39 @@ class TestHash(unittest.TestCase):
 
 
 class TestFrozen(unittest.TestCase):
-    def test_frozen(self):
-        @dataclass(frozen=True)
-        class C:
-            i: int
+    # Some tests have a subtest with a slotted dataclass. See https://github.com/python/cpython/issues/105936 for the
+    # reasons.
 
-        c = C(10)
-        self.assertEqual(c.i, 10)
-        with self.assertRaises(FrozenInstanceError):
-            c.i = 5
-        self.assertEqual(c.i, 10)
+    def test_frozen(self):
+        for slots in (False, True):
+            with self.subTest(slots=slots):
+                @dataclass(frozen=True, slots=slots)
+                class C:
+                    i: int
+
+                c = C(10)
+                self.assertEqual(c.i, 10)
+                with self.assertRaises(FrozenInstanceError):
+                    c.i = 5
+                self.assertEqual(c.i, 10)
+                with self.assertRaises(FrozenInstanceError):
+                    del c.i
+                self.assertEqual(c.i, 10)
 
     def test_frozen_empty(self):
-        @dataclass(frozen=True)
-        class C:
-            pass
+        for slots in (False, True):
+            with self.subTest(slots=slots):
+                @dataclass(frozen=True, slots=slots)
+                class C:
+                    pass
 
-        c = C()
-        self.assertFalse(hasattr(c, 'i'))
-        with self.assertRaises(FrozenInstanceError):
-            c.i = 5
-        self.assertFalse(hasattr(c, 'i'))
-        with self.assertRaises(FrozenInstanceError):
-            del c.i
+                c = C()
+                self.assertNotHasAttr(c, 'i')
+                with self.assertRaises(FrozenInstanceError):
+                    c.i = 5
+                self.assertNotHasAttr(c, 'i')
+                with self.assertRaises(FrozenInstanceError):
+                    del c.i
 
     def test_inherit(self):
         @dataclass(frozen=True)
@@ -3164,42 +3174,43 @@ class TestFrozen(unittest.TestCase):
                 d.i = 5
 
     def test_non_frozen_normal_derived(self):
-        # See bpo-32953.
+        # See bpo-32953 and https://github.com/python/cpython/issues/105936
+        for slots in (False, True):
+            with self.subTest(slots=slots):
+                @dataclass(frozen=True, slots=slots)
+                class D:
+                    x: int
+                    y: int = 10
 
-        @dataclass(frozen=True)
-        class D:
-            x: int
-            y: int = 10
+                class S(D):
+                    pass
 
-        class S(D):
-            pass
+                s = S(3)
+                self.assertEqual(s.x, 3)
+                self.assertEqual(s.y, 10)
+                s.cached = True
 
-        s = S(3)
-        self.assertEqual(s.x, 3)
-        self.assertEqual(s.y, 10)
-        s.cached = True
+                # But can't change the frozen attributes.
+                with self.assertRaises(FrozenInstanceError):
+                    s.x = 5
+                with self.assertRaises(FrozenInstanceError):
+                    s.y = 5
+                self.assertEqual(s.x, 3)
+                self.assertEqual(s.y, 10)
+                self.assertEqual(s.cached, True)
 
-        # But can't change the frozen attributes.
-        with self.assertRaises(FrozenInstanceError):
-            s.x = 5
-        with self.assertRaises(FrozenInstanceError):
-            s.y = 5
-        self.assertEqual(s.x, 3)
-        self.assertEqual(s.y, 10)
-        self.assertEqual(s.cached, True)
+                with self.assertRaises(FrozenInstanceError):
+                    del s.x
+                self.assertEqual(s.x, 3)
+                with self.assertRaises(FrozenInstanceError):
+                    del s.y
+                self.assertEqual(s.y, 10)
+                del s.cached
+                self.assertNotHasAttr(s, 'cached')
+                with self.assertRaises(AttributeError) as cm:
+                    del s.cached
 
-        with self.assertRaises(FrozenInstanceError):
-            del s.x
-        self.assertEqual(s.x, 3)
-        with self.assertRaises(FrozenInstanceError):
-            del s.y
-        self.assertEqual(s.y, 10)
-        del s.cached
-        self.assertFalse(hasattr(s, 'cached'))
-        with self.assertRaises(AttributeError) as cm:
-            del s.cached
-        self.assertNotIsInstance(cm.exception, FrozenInstanceError)
-
+                self.assertNotIsInstance(cm.exception, FrozenInstanceError)
     def test_non_frozen_normal_derived_from_empty_frozen(self):
         @dataclass(frozen=True)
         class D:
@@ -5243,6 +5254,47 @@ class TestZeroArgumentSuperWithSlots(unittest.TestCase):
         # The underlying class is "broken" by changing its __class__ in A.foo() to B.  This normally isn't a problem,
         # because no one will be keeping a reference to the underlying class A.
         self.assertIs(A().cls(), B)
+
+    def test_empty_class_cell(self):
+        # gh-148947: Make sure that we explicitly handle the empty class cell.
+        def maker():
+            if False:
+                __class__ = 42
+
+            def method(self):
+                return __class__
+            return method
+
+        @dataclass(slots=True)
+        class X:
+            a: int
+
+            meth = maker()
+
+        with self.assertRaisesRegex(NameError, '__class__'):
+            X(1).meth()
+
+    def test_class_cell_from_other_class(self):
+        # This test fails without the "is oldcls" check in _update_func_cell_for__class__.
+        class Base:
+            def meth(self):
+                return "Base"
+
+        class Child(Base):
+            def meth(self):
+                return super().meth() + " Child"
+
+        @dataclass(slots=True)
+        class DC(Child):
+            a: int
+
+            meth = Child.meth
+
+        closure = DC.meth.__closure__
+        self.assertEqual(len(closure), 1)
+        self.assertIs(closure[0].cell_contents, Child)
+
+        self.assertEqual(DC(1).meth(), "Base Child")
 
 
 if __name__ == '__main__':
