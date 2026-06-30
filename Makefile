@@ -172,23 +172,27 @@ gen-dockerdev: venv
 	${PYTHON} -m omdev.dockerdev gen> docker/dev/Dockerfile
 
 .PHONY: gen-cmake
-gen-cmake:
+gen-cmake: venv
 	${PYTHON} -m omdev.cexts.cmake gen ${SRCS} x
 
 .PHONY: gen-aws
-gen-aws:
+gen-aws: venv
 	${PYTHON} -m ominfra.clouds.aws.models.gen gen-services
 
 .PHONY: gen-aws-instance-types
-gen-aws-instance-types:
+gen-aws-instance-types: venv
 	${PYTHON} -m ominfra.clouds.aws.instancetypes fetch
 
+.PHONY: gen-modeldb
+gen-modeldb: venv
+	${PYTHON} -m ommlds.modeldb fetch
+
 .PHONY: gen-manifest
-gen-manifest:
+gen-manifest: venv
 	${PYTHON} -m omdev.manifests gen -wq ${SRCS} x
 
 .PHONY: gen-dataclass
-gen-dataclass:
+gen-dataclass: venv
 	${PYTHON} -m omdev.dataclasses codegen ${SRCS}
 
 .PHONY: gen-pkg
@@ -196,7 +200,7 @@ gen-pkg:
 	PYTHONPATH=. ${PYPROJECT} pkg gen
 
 .PHONY: gen-antlr
-gen-antlr:
+gen-antlr: venv
 	${PYTHON} -m omxtra.text.antlr.cli gen ${SRCS} x
 
 
