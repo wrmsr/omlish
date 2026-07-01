@@ -8,6 +8,7 @@ import typing as ta
 
 import pytest
 
+from ..api import Api
 from ..api import global_api
 from ..core import symbols
 from ..core import types
@@ -22,6 +23,7 @@ from ..core.typekeys import tuple_type_key
 from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
 from ..core.types import Type
+from ..errors import ReflectionValueError
 from ..errors import UnreflectableTypeError
 from ..reflector import ForwardRefResolution
 from .helpers import make_reflector
@@ -1511,3 +1513,131 @@ def test_same_named_forward_ref_bounds_in_distinct_modules_do_not_collide() -> N
     finally:
         sys.modules.pop(name_a, None)
         sys.modules.pop(name_b, None)
+
+
+##
+# Totality: the `unresolved_forward_ref_policy` policy.
+#
+# By default an unresolvable forward reference raises (strict). Under the 'unbound' policy it degrades to a first-class
+# UnboundType leaf that retains the original ForwardRef object for identity - mirroring the old system's ForwardRef
+# nodes, and letting genuinely-unresolvable lite recursive aliases (e.g. omdev.packaging's RequiresMarkerList) reflect
+# to a finite, cacheable structure.
+
+
+def test_default_policy_raises_on_unresolvable_forward_ref() -> None:
+    with pytest.raises(UnreflectableTypeError, match='forward reference'):
+        make_reflector().reflect_type('Missing')
+
+
+def test_rejects_unsupported_unresolved_forward_ref_policy_policy() -> None:
+    with pytest.raises(ReflectionValueError):
+        make_reflector(unresolved_forward_ref_policy='nonsense')
+
+
+def test_unbound_policy_degrades_unresolvable_forward_ref_and_retains_identity() -> None:
+    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    forward_ref = annotationlib.ForwardRef('Missing')
+
+    typ = reflector.reflect_type(forward_ref)
+
+    assert isinstance(typ, types.UnboundType)
+    assert typ.name == 'Missing'
+    assert typ.args == ()
+    assert typ.runtime_object is forward_ref  # the *original* ForwardRef, for `is`-identity
+    assert type_str(typ) == 'Missing?'
+
+
+def test_unbound_policy_on_bare_string_retains_no_runtime_object() -> None:
+    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+
+    typ = reflector.reflect_type('Missing')
+
+    assert isinstance(typ, types.UnboundType)
+    assert typ.name == 'Missing'
+    assert typ.runtime_object is None  # a bare str has no object identity to preserve
+
+
+def test_unbound_policy_reflects_recursive_old_style_alias_to_finite_leaves() -> None:
+    # Shaped like packaging's lite RequiresMarkerList: a recursive, unresolvable old-style alias (a bare typing form
+    # whose self-referential forward refs carry no resolvable scope).
+    alias = ta.Sequence[ta.Union['_Rec', int]]  # type: ignore[name-defined]  # noqa
+    forward_ref = ta.get_args(ta.get_args(alias)[0])[0]
+
+    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+
+    typ = reflector.reflect_type(alias)
+
+    assert isinstance(typ, types.Instance)
+    assert typ.type.fullname == 'collections.abc.Sequence'
+    (arg,) = typ.args
+    assert isinstance(arg, types.UnionType)
+    unbound = [item for item in arg.items if isinstance(item, types.UnboundType)]
+    assert [u.name for u in unbound] == ['_Rec']
+    assert unbound[0].runtime_object is forward_ref
+
+
+def test_unbound_policy_still_prefers_resolution_when_available() -> None:
+    # The policy governs only the terminal give-up; owner scope and resolvers still resolve first.
+    reflector = make_reflector(
+        unresolved_forward_ref_policy='unbound',
+        forward_ref_resolver=lambda frr: {'Known': int}[frr.name],
+    )
+
+    typ = reflector.reflect_type('Known')
+
+    assert isinstance(typ, types.Instance)
+    assert type_str(typ) == 'builtins.int'
+
+
+def test_unbound_policy_does_not_pollute_cache_across_owners() -> None:
+    # The forward-ref cache guard still holds: a bare ForwardRef is never cached under its (ambiguous) key, so distinct
+    # ForwardRef objects with the same name keep their own retained identity even in 'unbound' mode.
+    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    left = annotationlib.ForwardRef('Same')
+    right = annotationlib.ForwardRef('Same')
+
+    left_type = reflector.reflect_type(left)
+    right_type = reflector.reflect_type(right)
+
+    assert isinstance(left_type, types.UnboundType)
+    assert isinstance(right_type, types.UnboundType)
+    assert left_type.runtime_object is left
+    assert right_type.runtime_object is right
+
+
+def test_unbound_type_key_preserves_forward_ref_identity_by_default() -> None:
+    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    forward_ref = annotationlib.ForwardRef('Missing')
+
+    typ = reflector.reflect_type(forward_ref)
+
+    # Default policy folds the retained ForwardRef into the key as an opaque ref; the structural policy drops it to a
+    # bare name.
+    assert type_key(typ) == ("Unbound['Missing',$0]", forward_ref)
+    assert type_key(typ, 'structural') == "Unbound['Missing']"
+    assert tuple_type_key(typ) == ('unbound', 'Missing', forward_ref, ())
+    assert tuple_type_key(typ, 'structural') == ('unbound', 'Missing', None, ())
+
+
+def test_unbound_type_key_identity_folds_by_forward_ref_equality() -> None:
+    # ForwardRef equality is name-based, so the key's identity fold distinguishes by name; the hard object handle for
+    # true `is`-distinction is UnboundType.runtime_object (see above), not the key.
+    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+
+    same_a = reflector.reflect_type(annotationlib.ForwardRef('Same'))
+    same_b = reflector.reflect_type(annotationlib.ForwardRef('Same'))
+    other = reflector.reflect_type(annotationlib.ForwardRef('Other'))
+
+    assert type_key(same_a) == type_key(same_b)
+    assert type_key(same_a) != type_key(other)
+
+
+def test_api_threads_unresolved_forward_ref_policy_policy_leaving_global_strict() -> None:
+    tolerant = Api(unresolved_forward_ref_policy='unbound')
+
+    typ = tolerant.reflect_type('Missing')
+    assert isinstance(typ, types.UnboundType)
+    assert typ.name == 'Missing'
+
+    with pytest.raises(UnreflectableTypeError):
+        global_api().reflect_type('Missing')

@@ -65,6 +65,7 @@ class TypeKeyPolicy:
     include_annotated_metadata: bool = True
     preserve_alias_identity: bool = True
     preserve_newtype_identity: bool = True
+    preserve_forward_ref_identity: bool = True
 
 
 TYPE_KEY: ta.Final = TypeKeyPolicy()
@@ -78,6 +79,7 @@ STRUCTURAL_TYPE_KEY: ta.Final = TypeKeyPolicy(
     structural=True,
     include_annotated_metadata=False,
     preserve_alias_identity=False,
+    preserve_forward_ref_identity=False,
 )
 
 ALPHA_STRUCTURAL_TYPE_KEY: ta.Final = dc.replace(
@@ -191,7 +193,7 @@ class _TypeKeyWriter:
     def alpha_type_var_like_key(self, tag: str, index: int) -> object:
         raise NotImplementedError
 
-    def unbound_key(self, name: str, arg_keys: tuple[object, ...]) -> object:
+    def unbound_key(self, name: str, identity: object | None, arg_keys: tuple[object, ...]) -> object | None:
         raise NotImplementedError
 
     def callable_argument_key(self, item_key: object, name: str | None, constructor: str | None) -> object:
@@ -449,10 +451,13 @@ class _StringTypeKeyWriter(_TypeKeyWriter):
     def alpha_type_var_like_key(self, tag: str, index: int) -> _TypeKeyFragment:
         return _TypeKeyFragment(f'A{tag}[{index}]')
 
-    def unbound_key(self, name: str, arg_keys: tuple[object, ...]) -> _TypeKeyFragment:
+    def unbound_key(self, name: str, identity: object | None, arg_keys: tuple[object, ...]) -> _TypeKeyFragment | None:
         w = _StringFragmentWriter()
         w.begin('Unbound')
         w.string(name)
+        if identity is not None:
+            if not w.ref(identity):
+                return None
         for arg_key in arg_keys:
             w.fragment(ta.cast(_TypeKeyFragment, arg_key))
         w.end()
@@ -741,8 +746,8 @@ class _TupleTypeKeyWriter(_TypeKeyWriter):
     def alpha_type_var_like_key(self, tag: str, index: int) -> TupleTypeKey:
         return (self._type_var_tag(tag), index)
 
-    def unbound_key(self, name: str, arg_keys: tuple[object, ...]) -> TupleTypeKey:
-        return ('unbound', name, arg_keys)
+    def unbound_key(self, name: str, identity: object | None, arg_keys: tuple[object, ...]) -> TupleTypeKey:
+        return ('unbound', name, identity, arg_keys)
 
     def callable_argument_key(
             self,
@@ -1065,7 +1070,8 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
         arg_keys = self.key_list(typ._args)
         if arg_keys is None:
             return None
-        return self.writer.unbound_key(typ._name, arg_keys)
+        identity = typ._runtime_object if self.policy.preserve_forward_ref_identity else None
+        return self.writer.unbound_key(typ._name, identity, arg_keys)
 
     def visit_callable_argument(self, typ: CallableArgument) -> object | None:
         item_key = self._key(typ._typ)

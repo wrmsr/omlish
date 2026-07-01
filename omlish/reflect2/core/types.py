@@ -401,17 +401,25 @@ class UnboundType(ProperType):
     __slots__ = (
         '_name',
         '_args',
+        '_runtime_object',
     )
 
     def __init__(
             self,
             name: str,
             args: ta.Sequence[Type] | None = None,
+            *,
+            runtime_object: object | None = None,
     ) -> None:
         super().__init__()
 
         self._name = name
         self._args = () if args is None else tuple(args)
+
+        # Unlike mypy's purely name-based UnboundType, we may retain a hard ref to the runtime type-form object the name
+        # came from (typically an `annotationlib.ForwardRef`) - this is what makes a specific unresolved forward
+        # reference `is`-distinguishable from an identically-named one elsewhere. Mirrors `TypeAlias.runtime_object`.
+        self._runtime_object = runtime_object
 
     @property
     def name(self) -> str:
@@ -420,6 +428,10 @@ class UnboundType(ProperType):
     @property
     def args(self) -> tuple[Type, ...]:
         return self._args
+
+    @property
+    def runtime_object(self) -> object | None:
+        return self._runtime_object
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
         return visitor.visit_unbound_type(self)

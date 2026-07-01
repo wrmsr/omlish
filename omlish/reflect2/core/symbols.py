@@ -33,7 +33,7 @@ class ArgKind(enum.Enum):
 ##
 
 
-class SymbolNode:
+class Symbol:
     __slots__ = ()
 
     @property
@@ -46,7 +46,7 @@ class SymbolNode:
 
 
 @ta.final
-class TypeInfo(SymbolNode):
+class TypeInfo(Symbol):
     __slots__ = (
         '_name',
         '_fullname',
@@ -129,7 +129,7 @@ class TypeInfo(SymbolNode):
 
 
 @ta.final
-class TypeAlias(SymbolNode):
+class TypeAlias(Symbol):
     __slots__ = (
         '_name',
         '_fullname',

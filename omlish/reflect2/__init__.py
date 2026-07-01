@@ -10,7 +10,7 @@ from .core.symbols import (  # noqa
     VarianceKind,
     ArgKind,
 
-    SymbolNode,
+    Symbol,
     TypeInfo,
     TypeAlias,
 )
@@ -134,6 +134,8 @@ from .ops import (  # noqa
 )
 
 from .reflector import (  # noqa
+    UnresolvedForwardRefPolicy,
+
     ForwardRefResolution,
     ForwardRefResolver,
 

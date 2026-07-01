@@ -12,6 +12,7 @@ from .core.types import Type
 from .interning import Interner
 from .reflector import ForwardRefResolver
 from .reflector import TypeReflector
+from .reflector import UnresolvedForwardRefPolicy
 from .typekeys import TypeKeys
 from .universe import DynamicTypeNameSuffix
 from .universe import TypeUniverse
@@ -37,8 +38,12 @@ class Api:
     def __init__(
             self,
             *,
+            # universe
             dynamic_type_name_suffix: DynamicTypeNameSuffix | None = None,
+
+            # reflector
             forward_ref_resolver: ForwardRefResolver | None = None,
+            unresolved_forward_ref_policy: UnresolvedForwardRefPolicy = 'raise',
     ) -> None:
         super().__init__()
 
@@ -55,6 +60,7 @@ class Api:
 
         self._reflector: ta.Final = TypeReflector(
             forward_ref_resolver=forward_ref_resolver,
+            unresolved_forward_ref_policy=unresolved_forward_ref_policy,
             universe=self._universe,
             interner=self._interner,
             lock=self._lock,

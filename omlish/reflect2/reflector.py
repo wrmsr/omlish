@@ -36,15 +36,20 @@ from .core.types import TypeVarId
 from .core.types import TypeVarLikeType
 from .core.types import TypeVarTupleType
 from .core.types import TypeVarType
+from .core.types import UnboundType
 from .core.types import UnpackType
 from .core.types import is_literal_value
 from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
+from .errors import ReflectionValueError
 from .errors import UnreflectableTypeError
 from .interning import NeedsInterner
 from .locking import NeedsLock
 from .universe import NeedsUniverse
 from .universe import TypeUniverse
+
+
+UnresolvedForwardRefPolicy: ta.TypeAlias = ta.Literal['raise', 'unbound']
 
 
 ##
@@ -135,6 +140,9 @@ def _contains_any_type_alias(
 ##
 
 
+DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'raise'
+
+
 @ta.final
 class TypeReflector(
     NeedsUniverse,
@@ -145,11 +153,18 @@ class TypeReflector(
             self,
             *,
             forward_ref_resolver: ForwardRefResolver | None = None,
+            unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
+        if unresolved_forward_ref_policy is None:
+            unresolved_forward_ref_policy = DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
+        elif unresolved_forward_ref_policy not in ('raise', 'unbound'):
+            raise ReflectionValueError(f'Unsupported unresolved forward ref policy: {unresolved_forward_ref_policy!r}')
+
         self._forward_ref_resolver = forward_ref_resolver
+        self._unresolved_forward_ref_policy = unresolved_forward_ref_policy
 
         self._type_cache: dict[object, Type] = {}
 
@@ -345,9 +360,23 @@ class TypeReflector(
 
         self._resolving_forward_refs.add(name)
         try:
-            return self._reflect_type(self._resolve_forward_ref(obj, name))
+            try:
+                resolved = self._resolve_forward_ref(obj, name)
+            except UnreflectableTypeError:
+                # A forward reference we could not bind via the alias stack, a resolver, or an owner scope. Under the
+                # 'unbound' policy we degrade to a first-class UnboundType leaf (retaining the original ForwardRef for
+                # identity) rather than failing. A recursion-guard violation is a distinct pathology and is *not* caught
+                # here (it is raised before we reach this point).
+                if self._unresolved_forward_ref_policy == 'unbound':
+                    return self._unbound_forward_ref(obj, name)
+                raise
+            return self._reflect_type(resolved)
         finally:
             self._resolving_forward_refs.remove(name)
+
+    def _unbound_forward_ref(self, obj: str | annotationlib.ForwardRef, name: str) -> UnboundType:
+        runtime_object = obj if isinstance(obj, annotationlib.ForwardRef) else None
+        return UnboundType(name, runtime_object=runtime_object)
 
     def _resolve_forward_ref(self, obj: str | annotationlib.ForwardRef, name: str) -> object:
         def resolve() -> object:

@@ -285,7 +285,8 @@ def test_type_key_policy_supports_dc_replace() -> None:
         'structural=False, '
         'include_annotated_metadata=True, '
         'preserve_alias_identity=True, '
-        'preserve_newtype_identity=True)'
+        'preserve_newtype_identity=True, '
+        'preserve_forward_ref_identity=True)'
     )
 
 
@@ -1604,3 +1605,20 @@ def test_structural_type_key_unrolled_recursive_alias_with_unsupported_member_fa
         structural_type_key(unrolled)
     with pytest.raises(ReflectionError, match='not implemented'):
         alpha_structural_type_key(unrolled)
+
+
+def test_unbound_key_preserve_forward_ref_identity_axis() -> None:
+    int_type = make_instance(make_info('builtins.int'))
+    marker = object()
+    with_identity = types.UnboundType('Fwd', [int_type], runtime_object=marker)
+    without_identity = types.UnboundType('Fwd', [int_type])
+
+    # The default policy folds the retained runtime object in as an opaque ref; the structural policy drops it, keying
+    # by bare name. A node that retained no object keys identically to the structural (name-only) form.
+    assert type_key(with_identity) == ("Unbound['Fwd',$0,I['builtins.int']]", marker)
+    assert type_key(with_identity, STRUCTURAL_TYPE_KEY) == "Unbound['Fwd',I['builtins.int']]"
+    assert type_key(without_identity) == "Unbound['Fwd',I['builtins.int']]"
+
+    # Tuple keys carry the identity in a dedicated slot, nulled out under the structural policy.
+    assert tuple_type_key(with_identity) == ('unbound', 'Fwd', marker, (('instance', 'builtins.int', (), ()),))
+    assert tuple_type_key(with_identity, STRUCTURAL_TYPE_KEY) == ('unbound', 'Fwd', None, (('instance', 'builtins.int', (), ()),))  # noqa

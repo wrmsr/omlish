@@ -27,7 +27,7 @@ DynamicTypeNameSuffix: ta.TypeAlias = ta.Literal['id', 'counter']
 ##
 
 
-DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX: DynamicTypeNameSuffix = 'id'
+DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX: ta.Final[DynamicTypeNameSuffix] = 'id'
 
 _DYNAMIC_TYPE_NAME_SEPARATOR: ta.Final = '@'
 
