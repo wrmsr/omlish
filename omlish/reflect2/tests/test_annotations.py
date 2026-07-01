@@ -241,7 +241,7 @@ def test_reflector_runtime_annotation_cache_reuses_recursive_variadic_alias_anno
             ),
             lock=lock,
         ),
-        forward_ref_resolver={'TupleNode': alias}.__getitem__,
+        forward_ref_resolver=lambda frr: {'TupleNode': alias}[frr.name],
         lock=lock,
     )
     typ = annotations._reflector.reflect_type(form)
@@ -388,7 +388,7 @@ def test_to_runtime_annotation_preserves_recursive_alias_when_expand_policy_is_r
             ),
             lock=lock,
         ),
-        forward_ref_resolver={'Node': alias}.__getitem__,
+        forward_ref_resolver=lambda frr: {'Node': alias}[frr.name],
         lock=lock,
     )
     typ = annotations._reflector.reflect_type(alias)
@@ -411,7 +411,7 @@ def test_to_runtime_annotation_preserves_variadic_recursive_alias_when_expand_po
             ),
             lock=lock,
         ),
-        forward_ref_resolver={'TupleNode': alias}.__getitem__,
+        forward_ref_resolver=lambda frr: {'TupleNode': alias}[frr.name],
         lock=lock,
     )
     typ = annotations._reflector.reflect_type(form)
@@ -434,7 +434,7 @@ def test_to_runtime_annotation_preserves_generic_variadic_recursive_alias_with_t
             ),
             lock=lock,
         ),
-        forward_ref_resolver={'TupleNode': alias}.__getitem__,
+        forward_ref_resolver=lambda frr: {'TupleNode': alias}[frr.name],
         lock=lock,
     )
     typ = annotations._reflector.reflect_type(form)

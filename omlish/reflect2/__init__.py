@@ -134,6 +134,7 @@ from .ops import (  # noqa
 )
 
 from .reflector import (  # noqa
+    ForwardRefResolution,
     ForwardRefResolver,
 
     TypeReflector,

@@ -1,7 +1,9 @@
 # ruff: noqa: SLF001
 import annotationlib
 import collections.abc as cabc
+import contextlib
 import enum
+import sys
 import types as pytypes
 import typing as ta
 
@@ -45,7 +47,17 @@ from .universe import NeedsUniverse
 from .universe import TypeUniverse
 
 
-ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]
+##
+
+
+class ForwardRefResolution(ta.NamedTuple):
+    obj: str | annotationlib.ForwardRef
+    name: str
+    resolve: ta.Callable[[], object]
+
+
+class ForwardRefResolver(ta.Protocol):
+    def __call__(self, frr: ForwardRefResolution, /) -> object: ...
 
 
 ##
@@ -148,6 +160,7 @@ class TypeReflector(
 
         self._prepared_infos: set[type] = set()
         self._resolving_forward_refs: set[str] = set()
+        self._forward_ref_owner_stack: list[object] = []
 
         self._type_var_namespace = f'runtime:{id(self):x}'
         self._next_type_var_id = 1
@@ -165,18 +178,31 @@ class TypeReflector(
 
     #
 
+    def _is_uncacheable_reflect_type(self, obj: object) -> bool:
+        # Forward-ref resolution is context-dependent (see _reflect_forward_ref): the same ForwardRef / str resolves
+        # differently depending on the owner scope in which it appears, and distinct ForwardRefs sharing a name compare
+        # and hash equal. Never read or write the shared cache under such an ambiguous key.
+        if _is_forward_ref(obj):
+            return True
+
+        return False
+
     def reflect_type(self, obj: object) -> Type:
-        try:
-            return self._type_cache[obj]
-        except KeyError:
-            pass
-        except TypeError:
-            pass
+        if not self._is_uncacheable_reflect_type(obj):
+            try:
+                return self._type_cache[obj]
+            except KeyError:
+                pass
+            except TypeError:
+                pass
 
         with self._lock:
             return self._reflect_type(obj)
 
     def _reflect_type(self, obj: object) -> Type:
+        if self._is_uncacheable_reflect_type(obj):
+            return self._reflect_type_uncached(obj)
+
         try:
             return self._type_cache[obj]
         except KeyError:
@@ -255,10 +281,7 @@ class TypeReflector(
                 return self._reflect_literal(args)
 
             if origin is ta.Union or origin is pytypes.UnionType:
-                return make_union([self._reflect_type(arg) for arg in args])
-
-            if isinstance(origin, ta.TypeAliasType):
-                return self._reflect_type_alias(origin, args, is_subscripted=True)
+                return self._reflect_union(args)
 
             if origin is cabc.Callable:
                 return self._reflect_callable(args)
@@ -268,6 +291,9 @@ class TypeReflector(
 
             if origin is tuple:
                 return self._reflect_tuple(args)
+
+            if isinstance(origin, ta.TypeAliasType):
+                return self._reflect_type_alias(origin, args, is_subscripted=True)
 
             if _is_typed_dict_class(origin):
                 return self._reflect_typed_dict(origin, args)
@@ -282,29 +308,74 @@ class TypeReflector(
 
         raise UnreflectableTypeError(f'Unsupported runtime type object: {obj!r}')
 
+    @contextlib.contextmanager
+    def _pushed_forward_ref_owner(self, owner: object) -> ta.Iterator[None]:
+        if owner is None:
+            yield
+            return
+
+        self._forward_ref_owner_stack.append(owner)
+        try:
+            yield
+        finally:
+            self._forward_ref_owner_stack.pop()
+
+    def _forward_ref_module_owner(self, obj: object) -> object | None:
+        module_name = getattr(obj, '__module__', None)
+        if not isinstance(module_name, str) or not module_name:
+            return None
+        return sys.modules.get(module_name)
+
     def _reflect_forward_ref(self, obj: str | annotationlib.ForwardRef) -> Type:
         if isinstance(obj, str):
             name = obj
         else:
             name = obj.__forward_arg__
 
+        # The type alias stack always takes precedence - a forward reference naming an in-progress alias (or a
+        # subscription of one) resolves structurally, ahead of any resolver or owner scope.
         for alias_obj in reversed(self._type_alias_stack):
             if name == alias_obj.__name__:
                 return TypeAliasType(self._get_type_alias_symbol(alias_obj), ())
             if (alias_ref := self._reflect_type_alias_forward_ref(name, alias_obj)) is not None:
                 return alias_ref
 
-        if self._forward_ref_resolver is None:
-            raise UnreflectableTypeError(f'Unsupported unresolved forward reference: {obj!r}')
-
         if name in self._resolving_forward_refs:
             raise UnreflectableTypeError(f'Recursive forward reference resolution: {name!r}')
 
         self._resolving_forward_refs.add(name)
         try:
-            return self._reflect_type(self._forward_ref_resolver(name))
+            return self._reflect_type(self._resolve_forward_ref(obj, name))
         finally:
             self._resolving_forward_refs.remove(name)
+
+    def _resolve_forward_ref(self, obj: str | annotationlib.ForwardRef, name: str) -> object:
+        def resolve() -> object:
+            return self._resolve_forward_ref_in_owner(obj, name)
+
+        # When a resolver is supplied it owns the resolution policy: it is handed the full context - including the
+        # `resolve` closure that performs the default owner-scope resolution - and decides how to combine them. When no
+        # resolver is supplied the default owner-scope resolution runs directly.
+        if self._forward_ref_resolver is not None:
+            return self._forward_ref_resolver(ForwardRefResolution(obj, name, resolve))
+
+        return resolve()
+
+    def _resolve_forward_ref_in_owner(self, obj: str | annotationlib.ForwardRef, name: str) -> object:
+        if not self._forward_ref_owner_stack:
+            raise UnreflectableTypeError(f'Unsupported unresolved forward reference: {obj!r}')
+
+        owner = self._forward_ref_owner_stack[-1]
+
+        if isinstance(obj, annotationlib.ForwardRef):
+            forward_ref = obj
+        else:
+            forward_ref = annotationlib.ForwardRef(name)
+
+        try:
+            return ta.evaluate_forward_ref(forward_ref, owner=owner)
+        except NameError as e:
+            raise UnreflectableTypeError(f'Unsupported unresolved forward reference: {obj!r}') from e
 
     def _reflect_type_alias_forward_ref(
             self,
@@ -516,26 +587,28 @@ class TypeReflector(
         if len(args) != len(parameters):
             raise UnreflectableTypeError(f'Unsupported TypedDict arguments for {origin!r}: {args!r}')
 
-        replacements = {
-            self._reflect_type_var_parameter(parameter): self._reflect_type(arg)
-            for parameter, arg in zip(parameters, args)
-        }
+        # Forward references in a TypedDict's item annotations resolve in the TypedDict class's module scope.
+        with self._pushed_forward_ref_owner(origin):
+            replacements = {
+                self._reflect_type_var_parameter(parameter): self._reflect_type(arg)
+                for parameter, arg in zip(parameters, args)
+            }
 
-        required_keys = set(getattr(origin, '__required_keys__'))
-        readonly_keys = set(getattr(origin, '__readonly_keys__', frozenset()))
-        annotations = getattr(origin, '__annotations__')
-        if not isinstance(annotations, dict):
-            raise UnreflectableTypeError(f'Unsupported TypedDict annotations for {origin!r}: {annotations!r}')
+            required_keys = set(getattr(origin, '__required_keys__'))
+            readonly_keys = set(getattr(origin, '__readonly_keys__', frozenset()))
+            annotations = getattr(origin, '__annotations__')
+            if not isinstance(annotations, dict):
+                raise UnreflectableTypeError(f'Unsupported TypedDict annotations for {origin!r}: {annotations!r}')
 
-        items: dict[str, Type] = {}
-        for name, annotation in annotations.items():
-            item = self._reflect_type(annotation)
-            if replacements:
-                item = substitute_type(item, replacements)
-            items[name] = self._unwrap_typed_dict_item(item)
+            items: dict[str, Type] = {}
+            for name, annotation in annotations.items():
+                item = self._reflect_type(annotation)
+                if replacements:
+                    item = substitute_type(item, replacements)
+                items[name] = self._unwrap_typed_dict_item(item)
 
-        fallback = self._reflect_instance(dict, (str, object))
-        return TypedDictType(items, required_keys, readonly_keys, fallback)
+            fallback = self._reflect_instance(dict, (str, object))
+            return TypedDictType(items, required_keys, readonly_keys, fallback)
 
     def _unwrap_typed_dict_item(self, typ: Type) -> Type:
         seen_required = False
@@ -606,33 +679,36 @@ class TypeReflector(
             return
         self._prepared_infos.add(origin)
 
-        parameters = getattr(origin, '__parameters__', ())
-        if parameters and not info._type_vars:
-            info._type_vars = tuple(
-                self._reflect_type_var_like_parameter(parameter)
-                for parameter in parameters
-            )
-            info._variances = tuple(
-                type_var._variance if isinstance(type_var, TypeVarType) else VarianceKind.IN
-                for type_var in info.type_vars
-            )
+        # Forward references in a class's parameters' bounds or in its runtime bases resolve in that class's module
+        # scope. (A parameter type var carrying its own module overrides this while its bound is reflected.)
+        with self._pushed_forward_ref_owner(origin):
+            parameters = getattr(origin, '__parameters__', ())
+            if parameters and not info._type_vars:
+                info._type_vars = tuple(
+                    self._reflect_type_var_like_parameter(parameter)
+                    for parameter in parameters
+                )
+                info._variances = tuple(
+                    type_var._variance if isinstance(type_var, TypeVarType) else VarianceKind.IN
+                    for type_var in info.type_vars
+                )
 
-        mro = getattr(origin, '__mro__', None)
-        if mro is not None and info._mro == (info,):
-            info._mro = tuple(
-                self._universe._get_type_info(cls)
-                for cls in mro
-                if isinstance(cls, type)
+            mro = getattr(origin, '__mro__', None)
+            if mro is not None and info._mro == (info,):
+                info._mro = tuple(
+                    self._universe._get_type_info(cls)
+                    for cls in mro
+                    if isinstance(cls, type)
+                )
+
+            if info._bases:
+                return
+
+            runtime_bases = self._get_runtime_bases(origin)
+            info._bases = tuple(
+                self._reflect_runtime_base(base)
+                for base in runtime_bases
             )
-
-        if info._bases:
-            return
-
-        runtime_bases = self._get_runtime_bases(origin)
-        info._bases = tuple(
-            self._reflect_runtime_base(base)
-            for base in runtime_bases
-        )
 
     def _reflect_type_var_parameter(self, obj: object) -> TypeVarType:
         type_var = self._reflect_type(obj)
@@ -695,6 +771,9 @@ class TypeReflector(
             raise UnreflectableTypeError(f'Unsupported type arguments: {args!r}')
 
         return TypeType(self._reflect_type(args[0]))
+
+    def _reflect_union(self, args: tuple[object, ...]) -> Type:
+        return make_union([self._reflect_type(arg) for arg in args])
 
     def _reflect_callable(self, args: tuple[object, ...]) -> CallableType:
         fallback = Instance(
@@ -780,23 +859,28 @@ class TypeReflector(
         else:
             variance = VarianceKind.IN
 
-        bound = obj.__bound__
-        if bound is None:
-            upper_bound: Type = Instance(self._universe._get_type_info(object), ())
-        else:
-            upper_bound = self._reflect_type(bound)
+        # A type var's bound / constraints / default may contain forward references that resolve in the module in which
+        # the type var was defined - which need not be the module of whatever generic is currently being reflected.
+        with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
+            bound = obj.__bound__
+            if bound is None:
+                upper_bound: Type = Instance(self._universe._get_type_info(object), ())
+            else:
+                upper_bound = self._reflect_type(bound)
 
-        default_obj = getattr(obj, '__default__', ta.NoDefault)
-        if default_obj is ta.NoDefault:
-            default: Type = _make_any()
-        else:
-            default = self._reflect_type(default_obj)
+            default_obj = getattr(obj, '__default__', ta.NoDefault)
+            if default_obj is ta.NoDefault:
+                default: Type = _make_any()
+            else:
+                default = self._reflect_type(default_obj)
+
+            values = [self._reflect_type(value) for value in obj.__constraints__]
 
         type_var = TypeVarType(
             obj.__name__,
             obj.__name__,
             TypeVarId(self._next_type_var_id, namespace=self._type_var_namespace),
-            [self._reflect_type(value) for value in obj.__constraints__],
+            values,
             upper_bound,
             default,
             variance,
@@ -808,11 +892,12 @@ class TypeReflector(
     def _reflect_param_spec(self, obj: ta.ParamSpec) -> ParamSpecType:
         upper_bound = Instance(self._universe._get_type_info(object), ())
 
-        default_obj = getattr(obj, '__default__', ta.NoDefault)
-        if default_obj is ta.NoDefault:
-            default: Type = _make_any()
-        else:
-            default = self._reflect_type(default_obj)
+        with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
+            default_obj = getattr(obj, '__default__', ta.NoDefault)
+            if default_obj is ta.NoDefault:
+                default: Type = _make_any()
+            else:
+                default = self._reflect_type(default_obj)
 
         param_spec = ParamSpecType(
             obj.__name__,
@@ -828,11 +913,12 @@ class TypeReflector(
     def _reflect_type_var_tuple(self, obj: ta.TypeVarTuple) -> TypeVarTupleType:
         upper_bound = Instance(self._universe._get_type_info(object), ())
 
-        default_obj = getattr(obj, '__default__', ta.NoDefault)
-        if default_obj is ta.NoDefault:
-            default: Type = _make_any()
-        else:
-            default = self._reflect_type(default_obj)
+        with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
+            default_obj = getattr(obj, '__default__', ta.NoDefault)
+            if default_obj is ta.NoDefault:
+                default: Type = _make_any()
+            else:
+                default = self._reflect_type(default_obj)
 
         tuple_fallback = Instance(self._universe._get_type_info(tuple), [_make_any()])
         type_var_tuple = TypeVarTupleType(

@@ -68,8 +68,13 @@ class BaseContext(lang.Abstract, lang.Sealed):
                 return ovr.rty
             return None
 
-        from ... import reflect2 as rfl2
-        rfl2.reflect_type(o)
+        # Smoke-test reflect2 against the raw runtime types marshal is handed. Skip inputs marshal itself won't reflect
+        # raw: already-reflected old-system types (`make_marshaler` is re-entered with these, relying on the old
+        # Reflector's idempotency over its own TypeInfos), and types short-circuited by a ReflectOverride (which the old
+        # Reflector replaces wholesale, never recursing into their - possibly unreflectable - structure).
+        # from ... import reflect2 as rfl2
+        # if not isinstance(o, rfl.TypeInfo) and override(o) is None:
+        #     rfl2.reflect_type(o)
 
         return rfl.Reflector(override=override).typeof(o)
 

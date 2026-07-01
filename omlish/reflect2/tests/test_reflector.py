@@ -2,6 +2,8 @@
 # ruff: noqa: PYI059
 import annotationlib
 import collections.abc as cabc
+import sys
+import types as pytypes
 import typing as ta
 
 import pytest
@@ -21,6 +23,7 @@ from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
 from ..core.types import Type
 from ..errors import UnreflectableTypeError
+from ..reflector import ForwardRefResolution
 from .helpers import make_reflector
 
 
@@ -709,7 +712,7 @@ def test_reflects_indirect_recursive_type_alias_type_as_alias_nodes() -> None:
         'B': alias_b,
     }
     reflector = make_reflector(
-        forward_ref_resolver=aliases.__getitem__,
+        forward_ref_resolver=lambda frr: aliases[frr.name],
     )
 
     typ_a = reflector.reflect_type(alias_a)
@@ -726,7 +729,7 @@ def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> Non
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list['Alias[T]'], type_params=(t_var,))  # type: ignore
     reflector = make_reflector(
-        forward_ref_resolver={'Alias': alias}.__getitem__,
+        forward_ref_resolver=lambda frr: {'Alias': alias}[frr.name],
     )
 
     typ = reflector.reflect_type(alias[int])
@@ -755,7 +758,7 @@ def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() 
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[t_var, 'Alias[T]'], type_params=(t_var,))  # type: ignore
     reflector = make_reflector(
-        forward_ref_resolver={'Alias': alias}.__getitem__,
+        forward_ref_resolver=lambda frr: {'Alias': alias}[frr.name],
     )
 
     typ = reflector.reflect_type(alias[int])
@@ -784,7 +787,7 @@ def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var, 'Alias[*Ts]'], type_params=(ts_var,))  # type: ignore
     reflector = make_reflector(
-        forward_ref_resolver={'Alias': alias}.__getitem__,
+        forward_ref_resolver=lambda frr: {'Alias': alias}[frr.name],
     )
 
     typ = reflector.reflect_type(alias[int, str])
@@ -850,7 +853,7 @@ def test_rejects_typing_forward_reference_until_resolution_exists() -> None:
 
 def test_resolves_raw_string_forward_reference_with_resolver() -> None:
     reflector = make_reflector(
-        forward_ref_resolver={'User': int}.__getitem__,
+        forward_ref_resolver=lambda frr: {'User': int}[frr.name],
     )
 
     typ = reflector.reflect_type('User')
@@ -860,7 +863,7 @@ def test_resolves_raw_string_forward_reference_with_resolver() -> None:
 
 
 def test_make_runtime_reflector_accepts_forward_ref_resolver() -> None:
-    resolver = lambda name: {'User': int}[name]
+    resolver = lambda frr: {'User': int}[frr.name]
     reflector = make_reflector(
         dynamic_type_name_suffix='id',
         forward_ref_resolver=resolver,
@@ -874,7 +877,7 @@ def test_make_runtime_reflector_accepts_forward_ref_resolver() -> None:
 
 def test_resolves_annotationlib_forward_reference_with_resolver() -> None:
     reflector = make_reflector(
-        forward_ref_resolver=lambda name: {'User': list[int]}[name],
+        forward_ref_resolver=lambda frr: {'User': list[int]}[frr.name],
     )
 
     typ = reflector.reflect_type(annotationlib.ForwardRef('User'))
@@ -885,7 +888,7 @@ def test_resolves_annotationlib_forward_reference_with_resolver() -> None:
 
 def test_resolves_type_alias_type_forward_value_with_resolver() -> None:
     reflector = make_reflector(
-        forward_ref_resolver=lambda name: {'User': str}[name],
+        forward_ref_resolver=lambda frr: {'User': str}[frr.name],
     )
     alias = ta.TypeAliasType('Alias', 'User')  # type: ignore
 
@@ -898,7 +901,7 @@ def test_resolves_type_alias_type_forward_value_with_resolver() -> None:
 
 def test_forward_reference_resolver_result_must_be_reflectable() -> None:
     reflector = make_reflector(
-        forward_ref_resolver=lambda name: object(),
+        forward_ref_resolver=lambda frr: object(),
     )
 
     with pytest.raises(UnreflectableTypeError):
@@ -907,7 +910,7 @@ def test_forward_reference_resolver_result_must_be_reflectable() -> None:
 
 def test_forward_reference_resolver_does_not_mask_nested_unresolved_reference() -> None:
     reflector = make_reflector(
-        forward_ref_resolver=lambda name: annotationlib.ForwardRef('Other'),
+        forward_ref_resolver=lambda frr: annotationlib.ForwardRef('Other'),
     )
 
     with pytest.raises(UnreflectableTypeError, match='Recursive forward reference'):
@@ -1125,7 +1128,7 @@ def test_reflects_typed_dict_forward_refs_with_resolver() -> None:
         maybe_user: ta.NotRequired['User']  # type: ignore  # noqa
 
     reflector = make_reflector(
-        forward_ref_resolver=lambda name: {'User': int}[name],
+        forward_ref_resolver=lambda frr: {'User': int}[frr.name],
     )
 
     typ = reflector.reflect_type(Payload)
@@ -1306,3 +1309,205 @@ def test_reflected_class_generic_mro_remaps_type_vars_at_each_layer() -> None:
         'typing.Generic',
         'builtins.object',
     ]
+
+
+##
+# Default (owner-scope) forward reference resolution.
+#
+# These exercise the `_forward_ref_resolver=None` default: a forward reference is resolved against the module (or class)
+# scope in which the annotation carrying it was defined, leaning on stdlib `typing.evaluate_forward_ref`. The module-
+# level fixtures below deliberately reference each other by string so the bounds / items are genuine forward references
+# at reflection time.
+
+
+class _CtxBound:
+    pass
+
+
+class _CtxItem:
+    pass
+
+
+_CtxBoundVar = ta.TypeVar('_CtxBoundVar', bound='_CtxBound')
+_CtxNestedVar = ta.TypeVar('_CtxNestedVar', bound=list['_CtxBound'])
+
+
+class _CtxBox(ta.Generic[_CtxBoundVar]):
+    pass
+
+
+class _CtxTypedDict(ta.TypedDict):
+    item: '_CtxItem'  # noqa: UP037  # quoted to stay a genuine forward reference at reflection time
+
+
+def test_default_resolution_resolves_type_var_bound_from_defining_module() -> None:
+    reflector = make_reflector()
+
+    typ = reflector.reflect_type(_CtxBoundVar)
+
+    assert isinstance(typ, types.TypeVarType)
+    assert isinstance(typ.upper_bound, types.Instance)
+    assert reflector.universe.get_runtime_type(typ.upper_bound.type) is _CtxBound
+
+
+def test_default_resolution_resolves_nested_forward_ref_inside_type_var_bound() -> None:
+    reflector = make_reflector()
+
+    typ = reflector.reflect_type(_CtxNestedVar)
+
+    assert isinstance(typ, types.TypeVarType)
+    assert isinstance(typ.upper_bound, types.Instance)
+    assert typ.upper_bound.type.fullname == 'builtins.list'
+    (arg,) = typ.upper_bound.args
+    assert isinstance(arg, types.Instance)
+    assert reflector.universe.get_runtime_type(arg.type) is _CtxBound
+
+
+def test_default_resolution_resolves_generic_class_parameter_bound() -> None:
+    reflector = make_reflector()
+
+    typ = reflector.reflect_type(_CtxBox[int])  # type: ignore[type-var]
+
+    assert isinstance(typ, types.Instance)
+    (type_var,) = typ.type.type_vars
+    assert isinstance(type_var, types.TypeVarType)
+    assert isinstance(type_var.upper_bound, types.Instance)
+    assert reflector.universe.get_runtime_type(type_var.upper_bound.type) is _CtxBound
+
+
+def test_default_resolution_resolves_typed_dict_item_forward_ref() -> None:
+    reflector = make_reflector()
+
+    typ = reflector.reflect_type(_CtxTypedDict)
+
+    assert isinstance(typ, types.TypedDictType)
+    (item,) = typ.items.values()
+    assert isinstance(item, types.Instance)
+    assert reflector.universe.get_runtime_type(item.type) is _CtxItem
+
+
+def test_default_resolution_without_owner_scope_still_rejects_bare_forward_ref() -> None:
+    reflector = make_reflector()
+
+    with pytest.raises(UnreflectableTypeError, match='forward reference'):
+        reflector.reflect_type('_CtxBound')
+
+
+def test_forward_ref_resolver_receives_full_resolution_context() -> None:
+    captured: list[ForwardRefResolution] = []
+
+    def resolver(frr):
+        captured.append(frr)
+        return int
+
+    reflector = make_reflector(forward_ref_resolver=resolver)
+
+    typ = reflector.reflect_type(_CtxBoundVar)
+
+    assert isinstance(typ, types.TypeVarType)
+    assert type_str(typ.upper_bound) == 'builtins.int'
+
+    (frr,) = captured
+    assert isinstance(frr, ForwardRefResolution)
+    assert frr.name == '_CtxBound'
+    assert isinstance(frr.obj, annotationlib.ForwardRef)
+    assert frr.obj.__forward_arg__ == '_CtxBound'
+    assert callable(frr.resolve)
+
+
+def test_forward_ref_resolver_overrides_owner_scope_resolution() -> None:
+    reflector = make_reflector(forward_ref_resolver=lambda frr: str)
+
+    typ = reflector.reflect_type(_CtxBoundVar)
+
+    assert isinstance(typ, types.TypeVarType)
+    assert type_str(typ.upper_bound) == 'builtins.str'
+
+
+def test_forward_ref_resolver_can_delegate_to_owner_scope_resolution() -> None:
+    reflector = make_reflector(forward_ref_resolver=lambda frr: frr.resolve())
+
+    typ = reflector.reflect_type(_CtxBoundVar)
+
+    assert isinstance(typ, types.TypeVarType)
+    assert isinstance(typ.upper_bound, types.Instance)
+    assert reflector.universe.get_runtime_type(typ.upper_bound.type) is _CtxBound
+
+
+def test_forward_ref_resolver_delegation_without_owner_scope_raises() -> None:
+    reflector = make_reflector(forward_ref_resolver=lambda frr: frr.resolve())
+
+    with pytest.raises(UnreflectableTypeError, match='forward reference'):
+        reflector.reflect_type('Missing')
+
+
+##
+# Cross-module / cache-safety of context-dependent forward reference resolution.
+
+
+def _install_forward_ref_module(name: str, source: str) -> pytypes.ModuleType:
+    module = pytypes.ModuleType(name)
+    exec(source, module.__dict__)  # noqa: S102
+    sys.modules[name] = module
+    return module
+
+
+def test_type_var_bound_resolves_in_type_var_module_not_using_class_module() -> None:
+    module_name = f'{__name__}._synthetic_type_var_module'
+    module = _install_forward_ref_module(
+        module_name,
+        'import typing as ta\n'
+        'class Target: pass\n'
+        "T = ta.TypeVar('T', bound='Target')\n",
+    )
+    try:
+        type_var = module.T  # defined in `module`, whose scope alone contains `Target`
+
+        class Using(ta.Generic[type_var]):  # type: ignore  # noqa
+            pass
+
+        reflector = make_reflector()
+
+        typ = reflector.reflect_type(Using[int])  # type: ignore
+
+        assert isinstance(typ, types.Instance)
+        (reflected_var,) = typ.type.type_vars
+        assert isinstance(reflected_var, types.TypeVarType)
+        assert isinstance(reflected_var.upper_bound, types.Instance)
+        assert reflector.universe.get_runtime_type(reflected_var.upper_bound.type) is module.Target
+    finally:
+        sys.modules.pop(module_name, None)
+
+
+def test_same_named_forward_ref_bounds_in_distinct_modules_do_not_collide() -> None:
+    name_a = f'{__name__}._synthetic_collision_module_a'
+    name_b = f'{__name__}._synthetic_collision_module_b'
+    source = (
+        'import typing as ta\n'
+        'class Foo: pass\n'
+        "T = ta.TypeVar('T', bound='Foo')\n"
+    )
+    module_a = _install_forward_ref_module(name_a, source)
+    module_b = _install_forward_ref_module(name_b, source)
+    try:
+        # The two `ForwardRef('Foo')` bounds compare equal and hash equal despite naming different classes.
+        assert module_a.T.__bound__ == module_b.T.__bound__
+
+        reflector = make_reflector()
+
+        typ_a = reflector.reflect_type(module_a.T)
+        typ_b = reflector.reflect_type(module_b.T)
+
+        assert isinstance(typ_a, types.TypeVarType)
+        assert isinstance(typ_b, types.TypeVarType)
+        assert isinstance(typ_a.upper_bound, types.Instance)
+        assert isinstance(typ_b.upper_bound, types.Instance)
+
+        # Without the forward-ref cache guard the second reflection would collide with the first and return module_a's
+        # `Foo`.
+        assert reflector.universe.get_runtime_type(typ_a.upper_bound.type) is module_a.Foo
+        assert reflector.universe.get_runtime_type(typ_b.upper_bound.type) is module_b.Foo
+        assert typ_a.upper_bound.type is not typ_b.upper_bound.type
+    finally:
+        sys.modules.pop(name_a, None)
+        sys.modules.pop(name_b, None)

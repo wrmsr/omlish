@@ -202,7 +202,7 @@ def test_namedtuple_recursive_alias_field_structural_type_key_matches_unrolled_t
         node: alias  # type: ignore
 
     api = make_api(
-        forward_ref_resolver={'Node': alias}.__getitem__,
+        forward_ref_resolver=lambda frr: {'Node': alias}[frr.name],
     )
     inspection = api.inspect_namedtuple(Config)
     [field] = inspection.fields
