@@ -68,8 +68,8 @@ class BaseContext(lang.Abstract, lang.Sealed):
                 return ovr.rty
             return None
 
-        # from ... import reflect2 as rfl2
-        # rfl2.reflect_type(o)
+        from ... import reflect2 as rfl2
+        rfl2.reflect_type(o)
 
         return rfl.Reflector(override=override).typeof(o)
 
