@@ -23,7 +23,7 @@ class TopLogprob:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class TokenLogprob[
+class Logprob[
     TopLogprobT: TopLogprob = TopLogprob,
 ]:
     logprob: float
@@ -34,7 +34,7 @@ class TokenLogprob[
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Logprobs[
-    TokenLogprobT: TokenLogprob = TokenLogprob,
+    LogprobT: Logprob = Logprob,
 ]:
-    content: ta.Sequence[TokenLogprobT] | None = None
-    refusal: ta.Sequence[TokenLogprobT] | None = None
+    content: ta.Sequence[LogprobT] | None = None
+    refusal: ta.Sequence[LogprobT] | None = None

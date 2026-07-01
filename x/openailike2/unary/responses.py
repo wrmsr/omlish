@@ -16,7 +16,7 @@ class ResponseToolCallFunction:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class FunctionResponseToolCall[
+class FunctionResponse[
 FunctionT: ResponseToolCallFunction = ResponseToolCallFunction,
 ](
     ResponseToolCall,

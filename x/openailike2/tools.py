@@ -1,21 +1,21 @@
 import dataclasses as dc
-import typing as ta
 
+from .typetags import TypeTagged
 from .json import JsonObject
 
 
 ##
 
 
-class Tool:
-    pass
+class Tool(TypeTagged):
+    __type_tag_field__ = 'type'
 
 
 #
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Function:
+class FunctionToolFunction:
     name: str
     description: str | None = None
     parameters: JsonObject | None = None
@@ -23,46 +23,38 @@ class Function:
 
 @dc.dataclass(frozen=True, kw_only=True)
 class FunctionTool[
-    FunctionT: Function = Function,
+    FunctionToolFunctionT: FunctionToolFunction = FunctionToolFunction,
 ](
     Tool,
 ):
-    function: FunctionT
-    type: ta.Literal['function'] = 'function'
+    __type_tag__ = 'function'
+
+    function: FunctionToolFunctionT
 
 
 ##
 
 
-# class ToolChoice:
-#     pass
+class ToolCall(TypeTagged):
+    __type_tag_field__ = 'type'
+
+
 #
-#
-# ToolChoiceMode: ta.TypeAlias = ta.Literal[
-#     'none',
-#     'auto',
-#     'required',
-# ]
-#
-# ToolChoiceOption: ta.TypeAlias = ta.Union[
-#     ToolChoiceMode,
-#     ToolChoice,
-# ]
-#
-#
-# ##
-#
-#
-# @dc.dataclass(frozen=True, kw_only=True)
-# class NamedToolChoiceFunction:
-#     name: str
-#
-#
-# @dc.dataclass(frozen=True, kw_only=True)
-# class FunctionToolChoice[
-#     FunctionT: NamedToolChoiceFunction = NamedToolChoiceFunction,
-# ](
-#     ToolChoice,
-# ):
-#     function: FunctionT
-#     type: ta.Literal['function'] = 'function'
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class FunctionToolCallFunction:
+    arguments: str
+    name: str
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class FunctionToolCall[
+    FunctionToolCallFunctionT: FunctionToolCallFunction = FunctionToolCallFunction,
+](
+    ToolCall,
+):
+    __type_tag__ = 'function'
+
+    id: str
+    function: FunctionToolCallFunctionT
