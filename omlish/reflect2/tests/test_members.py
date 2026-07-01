@@ -20,9 +20,13 @@ def make_members_inspector() -> MembersInspector:
             lock=(lock := threading.RLock()),
         ),
         reflector=TypeReflector(
-            universe=TypeUniverse(),
+            universe=TypeUniverse(
+                lock=lock,
+            ),
+            interner=Interner(
+                lock=lock,
+            ),
             lock=lock,
-            interner=Interner(lock=lock),
         ),
         lock=lock,
     )

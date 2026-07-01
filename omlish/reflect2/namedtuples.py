@@ -77,7 +77,7 @@ class NamedtupleInspector(
         if not isinstance(instance, Instance):
             raise ReflectionTypeError(f'Unsupported namedtuple reflected type: {instance!r}')
 
-        origin_info = self._reflector.universe.get_type_info(origin)
+        origin_info = self._reflector._universe._get_type_info(origin)
         if instance._type is not origin_info:
             raise UnsupportedTypeOperationError(f'Namedtuple origin mismatch: {instance!r} != {origin_info._fullname}')
 

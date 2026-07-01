@@ -16,12 +16,17 @@ from ..universe import TypeUniverse
 
 
 def _make_annotations() -> TypeAnnotations:
-    universe = TypeUniverse(dynamic_type_name_suffix='counter')
     lock = threading.RLock()
+    universe = TypeUniverse(
+        dynamic_type_name_suffix='counter',
+        lock=lock,
+    )
     reflector = TypeReflector(
         universe=universe,
+        interner=Interner(
+            lock=lock,
+        ),
         lock=lock,
-        interner=Interner(lock=lock),
     )
     annotations = TypeAnnotations(
         reflector=reflector,
@@ -228,9 +233,13 @@ def test_reflector_runtime_annotation_cache_reuses_recursive_variadic_alias_anno
     form = alias[int, str]  # noqa
     annotations = TypeAnnotations(
         reflector=TypeReflector(
-            universe=TypeUniverse(),
-            lock=(lock := threading.RLock()),
-            interner=Interner(lock=lock),
+            universe=TypeUniverse(
+                lock=(lock := threading.RLock()),
+            ),
+            interner=Interner(
+                lock=lock,
+            ),
+            lock=lock,
         ),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
         lock=lock,
@@ -371,9 +380,13 @@ def test_to_runtime_annotation_preserves_recursive_alias_when_expand_policy_is_r
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     annotations = TypeAnnotations(
         reflector=TypeReflector(
-            universe=TypeUniverse(),
-            lock=(lock := threading.RLock()),
-            interner=Interner(lock=lock),
+            universe=TypeUniverse(
+                lock=(lock := threading.RLock()),
+            ),
+            interner=Interner(
+                lock=lock,
+            ),
+            lock=lock,
         ),
         forward_ref_resolver={'Node': alias}.__getitem__,
         lock=lock,
@@ -390,9 +403,13 @@ def test_to_runtime_annotation_preserves_variadic_recursive_alias_when_expand_po
     form = alias[int, str]  # noqa
     annotations = TypeAnnotations(
         reflector=TypeReflector(
-            universe=TypeUniverse(),
-            lock=(lock := threading.RLock()),
-            interner=Interner(lock=lock),
+            universe=TypeUniverse(
+                lock=(lock := threading.RLock()),
+            ),
+            interner=Interner(
+                lock=lock,
+            ),
+            lock=lock,
         ),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
         lock=lock,
@@ -409,9 +426,13 @@ def test_to_runtime_annotation_preserves_generic_variadic_recursive_alias_with_t
     form = alias[ts_var]
     annotations = TypeAnnotations(
         reflector=TypeReflector(
-            universe=TypeUniverse(),
-            lock=(lock := threading.RLock()),
-            interner=Interner(lock=lock),
+            universe=TypeUniverse(
+                lock=(lock := threading.RLock()),
+            ),
+            interner=Interner(
+                lock=lock,
+            ),
+            lock=lock,
         ),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
         lock=lock,
@@ -447,7 +468,7 @@ def test_to_runtime_annotation_fails_closed_for_unknown_type_info() -> None:
     typ = types.Instance(types.TypeInfo('Missing', 'example.Missing'), [])
 
     with pytest.raises(ReflectionError, match='Runtime class is unavailable'):
-        to_runtime_annotation(typ, TypeUniverse())
+        to_runtime_annotation(typ, TypeUniverse(lock=threading.RLock()))
 
 
 def test_to_runtime_annotation_fails_closed_for_unsupported_ir_nodes() -> None:

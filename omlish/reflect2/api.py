@@ -13,8 +13,8 @@ from .interning import Interner
 from .reflector import ForwardRefResolver
 from .reflector import TypeReflector
 from .typekeys import TypeKeys
+from .universe import DynamicTypeNameSuffix
 from .universe import TypeUniverse
-from .universe import or_global_universe
 
 
 if ta.TYPE_CHECKING:
@@ -36,17 +36,20 @@ T = ta.TypeVar('T')
 class Api:
     def __init__(
             self,
-            universe: TypeUniverse | None = None,
             *,
+            dynamic_type_name_suffix: DynamicTypeNameSuffix | None = None,
             forward_ref_resolver: ForwardRefResolver | None = None,
     ) -> None:
         super().__init__()
 
-        self._universe: ta.Final = or_global_universe(universe)
-
         self._lock: ta.Final = threading.RLock()
 
-        self._interner = Interner(
+        self._universe: ta.Final = TypeUniverse(
+            dynamic_type_name_suffix=dynamic_type_name_suffix,
+            lock=self._lock,
+        )
+
+        self._interner: ta.Final = Interner(
             lock=self._lock,
         )
 

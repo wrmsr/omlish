@@ -141,7 +141,4 @@ from .reflector import (  # noqa
 
 from .universe import (  # noqa
     TypeUniverse,
-
-    global_universe,
-    or_global_universe,
 )

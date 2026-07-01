@@ -3,16 +3,23 @@ import typing as ta
 
 from ..interning import Interner
 from ..reflector import TypeReflector
+from ..universe import DynamicTypeNameSuffix
 from ..universe import TypeUniverse
 
 
 def make_reflector(
-        universe: TypeUniverse | None = None,
+        *,
+        dynamic_type_name_suffix: DynamicTypeNameSuffix | None = None,
         **kwargs: ta.Any,
 ) -> TypeReflector:
     return TypeReflector(
-        universe=universe or TypeUniverse(),
-        lock=(lock := threading.RLock()),
-        interner=Interner(lock=lock),
+        universe=TypeUniverse(
+            dynamic_type_name_suffix=dynamic_type_name_suffix,
+            lock=(lock := threading.RLock()),
+        ),
+        interner=Interner(
+            lock=lock,
+        ),
+        lock=lock,
         **kwargs,
     )

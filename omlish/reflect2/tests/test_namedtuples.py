@@ -9,14 +9,11 @@ from ..core.strconv import type_str
 from ..core.typekeys import type_key
 from ..errors import ReflectionError
 from ..namedtuples import is_namedtuple
-from ..universe import TypeUniverse
 
 
 def make_api(**kwargs: ta.Any) -> Api:
     return Api(
-        universe=TypeUniverse(
-            dynamic_type_name_suffix='counter',
-        ),
+        dynamic_type_name_suffix='counter',
         **kwargs,
     )
 

@@ -114,7 +114,7 @@ class DataclassInspector(
             except KeyError:
                 raise ReflectionTypeError(f'Missing dataclass field owner: {origin!r}.{field.name}') from None
 
-            owner_info = self._reflector.universe.get_type_info(owner)
+            owner_info = self._reflector._universe._get_type_info(owner)
             try:
                 owner_entry = entries_by_info[owner_info]
             except KeyError:

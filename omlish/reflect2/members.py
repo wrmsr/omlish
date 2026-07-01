@@ -298,7 +298,7 @@ class MembersInspector(
             owner: type,
             entries_by_info: dict[object, MroEntry],
     ) -> SubstitutionMap:
-        owner_info = self._reflector._universe.get_type_info(owner)
+        owner_info = self._reflector._universe._get_type_info(owner)
         entry = entries_by_info.get(owner_info)
         if entry is None or not entry._info._type_vars:
             return {}

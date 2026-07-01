@@ -1,6 +1,5 @@
 # ruff: noqa: SLF001
 import enum
-import threading
 import typing as ta
 
 from .core.symbols import TypeInfo
@@ -19,6 +18,7 @@ from .known import _KNOWN_GENERIC_ARITIES
 from .known import _KNOWN_GENERIC_VARIANCES
 from .known import _KNOWN_MRO_TAILS
 from .known import _KnownBaseArg
+from .locking import NeedsLock
 
 
 DynamicTypeNameSuffix: ta.TypeAlias = ta.Literal['id', 'counter']
@@ -27,29 +27,29 @@ DynamicTypeNameSuffix: ta.TypeAlias = ta.Literal['id', 'counter']
 ##
 
 
+DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX: DynamicTypeNameSuffix = 'id'
+
 _DYNAMIC_TYPE_NAME_SEPARATOR: ta.Final = '@'
 
 
 @ta.final
-class TypeUniverse:
+class TypeUniverse(
+    NeedsLock,
+):
     def __init__(
             self,
             *,
-            dynamic_type_name_suffix: DynamicTypeNameSuffix = 'id',
+            dynamic_type_name_suffix: DynamicTypeNameSuffix | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
 
-        if dynamic_type_name_suffix not in ('id', 'counter'):
+        if dynamic_type_name_suffix is None:
+            dynamic_type_name_suffix = DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX
+        elif dynamic_type_name_suffix not in ('id', 'counter'):
             raise ReflectionValueError(f'Unsupported dynamic type name suffix mode: {dynamic_type_name_suffix!r}')
 
         self._dynamic_type_name_suffix = dynamic_type_name_suffix
-
-        # Explicitly not an `RLock` - we're very conservative about our public api surface. `Reflector` has a much
-        # larger surface area, but it's also not necessarily shared globally - whereas this usually will be. The locking
-        # discipline here is simply: all underscore methods expect to have the lock, and all public methods will
-        # optionally first try a fast unlocked cached path, and otherwise immediately grab the lock and jump to a
-        # private method.
-        self._lock = threading.Lock()
 
         self._next_dynamic_type_index = 1
 
@@ -258,20 +258,6 @@ class TypeUniverse:
 
     def get_runtime_type(self, info: TypeInfo) -> object | None:
         return self._types_by_fullname.get(info._fullname)
-
-
-##
-
-
-_GLOBAL_UNIVERSE: ta.Final = TypeUniverse()
-
-
-def global_universe() -> TypeUniverse:
-    return _GLOBAL_UNIVERSE
-
-
-def or_global_universe(universe: TypeUniverse | None) -> TypeUniverse:
-    return _GLOBAL_UNIVERSE if universe is None else universe
 
 
 ##

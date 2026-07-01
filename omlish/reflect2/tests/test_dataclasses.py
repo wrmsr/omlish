@@ -24,16 +24,22 @@ from ..universe import TypeUniverse
 def make_dataclass_inspector() -> DataclassInspector:
     return DataclassInspector(
         reflector=TypeReflector(
-            universe=TypeUniverse(),
-            lock=(lock := threading.RLock()),
-            interner=Interner(lock=lock),
+            universe=TypeUniverse(
+                lock=(lock := threading.RLock()),
+            ),
+            interner=Interner(
+                lock=lock,
+            ),
+            lock=lock,
         ),
         lock=lock,
     )
 
 
 def make_api() -> Api:
-    return Api(universe=TypeUniverse(dynamic_type_name_suffix='counter'))
+    return Api(
+        dynamic_type_name_suffix='counter',
+    )
 
 
 def field_runtime_annotations(
