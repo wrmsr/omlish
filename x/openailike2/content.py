@@ -1,11 +1,16 @@
 import dataclasses as dc
 import typing as ta
 
+from .typetags import TypeTagged
+
 
 ##
 
 
-class ContentPart:
+class ContentPart(
+    TypeTagged,
+    type_tag_field='type',
+):
     pass
 
 
@@ -13,9 +18,11 @@ class ContentPart:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class TextContentPart(ContentPart):
+class TextContentPart(
+    ContentPart,
+    type_tag='text',
+):
     text: str
-    type: ta.Literal['text'] = 'text'
 
 
 #
@@ -26,6 +33,6 @@ class ImageUrlContentPart[
     ImageUrlT = ta.Any,
 ](
     ContentPart,
+    type_tag='image_url',
 ):
     image_url: ImageUrlT
-    type: ta.Literal['image_url'] = 'image_url'

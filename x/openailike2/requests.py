@@ -4,11 +4,19 @@ import typing as ta
 from .content import TextContentPart
 from .content import ContentPart
 
+from .json import JsonObject
+from .tools import Tool
+from .tools import ToolCall
+from .typetags import TypeTagged
+
 
 ##
 
 
-class RequestMessage:
+class RequestMessage(
+    TypeTagged,
+    type_tag_field='role',
+):
     pass
 
 
@@ -20,6 +28,7 @@ class SystemRequestMessage[
     TextContentPartT: TextContentPart = TextContentPart,
 ](
     RequestMessage,
+    type_tag='system',
 ):
     content: str | ta.Sequence[TextContentPartT]
     role: ta.Literal['system'] = 'system'
@@ -33,9 +42,9 @@ class UserRequestMessage[
     ContentPartT: ContentPart = ContentPart,
 ](
     RequestMessage,
+    type_tag='user',
 ):
     content: str | ta.Sequence[ContentPartT]
-    role: ta.Literal['user'] = 'user'
 
 
 #
@@ -44,12 +53,12 @@ class UserRequestMessage[
 @dc.dataclass(frozen=True, kw_only=True)
 class AssistantRequestMessage[
     ContentPartT: ContentPart = ContentPart,
-    ToolCallT: ResponseToolCall = ResponseToolCall,
+    ToolCallT: ToolCall = ToolCall,
 ](
     RequestMessage,
+    type_tag='assistant',
 ):
     content: str | ta.Sequence[ContentPartT] | None = None
-    role: ta.Literal['assistant'] = 'assistant'
     tool_calls: ta.Sequence[ToolCallT] | None = None
 
 
@@ -61,10 +70,10 @@ class ToolRequestMessage[
     TextContentPartT: TextContentPart = TextContentPart,
 ](
     RequestMessage,
+    type_tag='tool',
 ):
     content: str | ta.Sequence[TextContentPartT]
     tool_call_id: str
-    role: ta.Literal['tool'] = 'tool'
 
 
 ##
@@ -72,10 +81,10 @@ class ToolRequestMessage[
 
 @dc.dataclass(frozen=True, kw_only=True)
 class RequestBase[
-    MessageT: RequestMessage = RequestMessage,
+    RequestMessageT: RequestMessage = RequestMessage,
 ]:
     model: str
-    messages: ta.Sequence[MessageT]
+    messages: ta.Sequence[RequestMessageT]
 
 
 ##
@@ -84,9 +93,7 @@ class RequestBase[
 @dc.dataclass(frozen=True, kw_only=True)
 class HasRequestTools[
     ToolT: Tool = Tool,
-    ToolChoiceT: ToolChoiceOption = ToolChoiceOption,
 ]:
-    tool_choice: ToolChoiceT | None = None
     tools: ta.Sequence[ToolT] | None = None
 
 
@@ -95,7 +102,7 @@ class HasRequestParallelToolCalls:
     parallel_tool_calls: bool | None = None
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -104,31 +111,40 @@ class HasRequestLogprobs:
     top_logprobs: int | None = None
 
 
-#
+##
 
 
-class ResponseFormat:
+class ResponseFormat(
+    TypeTagged,
+    type_tag_field='type',
+):
     pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class TextResponseFormat(ResponseFormat):
-    type: ta.Literal['text'] = 'text'
+class TextResponseFormat(
+    ResponseFormat,
+    type_tag='text',
+):
+    pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class JsonObjectResponseFormat(ResponseFormat):
-    type: ta.Literal['json_object'] = 'json_object'
+class JsonObjectResponseFormat(
+    ResponseFormat,
+    type_tag='json_object',
+):
+    pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class JsonSchemaResponseFormat[
-    JsonSchemaT: object = object,
+    JsonSchemaT = JsonObject,
 ](
     ResponseFormat,
+    type_tag='json_schema',
 ):
     json_schema: JsonSchemaT
-    type: ta.Literal['json_schema'] = 'json_schema'
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -138,7 +154,7 @@ class HasRequestResponseFormat[
     response_format: ResponseFormatT | None = None
 
 
-#
+##
 
 
 SamplingStop: ta.TypeAlias = str | ta.Sequence[str]

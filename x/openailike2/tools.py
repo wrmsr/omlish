@@ -7,8 +7,11 @@ from .json import JsonObject
 ##
 
 
-class Tool(TypeTagged):
-    __type_tag_field__ = 'type'
+class Tool(
+    TypeTagged,
+    type_tag_field='type',
+):
+    pass
 
 
 #
@@ -26,17 +29,19 @@ class FunctionTool[
     FunctionToolFunctionT: FunctionToolFunction = FunctionToolFunction,
 ](
     Tool,
+    type_tag='function',
 ):
-    __type_tag__ = 'function'
-
     function: FunctionToolFunctionT
 
 
 ##
 
 
-class ToolCall(TypeTagged):
-    __type_tag_field__ = 'type'
+class ToolCall(
+    TypeTagged,
+    type_tag_field='type',
+):
+    pass
 
 
 #
@@ -53,8 +58,7 @@ class FunctionToolCall[
     FunctionToolCallFunctionT: FunctionToolCallFunction = FunctionToolCallFunction,
 ](
     ToolCall,
+    type_tag='function',
 ):
-    __type_tag__ = 'function'
-
     id: str
     function: FunctionToolCallFunctionT
