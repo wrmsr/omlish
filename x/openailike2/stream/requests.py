@@ -1,6 +1,9 @@
 import dataclasses as dc
 import typing as ta
 
+from ..requests import RequestBase
+from ..requests import RequestMessage
+
 
 ##
 
@@ -12,11 +15,11 @@ class StreamOptions:
 
 @dc.dataclass(frozen=True, kw_only=True)
 class StreamRequest[
-    MessageT: RequestMessage = RequestMessage,
+    RequestMessageT: RequestMessage = RequestMessage,
     StreamOptionsT: StreamOptions = StreamOptions,
 ](
     RequestBase[
-        MessageT,
+        RequestMessageT,
     ],
 ):
     stream: ta.Literal[True] = True

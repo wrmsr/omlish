@@ -1,48 +1,63 @@
 import dataclasses as dc
 import typing as ta
 
+from ..responses import Usage
+from ..typetags import TypeTagged
+
 
 ##
 
 
-class StreamDeltaToolCall:
+class StreamDeltaToolCall(
+    TypeTagged,
+    type_tag_field='type',
+):
     pass
 
 
+#
+
+
 @dc.dataclass(frozen=True, kw_only=True)
-class StreamDeltaToolCallFunction:
+class FunctionStreamDeltaToolCallFunction:
     arguments: str | None = None
     name: str | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class FunctionStreamDeltaToolCall[
-    FunctionT: StreamDeltaToolCallFunction = StreamDeltaToolCallFunction,
+    FunctionStreamDeltaToolCallFunctionT: FunctionStreamDeltaToolCallFunction = FunctionStreamDeltaToolCallFunction,
 ](
     StreamDeltaToolCall,
+    type_tag='function',
 ):
     index: int
-    function: FunctionT | None = None
+    function: FunctionStreamDeltaToolCallFunctionT | None = None
     id: str | None = None
-    type: ta.Literal['function'] | None = None
 
 
 ##
 
 
-class StreamDelta:
+class StreamDelta(
+    TypeTagged,
+    type_tag_field='role',
+):
     pass
+
+
+#
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class AssistantStreamDelta[
-    ToolCallT: StreamDeltaToolCall = StreamDeltaToolCall,
+    StreamDeltaToolCallT: StreamDeltaToolCall = StreamDeltaToolCall,
 ](
     StreamDelta,
+    type_tag='assistant',
 ):
     content: str | None = None
-    role: ta.Literal['assistant'] | None = None
-    tool_calls: ta.Sequence[ToolCallT] | None = None
+    tool_calls: ta.Sequence[StreamDeltaToolCallT] | None = None
 
 
 ##
@@ -65,9 +80,12 @@ class StreamChoice[
 class StreamChunk[
     ChoiceT: StreamChoice = StreamChoice,
     UsageT: Usage = Usage,
-]:
+](
+    TypeTagged,
+    type_tag_field='object',
+    type_tag='chat.completion.chunk',
+):
     id: str
-    object: ta.Literal['chat.completion.chunk'] = 'chat.completion.chunk'
     created: int
     model: str
     choices: ta.Sequence[ChoiceT]

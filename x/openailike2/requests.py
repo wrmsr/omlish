@@ -31,7 +31,6 @@ class SystemRequestMessage[
     type_tag='system',
 ):
     content: str | ta.Sequence[TextContentPartT]
-    role: ta.Literal['system'] = 'system'
 
 
 #
