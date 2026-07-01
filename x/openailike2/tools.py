@@ -1,7 +1,7 @@
 import dataclasses as dc
 
-from .typetags import TypeTagged
 from .json import JsonObject
+from .typetags import TypeTagged
 
 
 ##

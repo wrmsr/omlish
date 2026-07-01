@@ -1,9 +1,8 @@
 import dataclasses as dc
 import typing as ta
 
-from .content import TextContentPart
 from .content import ContentPart
-
+from .content import TextContentPart
 from .json import JsonObject
 from .tools import Tool
 from .tools import ToolCall
