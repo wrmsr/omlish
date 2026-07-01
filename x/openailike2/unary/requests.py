@@ -1,4 +1,4 @@
-import dataclasses as dc
+from omlish import dataclasses as dc
 
 from ..requests import RequestBase
 from ..requests import RequestMessage
