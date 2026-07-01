@@ -91,7 +91,7 @@ services:
   # ext
 
   omlish-elasticsearch:
-    image: 'elasticsearch:8.19.17'
+    image: 'elasticsearch:8.19.18'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'
@@ -115,7 +115,7 @@ services:
       - '35230:7687'
 
   omlish-pgvector:
-    image: 'pgvector/pgvector:0.8.3-pg17'
+    image: 'pgvector/pgvector:0.8.4-pg17'
     restart: 'unless-stopped'
     environment:
       POSTGRES_USER: 'postgres'

@@ -49,7 +49,7 @@ pudb==2025.1.5
 
 ##
 
-cython==3.2.6
+cython==3.2.8
 
 lxml==6.1.1
 
@@ -135,8 +135,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.43.37
-types-boto3>=1.43.37
+boto3>=1.43.38
+types-boto3>=1.43.38
 botocore-stubs>=1.43.14
 
 antlr4-python3-runtime==4.13.2

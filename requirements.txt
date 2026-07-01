@@ -78,4 +78,4 @@ aiomysql==0.3.2
 aiosqlite==0.22.1
 asyncpg==0.31.0
 
-asyncssh==2.23.1  # @omlish-venv !15t
+asyncssh==2.24.0  # @omlish-venv !15t
