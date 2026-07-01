@@ -122,7 +122,6 @@ def test_make_runtime_reflector_accepts_dynamic_name_suffix() -> None:
 
     reflector = make_reflector(
         dynamic_type_name_suffix='counter',
-        forward_ref_resolver=None,
     )
 
     typ = reflector.reflect_type(Local)
@@ -137,11 +136,9 @@ def test_separate_reflectors_assign_distinct_dynamic_type_infos() -> None:
 
     left_reflector = make_reflector(
         dynamic_type_name_suffix='counter',
-        forward_ref_resolver=None,
     )
     right_reflector = make_reflector(
         dynamic_type_name_suffix='counter',
-        forward_ref_resolver=None,
     )
 
     left = left_reflector.reflect_type(Local)
@@ -257,11 +254,9 @@ def test_separate_reflectors_assign_distinct_runtime_type_vars() -> None:
     rt_type_var = ta.TypeVar('T')  # type: ignore
     left_reflector = make_reflector(
         dynamic_type_name_suffix='id',
-        forward_ref_resolver=None,
     )
     right_reflector = make_reflector(
         dynamic_type_name_suffix='id',
-        forward_ref_resolver=None,
     )
 
     left = left_reflector.reflect_type(rt_type_var)
@@ -277,11 +272,9 @@ def test_cross_reflector_type_var_substitution_does_not_match_by_runtime_object(
     rt_type_var = ta.TypeVar('T')  # type: ignore
     key_reflector = make_reflector(
         dynamic_type_name_suffix='id',
-        forward_ref_resolver=None,
     )
     type_reflector = make_reflector(
         dynamic_type_name_suffix='id',
-        forward_ref_resolver=None,
     )
 
     key = key_reflector.reflect_type(rt_type_var)
@@ -715,7 +708,9 @@ def test_reflects_indirect_recursive_type_alias_type_as_alias_nodes() -> None:
         'A': alias_a,
         'B': alias_b,
     }
-    reflector = make_reflector(forward_ref_resolver=aliases.__getitem__)
+    reflector = make_reflector(
+        forward_ref_resolver=aliases.__getitem__,
+    )
 
     typ_a = reflector.reflect_type(alias_a)
     typ_b = reflector.reflect_type(alias_b)
@@ -730,7 +725,9 @@ def test_reflects_indirect_recursive_type_alias_type_as_alias_nodes() -> None:
 def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list['Alias[T]'], type_params=(t_var,))  # type: ignore
-    reflector = make_reflector(forward_ref_resolver={'Alias': alias}.__getitem__)
+    reflector = make_reflector(
+        forward_ref_resolver={'Alias': alias}.__getitem__,
+    )
 
     typ = reflector.reflect_type(alias[int])
 
@@ -757,7 +754,9 @@ def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> Non
 def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[t_var, 'Alias[T]'], type_params=(t_var,))  # type: ignore
-    reflector = make_reflector(forward_ref_resolver={'Alias': alias}.__getitem__)
+    reflector = make_reflector(
+        forward_ref_resolver={'Alias': alias}.__getitem__,
+    )
 
     typ = reflector.reflect_type(alias[int])
 
@@ -784,7 +783,9 @@ def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() 
 def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var, 'Alias[*Ts]'], type_params=(ts_var,))  # type: ignore
-    reflector = make_reflector(forward_ref_resolver={'Alias': alias}.__getitem__)
+    reflector = make_reflector(
+        forward_ref_resolver={'Alias': alias}.__getitem__,
+    )
 
     typ = reflector.reflect_type(alias[int, str])
 
@@ -849,7 +850,7 @@ def test_rejects_typing_forward_reference_until_resolution_exists() -> None:
 
 def test_resolves_raw_string_forward_reference_with_resolver() -> None:
     reflector = make_reflector(
-        forward_ref_resolver=lambda name: {'User': int}[name],
+        forward_ref_resolver={'User': int}.__getitem__,
     )
 
     typ = reflector.reflect_type('User')
