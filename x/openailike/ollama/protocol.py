@@ -10,23 +10,25 @@ from ..oailike.protocol import FunctionOaiLikeChatCompletionTool
 from ..oailike.protocol import FunctionOaiLikeChatCompletionToolChoice
 from ..oailike.protocol import HasOaiLikeChatCompletionLogprobsRequest
 from ..oailike.protocol import HasOaiLikeChatCompletionSystemFingerprint
-from ..oailike.protocol import HasOaiLikeParallelToolCalls
 from ..oailike.protocol import ImageUrlOaiLikeChatCompletionContentPart
 from ..oailike.protocol import JsonObject
 from ..oailike.protocol import JsonObjectOaiLikeChatCompletionResponseFormat
 from ..oailike.protocol import JsonSchemaOaiLikeChatCompletionResponseFormat
+from ..oailike.protocol import JsonValue
 from ..oailike.protocol import LogprobsOaiLikeChatCompletionChoice
 from ..oailike.protocol import LogprobsOaiLikeChatCompletionStreamChoice
 from ..oailike.protocol import OaiLikeChatCompletionContentPart
 from ..oailike.protocol import OaiLikeChatCompletionFunctionDefinition
 from ..oailike.protocol import OaiLikeChatCompletionLogprobs
 from ..oailike.protocol import OaiLikeChatCompletionNamedToolChoiceFunction
+from ..oailike.protocol import OaiLikeChatCompletionRequest
 from ..oailike.protocol import OaiLikeChatCompletionRequestMessage
 from ..oailike.protocol import OaiLikeChatCompletionResponse
 from ..oailike.protocol import OaiLikeChatCompletionResponseFormat
 from ..oailike.protocol import OaiLikeChatCompletionResponseMessage
 from ..oailike.protocol import OaiLikeChatCompletionResponseToolCall
 from ..oailike.protocol import OaiLikeChatCompletionResponseToolCallFunction
+from ..oailike.protocol import OaiLikeChatCompletionStreamChunk
 from ..oailike.protocol import OaiLikeChatCompletionStreamDelta
 from ..oailike.protocol import OaiLikeChatCompletionStreamDeltaToolCall
 from ..oailike.protocol import OaiLikeChatCompletionStreamDeltaToolCallFunction
@@ -40,11 +42,8 @@ from ..oailike.protocol import OaiLikeChatCompletionTopLogprob
 from ..oailike.protocol import OaiLikeChatCompletionUsage
 from ..oailike.protocol import SystemOaiLikeChatCompletionRequestMessage
 from ..oailike.protocol import TextOaiLikeChatCompletionContentPart
-from ..oailike.protocol import OaiLikeChatCompletionStreamChunk
 from ..oailike.protocol import ToolOaiLikeChatCompletionRequestMessage
 from ..oailike.protocol import UserOaiLikeChatCompletionRequestMessage
-from ..oailike.protocol import JsonValue
-from ..oailike.protocol import OaiLikeChatCompletionRequest
 
 
 ###

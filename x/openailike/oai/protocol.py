@@ -21,12 +21,14 @@ from ..oailike.protocol import OaiLikeChatCompletionContentPart
 from ..oailike.protocol import OaiLikeChatCompletionFunctionDefinition
 from ..oailike.protocol import OaiLikeChatCompletionLogprobs
 from ..oailike.protocol import OaiLikeChatCompletionNamedToolChoiceFunction
+from ..oailike.protocol import OaiLikeChatCompletionRequest
 from ..oailike.protocol import OaiLikeChatCompletionRequestMessage
 from ..oailike.protocol import OaiLikeChatCompletionResponse
 from ..oailike.protocol import OaiLikeChatCompletionResponseFormat
 from ..oailike.protocol import OaiLikeChatCompletionResponseMessage
 from ..oailike.protocol import OaiLikeChatCompletionResponseToolCall
 from ..oailike.protocol import OaiLikeChatCompletionResponseToolCallFunction
+from ..oailike.protocol import OaiLikeChatCompletionStreamChunk
 from ..oailike.protocol import OaiLikeChatCompletionStreamDelta
 from ..oailike.protocol import OaiLikeChatCompletionStreamDeltaToolCall
 from ..oailike.protocol import OaiLikeChatCompletionStreamDeltaToolCallFunction
@@ -43,12 +45,6 @@ from ..oailike.protocol import TextOaiLikeChatCompletionContentPart
 from ..oailike.protocol import TextOaiLikeChatCompletionResponseFormat
 from ..oailike.protocol import ToolOaiLikeChatCompletionRequestMessage
 from ..oailike.protocol import UserOaiLikeChatCompletionRequestMessage
-from ..oailike.protocol import OaiLikeChatCompletionRequest
-from ..oailike.protocol import OaiLikeChatCompletionStreamChunk
-from ..oailike.protocol import JsonValue
-from ..oailike.protocol import OaiLikeChatCompletionStreamChoice
-from ..oailike.protocol import OaiLikeChatCompletionChoice
-
 
 
 ###
