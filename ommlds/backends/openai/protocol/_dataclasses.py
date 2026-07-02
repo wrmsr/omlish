@@ -138,7 +138,7 @@ def _process_dataclass__3d73ba1f5de270521bf16efc58111adcf69bc48e():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'id',
             'choices',
             'created',
@@ -155,31 +155,17 @@ def _process_dataclass__3d73ba1f5de270521bf16efc58111adcf69bc48e():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'id',
-            'choices',
-            'created',
-            'model',
-            'object',
-            'service_tier',
-            'system_fingerprint',
-            'usage',
-            'obfuscation',
-            'time_info',
-            'x_groq',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -323,7 +309,7 @@ def _process_dataclass__b51ffbeca51133b17d92cc2ab8fc3403de71e202():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'delta',
             'finish_reason',
             'index',
@@ -333,24 +319,17 @@ def _process_dataclass__b51ffbeca51133b17d92cc2ab8fc3403de71e202():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'delta',
-            'finish_reason',
-            'index',
-            'logprobs',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -455,7 +434,7 @@ def _process_dataclass__a784a12ebcb916e633672bf2c35c6579e020ff31():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'content',
             'refusal',
         }
@@ -463,22 +442,17 @@ def _process_dataclass__a784a12ebcb916e633672bf2c35c6579e020ff31():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'content',
-            'refusal',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -604,7 +578,7 @@ def _process_dataclass__e0dd6733c70afd63e62d3d1f56e946a61b8abd4b():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'content',
             'refusal',
             'channel',
@@ -616,26 +590,17 @@ def _process_dataclass__e0dd6733c70afd63e62d3d1f56e946a61b8abd4b():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'content',
-            'refusal',
-            'channel',
-            'reasoning',
-            'role',
-            'tool_calls',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -760,7 +725,7 @@ def _process_dataclass__3b71b04cca7e8d3354a5bb5cdc6ba69d294b61c9():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'index',
             'id',
             'function',
@@ -770,24 +735,17 @@ def _process_dataclass__3b71b04cca7e8d3354a5bb5cdc6ba69d294b61c9():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'index',
-            'id',
-            'function',
-            'type',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -890,7 +848,7 @@ def _process_dataclass__ca1d4dad922b4f93571cc14b86fcfb93e4c5f278():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'arguments',
             'name',
         }
@@ -898,22 +856,17 @@ def _process_dataclass__ca1d4dad922b4f93571cc14b86fcfb93e4c5f278():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'arguments',
-            'name',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1001,28 +954,24 @@ def _process_dataclass__820703dde31327beb60e5aac6d470c0773d6e7ec():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'file',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'file',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1121,7 +1070,7 @@ def _process_dataclass__c02271796516dea2e671f76da4eb47ad2ea8e54e():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'file_data',
             'file_id',
             'filename',
@@ -1130,23 +1079,17 @@ def _process_dataclass__c02271796516dea2e671f76da4eb47ad2ea8e54e():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'file_data',
-            'file_id',
-            'filename',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1238,28 +1181,24 @@ def _process_dataclass__0613bb79b7ba3f407646dd7913e28b991291f4ba():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'image_url',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'image_url',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1347,7 +1286,7 @@ def _process_dataclass__0e6cdad9d5cc244f6f448ffe4a9b42d55254d07a():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'url',
             'detail',
         }
@@ -1355,22 +1294,17 @@ def _process_dataclass__0e6cdad9d5cc244f6f448ffe4a9b42d55254d07a():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'url',
-            'detail',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1457,28 +1391,24 @@ def _process_dataclass__0d200bd5732bf8acefc4982cb9f4faf1b94e1f59():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'input_audio',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'input_audio',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1567,7 +1497,7 @@ def _process_dataclass__66e8d7302e31e7aff7ac2f26496aad56e225e3d1():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'data',
             'format',
         }
@@ -1575,22 +1505,17 @@ def _process_dataclass__66e8d7302e31e7aff7ac2f26496aad56e225e3d1():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'data',
-            'format',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1677,28 +1602,24 @@ def _process_dataclass__f8dffa13018e7a78dec0c87f480c530d68cb619c():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'refusal',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'refusal',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1781,28 +1702,24 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'text',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'text',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1923,7 +1840,7 @@ def _process_dataclass__52ca6f1ee19ff4580236cf91b4d8dc7744bbbea3():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'reasoning',
             'audio',
             'content',
@@ -1935,26 +1852,17 @@ def _process_dataclass__52ca6f1ee19ff4580236cf91b4d8dc7744bbbea3():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'reasoning',
-            'audio',
-            'content',
-            'name',
-            'refusal',
-            'tool_calls',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -2057,28 +1965,24 @@ def _process_dataclass__c5af6f307dd107bda40bc7313a644e62e9f79b78():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'id',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'id',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -2175,7 +2079,7 @@ def _process_dataclass__83872bdd3ec48e6894ce8e035bdc4708a2dd6e64():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'id',
             'function',
             'type',
@@ -2184,23 +2088,17 @@ def _process_dataclass__83872bdd3ec48e6894ce8e035bdc4708a2dd6e64():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'id',
-            'function',
-            'type',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -2298,7 +2196,7 @@ def _process_dataclass__74d1fa47dc3c867f85203a9e43e792c7b1202dab():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'arguments',
             'name',
         }
@@ -2306,22 +2204,17 @@ def _process_dataclass__74d1fa47dc3c867f85203a9e43e792c7b1202dab():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'arguments',
-            'name',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -2418,7 +2311,7 @@ def _process_dataclass__6aaca6eef447e0e6906a14b2f1c0516c67cdc965():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'content',
             'name',
         }
@@ -2426,22 +2319,17 @@ def _process_dataclass__6aaca6eef447e0e6906a14b2f1c0516c67cdc965():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'content',
-            'name',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -2535,7 +2423,7 @@ def _process_dataclass__acfb7b4dec2626f8e5d56a629978189fa92883c2():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'content',
             'name',
         }
@@ -2543,22 +2431,17 @@ def _process_dataclass__acfb7b4dec2626f8e5d56a629978189fa92883c2():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'content',
-            'name',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -2652,7 +2535,7 @@ def _process_dataclass__7b34fa2c51a834eeac98aeb3f7bbdf422b553272():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'content',
             'tool_call_id',
         }
@@ -2660,22 +2543,17 @@ def _process_dataclass__7b34fa2c51a834eeac98aeb3f7bbdf422b553272():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'content',
-            'tool_call_id',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -2972,7 +2850,7 @@ def _process_dataclass__28976b0e5a23647ebf234c82017dc5f8c1d7ab3e():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'messages',
             'model',
             'audio',
@@ -3007,49 +2885,17 @@ def _process_dataclass__28976b0e5a23647ebf234c82017dc5f8c1d7ab3e():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'messages',
-            'model',
-            'audio',
-            'frequency_penalty',
-            'logit_bias',
-            'logprobs',
-            'max_completion_tokens',
-            'max_tokens',
-            'metadata',
-            'modalities',
-            'n',
-            'parallel_tool_calls',
-            'prediction',
-            'presence_penalty',
-            'reasoning_effort',
-            'response_format',
-            'seed',
-            'service_tier',
-            'stop',
-            'store',
-            'stream',
-            'stream_options',
-            'temperature',
-            'tool_choice',
-            'tools',
-            'top_logprobs',
-            'top_p',
-            'user',
-            'web_search_options',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -3246,28 +3092,24 @@ def _process_dataclass__89e270d921a6b67e79d7a3d1935a58c8228c8d17():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'include_usage',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'include_usage',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -3357,7 +3199,7 @@ def _process_dataclass__c047ab836faa261ad70d3dfc0fa37873ecb1ed61():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'format',
             'voice',
         }
@@ -3365,22 +3207,17 @@ def _process_dataclass__c047ab836faa261ad70d3dfc0fa37873ecb1ed61():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'format',
-            'voice',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -3475,7 +3312,7 @@ def _process_dataclass__ee16f2c04dad1b5d2c06434a3cbf758d293ba00e():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'function',
             'type',
         }
@@ -3483,22 +3320,17 @@ def _process_dataclass__ee16f2c04dad1b5d2c06434a3cbf758d293ba00e():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'function',
-            'type',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -3585,28 +3417,24 @@ def _process_dataclass__a8c678a92ec79b6aa505feedefe70ee7fef92ccd():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'name',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'name',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -3695,7 +3523,7 @@ def _process_dataclass__0411eeee08fe6bc992a54c035c1a7fbcbdc3ce8d():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'content',
             'type',
         }
@@ -3703,22 +3531,17 @@ def _process_dataclass__0411eeee08fe6bc992a54c035c1a7fbcbdc3ce8d():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'content',
-            'type',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -3828,7 +3651,7 @@ def _process_dataclass__01898cc3dbb4ed54bd59e50ec3af9225452f6483():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'name',
             'description',
             'parameters',
@@ -3838,24 +3661,17 @@ def _process_dataclass__01898cc3dbb4ed54bd59e50ec3af9225452f6483():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'name',
-            'description',
-            'parameters',
-            'strict',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -3960,7 +3776,7 @@ def _process_dataclass__6b7fa47f25fef7c23ef841a417d4da27143c6699():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'search_context_size',
             'user_location',
         }
@@ -3968,22 +3784,17 @@ def _process_dataclass__6b7fa47f25fef7c23ef841a417d4da27143c6699():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'search_context_size',
-            'user_location',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -4078,7 +3889,7 @@ def _process_dataclass__e71e091e435af06aadbfa9172601238d550ec877():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'approximate',
             'type',
         }
@@ -4086,22 +3897,17 @@ def _process_dataclass__e71e091e435af06aadbfa9172601238d550ec877():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'approximate',
-            'type',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -4211,7 +4017,7 @@ def _process_dataclass__57f153c4c546fa5429d79eedff004cd245c9ba6f():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'city',
             'country',
             'region',
@@ -4221,24 +4027,17 @@ def _process_dataclass__57f153c4c546fa5429d79eedff004cd245c9ba6f():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'city',
-            'country',
-            'region',
-            'timezone',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -4404,7 +4203,7 @@ def _process_dataclass__9b9f91ead43692c95f1eab73fc3ba8716cc9a6a6():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'id',
             'choices',
             'created',
@@ -4421,31 +4220,17 @@ def _process_dataclass__9b9f91ead43692c95f1eab73fc3ba8716cc9a6a6():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'id',
-            'choices',
-            'created',
-            'model',
-            'object',
-            'service_tier',
-            'system_fingerprint',
-            'usage',
-            'time_info',
-            'usage_breakdown',
-            'x_groq',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -4587,7 +4372,7 @@ def _process_dataclass__44b10f936c3932df17be0708f2449a883036da63():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'finish_reason',
             'index',
             'logprobs',
@@ -4597,24 +4382,17 @@ def _process_dataclass__44b10f936c3932df17be0708f2449a883036da63():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'finish_reason',
-            'index',
-            'logprobs',
-            'message',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -4755,7 +4533,7 @@ def _process_dataclass__e20169c11dfa5f0256c063c8677513b9785fd428():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'content',
             'refusal',
             'reasoning',
@@ -4768,27 +4546,17 @@ def _process_dataclass__e20169c11dfa5f0256c063c8677513b9785fd428():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'content',
-            'refusal',
-            'reasoning',
-            'role',
-            'annotations',
-            'audio',
-            'tool_calls',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -4902,7 +4670,7 @@ def _process_dataclass__e247f654503e25d14969a16a33fb7ce13e734134():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'type',
             'url_citation',
         }
@@ -4910,22 +4678,17 @@ def _process_dataclass__e247f654503e25d14969a16a33fb7ce13e734134():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'type',
-            'url_citation',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -5030,7 +4793,7 @@ def _process_dataclass__892693ba44c86e2caeb208be04dd1dce08c7249e():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'end_index',
             'start_index',
             'title',
@@ -5040,24 +4803,17 @@ def _process_dataclass__892693ba44c86e2caeb208be04dd1dce08c7249e():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'end_index',
-            'start_index',
-            'title',
-            'url',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -5171,7 +4927,7 @@ def _process_dataclass__4f00965a6065cd8a0d1c970720f564d433563eb6():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'id',
             'data',
             'expires_at',
@@ -5181,24 +4937,17 @@ def _process_dataclass__4f00965a6065cd8a0d1c970720f564d433563eb6():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'id',
-            'data',
-            'expires_at',
-            'transcript',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -5376,28 +5125,24 @@ def _process_dataclass__6082104726540db00af83187c5f190d98e893ded():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'json_schema',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'json_schema',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -5503,7 +5248,7 @@ def _process_dataclass__fe9949b6c4c778fd87c0573554efffc59636dd5b():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'name',
             'description',
             'schema',
@@ -5513,24 +5258,17 @@ def _process_dataclass__fe9949b6c4c778fd87c0573554efffc59636dd5b():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'name',
-            'description',
-            'schema',
-            'strict',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -5645,7 +5383,7 @@ def _process_dataclass__bfcb20219fa7ab1adf092df40f2b3ca41d9bcdb8():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'token',
             'bytes',
             'logprob',
@@ -5655,24 +5393,17 @@ def _process_dataclass__bfcb20219fa7ab1adf092df40f2b3ca41d9bcdb8():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'token',
-            'bytes',
-            'logprob',
-            'top_logprobs',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -5781,7 +5512,7 @@ def _process_dataclass__e1af9be7f64c4eea692034674c3d64de8d125f04():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'token',
             'bytes',
             'logprob',
@@ -5790,23 +5521,17 @@ def _process_dataclass__e1af9be7f64c4eea692034674c3d64de8d125f04():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'token',
-            'bytes',
-            'logprob',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -5958,7 +5683,7 @@ def _process_dataclass__e65adc32d0c705444e369f54f57f27cdd23202a4():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'completion_tokens',
             'prompt_tokens',
             'total_tokens',
@@ -5973,29 +5698,17 @@ def _process_dataclass__e65adc32d0c705444e369f54f57f27cdd23202a4():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'completion_tokens',
-            'prompt_tokens',
-            'total_tokens',
-            'completion_tokens_details',
-            'prompt_tokens_details',
-            'queue_time',
-            'completion_time',
-            'prompt_time',
-            'total_time',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -6137,7 +5850,7 @@ def _process_dataclass__c969bdd7d26912a21d9f9e305de5d8853c89c70e():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'accepted_prediction_tokens',
             'audio_tokens',
             'reasoning_tokens',
@@ -6147,24 +5860,17 @@ def _process_dataclass__c969bdd7d26912a21d9f9e305de5d8853c89c70e():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'accepted_prediction_tokens',
-            'audio_tokens',
-            'reasoning_tokens',
-            'rejected_prediction_tokens',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -6269,7 +5975,7 @@ def _process_dataclass__744b3ed5c7058f444d11e07c7f9028f5dd7ff59b():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'audio_tokens',
             'cached_tokens',
         }
@@ -6277,22 +5983,17 @@ def _process_dataclass__744b3ed5c7058f444d11e07c7f9028f5dd7ff59b():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'audio_tokens',
-            'cached_tokens',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -6406,7 +6107,7 @@ def _process_dataclass__41d3dc8d391856d839ba3888447032f23a46c8e1():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'content_index',
@@ -6417,25 +6118,17 @@ def _process_dataclass__41d3dc8d391856d839ba3888447032f23a46c8e1():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'content_index',
-            'part',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -6557,7 +6250,7 @@ def _process_dataclass__aeb2942e91d837c6674e2d04872576d047515e4e():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'message',
             'code',
             'param',
@@ -6567,24 +6260,17 @@ def _process_dataclass__aeb2942e91d837c6674e2d04872576d047515e4e():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'message',
-            'code',
-            'param',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -6707,7 +6393,7 @@ def _process_dataclass__b068f9642c578a32eb62c1e6a8277357ca9b8dba():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'delta',
@@ -6718,25 +6404,17 @@ def _process_dataclass__b068f9642c578a32eb62c1e6a8277357ca9b8dba():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'delta',
-            'obfuscation',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -6863,7 +6541,7 @@ def _process_dataclass__737a291dfa894b9d500230288a33db7c0e01b501():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'arguments',
@@ -6874,25 +6552,17 @@ def _process_dataclass__737a291dfa894b9d500230288a33db7c0e01b501():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'arguments',
-            'name',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -7006,7 +6676,7 @@ def _process_dataclass__04ee48c20bf1bfa63514129843fe9b5ab33f1406():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'output_index',
             'item',
             'sequence_number',
@@ -7015,23 +6685,17 @@ def _process_dataclass__04ee48c20bf1bfa63514129843fe9b5ab33f1406():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'output_index',
-            'item',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -7164,7 +6828,7 @@ def _process_dataclass__a8c8bb354c63beb0f99e7f9cb143c84476d1febf():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'content_index',
@@ -7177,27 +6841,17 @@ def _process_dataclass__a8c8bb354c63beb0f99e7f9cb143c84476d1febf():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'content_index',
-            'delta',
-            'logprobs',
-            'obfuscation',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -7338,7 +6992,7 @@ def _process_dataclass__c6cf2680659508c3c6cbc06abd71d56dd98b63e1():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'content_index',
@@ -7350,26 +7004,17 @@ def _process_dataclass__c6cf2680659508c3c6cbc06abd71d56dd98b63e1():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'content_index',
-            'text',
-            'logprobs',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -7499,7 +7144,7 @@ def _process_dataclass__c1584ffcbb72484b98c9b2cdd14f4fb821547544():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'summary_index',
@@ -7510,25 +7155,17 @@ def _process_dataclass__c1584ffcbb72484b98c9b2cdd14f4fb821547544():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'summary_index',
-            'part',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -7662,7 +7299,7 @@ def _process_dataclass__c89f110b1ce7623ecfd1656f7c0f7af460598313():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'summary_index',
@@ -7674,26 +7311,17 @@ def _process_dataclass__c89f110b1ce7623ecfd1656f7c0f7af460598313():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'summary_index',
-            'delta',
-            'obfuscation',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -7823,7 +7451,7 @@ def _process_dataclass__ffd0e5b88ac6d331d99c2ccc4e072fcc46b9c374():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'summary_index',
@@ -7834,25 +7462,17 @@ def _process_dataclass__ffd0e5b88ac6d331d99c2ccc4e072fcc46b9c374():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'summary_index',
-            'text',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -7986,7 +7606,7 @@ def _process_dataclass__38ec2a07e5070d8257e127550ecc5b4b90c45218():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'content_index',
@@ -7998,26 +7618,17 @@ def _process_dataclass__38ec2a07e5070d8257e127550ecc5b4b90c45218():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'content_index',
-            'delta',
-            'obfuscation',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -8147,7 +7758,7 @@ def _process_dataclass__d946387723573b42ce6ee3f9e381c66e2779bbdb():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'item_id',
             'output_index',
             'content_index',
@@ -8158,25 +7769,17 @@ def _process_dataclass__d946387723573b42ce6ee3f9e381c66e2779bbdb():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'item_id',
-            'output_index',
-            'content_index',
-            'text',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -8284,7 +7887,7 @@ def _process_dataclass__2b74f9cea18bfaf5c9d52b33cc2c5592b24bb0ae():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'response',
             'sequence_number',
         }
@@ -8292,22 +7895,17 @@ def _process_dataclass__2b74f9cea18bfaf5c9d52b33cc2c5592b24bb0ae():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'response',
-            'sequence_number',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -8415,7 +8013,7 @@ def _process_dataclass__14c7e9d6ecf3310f7daf772de8d9de2a7d82c402():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'call_id',
             'output',
             'id',
@@ -8425,24 +8023,17 @@ def _process_dataclass__14c7e9d6ecf3310f7daf772de8d9de2a7d82c402():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'call_id',
-            'output',
-            'id',
-            'status',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -8565,7 +8156,7 @@ def _process_dataclass__f6915274c784a3ae98bae3414bdcbae07632ca99():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'call_id',
             'name',
             'arguments',
@@ -8576,25 +8167,17 @@ def _process_dataclass__f6915274c784a3ae98bae3414bdcbae07632ca99():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'call_id',
-            'name',
-            'arguments',
-            'id',
-            'status',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -8710,7 +8293,7 @@ def _process_dataclass__82355dfeb05bc4fdf26ca137b444a50dab8248ce():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'image_url',
             'file_id',
             'detail',
@@ -8719,23 +8302,17 @@ def _process_dataclass__82355dfeb05bc4fdf26ca137b444a50dab8248ce():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'image_url',
-            'file_id',
-            'detail',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -8827,28 +8404,24 @@ def _process_dataclass__981a3fd6730d2d619e2c7c14e7ef8cc88d193ce6():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'text',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'text',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -8952,7 +8525,7 @@ def _process_dataclass__ca283e188088e4d68bde848f1419ebc9a1dd1211():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'role',
             'content',
             'id',
@@ -8962,24 +8535,17 @@ def _process_dataclass__ca283e188088e4d68bde848f1419ebc9a1dd1211():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'role',
-            'content',
-            'id',
-            'status',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -9082,7 +8648,7 @@ def _process_dataclass__3cd47c6974b3e434f016a6f9708e17dcc850340f():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'text',
             'annotations',
         }
@@ -9090,22 +8656,17 @@ def _process_dataclass__3cd47c6974b3e434f016a6f9708e17dcc850340f():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'text',
-            'annotations',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -9224,7 +8785,7 @@ def _process_dataclass__432812d6dad4b8e6c76e14c1ad3e87bf9e18bbea():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'summary',
             'id',
             'content',
@@ -9235,25 +8796,17 @@ def _process_dataclass__432812d6dad4b8e6c76e14c1ad3e87bf9e18bbea():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'summary',
-            'id',
-            'content',
-            'encrypted_content',
-            'status',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -9360,7 +8913,7 @@ def _process_dataclass__953f32063cf89facee83c6681c46db52e4592f93():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'text',
             'type',
         }
@@ -9368,22 +8921,17 @@ def _process_dataclass__953f32063cf89facee83c6681c46db52e4592f93():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'text',
-            'type',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -9588,7 +9136,7 @@ def _process_dataclass__24d8af079f41c6d473808e4f1fed7ee72bec697c():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'model',
             'input',
             'instructions',
@@ -9611,37 +9159,17 @@ def _process_dataclass__24d8af079f41c6d473808e4f1fed7ee72bec697c():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'model',
-            'input',
-            'instructions',
-            'tools',
-            'tool_choice',
-            'parallel_tool_calls',
-            'max_output_tokens',
-            'temperature',
-            'top_p',
-            'reasoning',
-            'previous_response_id',
-            'store',
-            'stream',
-            'include',
-            'metadata',
-            'truncation',
-            'user',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -9797,7 +9325,7 @@ def _process_dataclass__2d69a02d767b46e5e129fc121b967e7adddaae5d():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'effort',
             'summary',
         }
@@ -9805,22 +9333,17 @@ def _process_dataclass__2d69a02d767b46e5e129fc121b967e7adddaae5d():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'effort',
-            'summary',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -9929,7 +9452,7 @@ def _process_dataclass__4a8640fb7b53bdf1866d114653e393aeb22a7e4e():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'content',
             'role',
             'id',
@@ -9939,24 +9462,17 @@ def _process_dataclass__4a8640fb7b53bdf1866d114653e393aeb22a7e4e():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'content',
-            'role',
-            'id',
-            'status',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -10065,7 +9581,7 @@ def _process_dataclass__b2dee028f4884602c92a23c56d707817044e4f72():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'text',
             'annotations',
             'logprobs',
@@ -10074,23 +9590,17 @@ def _process_dataclass__b2dee028f4884602c92a23c56d707817044e4f72():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'text',
-            'annotations',
-            'logprobs',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -10182,28 +9692,24 @@ def _process_dataclass__2396d382372f5c7cf195de56b22d50ac907f8aea():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'refusal',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'refusal',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -10288,28 +9794,24 @@ def _process_dataclass__e978e984e2b1546d23d8c00040449496136158dd():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'x',
         }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'x',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -10664,7 +10166,7 @@ def _process_dataclass__16313b35532cb9f07dbcd6d541b95b7786e8daf0():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'id',
             'object',
             'created_at',
@@ -10707,57 +10209,17 @@ def _process_dataclass__16313b35532cb9f07dbcd6d541b95b7786e8daf0():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'id',
-            'object',
-            'created_at',
-            'status',
-            'model',
-            'output',
-            'usage',
-            'error',
-            'incomplete_details',
-            'instructions',
-            'tools',
-            'tool_choice',
-            'parallel_tool_calls',
-            'max_output_tokens',
-            'max_tool_calls',
-            'temperature',
-            'top_p',
-            'top_logprobs',
-            'reasoning',
-            'text',
-            'previous_response_id',
-            'store',
-            'background',
-            'truncation',
-            'metadata',
-            'user',
-            'safety_identifier',
-            'prompt_cache_key',
-            'service_tier',
-            'billing',
-            'output_text',
-            'tool_usage',
-            'presence_penalty',
-            'frequency_penalty',
-            'prompt_cache_retention',
-            'moderation',
-            'completed_at',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -11017,7 +10479,7 @@ def _process_dataclass__a822d0f45a5a217381abb9751204aeb3cf2e62c7():
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
-        __dataclass___setattr_frozen_fields = {
+        __dataclass___frozen_fields = {
             'input_tokens',
             'output_tokens',
             'total_tokens',
@@ -11028,25 +10490,17 @@ def _process_dataclass__a822d0f45a5a217381abb9751204aeb3cf2e62c7():
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
-                or name in __dataclass___setattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
 
         __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
 
-        __dataclass___delattr_frozen_fields = {
-            'input_tokens',
-            'output_tokens',
-            'total_tokens',
-            'input_tokens_details',
-            'output_tokens_details',
-        }
-
         def __delattr__(self, name):
             if (
                 type(self) is __class__
-                or name in __dataclass___delattr_frozen_fields
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)

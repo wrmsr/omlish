@@ -87,14 +87,17 @@ class FrozenGenerator(Generator[FrozenPlan]):
             allow_dynamic_dunder_attrs=ctx.cs.allow_dynamic_dunder_attrs,
         ))
 
+    _FROZEN_FIELDS_SET_IDENT = f'{IDENT_PREFIX}_frozen_fields'
+
     def _generate_one(
             self,
             plan: FrozenPlan,
             mth: str,
             params: ta.Sequence[str],
             exc_args: str,
+            *,
+            preamble: ta.Sequence[str] | None = None,
     ) -> AddMethodOp:
-        preamble = []
         condition = []
 
         # https://github.com/python/cpython/commit/ee6f8413a99d0ee4828e1c81911e203d3fff85d5
@@ -111,22 +114,12 @@ class FrozenGenerator(Generator[FrozenPlan]):
             condition.append(base_condition)
 
         if plan.fields:
-            set_ident = f'{IDENT_PREFIX}_{mth}_frozen_fields'
-            preamble.extend([
-                f'{set_ident} = {{',
-                *[
-                    f'    {f!r},'
-                    for f in plan.fields
-                ],
-                f'}}',
-                f'',
-            ])
-            condition.append(f'or name in {set_ident}')
+            condition.append(f'or name in {self._FROZEN_FIELDS_SET_IDENT}')
 
         return AddMethodOp(
             f'__{mth}__',
             '\n'.join([
-                *preamble,
+                *(preamble or []),
                 f'def __{mth}__(self, {", ".join(params)}):',
                 f'    if (',
                 *[
@@ -141,13 +134,28 @@ class FrozenGenerator(Generator[FrozenPlan]):
         )
 
     def generate(self, plan: FrozenPlan) -> ta.Iterable[Op]:
+        preamble = []
+
+        if plan.fields:
+            preamble.extend([
+                f'{self._FROZEN_FIELDS_SET_IDENT} = {{',
+                *[
+                    f'    {f!r},'
+                    for f in plan.fields
+                ],
+                f'}}',
+                f'',
+            ])
+
         return [
             self._generate_one(
                 plan,
                 'setattr',
                 ['name', 'value'],
                 '(f"cannot assign to field {name!r}")',
+                preamble=preamble,
             ),
+
             self._generate_one(
                 plan,
                 'delattr',

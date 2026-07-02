@@ -1,7 +1,7 @@
 """
 TODO:
- - untangle compilation from here
- - populate linecache
+ - continue rolling back old 'OpExecutor' mode / merging in compilation code
+ - (optionally) populate linecache
 """
 import abc
 import dataclasses as dc
@@ -18,7 +18,6 @@ from ..processing.phases import ProcessorPhase
 from ..processing.registry import register_processor_type
 from .base import Plan
 from .compilation import OpCompiler
-from .execution import OpExecutor
 from .globals import FN_GLOBALS
 from .globals import FnGlobal
 from .idents import CLS_IDENT
@@ -85,16 +84,6 @@ class GeneratorProcessor(Processor):
         @abc.abstractmethod
         def _process(self, gp: GeneratorProcessor, cls: type) -> None:
             raise NotImplementedError
-
-    class ExecutorMode(Mode):
-        def _process(self, gp: GeneratorProcessor, cls: type) -> None:
-            opx = OpExecutor(
-                cls,
-                gp.prepare().ref_map,
-            )
-
-            for op in gp.ops():
-                opx.execute(op)
 
     class CompilerMode(Mode):
         def __init__(
@@ -293,11 +282,10 @@ class GeneratorProcessor(Processor):
             if self._process_from_codegen(cls):
                 return cls
 
-        mode: GeneratorProcessor.Mode
-        if cg is not None:  # noqa
-            mode = GeneratorProcessor.CompilerMode(codegen=cg)
-        else:
-            mode = GeneratorProcessor.ExecutorMode()
+        if cg is None:
+            cg = Codegen()
+
+        mode = GeneratorProcessor.CompilerMode(codegen=cg)
 
         mode._process(self, cls)  # noqa
         return cls
