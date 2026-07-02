@@ -8,7 +8,7 @@ from ..typekeys import TypeKeys
 from .helpers import make_reflector
 
 
-def test_new_type_literal_reflection_and_key_are_cache_friendly() -> None:
+def test_newtype_literal_reflection_and_key_are_cache_friendly() -> None:
     reflector = make_reflector()
     type_keys = TypeKeys(lock=reflector._lock)
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore

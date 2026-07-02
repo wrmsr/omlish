@@ -43,6 +43,21 @@ class RecursiveTypeError(ReflectionTypeError):
     pass
 
 
+def get_type_alias_target(typ: TypeAliasType) -> Type:
+    if typ._alias is None:
+        raise ReflectionTypeError('unfixed type alias')
+
+    if not typ._args:
+        return typ._alias._target
+
+    if len(typ._args) != len(typ._alias._alias_tvars):
+        raise ReflectionTypeError(typ)
+
+    from .substitute import substitute_type
+
+    return substitute_type(typ._alias._target, dict(zip(typ._alias._alias_tvars, typ._args)))
+
+
 @ta.overload
 def get_proper_type(typ: None) -> None:
     ...
@@ -75,21 +90,6 @@ def get_proper_type(typ: Type | None) -> ProperType | None:
         raise ReflectionTypeError(typ)
 
     return typ
-
-
-def get_type_alias_target(typ: TypeAliasType) -> Type:
-    if typ._alias is None:
-        raise ReflectionTypeError('unfixed type alias')
-
-    if not typ._args:
-        return typ._alias._target
-
-    if len(typ._args) != len(typ._alias._alias_tvars):
-        raise ReflectionTypeError(typ)
-
-    from .substitute import substitute_type
-
-    return substitute_type(typ._alias._target, dict(zip(typ._alias._alias_tvars, typ._args)))
 
 
 @ta.overload
@@ -159,16 +159,6 @@ def get_literal_values_or_none(typ: Type) -> list[LiteralValue] | None:
 
 
 ##
-
-
-def collect_aliases(typ: Type) -> list[TypeAlias]:
-    visitor = _CollectAliasesVisitor()
-    typ.accept(visitor)
-    return visitor.aliases
-
-
-def is_recursive_alias(alias: TypeAlias) -> bool:
-    return _contains_alias(alias._target, alias, set())
 
 
 class _CollectAliasesVisitor(DefaultTypeVisitor[None]):
@@ -296,6 +286,16 @@ def _contains_alias(
     visitor = _CollectAliasesVisitor(seen)
     typ.accept(visitor)
     return any(alias is target for alias in visitor.aliases)
+
+
+def collect_aliases(typ: Type) -> list[TypeAlias]:
+    visitor = _CollectAliasesVisitor()
+    typ.accept(visitor)
+    return visitor.aliases
+
+
+def is_recursive_alias(alias: TypeAlias) -> bool:
+    return _contains_alias(alias._target, alias, set())
 
 
 ##

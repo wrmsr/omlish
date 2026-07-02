@@ -58,14 +58,16 @@ StandardTypeKeyPolicy: ta.TypeAlias = ta.Literal[
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class TypeKeyPolicy:
     alpha: bool = False
     structural: bool = False
-    include_annotated_metadata: bool = True
-    preserve_alias_identity: bool = True
-    preserve_newtype_identity: bool = True
-    preserve_forward_ref_identity: bool = True
+
+    exclude_annotated_metadata: bool = False
+
+    discard_alias_identity: bool = False
+    discard_newtype_identity: bool = False
+    discard_forward_ref_identity: bool = False
 
 
 TYPE_KEY: ta.Final = TypeKeyPolicy()
@@ -77,9 +79,11 @@ ALPHA_TYPE_KEY: ta.Final = dc.replace(
 
 STRUCTURAL_TYPE_KEY: ta.Final = TypeKeyPolicy(
     structural=True,
-    include_annotated_metadata=False,
-    preserve_alias_identity=False,
-    preserve_forward_ref_identity=False,
+
+    exclude_annotated_metadata=True,
+
+    discard_alias_identity=True,
+    discard_forward_ref_identity=True,
 )
 
 ALPHA_STRUCTURAL_TYPE_KEY: ta.Final = dc.replace(
@@ -1019,10 +1023,10 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
         return self.writer.finish(key)  # type: ignore[attr-defined]
 
     def _key(self, typ: Type) -> object | None:
-        if isinstance(typ, AnnotatedType) and not self.policy.include_annotated_metadata:
+        if isinstance(typ, AnnotatedType) and self.policy.exclude_annotated_metadata:
             return self._key(typ._item)
 
-        if self.policy.structural and not self.policy.preserve_alias_identity:
+        if self.policy.structural and self.policy.discard_alias_identity:
             if not isinstance(typ, TypeAliasType) and not self._alias_stack:
                 alias_key = self.recursive_alias_canonical_key(typ)
                 if alias_key is not None:
@@ -1070,7 +1074,7 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
         arg_keys = self.key_list(typ._args)
         if arg_keys is None:
             return None
-        identity = typ._runtime_object if self.policy.preserve_forward_ref_identity else None
+        identity = typ._runtime_object if not self.policy.discard_forward_ref_identity else None
         return self.writer.unbound_key(typ._name, identity, arg_keys)
 
     def visit_callable_argument(self, typ: CallableArgument) -> object | None:
@@ -1113,7 +1117,11 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
         arg_keys = self.key_list(typ._arg_types)
         if arg_keys is None:
             return None
-        return self.writer.parameters_key(arg_keys, typ._arg_kinds, typ._arg_names)
+        return self.writer.parameters_key(
+            arg_keys,
+            typ._arg_kinds,
+            typ._arg_names,
+        )
 
     def visit_callable_type(self, typ: CallableType) -> object | None:
         return self.callable_key(typ)
@@ -1136,7 +1144,12 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
         fallback_key = self._key(typ._fallback)
         if item_keys is None or fallback_key is None:
             return None
-        return self.writer.typed_dict_key(item_keys, typ._required_keys, typ._readonly_keys, fallback_key)
+        return self.writer.typed_dict_key(
+            item_keys,
+            typ._required_keys,
+            typ._readonly_keys,
+            fallback_key,
+        )
 
     def visit_raw_expression_type(self, typ: RawExpressionType) -> object | None:
         return self.writer.raw_expression_key(typ._literal_value, typ._base_type_name)
@@ -1201,8 +1214,8 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
         return tuple(keys)
 
     def instance_key(self, typ: Instance) -> object | None:
-        if not self.policy.preserve_newtype_identity and typ._type._new_type_supertype is not None:
-            return self._key(typ._type._new_type_supertype)
+        if self.policy.discard_newtype_identity and typ._type._newtype_supertype is not None:
+            return self._key(typ._type._newtype_supertype)
 
         arg_keys = self.key_list(typ._args)
         if arg_keys is None:
@@ -1246,7 +1259,7 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
 
         is_recursive = typ.is_recursive
 
-        if not self.policy.preserve_alias_identity:
+        if self.policy.discard_alias_identity:
             if not is_recursive:
                 target = self._alias_target(typ)
                 if target is None:
@@ -1282,7 +1295,12 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
         if is_recursive:
             return self.writer.recursive_type_alias_key(arg_keys, target_key)
 
-        return self.writer.type_alias_key(typ._alias._fullname, typ._alias._runtime_object, arg_keys, target_key)
+        return self.writer.type_alias_key(
+            typ._alias._fullname,
+            typ._alias._runtime_object,
+            arg_keys,
+            target_key,
+        )
 
     def _alias_target(self, typ: TypeAliasType) -> Type | None:
         if not typ._args:

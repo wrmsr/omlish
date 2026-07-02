@@ -139,7 +139,7 @@ def test_reflect_namedtuple_field_annotations_returns_runtime_annotations() -> N
     assert api.to_runtime_annotation(api.inspect_namedtuple(Box[str]).fields[0].replaced_type) == list[str]  # type: ignore  # noqa
 
 
-def test_generic_namedtuple_replaces_field_with_literal_new_type() -> None:
+def test_generic_namedtuple_replaces_field_with_literal_newtype() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
@@ -159,7 +159,7 @@ def test_generic_namedtuple_replaces_field_with_literal_new_type() -> None:
     # assert shape.literal_value_type.values == ('a', 'b')
 
 
-def test_generic_namedtuple_literal_new_type_field_keys_preserve_new_type_identity() -> None:
+def test_generic_namedtuple_literal_newtype_field_keys_preserve_new_type_identity() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     other_mode = ta.NewType('OtherMode', ta.Literal['a', 'b'])  # type: ignore

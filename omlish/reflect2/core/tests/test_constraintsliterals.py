@@ -61,7 +61,7 @@ def test_infer_union_constraints_matches_literal_tag_and_solves_payload() -> Non
     assert solve_constraints([t_var], constraints) == [payload]
 
 
-def test_infer_generic_constraints_preserve_new_type_identity() -> None:
+def test_infer_generic_constraints_preserve_newtype_identity() -> None:
     t_var = make_type_var('T', 1)
     user_id = Instance(TypeInfo('UserId', 'example.UserId'), [])
     account_id = Instance(TypeInfo('AccountId', 'example.AccountId'), [])
@@ -79,7 +79,7 @@ def test_infer_generic_constraints_preserve_new_type_identity() -> None:
     assert type_str(ta.cast(Type, solution[0])) == 'example.UserId'
 
 
-def test_infer_alias_constraints_preserve_new_type_literal_shape() -> None:
+def test_infer_alias_constraints_preserve_newtype_literal_shape() -> None:
     t_var = make_type_var('T', 1)
     mode = Instance(TypeInfo('Mode', 'example.Mode'), [])
     alias = TypeAlias(

@@ -119,7 +119,7 @@ def test_inspect_runtime_members_reflects_method_signatures() -> None:
     assert type_str(class_sig.parameters[1].typ) == 'builtins.int'
 
 
-def test_inspect_runtime_members_preserves_literal_new_type_method_signature_shape() -> None:
+def test_inspect_runtime_members_preserves_literal_newtype_method_signature_shape() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
     class Example:
@@ -518,7 +518,7 @@ def test_inspect_runtime_members_replaces_inherited_generic_method() -> None:
     assert type_str(call_signature.return_type) == 'builtins.str'
 
 
-def test_inspect_runtime_members_replaces_inherited_generic_method_with_literal_new_type() -> None:
+def test_inspect_runtime_members_replaces_inherited_generic_method_with_literal_newtype() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
     class Box[T]:

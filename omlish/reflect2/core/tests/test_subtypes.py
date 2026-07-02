@@ -348,14 +348,14 @@ def test_structural_equivalent_ignores_annotated_around_alias_target() -> None:
     )
 
 
-def test_structural_equivalent_preserves_new_type_nominality_through_aliases() -> None:
-    left_new_type = make_instance(make_info('NewType.UserId'))
-    right_new_type = make_instance(make_info('NewType.AccountId'))
-    left_alias = symbols.TypeAlias('LeftAlias', left_new_type)
-    right_alias = symbols.TypeAlias('RightAlias', right_new_type)
+def test_structural_equivalent_preserves_newtype_nominality_through_aliases() -> None:
+    left_newtype = make_instance(make_info('NewType.UserId'))
+    right_newtype = make_instance(make_info('NewType.AccountId'))
+    left_alias = symbols.TypeAlias('LeftAlias', left_newtype)
+    right_alias = symbols.TypeAlias('RightAlias', right_newtype)
 
-    assert is_structurally_equivalent(types.TypeAliasType(left_alias, []), left_new_type)
-    assert not is_structurally_equivalent(types.TypeAliasType(left_alias, []), right_new_type)
+    assert is_structurally_equivalent(types.TypeAliasType(left_alias, []), left_newtype)
+    assert not is_structurally_equivalent(types.TypeAliasType(left_alias, []), right_newtype)
     assert not is_structurally_equivalent(types.TypeAliasType(left_alias, []), types.TypeAliasType(right_alias, []))
 
 
@@ -490,19 +490,19 @@ def test_structural_subtype_ignores_annotated_around_alias_target() -> None:
     assert is_structural_subtype(int_type, types.AnnotatedType(types.TypeAliasType(alias, []), ('alias-md',)))
 
 
-def test_structural_subtype_preserves_new_type_nominality_through_aliases() -> None:
+def test_structural_subtype_preserves_newtype_nominality_through_aliases() -> None:
     int_type = make_instance(make_info('builtins.int'))
     left_info = make_info('example.UserId')
     right_info = make_info('example.AccountId')
-    left_info._new_type_supertype = int_type
-    right_info._new_type_supertype = int_type
-    left_new_type = make_instance(left_info)
-    right_new_type = make_instance(right_info)
-    left_alias = symbols.TypeAlias('LeftAlias', left_new_type)
-    right_alias = symbols.TypeAlias('RightAlias', right_new_type)
+    left_info._newtype_supertype = int_type
+    right_info._newtype_supertype = int_type
+    left_newtype = make_instance(left_info)
+    right_newtype = make_instance(right_info)
+    left_alias = symbols.TypeAlias('LeftAlias', left_newtype)
+    right_alias = symbols.TypeAlias('RightAlias', right_newtype)
 
-    assert is_structural_subtype(types.TypeAliasType(left_alias, []), left_new_type)
-    assert not is_structural_subtype(types.TypeAliasType(left_alias, []), right_new_type)
+    assert is_structural_subtype(types.TypeAliasType(left_alias, []), left_newtype)
+    assert not is_structural_subtype(types.TypeAliasType(left_alias, []), right_newtype)
     assert not is_structural_subtype(types.TypeAliasType(left_alias, []), types.TypeAliasType(right_alias, []))
     assert not is_structural_subtype(types.TypeAliasType(left_alias, []), int_type)
 

@@ -37,6 +37,24 @@ from .core.typekeys import (  # noqa
     tuple_type_key,
 )
 
+from .core.typeops import (  # noqa
+    RecursiveTypeError,
+    get_type_alias_target,
+    get_proper_type,
+    get_proper_types,
+
+    has_type_vars,
+
+    get_literal_values,
+    get_literal_values_or_none,
+
+    collect_aliases,
+    is_recursive_alias,
+
+    make_union,
+    make_simplified_union,
+)
+
 from .core.types import (  # noqa
     LiteralValue,
     is_literal_value,
@@ -100,6 +118,8 @@ from .api import (  # noqa
     or_global_api,
 
     get_type_info,
+    get_newtype_info,
+    get_runtime_type,
 
     intern,
 

@@ -87,7 +87,7 @@ class TypeUniverse(
             suffix = f'{id(obj):x}'
         return f'{hint}{_DYNAMIC_TYPE_NAME_SEPARATOR}{suffix}'
 
-    def _make_new_type_fullname(self, obj: object) -> str:
+    def _make_newtype_fullname(self, obj: object) -> str:
         module = getattr(obj, '__module__', None)
         qualname = getattr(obj, '__qualname__', None)
         if isinstance(module, str) and module and isinstance(qualname, str) and qualname:
@@ -209,14 +209,16 @@ class TypeUniverse(
         with self._lock:
             return self._get_type_info(obj)
 
-    def _get_new_type_info(self, obj: object) -> TypeInfo:
+    #
+
+    def _get_newtype_info(self, obj: object) -> TypeInfo:
         if not isinstance(obj, ta.NewType):  # noqa
-            raise TypeError('get_new_type_info only accepts `typing.NewType` objects')
+            raise TypeError('get_newtype_info only accepts `typing.NewType` objects')
 
         try:
             fullname = self._fullnames_by_type[obj]
         except KeyError:
-            fullname = self._make_new_type_fullname(obj)
+            fullname = self._make_newtype_fullname(obj)
             if fullname in self._types_by_fullname:
                 fullname = f'{fullname}@{id(obj):x}'
             self._fullnames_by_type[obj] = fullname
@@ -234,7 +236,7 @@ class TypeUniverse(
         supertype = getattr(obj, '__supertype__')
         if isinstance(supertype, type):
             base_type = self._get_type_info(supertype)
-            info._new_type_supertype = Instance(base_type, ())
+            info._newtype_supertype = Instance(base_type, ())
         else:
             base_type = self._get_type_info('builtins.object')
         info._bases = (Instance(base_type, ()),)
@@ -242,7 +244,7 @@ class TypeUniverse(
 
         return info
 
-    def get_new_type_info(self, obj: object) -> TypeInfo:
+    def get_newtype_info(self, obj: object) -> TypeInfo:
         try:
             fullname = self._fullnames_by_type[obj]
         except KeyError:
@@ -254,7 +256,9 @@ class TypeUniverse(
                 pass
 
         with self._lock:
-            return self._get_new_type_info(obj)
+            return self._get_newtype_info(obj)
+
+    #
 
     def get_runtime_type(self, info: TypeInfo) -> object | None:
         return self._types_by_fullname.get(info._fullname)

@@ -492,8 +492,8 @@ def test_structural_join_preserves_newtype_identity_through_aliases() -> None:
     int_type = make_instance(make_info('builtins.int'))
     user_info = make_info('example.UserId')
     account_info = make_info('example.AccountId')
-    user_info._new_type_supertype = int_type
-    account_info._new_type_supertype = int_type
+    user_info._newtype_supertype = int_type
+    account_info._newtype_supertype = int_type
     user_id = make_instance(user_info)
     account_id = make_instance(account_info)
     user_alias = symbols.TypeAlias('UserAlias', user_id)

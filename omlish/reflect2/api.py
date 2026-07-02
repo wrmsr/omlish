@@ -43,7 +43,7 @@ class Api:
 
             # reflector
             forward_ref_resolver: ForwardRefResolver | None = None,
-            unresolved_forward_ref_policy: UnresolvedForwardRefPolicy = 'raise',
+            unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
     ) -> None:
         super().__init__()
 
@@ -83,6 +83,12 @@ class Api:
 
     def get_type_info(self, obj: type | str) -> TypeInfo:
         return self._universe.get_type_info(obj)
+
+    def get_newtype_info(self, obj: object) -> TypeInfo:
+        return self._universe.get_newtype_info(obj)
+
+    def get_runtime_type(self, info: TypeInfo) -> object | None:
+        return self._universe.get_runtime_type(info)
 
     #
 
@@ -271,6 +277,14 @@ def or_global_api(api: Api | None) -> Api:
 
 def get_type_info(obj: type | str) -> TypeInfo:
     return _GLOBAL_API.get_type_info(obj)
+
+
+def get_newtype_info(obj: object) -> TypeInfo:
+    return _GLOBAL_API.get_newtype_info(obj)
+
+
+def get_runtime_type(info: TypeInfo) -> object | None:
+    return _GLOBAL_API.get_runtime_type(info)
 
 
 #

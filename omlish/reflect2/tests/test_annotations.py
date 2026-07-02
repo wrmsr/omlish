@@ -271,26 +271,26 @@ def test_to_runtime_annotation_preserves_annotated_metadata() -> None:
     assert ta.get_args(annotation) == (int, 'cfg', metadata)
 
 
-def test_to_runtime_annotation_preserves_new_type_identity() -> None:
+def test_to_runtime_annotation_preserves_newtype_identity() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
 
     assert _to_annotation(user_id) is user_id
 
 
-def test_to_runtime_annotation_preserves_literal_new_type_identity() -> None:
+def test_to_runtime_annotation_preserves_literal_newtype_identity() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
     assert _to_annotation(mode) is mode
 
 
-def test_to_runtime_annotation_expands_new_type_literal_alias() -> None:
+def test_to_runtime_annotation_expands_newtype_literal_alias() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
 
     assert _to_annotation(mode_list) == list[mode]  # noqa
 
 
-def test_to_runtime_annotation_can_preserve_new_type_literal_alias() -> None:
+def test_to_runtime_annotation_can_preserve_newtype_literal_alias() -> None:
     annotations = _make_annotations()
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
@@ -301,7 +301,7 @@ def test_to_runtime_annotation_can_preserve_new_type_literal_alias() -> None:
     assert annotations.to_runtime_annotation(typ, type_alias_policy='preserve') is mode_list
 
 
-def test_to_runtime_annotation_expands_generic_new_type_literal_alias() -> None:
+def test_to_runtime_annotation_expands_generic_newtype_literal_alias() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     box_alias = ta.TypeAliasType('BoxAlias', list[t_var], type_params=(t_var,))  # type: ignore
@@ -309,7 +309,7 @@ def test_to_runtime_annotation_expands_generic_new_type_literal_alias() -> None:
     assert _to_annotation(box_alias[mode]) == list[mode]  # noqa
 
 
-def test_to_runtime_annotation_can_preserve_generic_new_type_literal_alias() -> None:
+def test_to_runtime_annotation_can_preserve_generic_newtype_literal_alias() -> None:
     annotations = _make_annotations()
     t_var = ta.TypeVar('T')  # type: ignore
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore  # noqa

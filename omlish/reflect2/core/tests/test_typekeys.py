@@ -283,10 +283,10 @@ def test_type_key_policy_supports_dc_replace() -> None:
         'TypeKeyPolicy('
         'alpha=False, '
         'structural=False, '
-        'include_annotated_metadata=True, '
-        'preserve_alias_identity=True, '
-        'preserve_newtype_identity=True, '
-        'preserve_forward_ref_identity=True)'
+        'exclude_annotated_metadata=False, '
+        'discard_alias_identity=False, '
+        'discard_newtype_identity=False, '
+        'discard_forward_ref_identity=False)'
     )
 
 
@@ -294,7 +294,7 @@ def test_type_key_with_policy_matches_existing_presets() -> None:
     typ = types.AnnotatedType(make_instance(make_info('builtins.int')), ('cfg',))
 
     assert type_key(typ, TypeKeyPolicy()) == type_key(typ)
-    assert type_key_or_none(typ, TypeKeyPolicy(structural=True, include_annotated_metadata=False)) == (
+    assert type_key_or_none(typ, TypeKeyPolicy(structural=True, exclude_annotated_metadata=True)) == (
         structural_type_key(typ)
     )
 
@@ -303,7 +303,7 @@ def test_tuple_type_key_with_policy_matches_existing_tuple_preset() -> None:
     typ = types.AnnotatedType(make_instance(make_info('builtins.int')), ('cfg',))
 
     assert tuple_type_key(typ, TypeKeyPolicy()) == tuple_type_key(typ)
-    assert tuple_type_key(typ, TypeKeyPolicy(include_annotated_metadata=False)) == (
+    assert tuple_type_key(typ, TypeKeyPolicy(exclude_annotated_metadata=True)) == (
         'instance',
         'builtins.int',
         (),
@@ -316,9 +316,9 @@ def test_type_key_with_policy_fails_closed_for_unsupported_nodes() -> None:
     policy = TypeKeyPolicy(
         alpha=True,
         structural=True,
-        include_annotated_metadata=False,
-        preserve_alias_identity=False,
-        preserve_newtype_identity=False,
+        exclude_annotated_metadata=True,
+        discard_alias_identity=True,
+        discard_newtype_identity=True,
     )
 
     assert type_key_or_none(typ, policy) is None
@@ -334,7 +334,7 @@ def test_type_key_policy_can_ignore_annotated_metadata_without_structural_keying
     typ = types.AnnotatedType(item, ([],))
 
     assert type_key_or_none(typ) is None
-    assert type_key_or_none(typ, TypeKeyPolicy(include_annotated_metadata=False)) == type_key(item)
+    assert type_key_or_none(typ, TypeKeyPolicy(exclude_annotated_metadata=True)) == type_key(item)
 
 
 def test_type_key_policy_can_preserve_annotated_metadata_with_structural_keying() -> None:
@@ -342,8 +342,8 @@ def test_type_key_policy_can_preserve_annotated_metadata_with_structural_keying(
     typ = types.AnnotatedType(item, ('cfg',))
     policy = TypeKeyPolicy(
         structural=True,
-        include_annotated_metadata=True,
-        preserve_alias_identity=False,
+        exclude_annotated_metadata=False,
+        discard_alias_identity=True,
     )
 
     assert type_key_or_none(typ, policy) == type_key(typ)
@@ -354,7 +354,7 @@ def test_type_key_policy_can_erase_alias_identity_without_structural_keying() ->
     target = make_instance(make_info('builtins.list'), [make_instance(make_info('builtins.int'))])
     left_alias = symbols.TypeAlias('Left', target, runtime_object=object())
     right_alias = symbols.TypeAlias('Right', target, runtime_object=object())
-    policy = TypeKeyPolicy(preserve_alias_identity=False)
+    policy = TypeKeyPolicy(discard_alias_identity=True)
 
     assert type_key(types.TypeAliasType(left_alias, [])) != type_key(types.TypeAliasType(right_alias, []))
     assert type_key_or_none(types.TypeAliasType(left_alias, []), policy) == type_key(target)
@@ -369,8 +369,8 @@ def test_type_key_policy_can_preserve_alias_identity_with_structural_keying() ->
     right_alias = symbols.TypeAlias('Right', target, runtime_object=object())
     policy = TypeKeyPolicy(
         structural=True,
-        include_annotated_metadata=False,
-        preserve_alias_identity=True,
+        exclude_annotated_metadata=True,
+        discard_alias_identity=False,
     )
 
     assert type_key_or_none(types.TypeAliasType(left_alias, []), policy) != structural_type_key(target)
@@ -388,8 +388,8 @@ def test_type_key_policy_structural_recursive_alias_canonicalization_is_alias_po
     alias._target = one_unrolling
     structural_preserving_alias = TypeKeyPolicy(
         structural=True,
-        include_annotated_metadata=False,
-        preserve_alias_identity=True,
+        exclude_annotated_metadata=True,
+        discard_alias_identity=False,
     )
 
     assert structural_type_key(alias_type) == structural_type_key(one_unrolling)
@@ -402,11 +402,11 @@ def test_type_key_policy_can_erase_core_newtype_identity_when_supertype_is_recor
     int_type = make_instance(make_info('builtins.int'))
     user_info = make_info('example.UserId')
     account_info = make_info('example.AccountId')
-    user_info._new_type_supertype = int_type
-    account_info._new_type_supertype = int_type
+    user_info._newtype_supertype = int_type
+    account_info._newtype_supertype = int_type
     user_id = make_instance(user_info)
     account_id = make_instance(account_info)
-    policy = TypeKeyPolicy(preserve_newtype_identity=False)
+    policy = TypeKeyPolicy(discard_newtype_identity=True)
 
     assert type_key(user_id) != type_key(account_id)
     assert type_key(user_id) != type_key(int_type)
@@ -417,7 +417,7 @@ def test_type_key_policy_can_erase_core_newtype_identity_when_supertype_is_recor
 def test_type_key_policy_preserves_newtype_identity_by_default() -> None:
     int_type = make_instance(make_info('builtins.int'))
     user_info = make_info('example.UserId')
-    user_info._new_type_supertype = int_type
+    user_info._newtype_supertype = int_type
     user_id = make_instance(user_info)
 
     assert type_key(user_id) == type_key_or_none(user_id, TypeKeyPolicy())
@@ -431,7 +431,7 @@ def test_reflected_type_key_policy_can_erase_newtype_identity() -> None:
     user_type = reflector.reflect_type(user_id)
     account_type = reflector.reflect_type(account_id)
     int_type = reflector.reflect_type(int)
-    policy = TypeKeyPolicy(preserve_newtype_identity=False)
+    policy = TypeKeyPolicy(discard_newtype_identity=True)
 
     assert isinstance(user_type, types.Instance)
     assert user_type.type.new_type_supertype == int_type
@@ -447,7 +447,7 @@ def test_reflected_type_key_policy_can_erase_literal_backed_newtype_identity() -
     mode_type = reflector.reflect_type(mode)
     other_mode_type = reflector.reflect_type(other_mode)
     literal_type = reflector.reflect_type(ta.Literal['a', 'b'])
-    policy = TypeKeyPolicy(preserve_newtype_identity=False)
+    policy = TypeKeyPolicy(discard_newtype_identity=True)
 
     assert isinstance(mode_type, types.Instance)
     assert mode_type.type.new_type_supertype == literal_type
@@ -460,14 +460,14 @@ def test_reflected_type_key_policy_can_erase_literal_backed_newtype_identity() -
 def test_type_key_policy_composes_annotation_alias_and_newtype_knobs() -> None:
     int_type = make_instance(make_info('builtins.int'))
     user_info = make_info('example.UserId')
-    user_info._new_type_supertype = int_type
+    user_info._newtype_supertype = int_type
     user_id = make_instance(user_info)
     alias = symbols.TypeAlias('UserAlias', user_id, runtime_object=object())
     typ = types.AnnotatedType(types.TypeAliasType(alias, []), ('cfg',))
     policy = TypeKeyPolicy(
-        include_annotated_metadata=True,
-        preserve_alias_identity=False,
-        preserve_newtype_identity=False,
+        exclude_annotated_metadata=False,
+        discard_alias_identity=True,
+        discard_newtype_identity=True,
     )
 
     assert type_key(typ, policy) == (
@@ -476,15 +476,15 @@ def test_type_key_policy_composes_annotation_alias_and_newtype_knobs() -> None:
     )
     assert type_key(typ, policy) != type_key(
         typ,
-        dc.replace(policy, include_annotated_metadata=False),
+        dc.replace(policy, exclude_annotated_metadata=True),
     )
     assert type_key(typ, policy) != type_key(
         typ,
-        dc.replace(policy, preserve_alias_identity=True),
+        dc.replace(policy, discard_alias_identity=False),
     )
     assert type_key(typ, policy) != type_key(
         typ,
-        dc.replace(policy, preserve_newtype_identity=True),
+        dc.replace(policy, discard_newtype_identity=False),
     )
 
 
@@ -570,14 +570,14 @@ def test_structural_type_key_erases_variadic_alias_identity_but_preserves_packed
     )
 
 
-def test_structural_type_key_preserves_new_type_identity() -> None:
-    left_new_type = make_instance(make_info('example.UserId'))
-    right_new_type = make_instance(make_info('example.AccountId'))
-    left_alias = symbols.TypeAlias('LeftAlias', left_new_type)
-    right_alias = symbols.TypeAlias('RightAlias', right_new_type)
+def test_structural_type_key_preserves_newtype_identity() -> None:
+    left_newtype = make_instance(make_info('example.UserId'))
+    right_newtype = make_instance(make_info('example.AccountId'))
+    left_alias = symbols.TypeAlias('LeftAlias', left_newtype)
+    right_alias = symbols.TypeAlias('RightAlias', right_newtype)
 
-    assert structural_type_key(types.TypeAliasType(left_alias, [])) == structural_type_key(left_new_type)
-    assert structural_type_key(types.TypeAliasType(left_alias, [])) != structural_type_key(right_new_type)
+    assert structural_type_key(types.TypeAliasType(left_alias, [])) == structural_type_key(left_newtype)
+    assert structural_type_key(types.TypeAliasType(left_alias, [])) != structural_type_key(right_newtype)
     assert structural_type_key(types.TypeAliasType(left_alias, [])) != structural_type_key(
         types.TypeAliasType(right_alias, []),
     )
@@ -1157,8 +1157,8 @@ def test_structural_type_key_policy_knobs_for_recursive_metadata_are_independent
     ])
     policy = TypeKeyPolicy(
         structural=True,
-        include_annotated_metadata=True,
-        preserve_alias_identity=False,
+        exclude_annotated_metadata=False,
+        discard_alias_identity=True,
     )
 
     assert structural_type_key(alias_type) == structural_type_key(reordered)
@@ -1173,8 +1173,8 @@ def test_structural_type_key_recursive_metadata_policy_fails_closed_for_unhashab
     alias._target = types.AnnotatedType(make_instance(list_info, [alias_type]), ([],))
     policy = TypeKeyPolicy(
         structural=True,
-        include_annotated_metadata=True,
-        preserve_alias_identity=False,
+        exclude_annotated_metadata=False,
+        discard_alias_identity=True,
     )
 
     assert structural_type_key_or_none(alias_type) is not None
@@ -1309,8 +1309,8 @@ def test_structural_type_key_recursive_alias_preserves_newtype_leaf_identity() -
     int_type = make_instance(make_info('builtins.int'))
     left_info = make_info('example.UserId')
     right_info = make_info('example.AccountId')
-    left_info._new_type_supertype = int_type
-    right_info._new_type_supertype = int_type
+    left_info._newtype_supertype = int_type
+    right_info._newtype_supertype = int_type
     left_alias = symbols.TypeAlias('Left', make_any())
     right_alias = symbols.TypeAlias('Right', make_any())
     left_alias_type = types.TypeAliasType(left_alias, [])

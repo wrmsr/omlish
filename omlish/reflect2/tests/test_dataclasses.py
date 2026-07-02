@@ -299,7 +299,7 @@ def test_reflect_dataclass_fields_replaces_each_generic_layer() -> None:
 #     assert shape.literal_value_type.values == ('a', 'b')
 
 
-def test_generic_dataclass_literal_new_type_field_keys_preserve_new_type_identity() -> None:
+def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     other_mode = ta.NewType('OtherMode', ta.Literal['a', 'b'])  # type: ignore

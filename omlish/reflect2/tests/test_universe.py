@@ -175,13 +175,13 @@ def test_runtime_universe_keeps_same_name_dynamic_classes_distinct() -> None:
     assert right_info.fullname == f'{__name__}.Repeated@2'
 
 
-def test_runtime_universe_keeps_new_type_runtime_object() -> None:
+def test_runtime_universe_keeps_newtype_runtime_object() -> None:
     universe = TypeUniverse(
         lock=threading.RLock(),
     )
     user_id = ta.NewType('UserId', int)  # type: ignore
 
-    info = universe.get_new_type_info(user_id)
+    info = universe.get_newtype_info(user_id)
 
     assert info.fullname == f'{__name__}.UserId'
     assert universe.get_runtime_type(info) is user_id

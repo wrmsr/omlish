@@ -524,7 +524,7 @@ def test_rejects_type_is_until_distinct_representation_exists() -> None:
         reflect_type(ta.TypeIs[int])
 
 
-def test_reflects_new_type_as_supertype() -> None:
+def test_reflects_newtype_as_supertype() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
 
     typ = make_reflector().reflect_type(user_id)
@@ -534,7 +534,7 @@ def test_reflects_new_type_as_supertype() -> None:
     assert [base.type.fullname for base in typ.type.bases if isinstance(base, types.Instance)] == ['builtins.int']
 
 
-def test_reflects_new_type_inside_generic_alias_as_supertype() -> None:
+def test_reflects_newtype_inside_generic_alias_as_supertype() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
 
     typ = make_reflector().reflect_type(list[user_id])
@@ -544,7 +544,7 @@ def test_reflects_new_type_inside_generic_alias_as_supertype() -> None:
     assert [type_str(arg) for arg in typ.args] == [f'{__name__}.UserId']
 
 
-def test_reflects_new_type_with_literal_supertype() -> None:
+def test_reflects_newtype_with_literal_supertype() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
     typ = make_reflector().reflect_type(mode)
@@ -554,7 +554,7 @@ def test_reflects_new_type_with_literal_supertype() -> None:
     assert [type_str(base) for base in typ.type.bases] == ['builtins.object']
 
 
-def test_new_type_reflection_is_cached_by_new_type_object() -> None:
+def test_new_type_reflection_is_cached_by_newtype_object() -> None:
     reflector = make_reflector()
     user_id = ta.NewType('UserId', int)  # type: ignore
 

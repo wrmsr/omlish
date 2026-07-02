@@ -15,7 +15,7 @@ from ..core.types import UnionType
 from .helpers import make_reflector
 
 
-def test_runtime_constraints_preserve_reflected_new_type_identity() -> None:
+def test_runtime_constraints_preserve_reflected_newtype_identity() -> None:
     t_var = ta.TypeVar('T')  # type: ignore  # noqa
     user_id = ta.NewType('UserId', int)  # type: ignore  # noqa
     account_id = ta.NewType('AccountId', int)  # type: ignore  # noqa
@@ -34,7 +34,7 @@ def test_runtime_constraints_preserve_reflected_new_type_identity() -> None:
     assert type_str(ta.cast(Type, solution[0])).endswith('.UserId')
 
 
-def test_runtime_constraints_preserve_new_type_inside_actual_alias() -> None:
+def test_runtime_constraints_preserve_newtype_inside_actual_alias() -> None:
     t_var = ta.TypeVar('T')  # type: ignore  # noqa
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore  # noqa
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
@@ -52,7 +52,7 @@ def test_runtime_constraints_preserve_new_type_inside_actual_alias() -> None:
     assert type_str(ta.cast(Type, solution[0])).endswith('.Mode')
 
 
-def test_runtime_constraints_solve_nested_collection_to_new_type_literal_item() -> None:
+def test_runtime_constraints_solve_nested_collection_to_newtype_literal_item() -> None:
     t_var = ta.TypeVar('T')  # type: ignore  # noqa
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore  # noqa
     mode_map = ta.TypeAliasType('ModeMap', ta.Mapping[str, list[mode]])  # type: ignore

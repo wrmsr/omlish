@@ -112,7 +112,7 @@ def _is_literal_value(obj: object) -> bool:
     return is_literal_value(obj)
 
 
-def _is_new_type(obj: object) -> bool:
+def _is_newtype(obj: object) -> bool:
     return isinstance(obj, ta.NewType)
 
 
@@ -188,6 +188,10 @@ class TypeReflector(
     def forward_ref_resolver(self) -> ForwardRefResolver | None:
         return self._forward_ref_resolver
 
+    @property
+    def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
+        return self._unresolved_forward_ref_policy
+
     def get_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
         return self._runtime_type_params_by_type.get(typ)
 
@@ -261,8 +265,8 @@ class TypeReflector(
         if isinstance(obj, ta.TypeVarTuple):
             return self._reflect_type_var_tuple(obj)
 
-        if _is_new_type(obj):
-            return self._reflect_new_type(obj)
+        if _is_newtype(obj):
+            return self._reflect_newtype(obj)
 
         origin = ta.get_origin(obj)
         args = ta.get_args(obj)
@@ -376,7 +380,10 @@ class TypeReflector(
 
     def _unbound_forward_ref(self, obj: str | annotationlib.ForwardRef, name: str) -> UnboundType:
         runtime_object = obj if isinstance(obj, annotationlib.ForwardRef) else None
-        return UnboundType(name, runtime_object=runtime_object)
+        return UnboundType(
+            name,
+            runtime_object=runtime_object,
+        )
 
     def _resolve_forward_ref(self, obj: str | annotationlib.ForwardRef, name: str) -> object:
         def resolve() -> object:
@@ -576,9 +583,9 @@ class TypeReflector(
             return False
         return _contains_any_type_alias(typ, active_aliases, set())
 
-    def _reflect_new_type(self, obj: object) -> Instance:
-        info = self._universe._get_new_type_info(obj)
-        info._new_type_supertype = self._reflect_type(obj.__supertype__)  # type: ignore[attr-defined]
+    def _reflect_newtype(self, obj: object) -> Instance:
+        info = self._universe._get_newtype_info(obj)
+        info._newtype_supertype = self._reflect_type(obj.__supertype__)  # type: ignore[attr-defined]
         return Instance(info, ())
 
     def _reflect_annotated(self, args: tuple[object, ...]) -> AnnotatedType:

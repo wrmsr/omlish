@@ -44,6 +44,10 @@ class Symbol:
     def fullname(self) -> str:
         raise NotImplementedError
 
+    @property
+    def runtime_object(self) -> object | None:
+        raise NotImplementedError
+
 
 @ta.final
 class TypeInfo(Symbol):
@@ -57,7 +61,8 @@ class TypeInfo(Symbol):
         '_is_protocol',
         '_is_enum',
         '_enum_members',
-        '_new_type_supertype',
+        '_newtype_supertype',
+        '_runtime_object',
     )
 
     def __init__(
@@ -73,6 +78,7 @@ class TypeInfo(Symbol):
             is_enum: bool = False,
             enum_members: ta.Sequence[str] | None = None,
             new_type_supertype: Type | None = None,
+            runtime_object: object | None = None,
     ) -> None:
         super().__init__()
 
@@ -85,7 +91,8 @@ class TypeInfo(Symbol):
         self._is_protocol = is_protocol
         self._is_enum = is_enum
         self._enum_members = () if enum_members is None else tuple(enum_members)
-        self._new_type_supertype = new_type_supertype
+        self._newtype_supertype = new_type_supertype
+        self._runtime_object = runtime_object
 
     @property
     def name(self) -> str:
@@ -125,7 +132,11 @@ class TypeInfo(Symbol):
 
     @property
     def new_type_supertype(self) -> Type | None:
-        return self._new_type_supertype
+        return self._newtype_supertype
+
+    @property
+    def runtime_object(self) -> object | None:
+        return self._runtime_object
 
 
 @ta.final
@@ -135,8 +146,8 @@ class TypeAlias(Symbol):
         '_fullname',
         '_target',
         '_alias_tvars',
-        '_runtime_object',
         '_is_recursive',
+        '_runtime_object',
     )
 
     def __init__(
@@ -154,8 +165,8 @@ class TypeAlias(Symbol):
         self._fullname = name if fullname is None else fullname
         self._target = target
         self._alias_tvars = () if alias_tvars is None else tuple(alias_tvars)
-        self._runtime_object = runtime_object
         self._is_recursive: bool | None = None
+        self._runtime_object = runtime_object
 
     @property
     def name(self) -> str:
