@@ -40,14 +40,14 @@ type FactoryContext = MarshalFactoryContext | UnmarshalFactoryContext
 ##
 
 
-@lang.cached_function
-def _reflect2_smoke_api() -> ta.Any:
-    # A dedicated, process-wide reflect2 Api for the migration smoke test (see BaseContext._reflect). It runs in the
-    # 'unbound' policy so genuinely-unresolvable forward references (e.g. lite recursive aliases like packaging's
-    # RequiresMarkerList) degrade to UnboundType leaves rather than raising - the global reflect2 Api stays strict.
-    from ... import reflect2 as rfl2
-
-    return rfl2.Api(unresolved_forward_ref_policy='unbound')
+# @lang.cached_function
+# def _reflect2_smoke_api() -> ta.Any:
+#     # A dedicated, process-wide reflect2 Api for the migration smoke test (see BaseContext._reflect). It runs in the
+#     # 'unbound' policy so genuinely-unresolvable forward references (e.g. lite recursive aliases like packaging's
+#     # RequiresMarkerList) degrade to UnboundType leaves rather than raising - the global reflect2 Api stays strict.
+#     from ... import reflect2 as rfl2
+#
+#     return rfl2.Api(unresolved_forward_ref_policy='unbound')
 
 
 ##
