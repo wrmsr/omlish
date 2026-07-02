@@ -9,7 +9,7 @@ from .core.typekeys import get_type_key_policy
 from .core.typekeys import make_type_key_not_implemented_exception
 from .core.typekeys import type_key_or_none
 from .core.types import Type
-from .locking import NeedsLock
+from .needs import NeedsLock
 
 
 ##
@@ -64,18 +64,3 @@ class TypeKeys(NeedsLock):
         if key is None:
             raise make_type_key_not_implemented_exception(typ, policy)
         return key
-
-
-##
-
-
-class NeedsKeys:
-    def __init__(
-            self,
-            *,
-            keys: TypeKeys,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self._keys = keys

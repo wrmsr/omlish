@@ -43,9 +43,9 @@ from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import ReflectionValueError
 from .errors import UnreflectableTypeError
-from .interning import NeedsInterner
-from .locking import NeedsLock
-from .universe import NeedsUniverse
+from .needs import NeedsInterner
+from .needs import NeedsLock
+from .needs import NeedsUniverse
 from .universe import TypeUniverse
 
 
@@ -182,6 +182,8 @@ class TypeReflector(
 
     @property
     def universe(self) -> TypeUniverse:
+        # TODO: this (and its private field access internally) is still used sloppily as a transitive dep, but the
+        #       reflector+universe pair is foundational enough that I'll accept it for now
         return self._universe
 
     @property
@@ -968,18 +970,3 @@ class TypeReflector(
         self._next_type_var_id += 1
         self._runtime_type_params_by_type[type_var_tuple] = obj
         return type_var_tuple
-
-
-##
-
-
-class NeedsReflector:
-    def __init__(
-            self,
-            *,
-            reflector: TypeReflector,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self._reflector = reflector

@@ -1,6 +1,6 @@
 import typing as ta
 
-from .locking import NeedsLock
+from .needs import NeedsLock
 
 
 T = ta.TypeVar('T')
@@ -32,18 +32,3 @@ class Interner(NeedsLock):
 
         with self._lock:
             return self._intern(obj)
-
-
-##
-
-
-class NeedsInterner:
-    def __init__(
-            self,
-            *,
-            interner: Interner,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self._interner = interner

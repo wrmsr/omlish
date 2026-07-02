@@ -1,167 +1,169 @@
 # ruff: noqa: I001
+from .. import lang as _lang
 
 
-from .core.strconv import (  # noqa
-    type_str,
-    type_info_str,
-)
+with _lang.auto_proxy_init(globals()):
+    #
 
-from .core.symbols import (  # noqa
-    VarianceKind,
-    ArgKind,
+    from .core.strconv import (  # noqa
+        type_str,
+        type_info_str,
+    )
 
-    Symbol,
-    TypeInfo,
-    TypeAlias,
-)
+    from .core.symbols import (  # noqa
+        VarianceKind,
+        ArgKind,
 
-from .core.typekeys import (  # noqa
-    TypeKey,
-    TupleTypeKey,
+        Symbol,
+        TypeInfo,
+        TypeAlias,
+    )
 
-    StandardTypeKeyPolicy,
+    from .core.typekeys import (  # noqa
+        TypeKey,
+        TupleTypeKey,
 
-    TypeKeyPolicy,
+        StandardTypeKeyPolicy,
 
-    TYPE_KEY,
-    ALPHA_TYPE_KEY,
-    STRUCTURAL_TYPE_KEY,
-    ALPHA_STRUCTURAL_TYPE_KEY,
+        TypeKeyPolicy,
 
-    get_type_key_policy,
+        TYPE_KEY,
+        ALPHA_TYPE_KEY,
+        STRUCTURAL_TYPE_KEY,
+        ALPHA_STRUCTURAL_TYPE_KEY,
 
-    type_key_or_none as type_key_or_none_,
-    type_key as type_key_,
+        get_type_key_policy,
 
-    tuple_type_key_or_none,
-    tuple_type_key,
-)
+        type_key_or_none as type_key_or_none_,
+        type_key as type_key_,
 
-from .core.typeops import (  # noqa
-    RecursiveTypeError,
-    get_type_alias_target,
-    get_proper_type,
-    get_proper_types,
+        tuple_type_key_or_none,
+        tuple_type_key,
+    )
 
-    has_type_vars,
+    from .core.typeops import (  # noqa
+        RecursiveTypeError,
+        get_type_alias_target,
+        get_proper_type,
+        get_proper_types,
 
-    get_literal_values,
-    get_literal_values_or_none,
+        has_type_vars,
 
-    collect_aliases,
-    is_recursive_alias,
+        get_literal_values,
+        get_literal_values_or_none,
 
-    make_union,
-    make_simplified_union,
-)
+        collect_aliases,
+        is_recursive_alias,
 
-from .core.types import (  # noqa
-    LiteralValue,
-    is_literal_value,
+        make_union,
+        make_simplified_union,
+    )
 
-    Type,
-    TypeAliasType,
-    TypeGuardedType,
-    AnnotatedType,
-    RequiredType,
-    ReadOnlyType,
-    ProperType,
-    TypeVarId,
-    TypeVarLikeType,
-    TypeVarType,
-    ParamSpecType,
-    TypeVarTupleType,
-    UnboundType,
-    CallableArgument,
-    TypeList,
-    UnpackType,
-    TypeOfAny,
-    AnyType,
-    any_type,
-    UninhabitedType,
-    uninhabited_type,
-    NoneType,
-    none_type,
-    ErasedType,
-    erased_type,
-    DeletedType,
-    ExtraAttrs,
-    Instance,
-    FunctionLike,
-    FormalArgument,
-    Parameters,
-    CallableType,
-    Overloaded,
-    TupleType,
-    TypedDictType,
-    RawExpressionType,
-    LiteralType,
-    UnionType,
-    PartialType,
-    EllipsisType,
-    ellipsis_type,
-    TypeType,
-    PlaceholderType,
-)
+    from .core.types import (  # noqa
+        LiteralValue,
+        is_literal_value,
 
-from .annotations import (  # noqa
-    TypeVarResolver,
-    TypeAliasAnnotationPolicy,
+        Type,
+        TypeAliasType,
+        TypeGuardedType,
+        AnnotatedType,
+        RequiredType,
+        ReadOnlyType,
+        ProperType,
+        TypeVarId,
+        TypeVarLikeType,
+        TypeVarType,
+        ParamSpecType,
+        TypeVarTupleType,
+        UnboundType,
+        CallableArgument,
+        TypeList,
+        UnpackType,
+        TypeOfAny,
+        AnyType,
+        any_type,
+        UninhabitedType,
+        uninhabited_type,
+        NoneType,
+        none_type,
+        ErasedType,
+        erased_type,
+        DeletedType,
+        ExtraAttrs,
+        Instance,
+        FunctionLike,
+        FormalArgument,
+        Parameters,
+        CallableType,
+        Overloaded,
+        TupleType,
+        TypedDictType,
+        RawExpressionType,
+        LiteralType,
+        UnionType,
+        PartialType,
+        EllipsisType,
+        ellipsis_type,
+        TypeType,
+        PlaceholderType,
+    )
 
-    to_runtime_annotation as to_runtime_annotation_,
-)
+    from .annotations import (  # noqa
+        TypeVarResolver,
+        TypeAliasAnnotationPolicy,
 
-from .api import (  # noqa
-    Api,
+        to_runtime_annotation as to_runtime_annotation_,
+    )
 
-    global_api,
-    or_global_api,
+    from .api import (  # noqa
+        Api,
 
-    get_type_info,
-    get_newtype_info,
-    get_runtime_type,
+        global_api,
+        or_global_api,
 
-    intern,
+        get_type_info,
+        get_newtype_info,
+        get_runtime_type,
 
-    reflect_type,
+        reflect_type,
 
-    type_key_or_none,
-    type_key,
+        type_key_or_none,
+        type_key,
 
-    to_runtime_annotation,
+        to_runtime_annotation,
 
-    inspect_members,
+        inspect_members,
 
-    inspect_dataclass,
+        inspect_dataclass,
 
-    inspect_namedtuple,
-)
+        inspect_namedtuple,
+    )
 
-from .errors import (  # noqa
-    ReflectionError,
-    ReflectionTypeError,
-    ReflectionValueError,
-    ReflectionRuntimeError,
-    ReflectionInternalError,
-    UnsupportedTypeOperationError,
-    UnreflectableTypeError,
-    ProtocolReflectionError,
-)
+    from .errors import (  # noqa
+        ReflectionError,
+        ReflectionTypeError,
+        ReflectionValueError,
+        ReflectionRuntimeError,
+        ReflectionInternalError,
+        UnsupportedTypeOperationError,
+        UnreflectableTypeError,
+        ProtocolReflectionError,
+    )
 
-from .ops import (  # noqa
-    reflect_mro_entries,
-    reflect_mro_entries_by_info,
-)
+    from .ops import (  # noqa
+        reflect_mro_entries,
+        reflect_mro_entries_by_info,
+    )
 
-from .reflector import (  # noqa
-    UnresolvedForwardRefPolicy,
+    from .reflector import (  # noqa
+        UnresolvedForwardRefPolicy,
 
-    ForwardRefResolution,
-    ForwardRefResolver,
+        ForwardRefResolution,
+        ForwardRefResolver,
 
-    TypeReflector,
-)
+        TypeReflector,
+    )
 
-from .universe import (  # noqa
-    TypeUniverse,
-)
+    from .universe import (  # noqa
+        TypeUniverse,
+    )

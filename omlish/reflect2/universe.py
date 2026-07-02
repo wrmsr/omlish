@@ -18,7 +18,7 @@ from .known import _KNOWN_GENERIC_ARITIES
 from .known import _KNOWN_GENERIC_VARIANCES
 from .known import _KNOWN_MRO_TAILS
 from .known import _KnownBaseArg
-from .locking import NeedsLock
+from .needs import NeedsLock
 
 
 DynamicTypeNameSuffix: ta.TypeAlias = ta.Literal['id', 'counter']
@@ -288,18 +288,3 @@ class TypeUniverse(
 
     def get_runtime_type(self, info: TypeInfo) -> object | None:
         return self._types_by_fullname.get(info._fullname)
-
-
-##
-
-
-class NeedsUniverse:
-    def __init__(
-            self,
-            *,
-            universe: TypeUniverse,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        self._universe = universe

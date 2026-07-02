@@ -14,10 +14,10 @@ from .core.types import Type
 from .core.types import TypeOfAny
 from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
-from .locking import NeedsLock
+from .needs import NeedsKeys
+from .needs import NeedsLock
+from .needs import NeedsReflector
 from .ops import reflect_mro_entries_by_info
-from .reflector import NeedsReflector
-from .typekeys import NeedsKeys
 
 
 ##

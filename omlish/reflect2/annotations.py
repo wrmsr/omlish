@@ -27,9 +27,9 @@ from .core.types import UnpackType
 from .core.typevisitor import DefaultTypeVisitor
 from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
-from .locking import NeedsLock
-from .reflector import NeedsReflector
-from .universe import NeedsUniverse
+from .needs import NeedsLock
+from .needs import NeedsReflector
+from .needs import NeedsUniverse
 from .universe import TypeUniverse
 
 

@@ -7,9 +7,9 @@ from .core.subtypes import MroEntry
 from .core.types import Type
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
-from .locking import NeedsLock
+from .needs import NeedsLock
+from .needs import NeedsReflector
 from .ops import reflect_mro_entries_by_info
-from .reflector import NeedsReflector
 
 
 ##

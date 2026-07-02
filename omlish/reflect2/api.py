@@ -1,8 +1,6 @@
 import threading
 import typing as ta
 
-from .annotations import TypeAliasAnnotationPolicy
-from .annotations import TypeAnnotations
 from .core.symbols import TypeInfo
 from .core.typekeys import TYPE_KEY
 from .core.typekeys import StandardTypeKeyPolicy
@@ -10,21 +8,28 @@ from .core.typekeys import TypeKey
 from .core.typekeys import TypeKeyPolicy
 from .core.types import Type
 from .interning import Interner
+from .needs import NeedsInterner
+from .needs import NeedsKeys
+from .needs import NeedsLock
+from .needs import NeedsReflector
+from .needs import NeedsUniverse
 from .reflector import ForwardRefResolver
 from .reflector import TypeReflector
 from .reflector import UnresolvedForwardRefPolicy
-from .typekeys import TypeKeys
 from .universe import DynamicTypeNameSuffix
 from .universe import TypeUniverse
 
 
 if ta.TYPE_CHECKING:
+    from .annotations import TypeAliasAnnotationPolicy
+    from .annotations import TypeAnnotations
     from .dataclasses import DataclassInspection
     from .dataclasses import DataclassInspector
     from .members import MembersInspection
     from .members import MembersInspector
     from .namedtuples import NamedtupleInspection
     from .namedtuples import NamedtupleInspector
+    from .typekeys import TypeKeys
 
 
 T = ta.TypeVar('T')
@@ -49,31 +54,57 @@ class Api:
 
         self._lock: ta.Final = threading.RLock()
 
-        self._universe: ta.Final = TypeUniverse(
+        self._interner: ta.Final = self._inject(Interner)
+
+        self._universe: ta.Final = self._inject(
+            TypeUniverse,
             dynamic_type_name_suffix=dynamic_type_name_suffix,
-            lock=self._lock,
         )
 
-        self._interner: ta.Final = Interner(
-            lock=self._lock,
-        )
-
-        self._reflector: ta.Final = TypeReflector(
+        self._reflector: ta.Final = self._inject(
+            TypeReflector,
             forward_ref_resolver=forward_ref_resolver,
             unresolved_forward_ref_policy=unresolved_forward_ref_policy,
-            universe=self._universe,
-            interner=self._interner,
-            lock=self._lock,
         )
 
-        self._keys: ta.Final = TypeKeys(
-            lock=self._lock,
-        )
+    #
 
-        self._annotations: ta.Final = TypeAnnotations(
-            reflector=self._reflector,
-            lock=self._lock,
-        )
+    def _inject(self, cls: type[T], **kwargs: ta.Any) -> T:
+        nkw: dict[str, ta.Any] = {}
+
+        if issubclass(cls, NeedsLock):
+            nkw['lock'] = self._lock
+
+        if issubclass(cls, NeedsInterner):
+            nkw['interner'] = self._interner
+
+        if issubclass(cls, NeedsUniverse):
+            nkw['universe'] = self.universe
+
+        if issubclass(cls, NeedsReflector):
+            nkw['reflector'] = self.reflector
+
+        if issubclass(cls, NeedsKeys):
+            nkw['keys'] = self.keys
+
+        return cls(**kwargs, **nkw)
+
+    def _init_injected(self, cls: type[T], attr: str) -> T:
+        with self._lock:
+            try:
+                return getattr(self, attr)
+            except AttributeError:
+                pass
+
+        with self._lock:
+            try:
+                return getattr(self, attr)
+            except AttributeError:
+                pass
+
+            inst = self._inject(cls)
+            setattr(self, attr, inst)
+            return inst
 
     #
 
@@ -93,15 +124,6 @@ class Api:
     #
 
     @property
-    def interner(self) -> Interner:
-        return self._interner
-
-    def intern(self, obj: T) -> T:
-        return self._interner.intern(obj)
-
-    #
-
-    @property
     def reflector(self) -> TypeReflector:
         return self._reflector
 
@@ -110,29 +132,45 @@ class Api:
 
     #
 
+    _keys: TypeKeys
+
     @property
     def keys(self) -> TypeKeys:
-        return self._keys
+        try:
+            return self._keys
+        except AttributeError:
+            pass
+
+        from .typekeys import TypeKeys
+        return self._init_injected(TypeKeys, '_keys')
 
     def type_key_or_none(
             self,
             typ: Type,
             policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
     ) -> TypeKey | None:
-        return self._keys.type_key_or_none(typ, policy)
+        return self.keys.type_key_or_none(typ, policy)
 
     def type_key(
             self,
             typ: Type,
             policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
     ) -> TypeKey:
-        return self._keys.type_key(typ, policy)
+        return self.keys.type_key(typ, policy)
 
     #
 
+    _annotations: TypeAnnotations
+
     @property
     def annotations(self) -> TypeAnnotations:
-        return self._annotations
+        try:
+            return self._annotations
+        except AttributeError:
+            pass
+
+        from .annotations import TypeAnnotations
+        return self._init_injected(TypeAnnotations, '_annotations')
 
     def to_runtime_annotation(
             self,
@@ -140,7 +178,7 @@ class Api:
             *,
             type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
     ) -> object:
-        return self._annotations.to_runtime_annotation(
+        return self.annotations.to_runtime_annotation(
             typ,
             type_alias_policy=type_alias_policy,
         )
@@ -149,36 +187,15 @@ class Api:
 
     _members: MembersInspector
 
-    def _members_(self) -> MembersInspector:
-        with self._lock:
-            try:
-                return self._members
-            except AttributeError:
-                pass
-
-        from .members import MembersInspector
-
-        with self._lock:
-            try:
-                return self._members
-            except AttributeError:
-                pass
-
-            self._members = MembersInspector(
-                keys=self._keys,
-                reflector=self._reflector,
-                lock=self._lock,
-            )
-
-            return self._members
-
     @property
     def members(self) -> MembersInspector:
         try:
             return self._members
         except AttributeError:
             pass
-        return self._members_()
+
+        from .members import MembersInspector
+        return self._init_injected(MembersInspector, '_members')
 
     def inspect_members(self, obj: object) -> MembersInspection:
         return self.members.inspect_members(obj)
@@ -187,35 +204,15 @@ class Api:
 
     _dataclasses: DataclassInspector
 
-    def _dataclasses_(self) -> DataclassInspector:
-        with self._lock:
-            try:
-                return self._dataclasses
-            except AttributeError:
-                pass
-
-        from .dataclasses import DataclassInspector
-
-        with self._lock:
-            try:
-                return self._dataclasses
-            except AttributeError:
-                pass
-
-            self._dataclasses = DataclassInspector(
-                reflector=self._reflector,
-                lock=self._lock,
-            )
-
-            return self._dataclasses
-
     @property
     def dataclasses(self) -> DataclassInspector:
         try:
             return self._dataclasses
         except AttributeError:
             pass
-        return self._dataclasses_()
+
+        from .dataclasses import DataclassInspector
+        return self._init_injected(DataclassInspector, '_dataclasses')
 
     def inspect_dataclass(self, obj: object) -> DataclassInspection:
         return self.dataclasses.inspect_dataclass(obj)
@@ -224,35 +221,15 @@ class Api:
 
     _namedtuples: NamedtupleInspector
 
-    def _namedtuples_(self) -> NamedtupleInspector:
-        with self._lock:
-            try:
-                return self._namedtuples
-            except AttributeError:
-                pass
-
-        from .namedtuples import NamedtupleInspector
-
-        with self._lock:
-            try:
-                return self._namedtuples
-            except AttributeError:
-                pass
-
-            self._namedtuples = NamedtupleInspector(
-                reflector=self._reflector,
-                lock=self._lock,
-            )
-
-            return self._namedtuples
-
     @property
     def namedtuples(self) -> NamedtupleInspector:
         try:
             return self._namedtuples
         except AttributeError:
             pass
-        return self._namedtuples_()
+
+        from .namedtuples import NamedtupleInspector
+        return self._init_injected(NamedtupleInspector, '_namedtuples')
 
     def inspect_namedtuple(self, obj: object) -> NamedtupleInspection:
         return self.namedtuples.inspect_namedtuple(obj)
@@ -285,13 +262,6 @@ def get_newtype_info(obj: object) -> TypeInfo:
 
 def get_runtime_type(info: TypeInfo) -> object | None:
     return _GLOBAL_API.get_runtime_type(info)
-
-
-#
-
-
-def intern(obj: T) -> T:
-    return _GLOBAL_API.intern(obj)
 
 
 #

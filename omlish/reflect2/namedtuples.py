@@ -8,8 +8,8 @@ from .core.types import Type
 from .core.types import TypeVarLikeType
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
-from .locking import NeedsLock
-from .reflector import NeedsReflector
+from .needs import NeedsLock
+from .needs import NeedsReflector
 
 
 ##
