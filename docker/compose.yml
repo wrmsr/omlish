@@ -23,7 +23,7 @@ services:
       # - 'omlish-neo4j'
       - 'omlish-pgvector'
       - 'omlish-redis'
-      - 'omlish-trino'
+      # - 'omlish-trino'
     expose:
       - '22'
       - '8000'

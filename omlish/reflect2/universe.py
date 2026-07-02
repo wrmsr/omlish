@@ -99,7 +99,12 @@ class TypeUniverse(
 
         return f'NewType@{id(obj):x}'
 
-    def _make_type_var(self, fullname: str, index: int, variance: VarianceKind) -> TypeVarType:
+    def _make_type_var(
+            self,
+            fullname: str,
+            index: int,
+            variance: VarianceKind,
+    ) -> TypeVarType:
         object_info = self._get_type_info('builtins.object')
         object_type = Instance(object_info, ())
         default = _ANY_TYPES[TypeOfAny.FROM_OMITTED_GENERICS]
@@ -114,7 +119,12 @@ class TypeUniverse(
             variance,
         )
 
-    def _make_type_info(self, fullname: str) -> TypeInfo:
+    def _make_type_info(
+            self,
+            fullname: str,
+            *,
+            runtime_object: object | None = None,
+    ) -> TypeInfo:
         name = fullname.rsplit('.', 1)[-1]
         arity = _KNOWN_GENERIC_ARITIES.get(fullname, 0)
         variances = list(_KNOWN_GENERIC_VARIANCES.get(fullname, (VarianceKind.IN,) * arity))
@@ -127,6 +137,7 @@ class TypeUniverse(
             fullname,
             type_vars=type_vars,
             variances=variances,
+            runtime_object=runtime_object,
         )
 
     def _make_known_bases(self, info: TypeInfo) -> ta.Sequence[Type]:
@@ -170,6 +181,14 @@ class TypeUniverse(
                 fullname = self._fullnames_by_type[obj]
             except KeyError:
                 fullname = self._make_dynamic_type_fullname(obj)
+                try:
+                    ex_ty = self._types_by_fullname[fullname]
+                except KeyError:
+                    pass
+                else:
+                    raise ReflectionValueError(
+                        f'Dynamic fullname {fullname!r} for type {obj!r} already used by type {ex_ty!r}',
+                    )
                 self._fullnames_by_type[obj] = fullname
                 self._types_by_fullname[fullname] = obj
 
@@ -178,7 +197,10 @@ class TypeUniverse(
         except KeyError:
             pass
 
-        info = self._make_type_info(fullname)
+        info = self._make_type_info(
+            fullname,
+            runtime_object=runtime_type,
+        )
         self._infos_by_fullname[fullname] = info
         self._configure_known_type_info(info)
         if runtime_type is not None and issubclass(runtime_type, enum.Enum):
@@ -230,7 +252,11 @@ class TypeUniverse(
             pass
 
         name = fullname.rsplit('.', 1)[-1]
-        info = TypeInfo(name, fullname)
+        info = TypeInfo(
+            name,
+            fullname,
+            runtime_object=obj,
+        )
         self._infos_by_fullname[fullname] = info
 
         supertype = getattr(obj, '__supertype__')

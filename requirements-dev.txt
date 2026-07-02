@@ -135,8 +135,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.43.38
-types-boto3>=1.43.38
+boto3>=1.43.39
+types-boto3>=1.43.39
 botocore-stubs>=1.43.14
 
 antlr4-python3-runtime==4.13.2
@@ -155,7 +155,7 @@ pillow==12.2.0
 
 bitsandbytes==0.49.2  # @omlish-venv !15 !15t
 
-regex==2026.5.9
+regex==2026.6.28
 
 # x.server - TODO: delete
 

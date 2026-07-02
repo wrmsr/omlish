@@ -2,3 +2,16 @@
 - protocols
 - overloads
 - infer_variance??
+- audit: does TypeUniverse._get_type_info work right when hit by str then hit by type?
+  - todo: update TypeInfo._runtime_type if so?
+- codify Type/Symbol ownership / mutation / sharing / mingling discipline
+  - types/symbol flow *in* to api but don't flow out
+  - all have a single implicit owner api
+    - but have no ref to it, and still usable without a ref to it
+    - forwardref resolution can already produce arbitrary results, so they already aren't really 'universal' (lol)
+  - types/symbols immutable/final before being returned to callers
+- metaclasses
+- dedupe universe lookup tables - we store more refs to stuff now
+- clarify.. point.. of fullname indirection
+  - !! invert fullname<->obj priority - we're obj-major, fullname secondary
+    - but lose ability for 'hpyothetical' types?
