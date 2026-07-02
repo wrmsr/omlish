@@ -5,7 +5,7 @@
 #include <atomic>
 
 #define _MODULE_NAME "_fixedmap"
-#define _PACKAGE_NAME "omlish.collections.fixed"
+#define _PACKAGE_NAME "omlish.collections.fixedmap"
 #define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
 
 //
