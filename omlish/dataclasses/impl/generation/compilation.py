@@ -8,17 +8,17 @@ import typing as ta
 
 from .... import check
 from .... import lang
+from ...clsattrs import IfAttrPresent
 from ..utils import repr_round_trip_value
 from .globals import FN_GLOBAL_IMPORTS
 from .globals import FN_GLOBALS
 from .globals import FUNCTION_TYPE_GLOBAL
 from .globals import PROPERTY_GLOBAL
-from .globals import TYPE_ERROR_GLOBAL
+from .globals import SET_CLS_ATTR_GLOBAL
 from .idents import CLS_IDENT
 from .idents import IDENT_PREFIX
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
-from .ops import IfAttrPresent
 from .ops import Op
 from .ops import OpRef
 from .ops import Ref
@@ -99,38 +99,25 @@ class OpCompiler:
         src: str | None = None
         noqa: bool = dc.field(default=False, kw_only=True)
 
-    def _compile_set_attr(
+    def _compile_set_cls_attr(
             self,
             attr_name: str,
             value_src: str,
             if_present: IfAttrPresent,
+            *,
+            set_qualname: bool = False,
     ) -> list[str]:
-        setattr_stmt = f'setattr({CLS_IDENT}, {attr_name!r}, {value_src})'
-
-        if if_present == 'skip':
-            return [
-                f'if {attr_name!r} not in {CLS_IDENT}.__dict__:',
-                f'    {setattr_stmt}',
-            ]
-
-        elif if_present == 'replace':
-            return [
-                setattr_stmt,
-            ]
-
-        elif if_present == 'error':
-            return [
-                f'if {attr_name!r} in {CLS_IDENT}.__dict__:',
-                (
-                    f'    '
-                    f'raise {TYPE_ERROR_GLOBAL.ident}'
-                    f'(f"Cannot overwrite attribute {attr_name} in class {{{CLS_IDENT}.__name__}}")'
-                ),
-                setattr_stmt,
-            ]
-
-        else:
-            raise ValueError(if_present)
+        return [''.join([
+            f'{SET_CLS_ATTR_GLOBAL.ident}(',
+            ', '.join([
+                f'{CLS_IDENT}',
+                f'{attr_name!r}',
+                f'{value_src}',
+                f'{if_present!r}',
+                *(['set_qualname=True'] if set_qualname else []),
+            ]),
+            ')',
+        ])]
 
     def compile(
             self,
@@ -153,7 +140,7 @@ class OpCompiler:
                 else:
                     vs = repr(repr_round_trip_value(v))
 
-                body_lines.extend(self._compile_set_attr(
+                body_lines.extend(self._compile_set_cls_attr(
                     op.name,
                     vs,
                     op.if_present,
@@ -163,11 +150,11 @@ class OpCompiler:
                 body_lines.extend([
                     *op.src.splitlines(),
                     f'',
-                    f'{op.name}.__qualname__ = f"{{{CLS_IDENT}.__qualname__}}.{op.name}"',
-                    *self._compile_set_attr(
+                    *self._compile_set_cls_attr(
                         op.name,
                         op.name,
                         op.if_present,
+                        set_qualname=True,
                     ),
                 ])
 

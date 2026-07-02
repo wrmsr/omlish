@@ -21,6 +21,7 @@ import json
 import os.path
 import sys
 import threading
+import traceback
 import types
 import typing as ta
 import uuid
@@ -45,7 +46,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
             dict(path='../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
-            dict(path='dumping.py', sha1='ae4148f671d2cb1e7bf1a819b78ca388b4680bbc'),
+            dict(path='dumping.py', sha1='3a116abfd0a6c5abc2e2ad3f2ff48ce8c114ac07'),
         ],
     )
 
@@ -1985,6 +1986,7 @@ class _DataclassCodegenDumper:
             init_file_path: str,
             out_file_path: str,
             cfg_pkg_name: ta.Optional[str] = None,
+            debug: bool = False,
     ) -> None:
         from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
         from omlish.dataclasses.impl.generation.compilation import OpCompiler  # noqa
@@ -1992,6 +1994,8 @@ class _DataclassCodegenDumper:
         from omlish.dataclasses.impl.generation.ops import OpRef  # noqa
         from omlish.dataclasses.impl.generation.processor import Codegen  # noqa
         from omlish.dataclasses.impl.generation.processor import GeneratorProcessor  # noqa
+        from omlish.dataclasses.impl.generation.processor import ProcessingOption  # noqa
+        from omlish.dataclasses.impl.generation.processor import Verbosity  # noqa
         from omlish.dataclasses.impl.processing.base import ProcessingContext  # noqa
         from omlish.dataclasses.impl.processing.driving import processing_options_context  # noqa
 
@@ -2060,7 +2064,7 @@ class _DataclassCodegenDumper:
                 try:
                     __import__(spec)
                 except Exception as e:  # noqa
-                    import_errors[spec] = repr(e)
+                    import_errors[spec] = ''.join(traceback.format_exc())
 
             finally:
                 cur_module = None
@@ -2113,11 +2117,20 @@ class _DataclassCodegenDumper:
 
         #
 
-        with processing_options_context(Codegen(
-                style='aot',
-                force=True,
-                callback=callback,
-        )):
+        proc_opts: list[ProcessingOption] = []
+
+        proc_opts.append(Codegen(
+            style='aot',
+            force=True,
+            callback=callback,
+        ))
+
+        if debug:
+            proc_opts.append(Verbosity(
+                debug=True,
+            ))
+
+        with processing_options_context(*proc_opts):
             process_dir(os.path.dirname(init_file_path))
 
         #

@@ -3,6 +3,7 @@ import reprlib
 import types
 import typing as ta
 
+from ...clsattrs import set_cls_attr
 from ...errors import FieldFnValidationError
 from ...errors import FieldTypeValidationError
 from ...errors import FnValidationError
@@ -74,6 +75,11 @@ FN_GLOBALS: ta.Mapping[FnGlobal, FnGlobalValue] = {
     (FN_VALIDATION_ERROR_GLOBAL := FnGlobal(IDENT_PREFIX + 'FnValidationError')): FnGlobalValue(
         FnValidationError,
         '.errors.FnValidationError',
+    ),
+
+    (SET_CLS_ATTR_GLOBAL := FnGlobal(IDENT_PREFIX + 'set_cls_attr')): FnGlobalValue(
+        set_cls_attr,
+        '.clsattrs.set_cls_attr',
     ),
 }
 

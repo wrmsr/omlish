@@ -127,10 +127,11 @@ class GeneratorProcessor(Processor):
             ])
 
             if (vo := gp._ctx.option(Verbosity)) is not None and vo.debug:  # noqa
-                print(gp.prepare().plans.repr(), file=sys.stderr)
-                print(file=sys.stderr)
-                print(comp_src, file=sys.stderr)
-                print(file=sys.stderr)
+                print('\n\n'.join([
+                    gp.prepare().plans.repr(),
+                    comp_src,
+                    '',
+                ]), file=sys.stderr)
 
             ns: dict = {}
             ns.update(compiler.style.globals_ns())  # noqa

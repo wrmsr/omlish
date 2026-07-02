@@ -195,6 +195,10 @@ gen-manifest: venv
 gen-dataclass: venv
 	${PYTHON} -m omdev.dataclasses codegen ${SRCS}
 
+.PHONY: clean-dataclass
+clean-dataclass:
+	find ${SRCS} -type f -name _dataclasses.py -print -delete
+
 .PHONY: gen-pkg
 gen-pkg:
 	PYTHONPATH=. ${PYPROJECT} pkg gen

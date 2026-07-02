@@ -3,6 +3,7 @@
 # @omlish-amalg _dumping.py
 import dataclasses as dc
 import os.path
+import traceback
 import typing as ta
 
 from omlish.lite.check import check
@@ -57,6 +58,7 @@ class _DataclassCodegenDumper:
             init_file_path: str,
             out_file_path: str,
             cfg_pkg_name: ta.Optional[str] = None,
+            debug: bool = False,
     ) -> None:
         from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
         from omlish.dataclasses.impl.generation.compilation import OpCompiler  # noqa
@@ -64,6 +66,8 @@ class _DataclassCodegenDumper:
         from omlish.dataclasses.impl.generation.ops import OpRef  # noqa
         from omlish.dataclasses.impl.generation.processor import Codegen  # noqa
         from omlish.dataclasses.impl.generation.processor import GeneratorProcessor  # noqa
+        from omlish.dataclasses.impl.generation.processor import ProcessingOption  # noqa
+        from omlish.dataclasses.impl.generation.processor import Verbosity  # noqa
         from omlish.dataclasses.impl.processing.base import ProcessingContext  # noqa
         from omlish.dataclasses.impl.processing.driving import processing_options_context  # noqa
 
@@ -132,7 +136,7 @@ class _DataclassCodegenDumper:
                 try:
                     __import__(spec)
                 except Exception as e:  # noqa
-                    import_errors[spec] = repr(e)
+                    import_errors[spec] = ''.join(traceback.format_exc())
 
             finally:
                 cur_module = None
@@ -185,11 +189,20 @@ class _DataclassCodegenDumper:
 
         #
 
-        with processing_options_context(Codegen(
-                style='aot',
-                force=True,
-                callback=callback,
-        )):
+        proc_opts: list[ProcessingOption] = []
+
+        proc_opts.append(Codegen(
+            style='aot',
+            force=True,
+            callback=callback,
+        ))
+
+        if debug:
+            proc_opts.append(Verbosity(
+                debug=True,
+            ))
+
+        with processing_options_context(*proc_opts):
             process_dir(os.path.dirname(init_file_path))
 
         #

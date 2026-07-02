@@ -3,6 +3,7 @@ import typing as ta
 
 from .... import check
 from .... import lang
+from ...clsattrs import IfAttrPresent
 from .globals import FnGlobal
 from .idents import IDENT_PREFIX
 
@@ -61,9 +62,6 @@ Ref: ta.TypeAlias = OpRef | FnGlobal
 ##
 
 
-IfAttrPresent: ta.TypeAlias = ta.Literal['skip', 'replace', 'error']
-
-
 @dc.dataclass(frozen=True)
 class Op(lang.Abstract):
     pass
@@ -83,7 +81,7 @@ class AddMethodOp(Op):
     src: str
     refs: frozenset[Ref] = dc.field(default=frozenset())
 
-    if_present: IfAttrPresent = dc.field(default='error', kw_only=True)
+    if_present: IfAttrPresent = dc.field(default='raise', kw_only=True)
 
 
 @dc.dataclass(frozen=True)

@@ -13,6 +13,7 @@ class Cli(ap.Cli):
         ap.arg('--dump-inline', action='store_true'),
         ap.arg('--dry-run', action='store_true'),
         ap.arg('--print-code', action='store_true'),
+        ap.arg('--debug', action='store_true'),
         ap.arg('-j', '--jobs', type=int),
     )
     def codegen(self) -> None:
@@ -20,8 +21,9 @@ class Cli(ap.Cli):
 
         asyncio.run(DataclassCodeGen(
             dump_inline=self.args.dump_inline,
-            print_code=self.args.print_code,
             dry_run=self.args.dry_run,
+            print_code=self.args.print_code,
+            debug=self.args.debug,
         ).run(
             self.args.roots,
             **(dict(concurrency=self.args.jobs) if self.args.jobs is not None else {}),

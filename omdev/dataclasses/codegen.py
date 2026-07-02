@@ -74,16 +74,18 @@ class DataclassCodeGen:
             *,
             target_line_width: int | None = None,
             dump_inline: bool = False,
-            print_code: bool = False,
             dry_run: bool = False,
+            print_code: bool = False,
+            debug: bool = False,
             subprocess_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__()
 
         self._target_line_width = target_line_width or self.DEFAULT_TARGET_LINE_WIDTH
         self._dump_inline = dump_inline
-        self._print_code = print_code
         self._dry_run = dry_run
+        self._print_code = print_code
+        self._debug = debug
         self._subprocess_kwargs = subprocess_kwargs
 
     #
@@ -203,6 +205,7 @@ class DataclassCodeGen:
             init_file_path=cfg_pkg.init_file_path,
             out_file_path=out_file_path,
             cfg_pkg_name=cfg_pkg.name,
+            **(dict(debug=True) if self._debug else {}),
         )
 
         start_time = time.time()
@@ -234,6 +237,9 @@ class DataclassCodeGen:
             output: DataclassCodegenDumperOutput,
     ) -> None:
         gen_file_path = os.path.join(os.path.dirname(cfg_pkg.init_file_path), '_dataclasses.py')
+
+        for err_mod, err_str in output.import_errors.items():
+            log.error(lambda: f'Failed to import {err_mod}: {err_str}')
 
         if os.path.isfile(gen_file_path):
             if not _is_generated_py_file(gen_file_path):

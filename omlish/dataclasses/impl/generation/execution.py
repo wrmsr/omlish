@@ -8,13 +8,13 @@ import types
 import typing as ta
 
 from .... import lang
+from ...clsattrs import IfAttrPresent
 from ..utils import repr_round_trip_value
 from .globals import FN_GLOBAL_VALUES
 from .globals import FnGlobal
 from .idents import CLS_IDENT
 from .ops import AddMethodOp
 from .ops import AddPropertyOp
-from .ops import IfAttrPresent
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -121,7 +121,7 @@ class OpExecutor:
 
     #
 
-    def _execute_set_attr(
+    def _execute_set_cls_attr(
             self,
             attr_name: str,
             value: ta.Any,
@@ -132,7 +132,7 @@ class OpExecutor:
                 return
             elif if_present == 'replace':
                 pass
-            elif if_present == 'error':
+            elif if_present == 'raise':
                 raise TypeError(f'Cannot overwrite attribute {attr_name} in class {self._cls.__name__}')
             else:
                 raise ValueError(if_present)
@@ -148,7 +148,7 @@ class OpExecutor:
             else:
                 v = repr_round_trip_value(v)
 
-            self._execute_set_attr(
+            self._execute_set_cls_attr(
                 op.name,
                 v,
                 op.if_present,
@@ -161,7 +161,7 @@ class OpExecutor:
                 op.refs,
             )
 
-            self._execute_set_attr(
+            self._execute_set_cls_attr(
                 op.name,
                 fn,
                 op.if_present,
