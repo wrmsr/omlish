@@ -79,10 +79,10 @@ class Api:
             nkw['interner'] = self._interner
 
         if issubclass(cls, NeedsUniverse):
-            nkw['universe'] = self.universe
+            nkw['universe'] = self._universe
 
         if issubclass(cls, NeedsReflector):
-            nkw['reflector'] = self.reflector
+            nkw['reflector'] = self._reflector
 
         if issubclass(cls, NeedsKeys):
             nkw['keys'] = self.keys
@@ -90,12 +90,6 @@ class Api:
         return cls(**kwargs, **nkw)
 
     def _init_injected(self, cls: type[T], attr: str) -> T:
-        with self._lock:
-            try:
-                return getattr(self, attr)
-            except AttributeError:
-                pass
-
         with self._lock:
             try:
                 return getattr(self, attr)
