@@ -37,10 +37,6 @@ def _register(**kwargs):
         "e)))"
     ),
     plan_repr_sha1='46949f032aee9c8d162df01a1cb2f013b149dec5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockDelta'),
     ),
@@ -154,9 +150,6 @@ def _process_dataclass__46949f032aee9c8d162df01a1cb2f013b149dec5():
         "', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4eb81d72488a73ef2620fc53dba27af7f6095c60',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockDelta.InputJsonDelta'),
     ),
@@ -270,14 +263,6 @@ def _process_dataclass__4eb81d72488a73ef2620fc53dba27af7f6095c60():
         "lt_fn=None)))"
     ),
     plan_repr_sha1='5891067427c8be565c71dc6d23b03da1320e939c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__fns__3__fn',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockDelta.ServerToolUse'),
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockStart.ToolUse'),
@@ -414,9 +399,6 @@ def _process_dataclass__5891067427c8be565c71dc6d23b03da1320e939c():
         "None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8895f544bd84e50a11fd877bdb30ce8ec8618dc2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockDelta.SignatureDelta'),
     ),
@@ -521,9 +503,6 @@ def _process_dataclass__8895f544bd84e50a11fd877bdb30ce8ec8618dc2():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='ce2a4c81e0f66e62a54ea3adfdc532902daece78',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockDelta.TextDelta'),
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockStart.Text'),
@@ -629,9 +608,6 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
         ", id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='77b3e71fa8c200e381f96df0fbbf0bb0d7125e23',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockDelta.ThinkingDelta'),
     ),
@@ -739,10 +715,6 @@ def _process_dataclass__77b3e71fa8c200e381f96df0fbbf0bb0d7125e23():
         "=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='67b1990225b7c927c5bce9312474ea0080b8ccb0',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockStart'),
     ),
@@ -859,10 +831,6 @@ def _process_dataclass__67b1990225b7c927c5bce9312474ea0080b8ccb0():
         " fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='65da4343e4dd332ef2feaf1e28591797a57140cf',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockStart.Thinking'),
     ),
@@ -976,9 +944,6 @@ def _process_dataclass__65da4343e4dd332ef2feaf1e28591797a57140cf():
         "se, default_fn=None)))"
     ),
     plan_repr_sha1='58d0143ed6bbec74538c3af1d493d5b4f36423f2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.ContentBlockStop'),
     ),
@@ -1090,12 +1055,6 @@ def _process_dataclass__58d0143ed6bbec74538c3af1d493d5b4f36423f2():
         "ne)))"
     ),
     plan_repr_sha1='f15496bc75cdbcdd674013e57d6709787f6f11e1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.MessageDelta'),
     ),
@@ -1226,12 +1185,6 @@ def _process_dataclass__f15496bc75cdbcdd674013e57d6709787f6f11e1():
         "y=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='488f51c37fdac06b1146fbfb101fd32db79a64bd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.MessageDelta.Delta'),
     ),
@@ -1355,9 +1308,6 @@ def _process_dataclass__488f51c37fdac06b1146fbfb101fd32db79a64bd():
         "lse, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='824edbf0c69a77060c728451cc009c800d8bc247',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.MessageStart'),
     ),
@@ -1487,22 +1437,6 @@ def _process_dataclass__824edbf0c69a77060c728451cc009c800d8bc247():
         "), ReprPlan.Field(name='type', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='aa1259c521b427b1fd53158ab4afd680fde70f27',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.MessageStart.Message'),
     ),
@@ -1681,7 +1615,6 @@ def _process_dataclass__aa1259c521b427b1fd53158ab4afd680fde70f27():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.MessageStop'),
         ('ommlds.backends.anthropic.protocol.sse.events', 'AnthropicSseDecoderEvents.Ping'),
@@ -1774,12 +1707,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "ult_fn=None)))"
     ),
     plan_repr_sha1='5c5ca30d2c7c7eb47b5926b664cd0fabb3279da5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'CacheCreation'),
     ),
@@ -1919,23 +1846,6 @@ def _process_dataclass__5c5ca30d2c7c7eb47b5926b664cd0fabb3279da5():
         "y=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a7c7b58c8878fac8698e9aa7c5c87efa254dcf4c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'Message'),
     ),
@@ -2137,25 +2047,6 @@ def _process_dataclass__a7c7b58c8878fac8698e9aa7c5c87efa254dcf4c():
         "ype', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4877523af13f8bb74a187c2df0487148810382f6',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'MessageWithTypeTag'),
     ),
@@ -2367,24 +2258,6 @@ def _process_dataclass__4877523af13f8bb74a187c2df0487148810382f6():
         "one)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0463f328955d284d5544ccd611d1fd041bc308ab',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'MessagesRequest'),
     ),
@@ -2572,12 +2445,6 @@ def _process_dataclass__0463f328955d284d5544ccd611d1fd041bc308ab():
         "'cache_control', kw_only=True, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='75e01105e84631f3c02c90f25368d746f1826680',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'Text'),
     ),
@@ -2698,10 +2565,6 @@ def _process_dataclass__75e01105e84631f3c02c90f25368d746f1826680():
         "=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c784ae3d44b6988e2459abc84ce5f705b6eca3b5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'ToolResult'),
     ),
@@ -2821,11 +2684,6 @@ def _process_dataclass__c784ae3d44b6988e2459abc84ce5f705b6eca3b5():
         "_schema', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a0bb088e6d220904a11db30de04c9b3fb2ddce42',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'ToolSpec'),
     ),
@@ -2960,17 +2818,6 @@ def _process_dataclass__a0bb088e6d220904a11db30de04c9b3fb2ddce42():
         "ame='cache_control', kw_only=True, fn=OpRef(name='repr.fns.4.fn'))), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='54cc5d0a0974b6b52b5a05290b2b67f7e02ba942',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__repr__fns__3__fn',
-        '__dataclass__repr__fns__4__fn',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'ToolUse'),
     ),
@@ -3142,22 +2989,6 @@ def _process_dataclass__54cc5d0a0974b6b52b5a05290b2b67f7e02ba942():
         "fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='39a304bda1d010e0f08c8f0f2555088bfa535ebb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-    ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.types', 'Usage'),
     ),

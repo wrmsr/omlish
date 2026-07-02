@@ -37,10 +37,6 @@ def _register(**kwargs):
         "lse, default_fn=None)))"
     ),
     plan_repr_sha1='9c35e6f7ded0cb95a6986c6913d6f122cf3d840f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'Blob'),
     ),
@@ -155,9 +151,6 @@ def _process_dataclass__9c35e6f7ded0cb95a6986c6913d6f122cf3d840f():
         "se, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ecb159bbf8704f57b541fcc1346f8383c3a140d4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'BoolValue'),
     ),
@@ -259,7 +252,6 @@ def _process_dataclass__ecb159bbf8704f57b541fcc1346f8383c3a140d4():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'CodeExecution'),
         ('ommlds.backends.google.protocol.types', 'UrlContext'),
@@ -349,10 +341,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "lse, default_fn=None)))"
     ),
     plan_repr_sha1='6a57f153db54f672d053c4258238587c814d5ceb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'CodeExecutionResult'),
     ),
@@ -470,12 +458,6 @@ def _process_dataclass__6a57f153db54f672d053c4258238587c814d5ceb():
         "rue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6a3a3612ac87800a3d343418b891d81d42bbbf70',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'Content'),
     ),
@@ -596,12 +578,6 @@ def _process_dataclass__6a3a3612ac87800a3d343418b891d81d42bbbf70():
         "terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='7bc096103fcf821fa7148db2e01e0dc06b6978dd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'DynamicRetrievalConfig'),
     ),
@@ -721,10 +697,6 @@ def _process_dataclass__7bc096103fcf821fa7148db2e01e0dc06b6978dd():
         "fault_fn=None)))"
     ),
     plan_repr_sha1='2f37b84f9aab121f7605c84979de27b041f43481',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'ExecutableCode'),
     ),
@@ -842,10 +814,6 @@ def _process_dataclass__2f37b84f9aab121f7605c84979de27b041f43481():
         "n=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4df1dc3ccae1097df1a890dfff83b20a90a359f9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'FileData'),
     ),
@@ -966,13 +934,6 @@ def _process_dataclass__4df1dc3ccae1097df1a890dfff83b20a90a359f9():
         "efault_fn=None)))"
     ),
     plan_repr_sha1='10a986116472f177b51933f1b74179eada9415e5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'FunctionCall'),
     ),
@@ -1102,12 +1063,6 @@ def _process_dataclass__10a986116472f177b51933f1b74179eada9415e5():
         "kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='da4cfb8d73cd3fae63b7385ac6a243045039b1c2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'FunctionCallingConfig'),
     ),
@@ -1245,20 +1200,6 @@ def _process_dataclass__da4cfb8d73cd3fae63b7385ac6a243045039b1c2():
         "n.Field(name='response_json_schema', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3de558c2163f64f763788cda9a239f98cbe9187a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'FunctionDeclaration'),
     ),
@@ -1436,17 +1377,6 @@ def _process_dataclass__3de558c2163f64f763788cda9a239f98cbe9187a():
         "_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c5ed3bb76f205648ba46992d0fa3162db4718a3f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'FunctionResponse'),
     ),
@@ -1614,22 +1544,6 @@ def _process_dataclass__c5ed3bb76f205648ba46992d0fa3162db4718a3f():
         "(name='cached_content', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='68ac730c70afc8f77c2572ae474e709f5d10e45e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'GenerateContentRequest'),
     ),
@@ -1807,16 +1721,6 @@ def _process_dataclass__68ac730c70afc8f77c2572ae474e709f5d10e45e():
         "sponse_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1302df044051945146bd0f36f1f832af1c560e92',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'GenerateContentResponse'),
     ),
@@ -1971,20 +1875,6 @@ def _process_dataclass__1302df044051945146bd0f36f1f832af1c560e92():
         "e, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='cc96a2e08535884451e8effac7a7ce67b34c4df8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'GenerateContentResponse.Candidate'),
     ),
@@ -2180,28 +2070,6 @@ def _process_dataclass__cc96a2e08535884451e8effac7a7ce67b34c4df8():
         ", id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1aee61d95d71f595ad27cf4527abb92d08e7e57',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'GenerateContentResponse.UsageMetadata'),
     ),
@@ -2402,12 +2270,6 @@ def _process_dataclass__e1aee61d95d71f595ad27cf4527abb92d08e7e57():
         "efault_fn=None)))"
     ),
     plan_repr_sha1='a2a82bcb0bb73f79c4f503340e9eb59973961ce7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'GenerateContentResponse.UsageMetadata.ModalityTokenCount'),
     ),
@@ -2589,44 +2451,6 @@ def _process_dataclass__a2a82bcb0bb73f79c4f503340e9eb59973961ce7():
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='74431281c91b761874a3df8799ebe75e8da3cf98',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__17__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'GenerationConfig'),
     ),
@@ -2904,10 +2728,6 @@ def _process_dataclass__74431281c91b761874a3df8799ebe75e8da3cf98():
         "=False, default_fn=None)))"
     ),
     plan_repr_sha1='d64687b4501a8eabc356b511e1a6c4862278434b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'GoogleSearch'),
     ),
@@ -3015,9 +2835,6 @@ def _process_dataclass__d64687b4501a8eabc356b511e1a6c4862278434b():
         "), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='7d42bcf9c197f06ce218001702a669c41984f8dd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'GoogleSearchRetrieval'),
     ),
@@ -3126,10 +2943,6 @@ def _process_dataclass__7d42bcf9c197f06ce218001702a669c41984f8dd():
         "True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='cf12af64562440e10fabb83e9cba085828fe30c2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'Interval'),
     ),
@@ -3244,9 +3057,6 @@ def _process_dataclass__cf12af64562440e10fabb83e9cba085828fe30c2():
         "se, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='119c2397836e950b9b3818318ad80e1be06da63e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'ListValue'),
     ),
@@ -3351,10 +3161,6 @@ def _process_dataclass__119c2397836e950b9b3818318ad80e1be06da63e():
         "(name='null_value', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c0ac6f77a1063cafeff687d616fba851a38d4e48',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'NullValue'),
     ),
@@ -3460,9 +3266,6 @@ def _process_dataclass__c0ac6f77a1063cafeff687d616fba851a38d4e48():
         "', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='beab5da455fe488235693089eeb5876f0af44569',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'NumberValue'),
     ),
@@ -3601,28 +3404,6 @@ def _process_dataclass__beab5da455fe488235693089eeb5876f0af44569():
         "t_fn=None)))"
     ),
     plan_repr_sha1='a8a94f82a0e95e1b3ecf6e8d9fe8937f411d56c3',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'Part'),
     ),
@@ -3822,10 +3603,6 @@ def _process_dataclass__a8a94f82a0e95e1b3ecf6e8d9fe8937f411d56c3():
         "n=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='779bd4b20ed7e168e59d1db7685802988cc0f65b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'SafetySetting'),
     ),
@@ -4012,52 +3789,6 @@ def _process_dataclass__779bd4b20ed7e168e59d1db7685802988cc0f65b():
         "lse, default_fn=None)))"
     ),
     plan_repr_sha1='d2f06f13ff37db89d6ed52bd4704a98d60165bb2',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__21__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'Schema'),
     ),
@@ -4374,9 +4105,6 @@ def _process_dataclass__d2f06f13ff37db89d6ed52bd4704a98d60165bb2():
         "', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bfa4784d45365a87f9d7ab8a019d514f15d862f3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'StringValue'),
     ),
@@ -4481,9 +4209,6 @@ def _process_dataclass__bfa4784d45365a87f9d7ab8a019d514f15d862f3():
         "', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ba83db515515bc7fc0b76deb62a654aacc9c97c6',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'StructValue'),
     ),
@@ -4592,12 +4317,6 @@ def _process_dataclass__ba83db515515bc7fc0b76deb62a654aacc9c97c6():
         "Plan.Field(name='thinking_budget', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4b3a8e4dca6a3124feb7bbe269d1c72bcd17c1b7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'ThinkingConfig'),
     ),
@@ -4730,18 +4449,6 @@ def _process_dataclass__4b3a8e4dca6a3124feb7bbe269d1c72bcd17c1b7():
         "url_context', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='063a6488ecc88a46f94ed93ea595f04f6c1bb2b3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'Tool'),
     ),
@@ -4889,10 +4596,6 @@ def _process_dataclass__063a6488ecc88a46f94ed93ea595f04f6c1bb2b3():
         " kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2d21048f44095010ffc3ec77f8b0f86984031165',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'ToolConfig'),
     ),
@@ -5005,11 +4708,6 @@ def _process_dataclass__2d21048f44095010ffc3ec77f8b0f86984031165():
         "y=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='cdae4a2f363ca4c06ca61fb5c5726f8e97d12a26',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.google.protocol.types', 'VideoMetadata'),
     ),

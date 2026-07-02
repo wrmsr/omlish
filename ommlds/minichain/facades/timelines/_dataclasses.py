@@ -40,12 +40,6 @@ def _register(**kwargs):
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='051a41a599c7313b360006b2c643780270367341',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.events', 'TimelineEvent'),
     ),
@@ -184,14 +178,6 @@ def _process_dataclass__051a41a599c7313b360006b2c643780270367341():
         "erse=False, default_fn=None)))"
     ),
     plan_repr_sha1='863ab90a8a3b232cc9d72ab8ae0bb31f3de9a308',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.events', 'TimelineItemAppendedEvent'),
     ),
@@ -351,15 +337,6 @@ def _process_dataclass__863ab90a8a3b232cc9d72ab8ae0bb31f3de9a308():
         "y=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4a379634c57b1153bc6065ba53beed0fa3da9951',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__5__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.events', 'TimelineItemDeltaEvent'),
     ),
@@ -522,13 +499,6 @@ def _process_dataclass__4a379634c57b1153bc6065ba53beed0fa3da9951():
         "e, default_fn=None)))"
     ),
     plan_repr_sha1='2de9774ae6ae7ef369ee247cd18716f87584b887',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.events', 'TimelineItemUpdatedEvent'),
     ),
@@ -669,11 +639,6 @@ def _process_dataclass__2de9774ae6ae7ef369ee247cd18716f87584b887():
         "n=None), ReprPlan.Field(name='key', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='38dee6b335debc6cb10c31189911fd9fac2a048c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.history', 'TimelineCursor'),
     ),
@@ -810,17 +775,6 @@ def _process_dataclass__38dee6b335debc6cb10c31189911fd9fac2a048c():
         "False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0b72c123e72745e23929ff5226e59c5ee3150002',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.history', 'TimelineWindow'),
     ),
@@ -965,9 +919,6 @@ def _process_dataclass__0b72c123e72745e23929ff5226e59c5ee3150002():
         "', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a644e5b5af53939effaf54d8248efab942d09a92',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.history', 'UnresolvableTimelineCursorError'),
     ),
@@ -1047,15 +998,6 @@ def _process_dataclass__a644e5b5af53939effaf54d8248efab942d09a92():
         "_fn=None)))"
     ),
     plan_repr_sha1='125ef5336140507b6fa15917ff4fadb3c102a468',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.items', 'AiMessageTimelineItem'),
         ('ommlds.minichain.facades.timelines.items', 'MessageTimelineItem'),
@@ -1213,19 +1155,6 @@ def _process_dataclass__125ef5336140507b6fa15917ff4fadb3c102a468():
         "), ReprPlan.Field(name='error', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2b70b0b8406255c4f81c12f57b69152b0828f97f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.items', 'AiStreamTimelineItem'),
     ),
@@ -1397,18 +1326,6 @@ def _process_dataclass__2b70b0b8406255c4f81c12f57b69152b0828f97f():
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bc965302cabeb2d9f13f7505106b69392d6d19c2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.items', 'ErrorTimelineItem'),
     ),
@@ -1574,19 +1491,6 @@ def _process_dataclass__bc965302cabeb2d9f13f7505106b69392d6d19c2():
         "e='error', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d37802f8b9c9d7d2f34e90a4904cc73efcd554c1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.items', 'ThinkingStreamTimelineItem'),
     ),
@@ -1752,14 +1656,6 @@ def _process_dataclass__d37802f8b9c9d7d2f34e90a4904cc73efcd554c1():
         "n=None)))"
     ),
     plan_repr_sha1='ae8ddb39a27e32f56f71f73d579ac3e143dd5c30',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.items', 'TimelineItem'),
     ),
@@ -1919,27 +1815,6 @@ def _process_dataclass__ae8ddb39a27e32f56f71f73d579ac3e143dd5c30():
         "rue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d55cd43d3537d53d8bd2c3f33ac017be85b1916f',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default_factory',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.items', 'ToolUseTimelineItem'),
     ),
@@ -2147,15 +2022,6 @@ def _process_dataclass__d55cd43d3537d53d8bd2c3f33ac017be85b1916f():
         "one), ReprPlan.Field(name='text', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='38e73a4e029dc10c97b05042847ff951f3264797',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.items', 'UiMessageTimelineItem'),
     ),
@@ -2298,11 +2164,6 @@ def _process_dataclass__38e73a4e029dc10c97b05042847ff951f3264797():
         "se, fn=None), ReprPlan.Field(name='got', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='447a3c42d2e327389d617fc9e808442f58fcda75',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.projection', 'StaleProjectionRevisionError'),
     ),
@@ -2383,9 +2244,6 @@ def _process_dataclass__447a3c42d2e327389d617fc9e808442f58fcda75():
         "em_id', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d318b1616e3a46b89b368de310912d8cf17ba635',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.projection', 'UnknownProjectionItemError'),
     ),
@@ -2461,11 +2319,6 @@ def _process_dataclass__d318b1616e3a46b89b368de310912d8cf17ba635():
         "ription', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0db05e18fa59b6aefa7a015c5f28e64a8a683854',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.timeline', 'TimelineAttachment'),
     ),
@@ -2591,10 +2444,6 @@ def _process_dataclass__0db05e18fa59b6aefa7a015c5f28e64a8a683854():
         "e)))"
     ),
     plan_repr_sha1='cb4039941c3279978248c7eb0c227f2046f22cc7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.facades.timelines.translate', 'AnchoredTimelineItem'),
     ),

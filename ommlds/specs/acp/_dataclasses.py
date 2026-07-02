@@ -50,18 +50,6 @@ def _register(**kwargs):
         ")))"
     ),
     plan_repr_sha1='ee4d52c828b1db53b2acb8b345849cae44e53e33',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AgentCapabilities'),
     ),
@@ -214,13 +202,6 @@ def _process_dataclass__ee4d52c828b1db53b2acb8b345849cae44e53e33():
         "y=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='31ed430692c23fb3cbca1bed435729411ef598a2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AgentMessageChunkSessionUpdate'),
         ('ommlds.specs.acp.protocol', 'AgentThoughtChunkSessionUpdate'),
@@ -350,11 +331,6 @@ def _process_dataclass__31ed430692c23fb3cbca1bed435729411ef598a2():
         "ne)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2b0747cf2def5e479b402841b795a7dd2e6fb91c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AgentNotification'),
         ('ommlds.specs.acp.protocol', 'ClientNotification'),
@@ -477,12 +453,6 @@ def _process_dataclass__2b0747cf2def5e479b402841b795a7dd2e6fb91c():
         "ult_fn=None)))"
     ),
     plan_repr_sha1='0c7f37642e561c61aa4ab609553040ec7fcc503e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AgentRequest'),
         ('ommlds.specs.acp.protocol', 'ClientRequest'),
@@ -610,10 +580,6 @@ def _process_dataclass__0c7f37642e561c61aa4ab609553040ec7fcc503e():
         "eprPlan.Field(name='id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4b0948e5f368737e30e63e06f2f28da1159aa958',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AgentresponseError'),
         ('ommlds.specs.acp.protocol', 'ClientresponseError'),
@@ -731,10 +697,6 @@ def _process_dataclass__4b0948e5f368737e30e63e06f2f28da1159aa958():
         ", ReprPlan.Field(name='result', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='47dc9231421fd90fda2e3a8b4096c69e2650fe37',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AgentresponseResult'),
         ('ommlds.specs.acp.protocol', 'ClientresponseResult'),
@@ -860,16 +822,6 @@ def _process_dataclass__47dc9231421fd90fda2e3a8b4096c69e2650fe37():
         "eld(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9fcd599f66de88b7c8bff2ec200188ce287b1faa',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'Annotations'),
     ),
@@ -1015,14 +967,6 @@ def _process_dataclass__9fcd599f66de88b7c8bff2ec200188ce287b1faa():
         ", ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2d0f8a601d454549923309fe3278e1e83fed4a0a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AudioContent'),
     ),
@@ -1169,16 +1113,6 @@ def _process_dataclass__2d0f8a601d454549923309fe3278e1e83fed4a0a():
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='822c8da77516b9a3b4df3fde7a0521efc6651259',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AudioContentBlock'),
     ),
@@ -1331,14 +1265,6 @@ def _process_dataclass__822c8da77516b9a3b4df3fde7a0521efc6651259():
         "ne)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1414489816e89243ff67356feafaa816a54e8337',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AuthMethodAgent'),
         ('ommlds.specs.acp.protocol', 'SessionMode'),
@@ -1477,11 +1403,6 @@ def _process_dataclass__1414489816e89243ff67356feafaa816a54e8337():
         ", fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='24a229e26003b88758af5fa80826f21143a2143f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AuthenticateRequest'),
     ),
@@ -1597,10 +1518,6 @@ def _process_dataclass__24a229e26003b88758af5fa80826f21143a2143f():
         ",), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8800ad55a52dc8adc704496cbd2ecf06aa7df222',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AuthenticateResponse'),
         ('ommlds.specs.acp.protocol', 'KillTerminalResponse'),
@@ -1721,14 +1638,6 @@ def _process_dataclass__8800ad55a52dc8adc704496cbd2ecf06aa7df222():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='92aab022349f23491bad20d4108c174fc72959a8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AvailableCommand'),
     ),
@@ -1867,11 +1776,6 @@ def _process_dataclass__92aab022349f23491bad20d4108c174fc72959a8():
         "None)))"
     ),
     plan_repr_sha1='e864435390a33b6be864ac48e759a03da6b811f1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AvailableCommandsUpdate'),
     ),
@@ -1994,13 +1898,6 @@ def _process_dataclass__e864435390a33b6be864ac48e759a03da6b811f1():
         "e=False, default_fn=None)))"
     ),
     plan_repr_sha1='88103cf16f7b84ac162b9a9d14b407ff492926a7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'AvailableCommandsUpdateSessionUpdate'),
     ),
@@ -2134,14 +2031,6 @@ def _process_dataclass__88103cf16f7b84ac162b9a9d14b407ff492926a7():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8859d4c06c52c0510c84a06b53643745e0d9e622',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'BlobResourceContents'),
     ),
@@ -2279,11 +2168,6 @@ def _process_dataclass__8859d4c06c52c0510c84a06b53643745e0d9e622():
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1d0ca65be775287ff4194ad8d12f6ae986882d2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'CancelNotification'),
     ),
@@ -2399,10 +2283,6 @@ def _process_dataclass__e1d0ca65be775287ff4194ad8d12f6ae986882d2():
         "t_fn=None)))"
     ),
     plan_repr_sha1='e320679251b39fb8499ce869994c99f14e4af60c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'CancelledRequestPermissionOutcome'),
     ),
@@ -2514,14 +2394,6 @@ def _process_dataclass__e320679251b39fb8499ce869994c99f14e4af60c():
         "e='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e938ca2b6aa6b612212c83e983c08dfac05753ed',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ClientCapabilities'),
     ),
@@ -2651,11 +2523,6 @@ def _process_dataclass__e938ca2b6aa6b612212c83e983c08dfac05753ed():
         "lan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8404b66be6d31761c6b0433d59d6e27a485fc8d4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ConfigOptionUpdate'),
         ('ommlds.specs.acp.protocol', 'SetSessionConfigOptionResponse'),
@@ -2778,13 +2645,6 @@ def _process_dataclass__8404b66be6d31761c6b0433d59d6e27a485fc8d4():
         "rue, fn=None), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b80bce18690bf47cb1d3559c234ae02ae7155872',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ConfigOptionUpdateSessionUpdate'),
     ),
@@ -2912,11 +2772,6 @@ def _process_dataclass__b80bce18690bf47cb1d3559c234ae02ae7155872():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='79b94c18ca7f2404e31d3742ceb876c627ec5e4b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'Content'),
         ('ommlds.specs.acp.protocol', 'ContentChunk'),
@@ -3039,13 +2894,6 @@ def _process_dataclass__79b94c18ca7f2404e31d3742ceb876c627ec5e4b():
         "True, fn=None), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2355dcaa7955d3b3d1deb153ad0366245a82c126',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ContentToolCallContent'),
     ),
@@ -3189,20 +3037,6 @@ def _process_dataclass__2355dcaa7955d3b3d1deb153ad0366245a82c126():
         "ame='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8c7c249376b2905044ad4537f593875f014ddd47',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'CreateTerminalRequest'),
     ),
@@ -3370,11 +3204,6 @@ def _process_dataclass__8c7c249376b2905044ad4537f593875f014ddd47():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='567b6432536369af19c30400c5be327950a1dec9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'CreateTerminalResponse'),
         ('ommlds.specs.acp.protocol', 'Terminal'),
@@ -3494,11 +3323,6 @@ def _process_dataclass__567b6432536369af19c30400c5be327950a1dec9():
         ", ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='06a2e412dd36eabcb107e2ed09ac258b435044df',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'CurrentModeUpdate'),
     ),
@@ -3621,13 +3445,6 @@ def _process_dataclass__06a2e412dd36eabcb107e2ed09ac258b435044df():
         "one)))"
     ),
     plan_repr_sha1='48e2d9ad56aef2be992716e7234686f4803512c6',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'CurrentModeUpdateSessionUpdate'),
     ),
@@ -3761,14 +3578,6 @@ def _process_dataclass__48e2d9ad56aef2be992716e7234686f4803512c6():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='349560dd1e95253b98e0dfc9af0e58167a113cee',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'Diff'),
     ),
@@ -3915,16 +3724,6 @@ def _process_dataclass__349560dd1e95253b98e0dfc9af0e58167a113cee():
         "se=False, default_fn=None)))"
     ),
     plan_repr_sha1='ef2ed0d1a12e61a7fb6550924cdbb966ec8f32ba',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'DiffToolCallContent'),
     ),
@@ -4074,13 +3873,6 @@ def _process_dataclass__ef2ed0d1a12e61a7fb6550924cdbb966ec8f32ba():
         "ue, fn=None), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='872f10c4a51bb5bca05ed3c6ab7e32621515354a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'EmbeddedResource'),
     ),
@@ -4212,12 +4004,6 @@ def _process_dataclass__872f10c4a51bb5bca05ed3c6ab7e32621515354a():
         "None)))"
     ),
     plan_repr_sha1='a74dbccc1be43eb892bbbd8622320859755b7d11',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'EnvVariable'),
         ('ommlds.specs.acp.protocol', 'HttpHeader'),
@@ -4349,12 +4135,6 @@ def _process_dataclass__a74dbccc1be43eb892bbbd8622320859755b7d11():
         "e, default_fn=None)))"
     ),
     plan_repr_sha1='3f2d37275ba736bdbacfbc4100b49a39d31fe9b3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'Error'),
     ),
@@ -4476,7 +4256,6 @@ def _process_dataclass__3f2d37275ba736bdbacfbc4100b49a39d31fe9b3():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ExtNotification'),
         ('ommlds.specs.acp.protocol', 'ExtRequest'),
@@ -4570,14 +4349,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "ne), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c8cc0fcc4fa8b0b00adfddd7f75df9270457a2b4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'FileSystemCapabilities'),
     ),
@@ -4715,15 +4486,6 @@ def _process_dataclass__c8cc0fcc4fa8b0b00adfddd7f75df9270457a2b4():
         "w_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2bf17f7b8c58828e706a59ed9f8f3af6f388ed75',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'HttpMcpServer'),
         ('ommlds.specs.acp.protocol', 'SseMcpServer'),
@@ -4879,16 +4641,6 @@ def _process_dataclass__2bf17f7b8c58828e706a59ed9f8f3af6f388ed75():
         "None), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2d9a17457f1b154807e92294727394e0c017d42b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ImageContent'),
     ),
@@ -5048,18 +4800,6 @@ def _process_dataclass__2d9a17457f1b154807e92294727394e0c017d42b():
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c25de1d54caa79509e798c4c00d49a754cd9c531',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ImageContentBlock'),
     ),
@@ -5222,14 +4962,6 @@ def _process_dataclass__c25de1d54caa79509e798c4c00d49a754cd9c531():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='01285feeb3bd2694a4550302da4b2b0055b6f9fc',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'Implementation'),
     ),
@@ -5375,15 +5107,6 @@ def _process_dataclass__01285feeb3bd2694a4550302da4b2b0055b6f9fc():
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6ee9945416c82a81b48f8738be72161d3c21e29e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'InitializeRequest'),
     ),
@@ -5534,17 +5257,6 @@ def _process_dataclass__6ee9945416c82a81b48f8738be72161d3c21e29e():
         "ne)))"
     ),
     plan_repr_sha1='6a0e639b0203dfb168859dcafc619fae76a787a4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'InitializeResponse'),
     ),
@@ -5696,12 +5408,6 @@ def _process_dataclass__6a0e639b0203dfb168859dcafc619fae76a787a4():
         "rPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6150b41b7dabd6e85ddc10546e8878919c4970fc',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'KillTerminalRequest'),
         ('ommlds.specs.acp.protocol', 'ReleaseTerminalRequest'),
@@ -5835,14 +5541,6 @@ def _process_dataclass__6150b41b7dabd6e85ddc10546e8878919c4970fc():
         "', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ead46e4bf3f341f8d289f7277b383878448e6ed5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ListSessionsRequest'),
     ),
@@ -5975,13 +5673,6 @@ def _process_dataclass__ead46e4bf3f341f8d289f7277b383878448e6ed5():
         "ue, fn=None), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0221f4106276f8923c4ac54e4f2963864e056892',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ListSessionsResponse'),
     ),
@@ -6116,13 +5807,6 @@ def _process_dataclass__0221f4106276f8923c4ac54e4f2963864e056892():
         "w_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1cc62ff4b89bda3e662088d487a880e3fb83e20a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'LoadSessionRequest'),
     ),
@@ -6263,14 +5947,6 @@ def _process_dataclass__1cc62ff4b89bda3e662088d487a880e3fb83e20a():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='389b1375e48d8bee6c17546f5aa00cd9a0f12e92',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'LoadSessionResponse'),
     ),
@@ -6403,14 +6079,6 @@ def _process_dataclass__389b1375e48d8bee6c17546f5aa00cd9a0f12e92():
         "e, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2e6cc6281b473f03fc4ac88a9a9805071f7aa922',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'McpCapabilities'),
     ),
@@ -6545,13 +6213,6 @@ def _process_dataclass__2e6cc6281b473f03fc4ac88a9a9805071f7aa922():
         " fn=None), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='728207e462c6624ce78ae9c17850d196e373c080',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'McpServerHttp'),
         ('ommlds.specs.acp.protocol', 'McpServerSse'),
@@ -6697,14 +6358,6 @@ def _process_dataclass__728207e462c6624ce78ae9c17850d196e373c080():
         ".Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='615e21d7c205cc410b8de923095692c4f28667c8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'McpServerStdio'),
     ),
@@ -6853,12 +6506,6 @@ def _process_dataclass__615e21d7c205cc410b8de923095692c4f28667c8():
         " id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='19b2619b0439234965c066efff3fea0ffff4b008',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'NewSessionRequest'),
     ),
@@ -6993,15 +6640,6 @@ def _process_dataclass__19b2619b0439234965c066efff3fea0ffff4b008():
         "fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='50c32effbf1626cafddeffefb9b874bd813b11f4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'NewSessionResponse'),
     ),
@@ -7146,13 +6784,6 @@ def _process_dataclass__50c32effbf1626cafddeffefb9b874bd813b11f4():
         "fault_fn=None)))"
     ),
     plan_repr_sha1='d468549cffd2ae4f16883a7c6759c7103da0769c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'PermissionOption'),
     ),
@@ -7289,11 +6920,6 @@ def _process_dataclass__d468549cffd2ae4f16883a7c6759c7103da0769c():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2456074c414a2fcd275441d897db41ca9e5a29da',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'Plan'),
     ),
@@ -7418,13 +7044,6 @@ def _process_dataclass__2456074c414a2fcd275441d897db41ca9e5a29da():
         "), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ff0cfdbb4243f8851f3696049fa83593049a3743',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'PlanEntry'),
     ),
@@ -7564,13 +7183,6 @@ def _process_dataclass__ff0cfdbb4243f8851f3696049fa83593049a3743():
         "y=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='7207a8f2e5c2889fcc03c1001328a3a08985c5a2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'PlanSessionUpdate'),
     ),
@@ -7705,16 +7317,6 @@ def _process_dataclass__7207a8f2e5c2889fcc03c1001328a3a08985c5a2():
         "nly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='79bb521aa33479b153245b5f117689448b7235be',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'PromptCapabilities'),
     ),
@@ -7857,12 +7459,6 @@ def _process_dataclass__79bb521aa33479b153245b5f117689448b7235be():
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='dedffe3ad43ebbf0f377839fbc1c661ac0c51397',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'PromptRequest'),
     ),
@@ -7990,11 +7586,6 @@ def _process_dataclass__dedffe3ad43ebbf0f377839fbc1c661ac0c51397():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a187764d40284aa904dd820cd176363268bff78e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'PromptResponse'),
     ),
@@ -8122,16 +7713,6 @@ def _process_dataclass__a187764d40284aa904dd820cd176363268bff78e():
         "meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='04dfcd702fe36e6c8bc1885c6588f295840bfd6c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ReadTextFileRequest'),
     ),
@@ -8285,13 +7866,6 @@ def _process_dataclass__04dfcd702fe36e6c8bc1885c6588f295840bfd6c():
         "name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bc0f498a626da6415d123f047312a8d868f42b24',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'RequestPermissionRequest'),
     ),
@@ -8428,11 +8002,6 @@ def _process_dataclass__bc0f498a626da6415d123f047312a8d868f42b24():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='49fcca1dc856608730fefa6635181ab724867950',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'RequestPermissionResponse'),
     ),
@@ -8557,15 +8126,6 @@ def _process_dataclass__49fcca1dc856608730fefa6635181ab724867950():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='f43096e058ee91ee55f8145a15e01b7ad36a0096',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ResourceContentBlock'),
     ),
@@ -8722,22 +8282,6 @@ def _process_dataclass__f43096e058ee91ee55f8145a15e01b7ad36a0096():
         "eld(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a506908c7b060215cd39188eeb85194a68a0e880',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ResourceLink'),
     ),
@@ -8937,24 +8481,6 @@ def _process_dataclass__a506908c7b060215cd39188eeb85194a68a0e880():
         ", id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='537223d86cb1d4b513a97dd71a335869561e8b49',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ResourceLinkContentBlock'),
     ),
@@ -9144,12 +8670,6 @@ def _process_dataclass__537223d86cb1d4b513a97dd71a335869561e8b49():
         " terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d6045c59e2b9ddd287d50bdc7a3314b97e1246c7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SelectSessionConfigOption'),
     ),
@@ -9276,11 +8796,6 @@ def _process_dataclass__d6045c59e2b9ddd287d50bdc7a3314b97e1246c7():
         ", fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='611d5d7d01baff06f75eb0fc432dab7e646a56ea',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SelectedPermissionOutcome'),
     ),
@@ -9402,13 +8917,6 @@ def _process_dataclass__611d5d7d01baff06f75eb0fc432dab7e646a56ea():
         " terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e351cfdd4f5e1a324cf43c4d0042ce23efc22c3a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SelectedRequestPermissionOutcome'),
     ),
@@ -9536,12 +9044,6 @@ def _process_dataclass__e351cfdd4f5e1a324cf43c4d0042ce23efc22c3a():
         "=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='19181ac8205e3b06b2d832950d5103dd90b219df',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionCapabilities'),
     ),
@@ -9661,10 +9163,6 @@ def _process_dataclass__19181ac8205e3b06b2d832950d5103dd90b219df():
         "ons', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='233831d4725c650e4680a853b193e597c3397f3f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionConfigSelect'),
     ),
@@ -9788,13 +9286,6 @@ def _process_dataclass__233831d4725c650e4680a853b193e597c3397f3f():
         "n=None)))"
     ),
     plan_repr_sha1='ef4bb32eb1805300e980b4e0294ff3811e68f850',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionConfigSelectGroup'),
     ),
@@ -9937,14 +9428,6 @@ def _process_dataclass__ef4bb32eb1805300e980b4e0294ff3811e68f850():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3b7bb867c3ee95fa308cd47e1124a4e7e470f748',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionConfigSelectOption'),
     ),
@@ -10091,16 +9574,6 @@ def _process_dataclass__3b7bb867c3ee95fa308cd47e1124a4e7e470f748():
         "ue, fn=None), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0c48ebcd288005f41ca056557eb316a557e0f8a4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionInfo'),
     ),
@@ -10252,14 +9725,6 @@ def _process_dataclass__0c48ebcd288005f41ca056557eb316a557e0f8a4():
         ")"
     ),
     plan_repr_sha1='8884321ddff9ee3ca465afc21508731106646faf',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionInfoUpdate'),
     ),
@@ -10396,16 +9861,6 @@ def _process_dataclass__8884321ddff9ee3ca465afc21508731106646faf():
         "e, default_fn=None)))"
     ),
     plan_repr_sha1='6781ce1d6ce59cd7459a3b5db4a348f807a046b3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionInfoUpdateSessionUpdate'),
     ),
@@ -10548,12 +10003,6 @@ def _process_dataclass__6781ce1d6ce59cd7459a3b5db4a348f807a046b3():
         "), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='dc32dc785bdac608508d1412f45b17907d8faf50',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionModeState'),
     ),
@@ -10684,12 +10133,6 @@ def _process_dataclass__dc32dc785bdac608508d1412f45b17907d8faf50():
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='442eba46336a87f6583c31cc5d239c7fd20a719d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SessionNotification'),
     ),
@@ -10823,13 +10266,6 @@ def _process_dataclass__442eba46336a87f6583c31cc5d239c7fd20a719d():
         "w_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bc589d12fd76d2fd5ecf5ba8c187885152142509',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SetSessionConfigOptionRequest'),
     ),
@@ -10969,12 +10405,6 @@ def _process_dataclass__bc589d12fd76d2fd5ecf5ba8c187885152142509():
         "only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2363afd9c48e9b7a99ffdfd776f0f8f14c30b3a7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'SetSessionModeRequest'),
     ),
@@ -11106,14 +10536,6 @@ def _process_dataclass__2363afd9c48e9b7a99ffdfd776f0f8f14c30b3a7():
         ")"
     ),
     plan_repr_sha1='fe849c8247eedf27a219d81352351103c7fb8cab',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'TerminalExitStatus'),
         ('ommlds.specs.acp.protocol', 'WaitForTerminalExitResponse'),
@@ -11250,14 +10672,6 @@ def _process_dataclass__fe849c8247eedf27a219d81352351103c7fb8cab():
         "True, fn=None), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='eaca5140d86cc5520f91c11e4852a56232b27a66',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'TerminalOutputResponse'),
     ),
@@ -11398,13 +10812,6 @@ def _process_dataclass__eaca5140d86cc5520f91c11e4852a56232b27a66():
         "se=False, default_fn=None)))"
     ),
     plan_repr_sha1='f96581d6ee0b2d7b21a64893a5c3b685394440e5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'TerminalToolCallContent'),
     ),
@@ -11535,13 +10942,6 @@ def _process_dataclass__f96581d6ee0b2d7b21a64893a5c3b685394440e5():
         "(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d92dd2fa1df8c425c285f314f2b949d5f5cd49d8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'TextContent'),
     ),
@@ -11676,15 +11076,6 @@ def _process_dataclass__d92dd2fa1df8c425c285f314f2b949d5f5cd49d8():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b74e5bfc5758c1ddb6d9766e30f9271a1fed73ac',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'TextContentBlock'),
     ),
@@ -11828,14 +11219,6 @@ def _process_dataclass__b74e5bfc5758c1ddb6d9766e30f9271a1fed73ac():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3fc8183553f9245f169fbdecdfe57eee98302ad0',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'TextResourceContents'),
     ),
@@ -11996,24 +11379,6 @@ def _process_dataclass__3fc8183553f9245f169fbdecdfe57eee98302ad0():
         "nly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0898549135baf4847922e41b67a2ca8751a84700',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ToolCall'),
     ),
@@ -12204,13 +11569,6 @@ def _process_dataclass__0898549135baf4847922e41b67a2ca8751a84700():
         "terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1d850d56797ecc52123ba805c7fa0e35599c10db',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ToolCallLocation'),
     ),
@@ -12365,26 +11723,6 @@ def _process_dataclass__1d850d56797ecc52123ba805c7fa0e35599c10db():
         "one), ReprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0fa8cf010c6b08cf530bea02be919dbdae2c9d5f',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ToolCallSessionUpdate'),
     ),
@@ -12604,25 +11942,6 @@ def _process_dataclass__0fa8cf010c6b08cf530bea02be919dbdae2c9d5f():
         "eprPlan.Field(name='meta', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6f5cf08e9766f1ae72397e340be20a5e76f99121',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ToolCallUpdate'),
     ),
@@ -12838,27 +12157,6 @@ def _process_dataclass__6f5cf08e9766f1ae72397e340be20a5e76f99121():
         "se, default_fn=None)))"
     ),
     plan_repr_sha1='38fa643486bd36d80327b6c196c32b6b909f00b3',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'ToolCallUpdateSessionUpdate'),
     ),
@@ -13056,11 +12354,6 @@ def _process_dataclass__38fa643486bd36d80327b6c196c32b6b909f00b3():
         " default_fn=None)))"
     ),
     plan_repr_sha1='9780bcc164a6000cf084d03c5e966a83c49f074d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'UnstructuredCommandInput'),
     ),
@@ -13185,13 +12478,6 @@ def _process_dataclass__9780bcc164a6000cf084d03c5e966a83c49f074d():
         "), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='af72e6356b5595eaae40793b6dd5328138c5abb3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.specs.acp.protocol', 'WriteTextFileRequest'),
     ),

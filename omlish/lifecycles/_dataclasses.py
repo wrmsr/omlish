@@ -48,18 +48,6 @@ def _register(**kwargs):
         "id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d177836dcedc950662bdf1c8a8d52e05fc91c5c7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('omlish.lifecycles.base', 'CallbackAsyncLifecycle'),
         ('omlish.lifecycles.base', 'CallbackLifecycle'),
@@ -207,9 +195,6 @@ def _process_dataclass__d177836dcedc950662bdf1c8a8d52e05fc91c5c7():
         "None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='375fd7fd537e2cfb878109217fe4c57607b10510',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.lifecycles.base', '_AsyncToSyncLifecycle'),
         ('omlish.lifecycles.base', '_SyncToAsyncLifecycle'),
@@ -315,9 +300,6 @@ def _process_dataclass__375fd7fd537e2cfb878109217fe4c57607b10510():
         ")"
     ),
     plan_repr_sha1='80a0a85b19250d1d39ff826c429bd05f9be201e1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.lifecycles.contextmanagers', 'AsyncContextManagerLifecycle'),
         ('omlish.lifecycles.contextmanagers', 'ContextManagerLifecycle'),
@@ -428,11 +410,6 @@ def _process_dataclass__80a0a85b19250d1d39ff826c429bd05f9be201e1():
         "lan.Field(name='lco', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b3f39a9348415b6ae3908bd546728de8b2b6d308',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('omlish.lifecycles.injection', '_LifecycleRegistrar.Dep'),
     ),
@@ -558,11 +535,6 @@ def _process_dataclass__b3f39a9348415b6ae3908bd546728de8b2b6d308():
         "se, default_fn=None)))"
     ),
     plan_repr_sha1='56c73a66344b180e8ef52aca8500185dd538bf10',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default_factory',
-    ),
     cls_names=(
         ('omlish.lifecycles.injection', '_LifecycleRegistrar.State'),
     ),
@@ -680,9 +652,6 @@ def _process_dataclass__56c73a66344b180e8ef52aca8500185dd538bf10():
         "=None)))"
     ),
     plan_repr_sha1='32f5b8178dfdf24f4db24e8d8cd63ebd10bf83f3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.lifecycles.managed', 'AsyncLifecycleManaged._Lifecycle'),
         ('omlish.lifecycles.managed', 'LifecycleManaged._Lifecycle'),
@@ -794,13 +763,6 @@ def _process_dataclass__32f5b8178dfdf24f4db24e8d8cd63ebd10bf83f3():
         "=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='440e63ab60e5c95ef453ad0e63ffc0977bb48371',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default_factory',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default_factory',
-    ),
     cls_names=(
         ('omlish.lifecycles.manager', 'LifecycleManagerEntry'),
     ),
@@ -913,11 +875,6 @@ def _process_dataclass__440e63ab60e5c95ef453ad0e63ffc0977bb48371():
         ")"
     ),
     plan_repr_sha1='6c47afef6781ac6bd88758815660ccbfefe8540e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('omlish.lifecycles.states', 'LifecycleState'),
     ),
@@ -1028,12 +985,6 @@ def _process_dataclass__6c47afef6781ac6bd88758815660ccbfefe8540e():
         "alse, default_fn=None)))"
     ),
     plan_repr_sha1='ebef99260c9b05bfd28fc9433dcc32af80493f10',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('omlish.lifecycles.transitions', 'LifecycleTransition'),
     ),

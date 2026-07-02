@@ -59,21 +59,6 @@ def _register(**kwargs):
         "prPlan.Field(name='usage', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e9fd011b88dd09b9d07234a0bed31c70cc048544',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionChunk'),
     ),
@@ -265,14 +250,6 @@ def _process_dataclass__e9fd011b88dd09b9d07234a0bed31c70cc048544():
         "None)))"
     ),
     plan_repr_sha1='467d73fbbfc4ae23999c6b11c3b9336ff3fd0745',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionChunk.Choice'),
     ),
@@ -424,20 +401,6 @@ def _process_dataclass__467d73fbbfc4ae23999c6b11c3b9336ff3fd0745():
         " kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e17f86dab4d47b211aac3e6e4afe0442050a7a86',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionChunk.Choice.Delta'),
     ),
@@ -603,15 +566,6 @@ def _process_dataclass__e17f86dab4d47b211aac3e6e4afe0442050a7a86():
         "_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='60dd172cc10b3281c0cf9cea0a9cccff26bad0f2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionChunk.Choice.Delta.ToolCall'),
     ),
@@ -750,12 +704,6 @@ def _process_dataclass__60dd172cc10b3281c0cf9cea0a9cccff26bad0f2():
         "Field(name='name', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ca1d4dad922b4f93571cc14b86fcfb93e4c5f278',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionChunk.Choice.Delta.ToolCall.Function'),
     ),
@@ -976,66 +924,6 @@ def _process_dataclass__ca1d4dad922b4f93571cc14b86fcfb93e4c5f278():
         ")), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e8f5ed81b3961b410113eed93b2d06a5c6ae2375',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__24__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__28__default',
-        '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__29__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest'),
     ),
@@ -1443,18 +1331,6 @@ def _process_dataclass__e8f5ed81b3961b410113eed93b2d06a5c6ae2375():
         "calls', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2de9ecb1f74a62bcebb0d3b0ecfb40da845e6d29',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.AssistantMessage'),
     ),
@@ -1607,12 +1483,6 @@ def _process_dataclass__2de9ecb1f74a62bcebb0d3b0ecfb40da845e6d29():
         "ult_fn=None)))"
     ),
     plan_repr_sha1='9a547257d5667228bf1cc9153bb81540dd355566',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.AssistantMessage.ToolCall'),
     ),
@@ -1740,10 +1610,6 @@ def _process_dataclass__9a547257d5667228bf1cc9153bb81540dd355566():
         "lse, default_fn=None)))"
     ),
     plan_repr_sha1='74d1fa47dc3c867f85203a9e43e792c7b1202dab',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.AssistantMessage.ToolCall.Function'),
         ('ommlds.backends.groq.protocol', 'ChatCompletionResponse.Choice.Message.ToolCall.Function'),
@@ -1856,7 +1722,6 @@ def _process_dataclass__74d1fa47dc3c867f85203a9e43e792c7b1202dab():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.Message'),
     ),
@@ -1947,13 +1812,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='949874790b7bd392e18566e3aaeab60bc9f5b3ca',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.SystemMessage'),
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.UserMessage'),
@@ -2083,11 +1941,6 @@ def _process_dataclass__949874790b7bd392e18566e3aaeab60bc9f5b3ca():
         "ne)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bd6ded8da6444356e49af8ebb589982d11d87580',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.Tool'),
     ),
@@ -2213,15 +2066,6 @@ def _process_dataclass__bd6ded8da6444356e49af8ebb589982d11d87580():
         "False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4ed9c56354a4cd79fa0c26411404bbac3a601050',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.Tool.Function'),
     ),
@@ -2363,12 +2207,6 @@ def _process_dataclass__4ed9c56354a4cd79fa0c26411404bbac3a601050():
         "_call_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='18ba47404a1fa13e445ea63b3aea366cf6d89a2f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionRequest.ToolMessage'),
     ),
@@ -2522,23 +2360,6 @@ def _process_dataclass__18ba47404a1fa13e445ea63b3aea366cf6d89a2f():
         "name='service_tier', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='641b07fed24c533dda19e3a21d82d82c1c01bcb7',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionResponse'),
     ),
@@ -2739,13 +2560,6 @@ def _process_dataclass__641b07fed24c533dda19e3a21d82d82c1c01bcb7():
         "), ReprPlan.Field(name='message', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='44b10f936c3932df17be0708f2449a883036da63',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionResponse.Choice'),
     ),
@@ -2896,20 +2710,6 @@ def _process_dataclass__44b10f936c3932df17be0708f2449a883036da63():
         "lan.Field(name='tool_calls', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9130d639b5468f8ff473adfc8b544dc6ef79a71a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionResponse.Choice.Message'),
     ),
@@ -3072,12 +2872,6 @@ def _process_dataclass__9130d639b5468f8ff473adfc8b544dc6ef79a71a():
         "ult_fn=None)))"
     ),
     plan_repr_sha1='7cd19137ccf16704c343ecf64cbb8bbbe65a626b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ChatCompletionResponse.Choice.Message.ToolCall'),
     ),
@@ -3222,19 +3016,6 @@ def _process_dataclass__7cd19137ccf16704c343ecf64cbb8bbbe65a626b():
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0af7551195bca061ad193c49ddcf78305ce3d840',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-    ),
     cls_names=(
         ('ommlds.backends.groq.protocol', 'ExecutedTool'),
     ),

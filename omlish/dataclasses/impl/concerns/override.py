@@ -11,6 +11,7 @@ from ..generation.ops import AddPropertyOp
 from ..generation.ops import Op
 from ..generation.ops import OpRef
 from ..generation.ops import Ref
+from ..generation.ops import add_ref
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
 from ..processing.base import ProcessingContext
@@ -76,7 +77,7 @@ class OverrideGenerator(Generator[OverridePlan]):
             if not pl.frozen:
                 sab = SetattrSrcBuilder()
                 set_src = '\n'.join([
-                    f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {NONE_GLOBAL.ident}:',
+                    f'def {f.name}({SELF_IDENT}, {VALUE_IDENT}) -> {add_ref(NONE_GLOBAL, op_refs).ident}:',
                     *[
                         f'    {l}'
                         for l in sab(
@@ -87,7 +88,6 @@ class OverrideGenerator(Generator[OverridePlan]):
                         )
                     ],
                 ])
-                op_refs.add(NONE_GLOBAL)
                 op_refs.update(sab.refs)
 
             ops.append(AddPropertyOp(

@@ -321,21 +321,6 @@ class DataclassCodeGen:
                 f'    plan_repr_sha1={pr_sha1!r},',
             ])
 
-            op_ref_idents = [r.ident for r in x.refs if r.kind == 'op']
-            if op_ref_idents:
-                lines.extend([
-                    f'    op_ref_idents=(',
-                    *[
-                        f'        {r!r},'
-                        for r in sorted(op_ref_idents)
-                    ],
-                    f'    ),',
-                ])
-            else:
-                lines.append(
-                    '    op_ref_idents=(),',
-                )
-
             lines.extend([
                 f'    cls_names=(',
                 *[

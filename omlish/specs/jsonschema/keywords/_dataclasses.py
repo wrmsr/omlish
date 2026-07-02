@@ -34,9 +34,6 @@ def _register(**kwargs):
         ")"
     ),
     plan_repr_sha1='50dcd1e5d7bfbe0e8b2f047dd733608af258e4ce',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'AnyArrayKeyword'),
     ),
@@ -140,9 +137,6 @@ def _process_dataclass__50dcd1e5d7bfbe0e8b2f047dd733608af258e4ce():
         "an(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='7514673b39883258db895b0031e644b486721b54',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'AnyKeyword'),
     ),
@@ -246,9 +240,6 @@ def _process_dataclass__7514673b39883258db895b0031e644b486721b54():
         "an(fields=(ReprPlan.Field(name='b', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b15f6985d2c25a626406472fe673abf39f19e546',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'BooleanKeyword'),
     ),
@@ -353,9 +344,6 @@ def _process_dataclass__b15f6985d2c25a626406472fe673abf39f19e546():
         ")"
     ),
     plan_repr_sha1='07af1f8e95f26d5a33fd9c0d2886faf347456c98',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'BooleanOrKeywordsKeyword'),
     ),
@@ -460,11 +448,6 @@ def _process_dataclass__07af1f8e95f26d5a33fd9c0d2886faf347456c98():
         "kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e41d7414f687c82fa6c9b4ae3b0f5e2a3665007d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__init_fns__0',
-        '__dataclass__init__init_fns__1',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'Keywords'),
     ),
@@ -573,9 +556,6 @@ def _process_dataclass__e41d7414f687c82fa6c9b4ae3b0f5e2a3665007d():
         "=None)))"
     ),
     plan_repr_sha1='789bffcf55273fd31a58a8ecefec3ed38f0b08eb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'KeywordsArrayKeyword'),
     ),
@@ -680,9 +660,6 @@ def _process_dataclass__789bffcf55273fd31a58a8ecefec3ed38f0b08eb():
         ")"
     ),
     plan_repr_sha1='abd91f531aba634e9d4ea8af8e75ee8415d56f67',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'KeywordsKeyword'),
     ),
@@ -786,9 +763,6 @@ def _process_dataclass__abd91f531aba634e9d4ea8af8e75ee8415d56f67():
         "an(fields=(ReprPlan.Field(name='n', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9fd15f32de91b0c51104d30d936bf3e4e8934b29',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'NumberKeyword'),
     ),
@@ -892,9 +866,6 @@ def _process_dataclass__9fd15f32de91b0c51104d30d936bf3e4e8934b29():
         "an(fields=(ReprPlan.Field(name='s', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='30a5dd74853303d917aae5f67d4e7189615d1440',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'StrKeyword'),
     ),
@@ -999,9 +970,6 @@ def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
         ")"
     ),
     plan_repr_sha1='9aaf31707e8da065f2718cbdd31f87978933a451',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'StrOrStrArrayKeyword'),
     ),
@@ -1105,9 +1073,6 @@ def _process_dataclass__9aaf31707e8da065f2718cbdd31f87978933a451():
         "an(fields=(ReprPlan.Field(name='m', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='00a32d02ca8d7c055f05a95a2073d8d5198c6d97',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'StrToKeywordsKeyword'),
     ),
@@ -1214,10 +1179,6 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
         "e), ReprPlan.Field(name='value', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4decbb1861609d4246f4e255ea5fbbe291055fb1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.specs.jsonschema.keywords.base', 'UnknownKeyword'),
     ),

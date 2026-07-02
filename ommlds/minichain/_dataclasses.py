@@ -36,10 +36,6 @@ def _register(**kwargs):
         " fn=None), ReprPlan.Field(name='value', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3e40309e2b73f8abf9df2dea7473d3ea0bbbfad7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain._fieldhash', 'FieldHashField'),
     ),
@@ -156,10 +152,6 @@ def _process_dataclass__3e40309e2b73f8abf9df2dea7473d3ea0bbbfad7():
         "e)))"
     ),
     plan_repr_sha1='9d23d3fc0d9017448d0ba1db347d141078f31176',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain._fieldhash', 'FieldHashObject'),
     ),
@@ -272,9 +264,6 @@ def _process_dataclass__9d23d3fc0d9017448d0ba1db347d141078f31176():
         "s_rty', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='5ff91637e71f103a7df9eb0cda9a79d689462daa',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain._marshal', '_TypedValuesFieldMarshalerFactory'),
         ('ommlds.minichain._marshal', '_TypedValuesFieldUnmarshalerFactory'),
@@ -344,9 +333,6 @@ def _process_dataclass__5ff91637e71f103a7df9eb0cda9a79d689462daa():
         "an(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='3576262424b3ef8ff20966fa3744e5dba9a2ae7d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.dummy.chat', 'DummyChatChoicesResponse'),
         ('ommlds.minichain.backends.dummy.chat', 'DummyChatChoicesStreamResponse'),
@@ -494,14 +480,6 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
         ", ReprPlan.Field(name='total_results', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9011cfb69ca0947e15e02520950d8710d0d53d0a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.google.search', 'CseSearchInfo'),
     ),
@@ -635,16 +613,6 @@ def _process_dataclass__9011cfb69ca0947e15e02520950d8710d0d53d0a():
         "ult_fn=None)))"
     ),
     plan_repr_sha1='6a5c9824784a2112a23d98269f609312c1509aad',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.google.search', 'CseSearchResponse'),
     ),
@@ -820,34 +788,6 @@ def _process_dataclass__6a5c9824784a2112a23d98269f609312c1509aad():
         ", default_fn=None)))"
     ),
     plan_repr_sha1='4fe5bb897a686ca1487bb8d85e655d4100c4a8f2',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.google.search', 'CseSearchResult'),
     ),
@@ -1072,10 +1012,6 @@ def _process_dataclass__4fe5bb897a686ca1487bb8d85e655d4100c4a8f2():
         "fault_fn=None)))"
     ),
     plan_repr_sha1='663f7924a951e0a39befa6d9c0c541bbf2575506',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__repr__fns__0__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.huggingface.configs', 'HuggingfaceHubToken'),
         ('ommlds.minichain.standard', 'ApiKey'),
@@ -1182,9 +1118,6 @@ def _process_dataclass__663f7924a951e0a39befa6d9c0c541bbf2575506():
         "_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='f61b6dce37b6cdc47c8e1dcc2fd02b9fc1c32193',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.openai.responses.protocol', 'OpenaiResponsesStreamError'),
     ),
@@ -1260,13 +1193,6 @@ def _process_dataclass__f61b6dce37b6cdc47c8e1dcc2fd02b9fc1c32193():
         " id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='02f84fcd12deb6df8995d076ef13a04d4bf96d30',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.scripted.scripts', 'ChatScript'),
     ),
@@ -1395,10 +1321,6 @@ def _process_dataclass__02f84fcd12deb6df8995d076ef13a04d4bf96d30():
         "e, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ccaebf4fb7679406f40a806736666baa87a8da54',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.scripted.scripts', 'ChatScriptGatePoint'),
     ),
@@ -1518,13 +1440,6 @@ def _process_dataclass__ccaebf4fb7679406f40a806736666baa87a8da54():
         "ne)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e0ff7c202a797a3e06b7033215fcd322272d42ec',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.backends.scripted.scripts', 'ChatScriptTurn'),
     ),
@@ -1649,9 +1564,6 @@ def _process_dataclass__e0ff7c202a797a3e06b7033215fcd322272d42ec():
         "lse, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e8c5e181501fac7b5abbf4cd74b1e97ce7051392',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.choices.adapters', 'ChatChoicesServiceChatService'),
         ('ommlds.minichain.chat.stream.choices.adapters', 'ChatChoicesStreamServiceChatChoicesService'),
@@ -1760,13 +1672,6 @@ def _process_dataclass__e8c5e181501fac7b5abbf4cd74b1e97ce7051392():
         "_only=False, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='359ea63ec43ebbd80eea38a7c7254083378ba7d9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.choices.types', 'ChatChoices'),
     ),
@@ -1891,13 +1796,6 @@ def _process_dataclass__359ea63ec43ebbd80eea38a7c7254083378ba7d9():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='10cb55809e653ae13865ef0c4d693d6580186456',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.events', 'AiMessagesEvent'),
     ),
@@ -2027,11 +1925,6 @@ def _process_dataclass__10cb55809e653ae13865ef0c4d693d6580186456():
         "Field(name='chat', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c482f48571373aa3a652970539fae3894d726271',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.events', 'UserMessagesEvent'),
     ),
@@ -2149,10 +2042,6 @@ def _process_dataclass__c482f48571373aa3a652970539fae3894d726271():
         "False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b2744f4fae3f6b409187f78feac9442e7e1db7ac',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.formats', 'JsonResponseFormat'),
     ),
@@ -2255,7 +2144,6 @@ def _process_dataclass__b2744f4fae3f6b409187f78feac9442e7e1db7ac():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.minichain.chat.formats', 'TextResponseFormat'),
         ('ommlds.minichain.llms.stopreasons', 'ContentFilterStopReason'),
@@ -2362,16 +2250,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "fn=None)))"
     ),
     plan_repr_sha1='589164ce9e102f5217e593a1fceb02c9197899df',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__coerce',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.generations', 'ChatGeneration'),
     ),
@@ -2505,14 +2383,6 @@ def _process_dataclass__589164ce9e102f5217e593a1fceb02c9197899df():
         "'repr.fns.1.fn')),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='72c59dbd029af1f55a739e4e5f92cc62c0cecb75',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.messages', 'AiMessage'),
     ),
@@ -2632,11 +2502,6 @@ def _process_dataclass__72c59dbd029af1f55a739e4e5f92cc62c0cecb75():
         "n(fields=(), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9e1d955ccb433717c9538685d2a5ad412ce027f5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.messages', 'AnyAiMessage'),
         ('ommlds.minichain.chat.messages', 'AnyUserMessage'),
@@ -2755,12 +2620,6 @@ def _process_dataclass__9e1d955ccb433717c9538685d2a5ad412ce027f5():
         "=None)))"
     ),
     plan_repr_sha1='5cf06a8666aafbd9f13b7cc116ca35266a2043de',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.messages', 'DeveloperMessage'),
         ('ommlds.minichain.chat.messages', 'SystemMessage'),
@@ -2884,12 +2743,6 @@ def _process_dataclass__5cf06a8666aafbd9f13b7cc116ca35266a2043de():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='57a136cad7298612bd491ff2d62b9ce882a7bcb7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.messages', 'ToolUseMessage'),
     ),
@@ -3009,12 +2862,6 @@ def _process_dataclass__57a136cad7298612bd491ff2d62b9ce882a7bcb7():
         "se, default_fn=None)))"
     ),
     plan_repr_sha1='2485750c5fdb59d4b773884ec150101aee4ccdce',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.messages', 'ToolUseResultMessage'),
     ),
@@ -3137,15 +2984,6 @@ def _process_dataclass__2485750c5fdb59d4b773884ec150101aee4ccdce():
         " id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='78434834a42584e4ebc7f4ae0b50787fc65e4c8e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__fns__2__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.messages', 'UserMessage'),
     ),
@@ -3274,9 +3112,6 @@ def _process_dataclass__78434834a42584e4ebc7f4ae0b50787fc65e4c8e():
         "rse=True, default_fn=None)))"
     ),
     plan_repr_sha1='200e0f3ce4ae55a4f99dd8e89742cc669eb698ca',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.choices.types', 'AiChoiceDeltas'),
     ),
@@ -3381,9 +3216,6 @@ def _process_dataclass__200e0f3ce4ae55a4f99dd8e89742cc669eb698ca():
         "lse, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='7b47404e82599d01ee0c86a2774370bbdd2c6d8e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.choices.types', 'AiChoicesDeltas'),
     ),
@@ -3491,13 +3323,6 @@ def _process_dataclass__7b47404e82599d01ee0c86a2774370bbdd2c6d8e():
         "_only=False, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='7c6a0d37f87ddad2b2a0d33a1e05078ba71b2b72',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.choices.types', 'ChatChoicesStreamResult'),
     ),
@@ -3619,12 +3444,6 @@ def _process_dataclass__7c6a0d37f87ddad2b2a0d33a1e05078ba71b2b72():
         "nly=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9d2e8ef7f98d0a27e63a272c21710c873659f593',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.events', 'AiStreamBeginEvent'),
         ('ommlds.minichain.chat.stream.events', 'AiStreamEvent'),
@@ -3750,13 +3569,6 @@ def _process_dataclass__9d2e8ef7f98d0a27e63a272c21710c873659f593():
         "=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e562f7e241b2b48a25dd615cc744b5a161886c37',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.events', 'AiStreamDeltaEvent'),
     ),
@@ -3891,15 +3703,6 @@ def _process_dataclass__e562f7e241b2b48a25dd615cc744b5a161886c37():
         "me='repr.default_fn'))))"
     ),
     plan_repr_sha1='a8fff377601979f51282bfd13791df37315f0816',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.events', 'AiStreamEndEvent'),
     ),
@@ -4037,15 +3840,6 @@ def _process_dataclass__a8fff377601979f51282bfd13791df37315f0816():
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b6c34a783666972a7006d8f0b1419093054d280a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.types', 'AnyToolUseAiDelta'),
     ),
@@ -4176,13 +3970,6 @@ def _process_dataclass__b6c34a783666972a7006d8f0b1419093054d280a():
         "alse, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='149c9876e79dbcbee467252055e6c8ac40881616',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.types', 'ChatStreamResult'),
     ),
@@ -4314,19 +4101,6 @@ def _process_dataclass__149c9876e79dbcbee467252055e6c8ac40881616():
         "ne)))"
     ),
     plan_repr_sha1='cf7e4e754e443a7176b73c36aca492948999ce4b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.types', 'PartialToolUseAiDelta'),
     ),
@@ -4483,17 +4257,6 @@ def _process_dataclass__cf7e4e754e443a7176b73c36aca492948999ce4b():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='fbf0f0bb81f40b541937070a9db860c6ce9ebd3e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.stream.types', 'ToolUseAiDelta'),
     ),
@@ -4630,9 +4393,6 @@ def _process_dataclass__fbf0f0bb81f40b541937070a9db860c6ce9ebd3e():
         "an(fields=(ReprPlan.Field(name='m', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='00a32d02ca8d7c055f05a95a2073d8d5198c6d97',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.templating', 'ChatTemplater._MessageStep'),
         ('ommlds.minichain.tools.fns', 'ToolFn.MaysyncImpl'),
@@ -4737,9 +4497,6 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
         "an(fields=(ReprPlan.Field(name='p', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='25598005d4986efc83d12d341829703b738d3f54',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.templating', 'ChatTemplater._PlaceholderStep'),
     ),
@@ -4846,10 +4603,6 @@ def _process_dataclass__25598005d4986efc83d12d341829703b738d3f54():
         "alse, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a6847b703ccb991096e8362e4bfbc91af7df37bf',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.templating', 'ChatTemplater._TemplateStep'),
     ),
@@ -4963,9 +4716,6 @@ def _process_dataclass__a6847b703ccb991096e8362e4bfbc91af7df37bf():
         "=None)))"
     ),
     plan_repr_sha1='4492a70e9341afc741b487e59ae5ea6624e3c95d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.templating', 'MessagePlaceholder'),
     ),
@@ -5070,10 +4820,6 @@ def _process_dataclass__4492a70e9341afc741b487e59ae5ea6624e3c95d():
         "(name='id_factory', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='56dfe391de5b28798606c2e0e96f2f9f6f367b48',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.tools.ids', 'ToolUseIdAddingMessageTransform'),
     ),
@@ -5179,9 +4925,6 @@ def _process_dataclass__56dfe391de5b28798606c2e0e96f2f9f6f367b48():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ba8e1dc2838842b2168f1fd4b6c82d3b33a109da',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.tools.parsing', 'ToolExecParsingMessageTransform'),
     ),
@@ -5286,9 +5029,6 @@ def _process_dataclass__ba8e1dc2838842b2168f1fd4b6c82d3b33a109da():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='7e3901d21ea09aa23ed5fbe10c0b3872163af79f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.tools.types', 'Tool'),
     ),
@@ -5393,9 +5133,6 @@ def _process_dataclass__7e3901d21ea09aa23ed5fbe10c0b3872163af79f():
         ")"
     ),
     plan_repr_sha1='d69d1885aa1de3f2cf7ba34fff19d7456c262eb5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.transform.content', 'ContentTransformMessageTransform'),
     ),
@@ -5505,12 +5242,6 @@ def _process_dataclass__d69d1885aa1de3f2cf7ba34fff19d7456c262eb5():
         " id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e30bbf6583f0c07b205da9e025567d24f6d42bcc',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.transform.metadata', 'MessageUuidAddingMessageTransform'),
     ),
@@ -5630,9 +5361,6 @@ def _process_dataclass__e30bbf6583f0c07b205da9e025567d24f6d42bcc():
         "se, default_fn=None)))"
     ),
     plan_repr_sha1='9024fb7569f3cdb9de637a9068a1db5ef0178937',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.transform.metadata', 'OriginAddingMessageTransform'),
         ('ommlds.minichain.specs.types', 'RetryBackendSpec'),
@@ -5742,12 +5470,6 @@ def _process_dataclass__9024fb7569f3cdb9de637a9068a1db5ef0178937():
         "t_fn=None)))"
     ),
     plan_repr_sha1='d4dc00f37f38c8e0552a5c2267e40fe3c3df3c1f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.transform.metadata', 'TurnUuidAddingMessageTransform'),
     ),
@@ -5869,10 +5591,6 @@ def _process_dataclass__d4dc00f37f38c8e0552a5c2267e40fe3c3df3c1f():
         "name='svc', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='5db03d7874dd018e98dde3e8e5f4d6528cc10d09',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.chat.transform.services', 'RequestChatTransformingChatService'),
         ('ommlds.minichain.chat.transform.services', 'ResponseChatTransformingChatService'),
@@ -5987,9 +5705,6 @@ def _process_dataclass__5db03d7874dd018e98dde3e8e5f4d6528cc10d09():
         ")"
     ),
     plan_repr_sha1='067065e74081110c65541a65bb94b80602f53a97',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content._marshal', '_ContentMarshaler'),
         ('ommlds.minichain.content._marshal', '_ContentUnmarshaler'),
@@ -6095,9 +5810,6 @@ def _process_dataclass__067065e74081110c65541a65bb94b80602f53a97():
         "=None)))"
     ),
     plan_repr_sha1='7bd00bc183c33c685a7face5f89c35923e22df93',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content._marshal', '_RawContentMarshaler'),
         ('ommlds.minichain.content._marshal', '_RawContentUnmarshaler'),
@@ -6211,14 +5923,6 @@ def _process_dataclass__7bd00bc183c33c685a7face5f89c35923e22df93():
         "efault_fn=None)))"
     ),
     plan_repr_sha1='31f198f397eadf81e409755023fd5b4ffa5427ea',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.content.code', 'BlockCodeContent'),
         ('ommlds.minichain.content.code', 'InlineCodeContent'),
@@ -6352,14 +6056,6 @@ def _process_dataclass__31f198f397eadf81e409755023fd5b4ffa5427ea():
         "default_fn=None)))"
     ),
     plan_repr_sha1='1084ab06a48ea8a3ee231cb5371a8312352e8665',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.content.code', 'CodeContent'),
     ),
@@ -6489,12 +6185,6 @@ def _process_dataclass__1084ab06a48ea8a3ee231cb5371a8312352e8665():
         "None)))"
     ),
     plan_repr_sha1='3e0141c487d99ba233d2ae8c228048f053cafda2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.containers', 'BlocksContent'),
         ('ommlds.minichain.content.containers', 'ConcatContent'),
@@ -6616,12 +6306,6 @@ def _process_dataclass__3e0141c487d99ba233d2ae8c228048f053cafda2():
         "=None)))"
     ),
     plan_repr_sha1='a2e975e22d97a4d134241bb5fd72c882b2f11f5b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.containers', 'ContainerContent'),
         ('ommlds.minichain.content.sequence', 'SequenceContent'),
@@ -6742,12 +6426,6 @@ def _process_dataclass__a2e975e22d97a4d134241bb5fd72c882b2f11f5b():
         "None)))"
     ),
     plan_repr_sha1='ddb3139fadddf306ac09e012d316caf66a5ba6de',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.emphasis', 'BoldContent'),
         ('ommlds.minichain.content.emphasis', 'BoldItalicContent'),
@@ -6871,12 +6549,6 @@ def _process_dataclass__ddb3139fadddf306ac09e012d316caf66a5ba6de():
         "=None)))"
     ),
     plan_repr_sha1='e28bbe95a5e6fa9335be8f6fa393bd08862be998',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.emphasis', 'EmphasisContent'),
     ),
@@ -6996,12 +6668,6 @@ def _process_dataclass__e28bbe95a5e6fa9335be8f6fa393bd08862be998():
         "None)))"
     ),
     plan_repr_sha1='203bfffec4d5e8561262ac75e1ac4bdc765045b2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.images', 'ImageContent'),
     ),
@@ -7124,14 +6790,6 @@ def _process_dataclass__203bfffec4d5e8561262ac75e1ac4bdc765045b2():
         "True, default_fn=None)))"
     ),
     plan_repr_sha1='92981ef19f0ed4d429fe88ffe7c0f22996b15862',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.content.itemlist', 'ItemListContent'),
     ),
@@ -7261,12 +6919,6 @@ def _process_dataclass__92981ef19f0ed4d429fe88ffe7c0f22996b15862():
         "None)))"
     ),
     plan_repr_sha1='0cb672ff62c7eae81ce16ae517b9048e09aa5f32',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.json', 'JsonContent'),
     ),
@@ -7389,14 +7041,6 @@ def _process_dataclass__0cb672ff62c7eae81ce16ae517b9048e09aa5f32():
         "=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='19fce39816e3bcd051a9ec021966904726c17a18',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.content.link', 'LinkContent'),
     ),
@@ -7526,12 +7170,6 @@ def _process_dataclass__19fce39816e3bcd051a9ec021966904726c17a18():
         "ult_fn=None)))"
     ),
     plan_repr_sha1='14f245898fca28ecbd7d8f269115ed8cd09ceef1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.namespaces', 'NamespaceContent'),
     ),
@@ -7651,12 +7289,6 @@ def _process_dataclass__14f245898fca28ecbd7d8f269115ed8cd09ceef1():
         "None)))"
     ),
     plan_repr_sha1='d07643412d93a7153e2d0ffe62c9a3676cda058e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.placeholders', 'PlaceholderContent'),
     ),
@@ -7776,12 +7408,6 @@ def _process_dataclass__d07643412d93a7153e2d0ffe62c9a3676cda058e():
         "rse=True, default_fn=None)))"
     ),
     plan_repr_sha1='66b904f7e1abd9fc45da07aa62bd6c964d104d2e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.quote', 'QuoteContent'),
     ),
@@ -7898,10 +7524,6 @@ def _process_dataclass__66b904f7e1abd9fc45da07aa62bd6c964d104d2e():
         "'block_sep', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ba5c53ca98aa25887075f15f0b0441e3b95fd9d7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.minichain.content.render.standard', 'StandardContentRenderer.Config'),
     ),
@@ -8013,12 +7635,6 @@ def _process_dataclass__ba5c53ca98aa25887075f15f0b0441e3b95fd9d7():
         ", terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bbf9e2f6dd04afb70a0428ceb2dc38db5f47b541',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.content.render.standard', 'StandardContentRenderer.Context'),
     ),
@@ -8141,13 +7757,6 @@ def _process_dataclass__bbf9e2f6dd04afb70a0428ceb2dc38db5f47b541():
         "erse=False, default_fn=None)))"
     ),
     plan_repr_sha1='96d8a115fd863c61344f44124f5175d63ed37469',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.resources', 'ResourceContent'),
     ),
@@ -8279,13 +7888,6 @@ def _process_dataclass__96d8a115fd863c61344f44124f5175d63ed37469():
         "e, default_fn=None)))"
     ),
     plan_repr_sha1='210cbafe9608360fc8ef542b57b17b0c0256004d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.section', 'SectionContent'),
     ),
@@ -8417,13 +8019,6 @@ def _process_dataclass__210cbafe9608360fc8ef542b57b17b0c0256004d():
         ")"
     ),
     plan_repr_sha1='c8549fd6067e8fdb702ddac1fecf583a594779ef',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.tag', 'TagContent'),
     ),
@@ -8552,12 +8147,6 @@ def _process_dataclass__c8549fd6067e8fdb702ddac1fecf583a594779ef():
         "None)))"
     ),
     plan_repr_sha1='9c092eca370702ae8406a7273aeb5d03ce342cb9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.templates', 'TemplateContent'),
     ),
@@ -8673,9 +8262,6 @@ def _process_dataclass__9c092eca370702ae8406a7273aeb5d03ce342cb9():
         "e, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='7e1881cd893ea68089f1fe26ad810799dd14a0d5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.transform.materialize.placeholders', 'PlaceholderContentKeyError'),
     ),
@@ -8745,9 +8331,6 @@ def _process_dataclass__7e1881cd893ea68089f1fe26ad810799dd14a0d5():
         ")"
     ),
     plan_repr_sha1='9c26f5e7e2496284b4ba1e1072fb3e29dc4e0ec4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.transform.strings', 'StringFnContentTransform'),
         ('ommlds.minichain.content.transform.types', 'FnContentTransform'),
@@ -8855,9 +8438,6 @@ def _process_dataclass__9c26f5e7e2496284b4ba1e1072fb3e29dc4e0ec4():
         "=None)))"
     ),
     plan_repr_sha1='68d062858a9894949b2c170a3763346ddc35bf1d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.transform.types', 'CompositeContentTransform'),
     ),
@@ -8964,10 +8544,6 @@ def _process_dataclass__68d062858a9894949b2c170a3763346ddc35bf1d():
         "ct', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e239f2f8e55d91bd47ca467afe5b1ec92f8dfc34',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.content.transform.types', 'TypeFilteredContentTransform'),
     ),
@@ -9081,9 +8657,6 @@ def _process_dataclass__e239f2f8e55d91bd47ca467afe5b1ec92f8dfc34():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a7abe5eeac180c2c591f3d3a53805368068716bd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.docs.docs', 'Doc'),
     ),
@@ -9190,10 +8763,6 @@ def _process_dataclass__a7abe5eeac180c2c591f3d3a53805368068716bd():
         " fn=None), ReprPlan.Field(name='dtype', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='701ed985cfa822fc06c63b453395b927805fd829',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.docs.docs', 'DocField'),
     ),
@@ -9307,11 +8876,6 @@ def _process_dataclass__701ed985cfa822fc06c63b453395b927805fd829():
         "n.Field(name='fields', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bb990d6af2fbcbd6d1da7c8137c2544acd358e50',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__validate',
-        '__dataclass__init__init_fns__0',
-    ),
     cls_names=(
         ('ommlds.minichain.docs.docs', 'DocSchema'),
     ),
@@ -9427,10 +8991,6 @@ def _process_dataclass__bb990d6af2fbcbd6d1da7c8137c2544acd358e50():
         "se=False, default_fn=None)))"
     ),
     plan_repr_sha1='d634aaef3ca82b3d7f0a9842bfaeb2af08fdcd83',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__check_type',
-    ),
     cls_names=(
         ('ommlds.minichain.docs.docs', 'FieldRef'),
     ),
@@ -9551,12 +9111,6 @@ def _process_dataclass__d634aaef3ca82b3d7f0a9842bfaeb2af08fdcd83():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bd59138317a2d7c95911cd942d22c39a5dbc6ce9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.docs.dtypes', 'Dtype'),
     ),
@@ -9687,13 +9241,6 @@ def _process_dataclass__bd59138317a2d7c95911cd942d22c39a5dbc6ce9():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='79ca9cb99a2a338ac1df5f86d497bd9b5fe5274b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__check_type',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__check_type',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.docs.filters', 'Cmp'),
     ),
@@ -9838,13 +9385,6 @@ def _process_dataclass__79ca9cb99a2a338ac1df5f86d497bd9b5fe5274b():
         "eld(name='children', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6c09a6beb5d85cdd42b177414c303bc876b420da',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__check_type',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__validate',
-        '__dataclass__override__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.docs.filters', 'MultiFilter'),
     ),
@@ -9989,10 +9529,6 @@ def _process_dataclass__6c09a6beb5d85cdd42b177414c303bc876b420da():
         "e, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='41479800d543a13021d10abebe38c460252c0c73',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__check_type',
-    ),
     cls_names=(
         ('ommlds.minichain.docs.filters', 'Not'),
     ),
@@ -10110,11 +9646,6 @@ def _process_dataclass__41479800d543a13021d10abebe38c460252c0c73():
         "no_lock', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b53496ead97d4004e3b3a34c0f1693c7d71a95b3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.events.logging', 'JsonlFileEventLogger.Config'),
     ),
@@ -10236,14 +9767,6 @@ def _process_dataclass__b53496ead97d4004e3b3a34c0f1693c7d71a95b3():
         "ne)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b7e32a7dbf5f05a83fc427c50ebb80be7b556fc1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.events.types', 'ErrorEvent'),
     ),
@@ -10372,10 +9895,6 @@ def _process_dataclass__b7e32a7dbf5f05a83fc427c50ebb80be7b556fc1():
         "))"
     ),
     plan_repr_sha1='d54bb147650f2eef0cd7c9669f2e1ff9c0e24fdb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-    ),
     cls_names=(
         ('ommlds.minichain.events.types', 'Event'),
     ),
@@ -10486,11 +10005,6 @@ def _process_dataclass__d54bb147650f2eef0cd7c9669f2e1ff9c0e24fdb():
         "(fields=(ReprPlan.Field(name='service', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='454ae5fa966a916f18d1276825559c78ac5b55f9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.external', 'ExternalServiceEvent'),
         ('ommlds.minichain.external', 'ExternalServiceStreamResponseEndEvent'),
@@ -10615,12 +10129,6 @@ def _process_dataclass__454ae5fa966a916f18d1276825559c78ac5b55f9():
         " fn=None), ReprPlan.Field(name='request', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='5a5e8fce7229c1deb5abb384cf4f4c7b24b1dcbe',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.external', 'ExternalServiceRequestEvent'),
     ),
@@ -10753,12 +10261,6 @@ def _process_dataclass__5a5e8fce7229c1deb5abb384cf4f4c7b24b1dcbe():
         "ne)))"
     ),
     plan_repr_sha1='6b62ce8cff8a2a6e74fbd39e15c643e21f40719a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.external', 'ExternalServiceResponseEvent'),
     ),
@@ -10890,12 +10392,6 @@ def _process_dataclass__6b62ce8cff8a2a6e74fbd39e15c643e21f40719a():
         "n.Field(name='data', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='f4d3c565ba375551c23eb3774a834b33a9132e4d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.external', 'ExternalServiceStreamResponseDataEvent'),
     ),
@@ -11028,14 +10524,6 @@ def _process_dataclass__f4d3c565ba375551c23eb3774a834b33a9132e4d():
         "fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='535cd2aec43091a1f5d8815bce63d1da3e34fe10',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.http.stream', 'HttpStreamResponseError'),
     ),
@@ -11125,10 +10613,6 @@ def _process_dataclass__535cd2aec43091a1f5d8815bce63d1da3e34fe10():
         "ne), ReprPlan.Field(name='root', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2c0fde04446fe22ec745d89192a13d59b4b1d280',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.json', 'JsonSchema'),
     ),
@@ -11242,11 +10726,6 @@ def _process_dataclass__2c0fde04446fe22ec745d89192a13d59b4b1d280():
         "=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='2c23ad8164379a22ea8f01a7ffc1e511cb99039b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.llms.stopreasons', 'OtherStopReason'),
     ),
@@ -11359,11 +10838,6 @@ def _process_dataclass__2c23ad8164379a22ea8f01a7ffc1e511cb99039b():
         "se, fn=None), ReprPlan.Field(name='total', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9ed4b52f5bfcbb314cdfb3a8f1e9986b2f75afd2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.llms.tokens', 'TokenUsage'),
     ),
@@ -11485,9 +10959,6 @@ def _process_dataclass__9ed4b52f5bfcbb314cdfb3a8f1e9986b2f75afd2():
         "an(fields=(ReprPlan.Field(name='l', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='120515e449a82cc5be86f01473d5807ef9f05130',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.llms.tokens', 'Tokens'),
         ('ommlds.minichain.vectors.search', 'VectorHits'),
@@ -11602,16 +11073,6 @@ def _process_dataclass__120515e449a82cc5be86f01473d5807ef9f05130():
         "only=True, fn=OpRef(name='repr.fns.3.fn'))), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='763b0424aa73f5ec852de236e39950f9c105259c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__fns__2__fn',
-        '__dataclass__repr__fns__3__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.models.configs', 'ModelRepo'),
     ),
@@ -11754,13 +11215,6 @@ def _process_dataclass__763b0424aa73f5ec852de236e39950f9c105259c():
         "fn'))))"
     ),
     plan_repr_sha1='c8c236ef2e6c5a0fc4cdfc450a520f0cc16ee67e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.models.names', 'ModelNameCollection'),
     ),
@@ -11891,14 +11345,6 @@ def _process_dataclass__c8c236ef2e6c5a0fc4cdfc450a520f0cc16ee67e():
         "alse, fn=None), ReprPlan.Field(name='type', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='036bbc6009feb74ecbec68e786760ecc81b07f33',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.registries.manifests', 'RegistryManifest'),
     ),
@@ -12044,10 +11490,6 @@ def _process_dataclass__036bbc6009feb74ecbec68e786760ecc81b07f33():
         "e)))"
     ),
     plan_repr_sha1='6c2988a8870fad207eb0703de627596cae1b7381',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.registries.manifests', 'RegistryTypeManifest'),
     ),
@@ -12170,14 +11612,6 @@ def _process_dataclass__6c2988a8870fad207eb0703de627596cae1b7381():
         "Field(name='snippets', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='f8383b0455fb7c3ce8ec3dace2df263307387c53',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.search', 'SearchHit'),
     ),
@@ -12315,11 +11749,6 @@ def _process_dataclass__f8383b0455fb7c3ce8ec3dace2df263307387c53():
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c5ebc75df7787604091e8a5696458c845a88b433',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.search', 'SearchHits'),
     ),
@@ -12440,11 +11869,6 @@ def _process_dataclass__c5ebc75df7787604091e8a5696458c845a88b433():
         "lan.Field(name='v_m', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c125868d27a1b2e29aef80e41118485a9e3fb492',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.services._marshal', '_RequestResponseMarshaler'),
     ),
@@ -12578,13 +12002,6 @@ def _process_dataclass__c125868d27a1b2e29aef80e41118485a9e3fb492():
         " fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c4fcb2b1f1cadf2a1ca803a56157e3f9b7cd6e1a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.services._marshal', '_RequestResponseUnmarshaler'),
     ),
@@ -12734,12 +12151,6 @@ def _process_dataclass__c4fcb2b1f1cadf2a1ca803a56157e3f9b7cd6e1a():
         "', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2e0ee5f871e01baad4d7b4595f08402a8e3c231d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.services._typedvalues', '_TypedValuesInfo'),
     ),
@@ -12871,9 +12282,6 @@ def _process_dataclass__2e0ee5f871e01baad4d7b4595f08402a8e3c231d():
         "=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='31d6043cba49e8c3536c1fcec4a0a7878597293b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.services._typedvalues', '_TypedValuesTypeError'),
     ),
@@ -12943,9 +12351,6 @@ def _process_dataclass__31d6043cba49e8c3536c1fcec4a0a7878597293b():
         "se, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='9582883e8b789fb5864ce555ef9d6348525b7c92',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.services.callables', 'ServiceCallable'),
     ),
@@ -13066,12 +12471,6 @@ def _process_dataclass__9582883e8b789fb5864ce555ef9d6348525b7c92():
         "_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3f5b24684e34edfb61c5b5d7560fb33e6995fc3b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.services.reflect', 'ReflectedService'),
     ),
@@ -13222,14 +12621,6 @@ def _process_dataclass__3f5b24684e34edfb61c5b5d7560fb33e6995fc3b():
         "lse, default_fn=None)))"
     ),
     plan_repr_sha1='3d264be1f5ee88859fccebd877579e2fd0e6b0a7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__5__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.services.reflect', 'ReflectedStreamService'),
     ),
@@ -13386,16 +12777,6 @@ def _process_dataclass__3d264be1f5ee88859fccebd877579e2fd0e6b0a7():
         "ptions', kw_only=False, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='5ad521f7b0f01dca6ec3106cae31554159200bad',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__coerce',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.services.requests', 'Request'),
     ),
@@ -13538,16 +12919,6 @@ def _process_dataclass__5ad521f7b0f01dca6ec3106cae31554159200bad():
         "utputs', kw_only=False, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='f1aa475ec14c79b9f69394cd5f1359cf816a04ce',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__coerce',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.services.responses', 'Response'),
     ),
@@ -13693,12 +13064,6 @@ def _process_dataclass__f1aa475ec14c79b9f69394cd5f1359cf816a04ce():
         "'registry_type', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c88e2257b7e0488f2a75dc611d7f8223aacbe77f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.specs.resolving', 'BackendSpecTypeResolver.ResolveContext'),
     ),
@@ -13834,10 +13199,6 @@ def _process_dataclass__c88e2257b7e0488f2a75dc611d7f8223aacbe77f():
         "fault_fn=None)))"
     ),
     plan_repr_sha1='6030c7931cbce826b04c63f13115f62b1dbf8310',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.specs.types', 'ConfigBackendSpec'),
     ),
@@ -13952,9 +13313,6 @@ def _process_dataclass__6030c7931cbce826b04c63f13115f62b1dbf8310():
         ", id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8390811a304c1b08264c919ffc6824d6ea4a3a2c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.specs.types', 'FirstInWinsBackendSpec'),
     ),
@@ -14059,9 +13417,6 @@ def _process_dataclass__8390811a304c1b08264c919ffc6824d6ea4a3a2c():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='a8c678a92ec79b6aa505feedefe70ee7fef92ccd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.specs.types', 'ModelBackendSpec'),
         ('ommlds.minichain.specs.types', 'NameBackendSpec'),
@@ -14180,16 +13535,6 @@ def _process_dataclass__a8c678a92ec79b6aa505feedefe70ee7fef92ccd():
         "t_fn'))))"
     ),
     plan_repr_sha1='24dd5b1b86ad2e7ec88870da3090310b065d38e5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.specs.types', 'ResolvedBackendSpec'),
     ),
@@ -14338,9 +13683,6 @@ def _process_dataclass__24dd5b1b86ad2e7ec88870da3090310b065d38e5():
         "an(fields=(ReprPlan.Field(name='s', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='30a5dd74853303d917aae5f67d4e7189615d1440',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.specs.types', 'StringBackendSpec'),
     ),
@@ -14445,10 +13787,6 @@ def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
         "efault_fn=None)))"
     ),
     plan_repr_sha1='10841bf976c6bfcd0f71cfa59b935fcc98fe5d92',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__repr__fns__0__fn',
-    ),
     cls_names=(
         ('ommlds.minichain.standard', 'SecretConfig'),
     ),
@@ -14561,14 +13899,6 @@ def _process_dataclass__10841bf976c6bfcd0f71cfa59b935fcc98fe5d92():
         "kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c017e31222f3a81bbf35abf261881763aa9c217b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default_factory',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default_factory',
-    ),
     cls_names=(
         ('ommlds.minichain.text.applypatch', 'Chunk'),
     ),
@@ -14658,10 +13988,6 @@ def _process_dataclass__c017e31222f3a81bbf35abf261881763aa9c217b():
         "ne)))"
     ),
     plan_repr_sha1='c0973292edf861e47cf17a1263882af0811cb98c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-    ),
     cls_names=(
         ('ommlds.minichain.text.applypatch', 'Commit'),
     ),
@@ -14744,15 +14070,6 @@ def _process_dataclass__c0973292edf861e47cf17a1263882af0811cb98c():
         " terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='08ed71763cbffe119aa76fffc962ebb7b49e0133',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.text.applypatch', 'FileChange'),
     ),
@@ -14854,16 +14171,6 @@ def _process_dataclass__08ed71763cbffe119aa76fffc962ebb7b49e0133():
         "(name='fuzz', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b92d453cb05ec45f21af65005f00df3f007e04b8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default_factory',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.minichain.text.applypatch', 'Parser'),
     ),
@@ -14963,10 +14270,6 @@ def _process_dataclass__b92d453cb05ec45f21af65005f00df3f007e04b8():
         "ne)))"
     ),
     plan_repr_sha1='00bdcdd6e2f18731e9c63b5db7cefb1ee7e98dc9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-    ),
     cls_names=(
         ('ommlds.minichain.text.applypatch', 'Patch'),
     ),
@@ -15048,15 +14351,6 @@ def _process_dataclass__00bdcdd6e2f18731e9c63b5db7cefb1ee7e98dc9():
         "fn=None), ReprPlan.Field(name='move_path', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='f7473f8f73f3d63ddea853bd4a405abd76cf2b14',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default_factory',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.text.applypatch', 'PatchAction'),
     ),
@@ -15166,18 +14460,6 @@ def _process_dataclass__f7473f8f73f3d63ddea853bd4a405abd76cf2b14():
         ")))"
     ),
     plan_repr_sha1='c7cb99a1bdd01fb9ec10d2e00a23f26953d5ef8d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.minichain.text.toolparsing.base', 'ParsedToolExec'),
     ),
@@ -15338,14 +14620,6 @@ def _process_dataclass__c7cb99a1bdd01fb9ec10d2e00a23f26953d5ef8d():
         "='reasoning_content', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b776b6d80e5ca64f228627161435152ae282463b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default_factory',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.text.toolparsing.llamacpp.types', 'ChatMsg'),
     ),
@@ -15438,12 +14712,6 @@ def _process_dataclass__b776b6d80e5ca64f228627161435152ae282463b():
         "e, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3d6d34f0c6b17b808a0f4afd043a0fd6b13a3c0c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.text.toolparsing.llamacpp.types', 'ChatToolCall'),
     ),
@@ -15525,9 +14793,6 @@ def _process_dataclass__3d6d34f0c6b17b808a0f4afd043a0fd6b13a3c0c():
         "', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='992dded9f23b67474fa059fd50b4093578e27b85',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tokens.specials', 'AmbiguousSpecialTokenError'),
     ),
@@ -15599,10 +14864,6 @@ def _process_dataclass__992dded9f23b67474fa059fd50b4093578e27b85():
         "ne)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='dd85158a53c93a82289b98788d08c557aa37e325',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tokens.specials', 'MismatchedSpecialTokenError'),
     ),
@@ -15683,14 +14944,6 @@ def _process_dataclass__dd85158a53c93a82289b98788d08c557aa37e325():
         "='name_override', kw_only=True, fn=None)), id=False, terse=True, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='822cfb79568db586d5aa4e0712ca68531910d013',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.catalog', 'ToolCatalogEntry'),
     ),
@@ -15801,10 +15054,6 @@ def _process_dataclass__822cfb79568db586d5aa4e0712ca68531910d013():
         "fn', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b3b782407c72b5c7773dbe34c1fe770eda430789',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.context', 'ToolContextProvider'),
     ),
@@ -15917,9 +15166,6 @@ def _process_dataclass__b3b782407c72b5c7773dbe34c1fe770eda430789():
         "', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1e6864e478d12ae160365d172d422405f59c8e3f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.errors', 'PermissionDeniedToolExecutionError'),
     ),
@@ -15994,13 +15240,6 @@ def _process_dataclass__1e6864e478d12ae160365d172d422405f59c8e3f():
         "ield(name='tue', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='561ef68448ecc7ee178c8e40f0105b1e03dc7035',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.events', 'ToolUseEvent'),
     ),
@@ -16136,14 +15375,6 @@ def _process_dataclass__561ef68448ecc7ee178c8e40f0105b1e03dc7035():
         "rue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a1ded80a71b153add7b007235f11f45b8453be92',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.events', 'ToolUseResultEvent'),
     ),
@@ -16283,11 +15514,6 @@ def _process_dataclass__a1ded80a71b153add7b007235f11f45b8453be92():
         "g_entry', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='f1814fe9a912f53945385437bbfbbe3f2fe9bfc5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.execution', 'ToolUseExecution'),
     ),
@@ -16402,9 +15628,6 @@ def _process_dataclass__f1814fe9a912f53945385437bbfbbe3f2fe9bfc5():
         "Field(name='invokers_by_name', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='878a175f5a4827d602c44d54fe799fed78d605e2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.invokers', 'NameSwitchedToolInvoker'),
     ),
@@ -16509,9 +15732,6 @@ def _process_dataclass__878a175f5a4827d602c44d54fe799fed78d605e2():
         "lse, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='512f54ae8b68c29c74c7815b448db1e085d548b4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.invokers', 'ToolFnToolInvoker'),
     ),
@@ -16616,9 +15836,6 @@ def _process_dataclass__512f54ae8b68c29c74c7815b448db1e085d548b4():
         "se, default_fn=None)))"
     ),
     plan_repr_sha1='b8d886b10fdec5e3812e5cb215372d1c9898e10e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.execution.permissions', 'StaticToolPermissionDecider'),
     ),
@@ -16732,14 +15949,6 @@ def _process_dataclass__b8d886b10fdec5e3812e5cb215372d1c9898e10e():
         "False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='d60319bf361eafa4ccfcb75b89bcc62a0908949c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.fns', 'ToolFn'),
     ),
@@ -16878,9 +16087,6 @@ def _process_dataclass__d60319bf361eafa4ccfcb75b89bcc62a0908949c():
         "one)))"
     ),
     plan_repr_sha1='0ed2db2de0439b653c8fb6100e75bce7782ea8a0',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.fns', 'ToolFn.DataclassInput'),
         ('ommlds.minichain.tools.fns', 'ToolFn.DataclassOutput'),
@@ -16990,12 +16196,6 @@ def _process_dataclass__0ed2db2de0439b653c8fb6100e75bce7782ea8a0():
         "one)))"
     ),
     plan_repr_sha1='58456bc8a88d4a91404f149d73fdda6a16fd22a9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.fns', 'ToolFn.FnImpl'),
     ),
@@ -17113,9 +16313,6 @@ def _process_dataclass__58456bc8a88d4a91404f149d73fdda6a16fd22a9():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='414809a505ec9965b78a8a29b59757d13b787f5c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.fns', 'ToolFn.MarshalInput'),
     ),
@@ -17220,9 +16417,6 @@ def _process_dataclass__414809a505ec9965b78a8a29b59757d13b787f5c():
         "=None)))"
     ),
     plan_repr_sha1='e0d54ba87512abba1f90372a952285f136dc040e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.fns', 'ToolFn.MarshalOutput'),
     ),
@@ -17327,9 +16521,6 @@ def _process_dataclass__e0d54ba87512abba1f90372a952285f136dc040e():
         "=None)))"
     ),
     plan_repr_sha1='002c7e181d6f2d12cf46b3a6f0e5dad5323c2a95',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.permissions.bash', 'BashToolPermissionTarget'),
     ),
@@ -17437,10 +16628,6 @@ def _process_dataclass__002c7e181d6f2d12cf46b3a6f0e5dad5323c2a95():
         "None)))"
     ),
     plan_repr_sha1='ec3dc5ca64d06aa2b09e5c7ea0f2c752f2b83006',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.permissions.collection', 'ToolPermissionRules'),
     ),
@@ -17552,11 +16739,6 @@ def _process_dataclass__ec3dc5ca64d06aa2b09e5c7ea0f2c752f2b83006():
         "='mode', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='dd41662175f25f58af6e728e4ddbd4349af9c8d1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__validate_fns__0',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.permissions.fs', 'FsToolPermissionTarget'),
     ),
@@ -17682,12 +16864,6 @@ def _process_dataclass__dd41662175f25f58af6e728e4ddbd4349af9c8d1():
         "alse, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9361562d73fccc08c989ef1ca23e3893b758987d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.permissions.fs', 'GlobFsToolPermissionMatcher'),
     ),
@@ -17807,12 +16983,6 @@ def _process_dataclass__9361562d73fccc08c989ef1ca23e3893b758987d():
         "Plan.Field(name='result', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='500ba51830637d3e2034309ed03e9d2e17ae2bf7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__check_type',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__check_type',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.permissions.types', 'ToolPermissionRule'),
     ),
@@ -17947,12 +17117,6 @@ def _process_dataclass__500ba51830637d3e2034309ed03e9d2e17ae2bf7():
         "_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ae25a0defd5900294ef214b3c777910e73ae1501',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.permissions.url', 'RegexUrlToolPermissionMatcher'),
     ),
@@ -18074,12 +17238,6 @@ def _process_dataclass__ae25a0defd5900294ef214b3c777910e73ae1501():
         ")))"
     ),
     plan_repr_sha1='be32a36d8f61a1565b11c6633af87b5c7148065c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__validate_fns__0',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.permissions.url', 'UrlToolPermissionTarget'),
     ),
@@ -18222,20 +17380,6 @@ def _process_dataclass__be32a36d8f61a1565b11c6633af87b5c7148065c():
         "e=False, default_fn=None)))"
     ),
     plan_repr_sha1='cdcccf0dc59860c0b19fed181a5bb59b8472bf93',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.reflect', '_ToolSpecAttach'),
         ('ommlds.minichain.tools.reflect', '_ToolSpecOverride'),
@@ -18397,10 +17541,6 @@ def _process_dataclass__cdcccf0dc59860c0b19fed181a5bb59b8472bf93():
         ")))"
     ),
     plan_repr_sha1='922e75739507bda9dce73a0d3dc05534b1cc9ae5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'EnumToolDtype'),
     ),
@@ -18516,10 +17656,6 @@ def _process_dataclass__922e75739507bda9dce73a0d3dc05534b1cc9ae5():
         "e), ReprPlan.Field(name='value', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='2ded8afb50edd07329da6b7055981919a83dec56',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'MappingToolDtype'),
     ),
@@ -18633,9 +17769,6 @@ def _process_dataclass__2ded8afb50edd07329da6b7055981919a83dec56():
         "ult_fn=None)))"
     ),
     plan_repr_sha1='1d0b04d8ebb0bdb077bc9721fb19aafcadf99422',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'NullableToolDtype'),
     ),
@@ -18740,9 +17873,6 @@ def _process_dataclass__1d0b04d8ebb0bdb077bc9721fb19aafcadf99422():
         "rse=True, default_fn=None)))"
     ),
     plan_repr_sha1='178374af8c25e44a33c44ece98db0c96fe041247',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'ObjectToolDtype'),
     ),
@@ -18847,9 +17977,6 @@ def _process_dataclass__178374af8c25e44a33c44ece98db0c96fe041247():
         "t_fn=None)))"
     ),
     plan_repr_sha1='b7657835eed1f3e17dbdae82eb197181dd5862db',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'PrimitiveToolDtype'),
     ),
@@ -18955,9 +18082,6 @@ def _process_dataclass__b7657835eed1f3e17dbdae82eb197181dd5862db():
         "lse, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='95d65e05398b42908ba7d67d961be3c1dae7f5b4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'SequenceToolDtype'),
     ),
@@ -19071,16 +18195,6 @@ def _process_dataclass__95d65e05398b42908ba7d67d961be3c1dae7f5b4():
         "e), ReprPlan.Field(name='required', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='69f075887b34fec02953259b40566b486cb54f44',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'ToolParam'),
     ),
@@ -19229,17 +18343,6 @@ def _process_dataclass__69f075887b34fec02953259b40566b486cb54f44():
         "e)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8ee14eb5eb676d4070b1ed3fcffc299ec6ef79b1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__coerce',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'ToolUse'),
     ),
@@ -19393,15 +18496,6 @@ def _process_dataclass__8ee14eb5eb676d4070b1ed3fcffc299ec6ef79b1():
         "e), ReprPlan.Field(name='c', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a4d08164172a00809d5421a80bd0c9f803d609cf',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__coerce',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'ToolUseResult'),
     ),
@@ -19537,9 +18631,6 @@ def _process_dataclass__a4d08164172a00809d5421a80bd0c9f803d609cf():
         ", id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='a72c7b37c724624d1543d1cc8dffce6fcbbad416',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'TupleToolDtype'),
     ),
@@ -19644,9 +18735,6 @@ def _process_dataclass__a72c7b37c724624d1543d1cc8dffce6fcbbad416():
         "t_fn=None)))"
     ),
     plan_repr_sha1='ad919be3aed733ce0d02ac2f6d4c55bbced3d288',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.tools.types', 'UnionToolDtype'),
     ),
@@ -19752,9 +18840,6 @@ def _process_dataclass__ad919be3aed733ce0d02ac2f6d4c55bbced3d288():
         ")"
     ),
     plan_repr_sha1='7aa0c77816a80679651208a64d723952e216d065',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.transform.general', 'CompositeGeneralTransform'),
         ('ommlds.minichain.transform.sequence', 'CompositeSequenceTransform'),
@@ -19862,10 +18947,6 @@ def _process_dataclass__7aa0c77816a80679651208a64d723952e216d065():
         "_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='df51b7d1de0f9f842f3c7c328814272743a295d9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.transform.general', 'TypeFilteredGeneralTransform'),
     ),
@@ -19979,10 +19060,6 @@ def _process_dataclass__df51b7d1de0f9f842f3c7c328814272743a295d9():
         "fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a89375a36223a889920e8b93b4e42846a4cfffa0',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.minichain.transform.metadata', 'CreatedAtAddingGeneralTransform'),
     ),
@@ -20088,9 +19165,6 @@ def _process_dataclass__a89375a36223a889920e8b93b4e42846a4cfffa0():
         ")"
     ),
     plan_repr_sha1='6b438fb80b632e7c116149b68543db28b834e32e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.transform.sequence', 'GeneralTransformSequenceTransform'),
     ),
@@ -20202,14 +19276,6 @@ def _process_dataclass__6b438fb80b632e7c116149b68543db28b834e32e():
         ", id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8062e6b592d552c879ea83331512fd13fc8fe85f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.ui.json', 'JsonUiTextRendering'),
     ),
@@ -20337,9 +19403,6 @@ def _process_dataclass__8062e6b592d552c879ea83331512fd13fc8fe85f():
         ")"
     ),
     plan_repr_sha1='30c3cfbd3078ff6d612c66f613e50ddf96bca5cc',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.ui.text', 'ConcatUiText'),
     ),
@@ -20450,12 +19513,6 @@ def _process_dataclass__30c3cfbd3078ff6d612c66f613e50ddf96bca5cc():
         "e, fn=None), ReprPlan.Field(name='path', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bbb61553f91e97994ae73c51122983ac4dff8df4',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.ui.text', 'DiffUiText'),
     ),
@@ -20593,9 +19650,6 @@ def _process_dataclass__bbb61553f91e97994ae73c51122983ac4dff8df4():
         "))"
     ),
     plan_repr_sha1='e6ae81c2c73b7f811842161edf907181205cc27a',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.ui.text', 'JsonUiText'),
     ),
@@ -20713,9 +19767,6 @@ def _process_dataclass__e6ae81c2c73b7f811842161edf907181205cc27a():
         "))"
     ),
     plan_repr_sha1='f4e6b81cb21510ffec9598279f74b9afddc6c1de',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.ui.text', 'StrUiText'),
     ),
@@ -20835,11 +19886,6 @@ def _process_dataclass__f4e6b81cb21510ffec9598279f74b9afddc6c1de():
         "one), ReprPlan.Field(name='y', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='82bc12cdc7d90d1a2cc323667faa10c3124d2d9d',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.ui.text', 'StyleUiText'),
     ),
@@ -20965,7 +20011,6 @@ def _process_dataclass__82bc12cdc7d90d1a2cc323667faa10c3124d2d9d():
         "elds=(), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='32aca8223fa20a902d4408c1bd046d52b1c41318',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.minichain.ui.text', 'UiText'),
     ),
@@ -21069,15 +20114,6 @@ def _process_dataclass__32aca8223fa20a902d4408c1bd046d52b1c41318():
         "ult_fn'))))"
     ),
     plan_repr_sha1='aaaaf67b231f933c820a9536a9ad09676619608d',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.ui.text', 'UiTextStyle'),
     ),
@@ -21219,9 +20255,6 @@ def _process_dataclass__aaaaf67b231f933c820a9536a9ad09676619608d():
         ")"
     ),
     plan_repr_sha1='d1dcd40f048e6560420787a4291f3f9d415c2cf3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.vectors._marshal', '_VectorMarshaler'),
         ('ommlds.minichain.vectors._marshal', '_VectorUnmarshaler'),
@@ -21329,10 +20362,6 @@ def _process_dataclass__d1dcd40f048e6560420787a4291f3f9d415c2cf3():
         "ec', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='5ea4d9b4bffc7de6c6a04b9485d0523083ae6558',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.vectors.index', 'VectorIndexed'),
     ),
@@ -21448,10 +20477,6 @@ def _process_dataclass__5ea4d9b4bffc7de6c6a04b9485d0523083ae6558():
         "ield(name='score', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='781af6b7d63e022308ad09d0c6af2f862222da8f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.vectors.search', 'VectorHit'),
     ),
@@ -21567,11 +20592,6 @@ def _process_dataclass__781af6b7d63e022308ad09d0c6af2f862222da8f():
         " fn=None), ReprPlan.Field(name='k', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='24182e1dbb4c659bdb337ab276f9ac3b06f71444',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.vectors.search', 'VectorSearch'),
     ),
@@ -21687,9 +20707,6 @@ def _process_dataclass__24182e1dbb4c659bdb337ab276f9ac3b06f71444():
         "se, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6ee6b20d9248a588cdacec2ceb396c5517b1412d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.vectors.search', 'VectorSearchSimilarity'),
     ),
@@ -21800,12 +20817,6 @@ def _process_dataclass__6ee6b20d9248a588cdacec2ceb396c5517b1412d():
         ")"
     ),
     plan_repr_sha1='7955baf54c2bb5ec0faef8b59a6d2d1df6355b6c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.vectors.types', '_StorageImpl'),
     ),
@@ -21929,9 +20940,6 @@ def _process_dataclass__7955baf54c2bb5ec0faef8b59a6d2d1df6355b6c():
         "),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bf53b269dcc5b5d524a0550ca66dfdd63db1aed9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.wrappers.firstinwins', 'FirstInWinsServiceCancelledError'),
     ),
@@ -22009,12 +21017,6 @@ def _process_dataclass__bf53b269dcc5b5d524a0550ca66dfdd63db1aed9():
         "ice_exceptions', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='338ef6c7e8d95c07d43101aa3fb2e5001c70b0ab',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.wrappers.firstinwins', 'FirstInWinsServiceOutput'),
     ),
@@ -22151,19 +21153,6 @@ def _process_dataclass__338ef6c7e8d95c07d43101aa3fb2e5001c70b0ab():
         "t_fn'))))"
     ),
     plan_repr_sha1='e4d635c950acb2270f4d7755e6070d0ab79058e5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.wrappers.instrument', 'InstrumentedServiceEvent'),
     ),
@@ -22323,11 +21312,6 @@ def _process_dataclass__e4d635c950acb2270f4d7755e6070d0ab79058e5():
         "se, default_fn=None)))"
     ),
     plan_repr_sha1='d96b5401a8b47da320a23cac87237e654dc6e962',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.wrappers.metadata', 'RetryServiceResponseMetadata'),
     ),
@@ -22439,7 +21423,6 @@ def _process_dataclass__d96b5401a8b47da320a23cac87237e654dc6e962():
         "s=None, init_fns=(), validate_fns=())))"
     ),
     plan_repr_sha1='cfe950ccb271c08a9a7ea828a272e37b1f5c9323',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.minichain.wrappers.retry', 'RetryServiceMaxRetriesExceededError'),
     ),

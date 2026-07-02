@@ -37,10 +37,6 @@ def _register(**kwargs):
         "_fn=None)))"
     ),
     plan_repr_sha1='7bbc53157847f1f2172110a2a499f81f87f3ac50',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.diffing', 'AddColumn'),
         ('omlish.sql.tabledefs.diffing', 'AlterColumn'),
@@ -158,10 +154,6 @@ def _process_dataclass__7bbc53157847f1f2172110a2a499f81f87f3ac50():
         "e)))"
     ),
     plan_repr_sha1='8df99138d842992b2d69e7893001a3337ec7cb76',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.diffing', 'AddIndex'),
     ),
@@ -277,10 +269,6 @@ def _process_dataclass__8df99138d842992b2d69e7893001a3337ec7cb76():
         ", fn=None), ReprPlan.Field(name='name', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a20a8a7733787780b678f0117588344e2a9b56c1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.diffing', 'DropColumn'),
         ('omlish.sql.tabledefs.diffing', 'DropIndex'),
@@ -408,17 +396,6 @@ def _process_dataclass__a20a8a7733787780b678f0117588344e2a9b56c1():
         "se, default_fn=None)))"
     ),
     plan_repr_sha1='81ddc5543746cfc57a3b23721496e95e19b5b612',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__coerce',
-        '__dataclass__init__fields__4__default_factory',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.elements', 'Column'),
     ),
@@ -565,7 +542,6 @@ def _process_dataclass__81ddc5543746cfc57a3b23721496e95e19b5b612():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('omlish.sql.tabledefs.elements', 'CreatedAt'),
         ('omlish.sql.tabledefs.elements', 'CreatedAtUpdatedAt'),
@@ -667,20 +643,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "n=None), ReprPlan.Field(name='options', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b919c63cf57bee0b2709a3ebb9f63d1289633e40',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__coerce',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__coerce',
-        '__dataclass__init__fields__4__default_factory',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.elements', 'Index'),
     ),
@@ -835,9 +797,6 @@ def _process_dataclass__b919c63cf57bee0b2709a3ebb9f63d1289633e40():
         "lse, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3fe3bb9ac13c6d7f416ca5fe3e49bc54d50d4126',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.elements', 'PrimaryKey'),
     ),
@@ -942,9 +901,6 @@ def _process_dataclass__3fe3bb9ac13c6d7f416ca5fe3e49bc54d50d4126():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='248beb0afcbd160d0637a0aa2aa8650af5ebf4ce',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.elements', 'UpdatedAtTrigger'),
     ),
@@ -1049,10 +1005,6 @@ def _process_dataclass__248beb0afcbd160d0637a0aa2aa8650af5ebf4ce():
         "name='predicates', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='06660a4d57f2bb0579cb6392f7e85f2f7c5f8a90',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.predicates', 'And'),
         ('omlish.sql.tabledefs.predicates', 'Or'),
@@ -1165,11 +1117,6 @@ def _process_dataclass__06660a4d57f2bb0579cb6392f7e85f2f7c5f8a90():
         "n.Field(name='value', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c5f77e8c84b4c5fe64a346be50281cf7574e5acf',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.predicates', 'Compare'),
     ),
@@ -1295,11 +1242,6 @@ def _process_dataclass__c5f77e8c84b4c5fe64a346be50281cf7574e5acf():
         "e, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='89214b276c5cb74d3077d27fb79f1471400a4e4b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.predicates', 'IsNull'),
     ),
@@ -1415,9 +1357,6 @@ def _process_dataclass__89214b276c5cb74d3077d27fb79f1471400a4e4b():
         "None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='5d8f513bde8a8096e04ac37b6a0fbaba39385ea7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.predicates', 'Not'),
     ),
@@ -1521,9 +1460,6 @@ def _process_dataclass__5d8f513bde8a8096e04ac37b6a0fbaba39385ea7():
         "an(fields=(ReprPlan.Field(name='s', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='30a5dd74853303d917aae5f67d4e7189615d1440',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.predicates', 'RawPredicate'),
     ),
@@ -1642,18 +1578,6 @@ def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
         "_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8748292e9f6a23efe5a4e4086e4514ce0c0ae151',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.rendering', 'RenderColumn'),
     ),
@@ -1762,12 +1686,6 @@ def _process_dataclass__8748292e9f6a23efe5a4e4086e4514ce0c0ae151():
         "ists', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='40584714544cf8ee4bfbe6e8ffdb79fd74b4d1fa',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.rendering', 'Renderer.CreateOptions'),
     ),
@@ -1890,13 +1808,6 @@ def _process_dataclass__40584714544cf8ee4bfbe6e8ffdb79fd74b4d1fa():
         "Field(name='options', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2edc7e92b91e9ac346f2e9e0c1f26eb66ccf4779',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__coerce',
-        '__dataclass__init__fields__2__default_factory',
-    ),
     cls_names=(
         ('omlish.sql.tabledefs.tabledefs', 'TableDef'),
     ),
@@ -2021,7 +1932,6 @@ def _process_dataclass__2edc7e92b91e9ac346f2e9e0c1f26eb66ccf4779():
         "shPlan(action='add', fields=(), cache=False), ReprPlan(fields=(), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='63c05de795f82e8dacde3eceff4abc81b79a0bee',
-    op_ref_idents=(),
     cls_names=(
         ('omlish.sql.tabledefs.values', 'Now'),
     ),

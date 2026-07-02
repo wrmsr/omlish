@@ -31,7 +31,6 @@ def _register(**kwargs):
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.minichain.modules.bash.configs', 'BashConfig'),
         ('ommlds.minichain.modules.code.configs', 'CodeConfig'),
@@ -126,11 +125,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "False, default_fn=None)))"
     ),
     plan_repr_sha1='22480a2a2aaaf96b870b1b90c6449fd0932820d8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.descriptors', 'ModuleDescriptor'),
     ),
@@ -254,10 +248,6 @@ def _process_dataclass__22480a2a2aaaf96b870b1b90c6449fd0932820d8():
         "ds=(ReprPlan.Field(name='enable_writes', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.fs.configs', 'FsConfig'),
     ),
@@ -368,14 +358,6 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
         "False, slots=False, post_init_params=None, init_fns=(), validate_fns=())))"
     ),
     plan_repr_sha1='0ffe7e6981ca897a53904accd1fc4d5bb759d34b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.fs.tools.recursivels.rendering', '_LsLine'),
     ),
@@ -436,11 +418,6 @@ def _process_dataclass__0ffe7e6981ca897a53904accd1fc4d5bb759d34b():
         "ield(name='soft_max_len', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='68ec51656ec2810b10c4b88f8e5fa731750d733f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.fs.tools.recursivels.rendering', '_LsRenderRun'),
     ),
@@ -523,11 +500,6 @@ def _process_dataclass__68ec51656ec2810b10c4b88f8e5fa731750d733f():
         " fn=None), ReprPlan.Field(name='children', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8fc7babd1081656cee23d33050b77c4791d93c20',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.fs.tools.recursivels.running', 'DirLsItem'),
     ),
@@ -652,10 +624,6 @@ def _process_dataclass__8fc7babd1081656cee23d33050b77c4791d93c20():
         "ne), ReprPlan.Field(name='path', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9a639e5124ba99ab9dbe43d0f65a5795e369a423',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.fs.tools.recursivels.running', 'FileLsItem'),
         ('ommlds.minichain.modules.fs.tools.recursivels.running', 'LsItem'),
@@ -771,11 +739,6 @@ def _process_dataclass__9a639e5124ba99ab9dbe43d0f65a5795e369a423():
         "', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c088fcf850721e4dcac4781f19820a6668f38121',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__validate_fns__0',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.skills.configs', 'SkillsConfig'),
     ),
@@ -894,10 +857,6 @@ def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
         "e)))"
     ),
     plan_repr_sha1='883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.skills.types', 'Skill'),
     ),
@@ -1028,19 +987,6 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
         "d=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='62dee6166588a1c4268bef1e4fdb39a238534707',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.skills.types', 'SkillHeader'),
     ),
@@ -1211,13 +1157,6 @@ def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():
         "erse=False, default_fn=None)))"
     ),
     plan_repr_sha1='90327d7499fc348378f37c29946fda05f802116e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.todo.types', 'TodoItem'),
     ),
@@ -1359,14 +1298,6 @@ def _process_dataclass__90327d7499fc348378f37c29946fda05f802116e():
         "rch_results', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='869bfeeb53e443cc395a786c230df362a459ce09',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.web.configs', 'WebConfig'),
     ),
@@ -1498,11 +1429,6 @@ def _process_dataclass__869bfeeb53e443cc395a786c230df362a459ce09():
         "an.Field(name='body', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e0a89cc4dcbb47d112ac3a3f9474c89c1e0fceeb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.modules.web.fetching', 'FetchedPage'),
     ),

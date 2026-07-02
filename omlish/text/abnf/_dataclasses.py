@@ -33,9 +33,6 @@ def _register(**kwargs):
         "an(fields=(ReprPlan.Field(name='s', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='30a5dd74853303d917aae5f67d4e7189615d1440',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.QuotedString'),
         ('omlish.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.RuleName'),
@@ -145,10 +142,6 @@ def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
         "', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9104a51696bc4129d13d616118c0f732322e677c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.text.abnf.ops', 'RangeLiteral.Range'),
     ),
@@ -264,12 +257,6 @@ def _process_dataclass__9104a51696bc4129d13d616118c0f732322e677c():
         "nly_params=(), frozen=True, slots=False, post_init_params=(), init_fns=(), validate_fns=())))"
     ),
     plan_repr_sha1='3dce49e08774c707abbc7a6513e35ccdc43001c9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.text.abnf.ops', 'Repeat.Times'),
     ),
@@ -369,7 +356,6 @@ def _process_dataclass__3dce49e08774c707abbc7a6513e35ccdc43001c9():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('omlish.text.abnf.opto', '_RegexItem'),
     ),
@@ -454,9 +440,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         ")"
     ),
     plan_repr_sha1='f7dc3147180d5d4dc248e9c0d94aa0f1e503c4c7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.text.abnf.opto', '_RegexRegexItem'),
     ),

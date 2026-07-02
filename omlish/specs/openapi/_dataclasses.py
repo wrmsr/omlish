@@ -36,10 +36,6 @@ def _register(**kwargs):
         "alse, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='08a1aac3841bbd823cbf8591aab4858462242e0f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.specs.openapi._marshal', '_ReferenceUnionMarshaler'),
     ),
@@ -155,10 +151,6 @@ def _process_dataclass__08a1aac3841bbd823cbf8591aab4858462242e0f():
         "alse, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d095992190a4bef8c406f60182977cf8f1f41efa',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.specs.openapi._marshal', '_ReferenceUnionUnmarshaler'),
     ),
@@ -274,10 +266,6 @@ def _process_dataclass__d095992190a4bef8c406f60182977cf8f1f41efa():
         ", fn=None), ReprPlan.Field(name='kw_m', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='719544153ed0b35a74b1651553003d3b354700f1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.specs.openapi._marshal', '_SchemaMarshaler'),
     ),
@@ -393,10 +381,6 @@ def _process_dataclass__719544153ed0b35a74b1651553003d3b354700f1():
         ", fn=None), ReprPlan.Field(name='kw_u', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='11262894e09b3b420a70ca6beeca90e3128bc4d9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.specs.openapi._marshal', '_SchemaUnmarshaler'),
     ),
@@ -542,29 +526,6 @@ def _process_dataclass__11262894e09b3b420a70ca6beeca90e3128bc4d9():
         "_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='70b15f8a60ca2e32dc7fec02c618641cd0243175',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Components'),
     ),
@@ -777,15 +738,6 @@ def _process_dataclass__70b15f8a60ca2e32dc7fec02c618641cd0243175():
         "_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='d4a541cb97da82c217d4aeb1a3c99ba233c59794',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Contact'),
     ),
@@ -919,12 +871,6 @@ def _process_dataclass__d4a541cb97da82c217d4aeb1a3c99ba233c59794():
         "repr.default_fn'))))"
     ),
     plan_repr_sha1='3d1a4171d606ce3a412ee1a299e055a625b5930f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Discriminator'),
     ),
@@ -1056,19 +1002,6 @@ def _process_dataclass__3d1a4171d606ce3a412ee1a299e055a625b5930f():
         "e)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='188ab7478374634cc437c58cd5e05b336158064f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Encoding'),
     ),
@@ -1231,17 +1164,6 @@ def _process_dataclass__188ab7478374634cc437c58cd5e05b336158064f():
         "Ref(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='3255469da9b4c7981b4f6c4f6a90ccbf555db3eb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Example'),
     ),
@@ -1385,12 +1307,6 @@ def _process_dataclass__3255469da9b4c7981b4f6c4f6a90ccbf555db3eb():
         "nly=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='92c624435fbcbab9682c66aa9a03c714fb8df108',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'ExternalDocumentation'),
     ),
@@ -1508,10 +1424,6 @@ def _process_dataclass__92c624435fbcbab9682c66aa9a03c714fb8df108():
         "rse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='513a3812c33c8abe4d63e23623cf6ca96da920c9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Header'),
     ),
@@ -1638,21 +1550,6 @@ def _process_dataclass__513a3812c33c8abe4d63e23623cf6ca96da920c9():
         "False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='5f1e1eec066ba3cbccd2ca9c47c2b2efe9f82729',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Info'),
     ),
@@ -1830,14 +1727,6 @@ def _process_dataclass__5f1e1eec066ba3cbccd2ca9c47c2b2efe9f82729():
         ", kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='87af0c109e49bcc4ab83b6b35870077c91033b7f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'License'),
     ),
@@ -1984,21 +1873,6 @@ def _process_dataclass__87af0c109e49bcc4ab83b6b35870077c91033b7f():
         ", fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='68f380551d5fcf6a7b62539649fb8a049f38e6a8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Link'),
     ),
@@ -2171,17 +2045,6 @@ def _process_dataclass__68f380551d5fcf6a7b62539649fb8a049f38e6a8():
         "False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='0c0080dfcfaf4cc95b55cdf6b5b5909bc1125e15',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'MediaType'),
     ),
@@ -2332,14 +2195,6 @@ def _process_dataclass__0c0080dfcfaf4cc95b55cdf6b5b5909bc1125e15():
         "lse, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='f66d1979aaf6ccb54ddc86ecad04e787f2d5b154',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'OauthFlow'),
     ),
@@ -2489,17 +2344,6 @@ def _process_dataclass__f66d1979aaf6ccb54ddc86ecad04e787f2d5b154():
         "ame='repr.default_fn'))))"
     ),
     plan_repr_sha1='c2628e645062ee631a5099d82bc8fbbcd320b6c0',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'OauthFlows'),
     ),
@@ -2674,30 +2518,6 @@ def _process_dataclass__c2628e645062ee631a5099d82bc8fbbcd320b6c0():
         "_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='005124240f699ee17389834eb8ae96f50e1bc933',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__init_fns__0',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Openapi'),
     ),
@@ -2957,36 +2777,6 @@ def _process_dataclass__005124240f699ee17389834eb8ae96f50e1bc933():
         "default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='8ee4073aac44214f307f150371e41de5d524aa9d',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__init_fns__0',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Operation'),
     ),
@@ -3234,12 +3024,6 @@ def _process_dataclass__8ee4073aac44214f307f150371e41de5d524aa9d():
         "))))"
     ),
     plan_repr_sha1='413190da51b24ddc1aa6c3e244090f3d38971a03',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Parameter'),
     ),
@@ -3425,45 +3209,6 @@ def _process_dataclass__413190da51b24ddc1aa6c3e244090f3d38971a03():
         "=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='245ffee6800cd0e12fb4c9b9d49d44fbce1db4b3',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'ParameterCommon'),
     ),
@@ -3797,35 +3542,6 @@ def _process_dataclass__245ffee6800cd0e12fb4c9b9d49d44fbce1db4b3():
         "fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='eddcd6e3715fc20c3fab37afd67aa30033d225fb',
-    op_ref_idents=(
-        '__dataclass__init__fields__00__annotation',
-        '__dataclass__init__fields__00__default',
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'PathItem'),
     ),
@@ -4072,14 +3788,6 @@ def _process_dataclass__eddcd6e3715fc20c3fab37afd67aa30033d225fb():
         "ault_fn'))))"
     ),
     plan_repr_sha1='3670b9ebea893cec23429f0248849b2585df602b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Reference'),
     ),
@@ -4215,14 +3923,6 @@ def _process_dataclass__3670b9ebea893cec23429f0248849b2585df602b():
         "se, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='4d7b50c4830d77baf175395781b487267d8cc483',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'RequestBody'),
     ),
@@ -4361,16 +4061,6 @@ def _process_dataclass__4d7b50c4830d77baf175395781b487267d8cc483():
         "se, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='ba1130aff126463fd8f758d0ad559b5d4d40de0c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Response'),
     ),
@@ -4524,19 +4214,6 @@ def _process_dataclass__ba1130aff126463fd8f758d0ad559b5d4d40de0c():
         "=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='9dfacb9a92daa4820108c7c6b2beff0e8e7c7896',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Schema'),
     ),
@@ -4711,23 +4388,6 @@ def _process_dataclass__9dfacb9a92daa4820108c7c6b2beff0e8e7c7896():
         "nnect_url', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='8d8e79ef7f961f4f87613951588263cba38367cd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'SecurityScheme'),
     ),
@@ -4917,14 +4577,6 @@ def _process_dataclass__8d8e79ef7f961f4f87613951588263cba38367cd():
         "name='repr.default_fn'))))"
     ),
     plan_repr_sha1='0d8ff939993b09e0048474b6080b9fc212767363',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Server'),
     ),
@@ -5060,14 +4712,6 @@ def _process_dataclass__0d8ff939993b09e0048474b6080b9fc212767363():
         "epr.default_fn'))))"
     ),
     plan_repr_sha1='ed700960cbf73cb2c74eff6586b4e17b28ce3e64',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'ServerVariable'),
     ),
@@ -5203,14 +4847,6 @@ def _process_dataclass__ed700960cbf73cb2c74eff6586b4e17b28ce3e64():
         "lse, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
     plan_repr_sha1='403f654c39247dc017aa2d5c3ad151dcdf42f5c9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Tag'),
     ),
@@ -5353,19 +4989,6 @@ def _process_dataclass__403f654c39247dc017aa2d5c3ad151dcdf42f5c9():
         ")"
     ),
     plan_repr_sha1='c7656e6ca8a63c0cf248f48ba702df7d8aac96c5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__repr__default_fn',
-    ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Xml'),
     ),
@@ -5520,10 +5143,6 @@ def _process_dataclass__c7656e6ca8a63c0cf248f48ba702df7d8aac96c5():
         "_fn=None)))"
     ),
     plan_repr_sha1='f767b80f010435f6c60531699ee12edc74460b24',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.specs.openapi.tools.jsonschema', 'OpenapiJsonschema'),
     ),
@@ -5640,10 +5259,6 @@ def _process_dataclass__f767b80f010435f6c60531699ee12edc74460b24():
         "e)))"
     ),
     plan_repr_sha1='28fa5f38326ee968867cdcb54e7cf587c1102899',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.specs.openapi.tools.jsonschema', '_NamedSchema'),
     ),

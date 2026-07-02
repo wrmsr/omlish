@@ -30,6 +30,7 @@ from ..generation.ops import AddMethodOp
 from ..generation.ops import Op
 from ..generation.ops import OpRef
 from ..generation.ops import Ref
+from ..generation.ops import add_ref
 from ..generation.registry import register_generator_type
 from ..generation.utils import SetattrSrcBuilder
 from ..processing.base import ProcessingContext
@@ -263,17 +264,14 @@ class InitGenerator(Generator[InitPlan]):
             elif seen_kw_only:
                 raise TypeError(f'non-keyword-only argument {f.name!r} follows keyword-only argument(s)')
 
-            refs.add(f.annotation)
-            p = f'{f.name}: {f.annotation.ident()}'
+            p = f'{f.name}: {add_ref(f.annotation, refs).ident()}'
 
             if f.default_factory is not None:
                 check.none(f.default)
-                p += f' = {HAS_DEFAULT_FACTORY_GLOBAL.ident}'
-                refs.add(HAS_DEFAULT_FACTORY_GLOBAL)
+                p += f' = {add_ref(HAS_DEFAULT_FACTORY_GLOBAL, refs).ident}'
             elif f.default is not None:
                 check.none(f.default_factory)
-                refs.add(f.default)
-                p += f' = {f.default.ident()}'
+                p += f' = {add_ref(f.default, refs).ident()}'
 
             params.append(p)
 
@@ -284,9 +282,8 @@ class InitGenerator(Generator[InitPlan]):
                 f'    {p},'
                 for p in params
             ],
-            f') -> {NONE_GLOBAL.ident}:',
+            f') -> {add_ref(NONE_GLOBAL, refs).ident}:',
         ]
-        refs.add(NONE_GLOBAL)
 
         # body
 
@@ -304,10 +301,9 @@ class InitGenerator(Generator[InitPlan]):
                 refs.add(f.default_factory)
                 if f.init:
                     lines.extend([
-                        f'    if {f.name} is {HAS_DEFAULT_FACTORY_GLOBAL.ident}:',
+                        f'    if {f.name} is {add_ref(HAS_DEFAULT_FACTORY_GLOBAL, refs).ident}:',
                         f'        {f.name} = {f.default_factory.ident()}()',
                     ])
-                    refs.add(HAS_DEFAULT_FACTORY_GLOBAL)
                 else:
                     lines.append(
                         f'    {f.name} = {f.default_factory.ident()}()',
@@ -323,9 +319,8 @@ class InitGenerator(Generator[InitPlan]):
                     values[f.name] = f.name
 
             elif plan.slots and f.default is not None:
-                refs.add(f.default)
                 lines.append(
-                    f'    {f.name} = {f.default.ident()}',
+                    f'    {f.name} = {add_ref(f.default, refs).ident()}',
                 )
                 values[f.name] = f.name
 
@@ -338,9 +333,8 @@ class InitGenerator(Generator[InitPlan]):
                 )
                 values[f.name] = f.name
             elif isinstance(f.coerce, OpRef):
-                refs.add(f.coerce)
                 lines.append(
-                    f'    {f.name} = {f.coerce.ident()}({values[f.name]})',
+                    f'    {f.name} = {add_ref(f.coerce, refs).ident()}({values[f.name]})',
                 )
                 values[f.name] = f.name
 
@@ -351,16 +345,14 @@ class InitGenerator(Generator[InitPlan]):
                 continue
             refs.add(f.check_type)
             lines.extend([
-                f'    if not {ISINSTANCE_GLOBAL.ident}({values[f.name]}, {f.check_type.ident()}): ',
-                f'        raise {FIELD_TYPE_VALIDATION_ERROR_GLOBAL.ident}(',
+                f'    if not {add_ref(ISINSTANCE_GLOBAL, refs).ident}({values[f.name]}, {f.check_type.ident()}): ',
+                f'        raise {add_ref(FIELD_TYPE_VALIDATION_ERROR_GLOBAL, refs).ident}(',
                 f'            obj={plan.self_param},',
                 f'            type={f.check_type.ident()},',
                 f'            field={f.name!r},',
                 f'            value={values[f.name]},',
                 f'        )',
             ])
-            refs.add(ISINSTANCE_GLOBAL)
-            refs.add(FIELD_TYPE_VALIDATION_ERROR_GLOBAL)
 
         for f in plan.fields:
             if f.validate is None:
@@ -368,14 +360,13 @@ class InitGenerator(Generator[InitPlan]):
             refs.add(f.validate)
             lines.extend([
                 f'    if not {f.validate.ident()}({values[f.name]}): ',
-                f'        raise {FIELD_FN_VALIDATION_ERROR_GLOBAL.ident}(',
+                f'        raise {add_ref(FIELD_FN_VALIDATION_ERROR_GLOBAL, refs).ident}(',
                 f'            obj={plan.self_param},',
                 f'            fn={f.validate.ident()},',
                 f'            field={f.name!r},',
                 f'            value={values[f.name]},',
                 f'        )',
             ])
-            refs.add(FIELD_FN_VALIDATION_ERROR_GLOBAL)
 
         # setattr
 
@@ -414,12 +405,11 @@ class InitGenerator(Generator[InitPlan]):
                     f'    if not {vfn.fn.ident()}():',
                 )
             lines.extend([
-                f'        raise {FN_VALIDATION_ERROR_GLOBAL.ident}(',
+                f'        raise {add_ref(FN_VALIDATION_ERROR_GLOBAL, refs).ident}(',
                 f'            obj={plan.self_param},',
                 f'            fn={vfn.fn.ident()},',
                 f'        )',
             ])
-            refs.add(FN_VALIDATION_ERROR_GLOBAL)
 
         # post-init
 
@@ -439,9 +429,8 @@ class InitGenerator(Generator[InitPlan]):
                 )
 
         for init_fn in plan.init_fns:
-            refs.add(init_fn)
             lines.append(
-                f'    {init_fn.ident()}({plan.self_param})',
+                f'    {add_ref(init_fn, refs).ident()}({plan.self_param})',
             )
 
         #

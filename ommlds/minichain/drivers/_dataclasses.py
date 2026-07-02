@@ -36,11 +36,6 @@ def _register(**kwargs):
         "s=(ReprPlan.Field(name='action', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ab056a4f68b888351847dc1336ace5690a9d0feb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.actions', 'ActionDriverEvent'),
     ),
@@ -161,11 +156,6 @@ def _process_dataclass__ab056a4f68b888351847dc1336ace5690a9d0feb():
         "e),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.actions', 'SendUserMessagesAction'),
     ),
@@ -287,12 +277,6 @@ def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
         "fn=None)))"
     ),
     plan_repr_sha1='fa9a12747b9b6bd7388e4e31d6ef418fcf060b87',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.ai.configs', 'AiConfig'),
     ),
@@ -409,9 +393,6 @@ def _process_dataclass__fa9a12747b9b6bd7388e4e31d6ef418fcf060b87():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.ai.types', 'GenerateAiChatArgs'),
     ),
@@ -532,20 +513,6 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
         "fault_fn=None)))"
     ),
     plan_repr_sha1='13b7d689a0412804652a8806e39bd4895bea072e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.configs', 'DriverConfig'),
     ),
@@ -702,10 +669,6 @@ def _process_dataclass__13b7d689a0412804652a8806e39bd4895bea072e():
         "'file_path', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0d19dfe0717be89540a9245479435e359a0e0486',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.orm.configs', 'OrmConfig'),
     ),
@@ -815,11 +778,6 @@ def _process_dataclass__0d19dfe0717be89540a9245479435e359a0e0486():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='927265170439340895560333250bc087fa726eff',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__validate',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.phases.types', 'PhaseCallback'),
     ),
@@ -945,11 +903,6 @@ def _process_dataclass__927265170439340895560333250bc087fa726eff():
         "e=False, default_fn=None)))"
     ),
     plan_repr_sha1='519ac99d72109dd850ed18af3c2eef6b504a9fca',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.preparing.types', 'ProvidedSystemMessage'),
     ),
@@ -1065,9 +1018,6 @@ def _process_dataclass__519ac99d72109dd850ed18af3c2eef6b504a9fca():
         "=None)))"
     ),
     plan_repr_sha1='f4628f9998e80dca5c208d0cf3c1d4cf358d3489',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.preparing.types', 'StaticPlaceholderContentsProvider'),
         ('ommlds.minichain.drivers.preparing.types', 'StaticSystemMessageProvider'),
@@ -1170,7 +1120,6 @@ def _process_dataclass__f4628f9998e80dca5c208d0cf3c1d4cf358d3489():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.minichain.drivers.session.configs', 'SessionConfig'),
         ('ommlds.minichain.drivers.storage.configs', 'StorageConfig'),
@@ -1271,18 +1220,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "Field(name='num_messages', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1d951c1f400a41ee7a465133d18b71a222a29ba7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.storage.models', 'OrmChat'),
     ),
@@ -1393,15 +1330,6 @@ def _process_dataclass__1d951c1f400a41ee7a465133d18b71a222a29ba7():
         "None), ReprPlan.Field(name='chat', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8084a66df5c7269d6fdfe9d3de0002809cf332c4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.storage.models', 'OrmDriver'),
     ),
@@ -1510,17 +1438,6 @@ def _process_dataclass__8084a66df5c7269d6fdfe9d3de0002809cf332c4():
         "id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a6a37dc54e056e44abf7b662d90d4209ff74c4ed',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__5__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.storage.models', 'OrmMessage'),
     ),
@@ -1626,9 +1543,6 @@ def _process_dataclass__a6a37dc54e056e44abf7b662d90d4209ff74c4ed():
         "an(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='3576262424b3ef8ff20966fa3744e5dba9a2ae7d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.storage.types', 'ChatId'),
         ('ommlds.minichain.drivers.types', 'DriverId'),
@@ -1740,13 +1654,6 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
         "n=None), ReprPlan.Field(name='has_after', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ede80b1f3c27049d398b30ed2398e94e9df8ac36',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.storage.types', 'ChatPage'),
     ),
@@ -1875,10 +1782,6 @@ def _process_dataclass__ede80b1f3c27049d398b30ed2398e94e9df8ac36():
         "e)))"
     ),
     plan_repr_sha1='81b5d61f08997cc0d3402c22bf991a1caf9c4b88',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.storage.types', 'StoredMessage'),
     ),
@@ -1992,10 +1895,6 @@ def _process_dataclass__81b5d61f08997cc0d3402c22bf991a1caf9c4b88():
         "))"
     ),
     plan_repr_sha1='d54bb147650f2eef0cd7c9669f2e1ff9c0e24fdb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.types', 'Action'),
         ('ommlds.minichain.drivers.types', 'DriverEvent'),
@@ -2110,12 +2009,6 @@ def _process_dataclass__d54bb147650f2eef0cd7c9669f2e1ff9c0e24fdb():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='55eb2b38eb7d4e32f3a9306577040632e1c376fb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.minichain.drivers.user.configs', 'UserConfig'),
     ),

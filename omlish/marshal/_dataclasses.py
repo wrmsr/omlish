@@ -33,9 +33,6 @@ def _register(**kwargs):
         "an(fields=(ReprPlan.Field(name='e', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='09d620230085f2ec30d46bc47d392ca3f53879f5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.composite.iterables', 'IterableMarshaler'),
         ('omlish.marshal.composite.maybes', 'MaybeMarshaler'),
@@ -149,12 +146,6 @@ def _process_dataclass__09d620230085f2ec30d46bc47d392ca3f53879f5():
         "ield(name='ctor', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='213c17bea15f5fc2ebb3ba450b08965983b8bbd4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('omlish.marshal.composite.iterables', 'IterableUnmarshaler'),
     ),
@@ -280,10 +271,6 @@ def _process_dataclass__213c17bea15f5fc2ebb3ba450b08965983b8bbd4():
         "_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='db516f58871ac378fdcad03183f2473027e52577',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.composite.literals', 'LiteralMarshaler'),
         ('omlish.marshal.composite.literals', 'LiteralUnmarshaler'),
@@ -400,10 +387,6 @@ def _process_dataclass__db516f58871ac378fdcad03183f2473027e52577():
         "ve', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='31b96e0288616218d19316ded67355ee33bc271d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.composite.mappings', 'MappingMarshaler'),
     ),
@@ -525,13 +508,6 @@ def _process_dataclass__31b96e0288616218d19316ded67355ee33bc271d():
         "=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='92ad32c297e78f61b93d63b65d0e3da74a345a47',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('omlish.marshal.composite.mappings', 'MappingUnmarshaler'),
     ),
@@ -669,11 +645,6 @@ def _process_dataclass__92ad32c297e78f61b93d63b65d0e3da74a345a47():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='aa08307883613da816f90047c1bb03f6cdc155a2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.composite.unions.literals', 'LiteralUnionMarshaler'),
         ('omlish.marshal.composite.unions.literals', 'LiteralUnionUnmarshaler'),
@@ -799,11 +770,6 @@ def _process_dataclass__aa08307883613da816f90047c1bb03f6cdc155a2():
         " fn=None), ReprPlan.Field(name='x', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='f2f290d474e5d287d38623cbc2f347779aa70a7a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.marshal.composite.unions.primitives', 'PrimitiveUnionMarshaler'),
         ('omlish.marshal.composite.unions.primitives', 'PrimitiveUnionUnmarshaler'),
@@ -919,10 +885,6 @@ def _process_dataclass__f2f290d474e5d287d38623cbc2f347779aa70a7a():
         "=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b5727e74a7047b8747632a1bea03a771a8a8aef4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('omlish.marshal.composite.unions.primitives', 'PrimitiveUnionMarshalerFactory'),
         ('omlish.marshal.composite.unions.primitives', 'PrimitiveUnionUnmarshalerFactory'),
@@ -1031,10 +993,6 @@ def _process_dataclass__b5727e74a7047b8747632a1bea03a771a8a8aef4():
         "=None), ReprPlan.Field(name='m', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='481346cb31a24fcab5d409ddf1e4ae941f7cb769',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.composite.wrapped', 'WrappedMarshaler'),
     ),
@@ -1151,10 +1109,6 @@ def _process_dataclass__481346cb31a24fcab5d409ddf1e4ae941f7cb769():
         "e)))"
     ),
     plan_repr_sha1='9412a133cbc3c08550c26c6f21a5b8c6db14a745',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.composite.wrapped', 'WrappedUnmarshaler'),
     ),
@@ -1267,9 +1221,6 @@ def _process_dataclass__9412a133cbc3c08550c26c6f21a5b8c6db14a745():
         "=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e6957c47ca6b31e3b83f76bb6ac1af9334b2d996',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.factories.lazyinit', '_AlreadyRunLazyInits'),
     ),
@@ -1358,12 +1309,6 @@ def _process_dataclass__e6957c47ca6b31e3b83f76bb6ac1af9334b2d996():
         "me='lock', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ef0c7901a995a21254baa2c3025591e420390c6c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default_factory',
-    ),
     cls_names=(
         ('omlish.marshal.factories.typecache', '_TypeCacheFactory._State'),
     ),
@@ -1464,11 +1409,6 @@ def _process_dataclass__ef0c7901a995a21254baa2c3025591e420390c6c():
         "ly=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='473310c5275aa58689237746102f8285e35fbee6',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default_factory',
-    ),
     cls_names=(
         ('omlish.marshal.factories.typemap', 'TypeMapMarshalerFactory'),
     ),
@@ -1579,11 +1519,6 @@ def _process_dataclass__473310c5275aa58689237746102f8285e35fbee6():
         "ly=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c94d23c43d187cd3725f98ba417a2d32b630defb',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default_factory',
-    ),
     cls_names=(
         ('omlish.marshal.factories.typemap', 'TypeMapUnmarshalerFactory'),
     ),
@@ -1696,10 +1631,6 @@ def _process_dataclass__c94d23c43d187cd3725f98ba417a2d32b630defb():
         "t_fn=None)))"
     ),
     plan_repr_sha1='35f016ce203e8213abc42b9333cca4a0902d0a62',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.objects.dataclasses', '_DataclassMarshalerBuilder'),
     ),
@@ -1790,14 +1721,6 @@ def _process_dataclass__35f016ce203e8213abc42b9333cca4a0902d0a62():
         "False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4bfadfa5296b12af16efea03373079c9e7c1a7e9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__default_factory',
-        '__dataclass__init__fields__3__default_factory',
-        '__dataclass__init__fields__4__default_factory',
-        '__dataclass__init__fields__5__default_factory',
-    ),
     cls_names=(
         ('omlish.marshal.objects.dataclasses', '_DataclassUnmarshalerBuilder'),
     ),
@@ -1910,15 +1833,6 @@ def _process_dataclass__4bfadfa5296b12af16efea03373079c9e7c1a7e9():
         "lse, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='2acf7487ade791d943a3c00b3fc998dbcd14c628',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__coerce',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('omlish.marshal.objects.infos', 'FieldInfo'),
     ),
@@ -2063,12 +1977,6 @@ def _process_dataclass__2acf7487ade791d943a3c00b3fc998dbcd14c628():
         "ds=(ReprPlan.Field(name='lst', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d79af82ecd003199ceaa4594c2592f2dbb8ba386',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__init_fns__0',
-        '__dataclass__init__init_fns__1',
-        '__dataclass__init__init_fns__2',
-    ),
     cls_names=(
         ('omlish.marshal.objects.infos', 'FieldInfos'),
     ),
@@ -2190,15 +2098,6 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='938f9d4f2e651144784a7af849b82eaded6cdf98',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('omlish.marshal.objects.marshal', 'ObjectMarshaler'),
     ),
@@ -2337,11 +2236,6 @@ def _process_dataclass__938f9d4f2e651144784a7af849b82eaded6cdf98():
         "id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1be8e124c66f00c82a764169ffbcb93f04b0b647',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.marshal.objects.marshal', 'SimpleObjectMarshalerFactory'),
         ('omlish.marshal.objects.unmarshal', 'SimpleObjectUnmarshalerFactory'),
@@ -2488,24 +2382,6 @@ def _process_dataclass__1be8e124c66f00c82a764169ffbcb93f04b0b647():
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0e667fff73d5ed4dec2c0120263a2f14e79ca151',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-    ),
     cls_names=(
         ('omlish.marshal.objects.unmarshal', 'ObjectUnmarshaler'),
     ),
@@ -2695,12 +2571,6 @@ def _process_dataclass__0e667fff73d5ed4dec2c0120263a2f14e79ca151():
         "ld(name='impls', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='80e4754e128191455453bb4b6982aa8ba98818b7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('omlish.marshal.polymorphism.marshal', 'FieldPolymorphismMarshaler'),
         ('omlish.marshal.polymorphism.unmarshal', 'FieldPolymorphismUnmarshaler'),
@@ -2828,11 +2698,6 @@ def _process_dataclass__80e4754e128191455453bb4b6982aa8ba98818b7():
         "), ReprPlan.Field(name='tt', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='80053702e92eaf973a535f396715f88b40d1bb5e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.marshal.polymorphism.marshal', 'PolymorphismMarshalerFactory'),
         ('omlish.marshal.polymorphism.unmarshal', 'PolymorphismUnmarshalerFactory'),
@@ -2951,11 +2816,6 @@ def _process_dataclass__80053702e92eaf973a535f396715f88b40d1bb5e():
         "one)))"
     ),
     plan_repr_sha1='029e3b873ec8e37ed64107b36d9c83f6511951e8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.marshal.polymorphism.marshal', 'WrapperPolymorphismMarshaler'),
         ('omlish.marshal.polymorphism.unmarshal', 'WrapperPolymorphismUnmarshaler'),
@@ -3075,11 +2935,6 @@ def _process_dataclass__029e3b873ec8e37ed64107b36d9c83f6511951e8():
         "None)))"
     ),
     plan_repr_sha1='73225bbefb3d219f926ce1e134e6d6b4da694f7b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.marshal.polymorphism.open', 'OpenPolymorphismMarshalerFactory'),
         ('omlish.marshal.polymorphism.open', 'OpenPolymorphismUnmarshalerFactory'),
@@ -3194,10 +3049,6 @@ def _process_dataclass__73225bbefb3d219f926ce1e134e6d6b4da694f7b():
         ".Field(name='tup', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e396848ab857a16f8651f7b98bb94eef27cb593f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('omlish.marshal.polymorphism.open', '_OpenPolymorphismBase._State'),
     ),
@@ -3268,9 +3119,6 @@ def _process_dataclass__e396848ab857a16f8651f7b98bb94eef27cb593f():
         ")"
     ),
     plan_repr_sha1='5fb811b6a8837cb3b84359f812a39e560d257d5f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.singular.base64', 'Base64MarshalerUnmarshaler'),
         ('omlish.marshal.singular.enums', 'EnumNameMarshaler'),
@@ -3383,10 +3231,6 @@ def _process_dataclass__5fb811b6a8837cb3b84359f812a39e560d257d5f():
         ".Field(name='fmt', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='68d97e2dd90f34262544e299fb586b11104657a3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.singular.datetimes', 'DatetimeMarshaler'),
     ),
@@ -3506,12 +3350,6 @@ def _process_dataclass__68d97e2dd90f34262544e299fb586b11104657a3():
         "efault_fn=None)))"
     ),
     plan_repr_sha1='30fca7692a17c304ded88562c547a6b9cb240b0a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('omlish.marshal.singular.datetimes', 'DatetimeUnmarshaler'),
     ),
@@ -3635,10 +3473,6 @@ def _process_dataclass__30fca7692a17c304ded88562c547a6b9cb240b0a():
         "),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='cc49596cff10466f74e464b29b5a5fb2c14aceba',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('omlish.marshal.singular.enums', 'EnumMarshalerFactory'),
         ('omlish.marshal.singular.enums', 'EnumUnmarshalerFactory'),
@@ -3744,9 +3578,6 @@ def _process_dataclass__cc49596cff10466f74e464b29b5a5fb2c14aceba():
         "an(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='7514673b39883258db895b0031e644b486721b54',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.trivial.const', 'ConstMarshaler'),
     ),
@@ -3850,9 +3681,6 @@ def _process_dataclass__7514673b39883258db895b0031e644b486721b54():
         "an(fields=(ReprPlan.Field(name='o', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='37002af3789015126a65b87e9ad1aa0682d05068',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.trivial.const', 'ConstUnmarshaler'),
     ),
@@ -3957,9 +3785,6 @@ def _process_dataclass__37002af3789015126a65b87e9ad1aa0682d05068():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='414809a505ec9965b78a8a29b59757d13b787f5c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.marshal.trivial.forbidden', 'ForbiddenTypeMarshalerFactoryUnmarshalerFactory'),
     ),

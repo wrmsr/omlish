@@ -271,15 +271,12 @@ class GeneratorProcessor(Processor):
             for ref, v in prep.ref_map.items()
         }
 
+        ref_map.update(GeneratorProcessor.CompilerMode.build_standard_kwargs(cls))
+
         #
 
-        fn_kw = {
-            **GeneratorProcessor.CompilerMode.build_standard_kwargs(cls),
-            **{k: ref_map[k] for k in cg_kw['op_ref_idents']},
-        }
-
         fn = cg_fn()
-        _call_with_kwargs(fn, **fn_kw)
+        _call_with_kwargs(fn, **ref_map)
 
         return True
 

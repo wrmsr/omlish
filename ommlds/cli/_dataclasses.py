@@ -34,10 +34,6 @@ def _register(**kwargs):
         "w_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='fa5665ecddac4bdf52a6a47db3b5b5362a8b3c7a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.cli.backends.configs', 'BackendConfig'),
     ),
@@ -157,18 +153,6 @@ def _process_dataclass__fa5665ecddac4bdf52a6a47db3b5b5362a8b3c7a():
         "ield(name='printing', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='349fd76d26747dd6cbed7dc4561c7137e925c9fc',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.configs', 'ChatConfig'),
     ),
@@ -337,24 +321,6 @@ def _process_dataclass__349fd76d26747dd6cbed7dc4561c7137e925c9fc():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='10a0ff9a963b0444eb147246be1f5203f51f1949',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.drivers.configs', 'DriverConfig'),
     ),
@@ -534,12 +500,6 @@ def _process_dataclass__10a0ff9a963b0444eb147246be1f5203f51f1949():
         "_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='18ddc55be4f3b835e33c2f5607749808ade8b9ec',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.drivers.state.configs', 'StateConfig'),
     ),
@@ -658,12 +618,6 @@ def _process_dataclass__18ddc55be4f3b835e33c2f5607749808ade8b9ec():
         "prPlan.Field(name='chat_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='7e444005d72adfa0923b925c66293dae30c293cc',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.drivers.state.last', 'LastChatId'),
     ),
@@ -765,20 +719,6 @@ def _process_dataclass__7e444005d72adfa0923b925c66293dae30c293cc():
         "=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='52a2d54a163fff09e0afbdcd47d432ceb7bf1a48',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.bare.configs', 'BareInterfaceConfig'),
     ),
@@ -940,12 +880,6 @@ def _process_dataclass__52a2d54a163fff09e0afbdcd47d432ceb7bf1a48():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d65d18393f357ae0fb02bb80268c6f1473462613',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.configs', 'InterfaceConfig'),
     ),
@@ -1075,16 +1009,6 @@ def _process_dataclass__d65d18393f357ae0fb02bb80268c6f1473462613():
         "ield(name='initial_timeline_window', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='395225a24e95787741ef87bb2db8f54363855f4b',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.configs', 'TextualInterfaceConfig'),
     ),
@@ -1224,11 +1148,6 @@ def _process_dataclass__395225a24e95787741ef87bb2db8f54363855f4b():
         "nly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a147f14d22fda2880e5bb366e3496276b9fa48e1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.drivers.interface', 'ChatDriverInterface.UserInput'),
     ),
@@ -1349,11 +1268,6 @@ def _process_dataclass__a147f14d22fda2880e5bb366e3496276b9fa48e1():
         "terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='9cff50c2c577123575c62011012f75c6f36c9841',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.drivers.interface', '_MountWidgetDisplayOp'),
     ),
@@ -1472,10 +1386,6 @@ def _process_dataclass__9cff50c2c577123575c62011012f75c6f36c9841():
         "False, default_fn=None)))"
     ),
     plan_repr_sha1='c8a1672c8ceaf957e0a0adcc6bdcab5c38001b37',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.drivers.interface', '_MountWidgetsBeforeDisplayOp'),
     ),
@@ -1589,9 +1499,6 @@ def _process_dataclass__c8a1672c8ceaf957e0a0adcc6bdcab5c38001b37():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='0072a5741bd0a60ad6f5c39690cf360882fbe293',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.drivers.interface', '_UpdateToolDisplayOp'),
     ),
@@ -1703,13 +1610,6 @@ def _process_dataclass__0072a5741bd0a60ad6f5c39690cf360882fbe293():
         "one)))"
     ),
     plan_repr_sha1='27e469b5e8a66ab2f1817b6747e2f6b66cd79dbd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.suggestions', 'SuggestionItem'),
     ),
@@ -1835,10 +1735,6 @@ def _process_dataclass__27e469b5e8a66ab2f1817b6747e2f6b66cd79dbd():
         "'max_items', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6963b0f0c27facaf712095f140ca422be3935ff7',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.suggestions', 'SuggestionsManager.Config'),
     ),
@@ -1943,9 +1839,6 @@ def _process_dataclass__6963b0f0c27facaf712095f140ca422be3935ff7():
         "alse, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='305f12128eb40e3772ab0fec3fd8182bde52bde6',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.widgets.input', 'InputTextArea.HistoryNext'),
         ('ommlds.cli.chat.interfaces.textual.widgets.input', 'InputTextArea.HistoryPrevious'),
@@ -2014,7 +1907,6 @@ def _process_dataclass__305f12128eb40e3772ab0fec3fd8182bde52bde6():
         "s=(), init_fns=(), validate_fns=()), ReprPlan(fields=(), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d8b7f224596d6b56ca61048e31a647b16a3fb3fe',
-    op_ref_idents=(),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.widgets.input', 'InputTextArea.HistoryReset'),
     ),
@@ -2076,9 +1968,6 @@ def _process_dataclass__d8b7f224596d6b56ca61048e31a647b16a3fb3fe():
         " kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='95d0b95631fc69464dd20fa9e5c73baceb4022ef',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.widgets.messages.base', 'MessageFinalized'),
     ),
@@ -2148,9 +2037,6 @@ def _process_dataclass__95d0b95631fc69464dd20fa9e5c73baceb4022ef():
         "nly=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='83158fd71009009aca5b015ecb87be1b8e679204',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.widgets.messages.divider', 'MessageDividerClicked'),
     ),
@@ -2227,11 +2113,6 @@ def _process_dataclass__83158fd71009009aca5b015ecb87be1b8e679204():
         "ReprPlan.Field(name='content', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3917b2b788efbec688302f5dadedc283d4c50a2e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.widgets.messages.stream', 'ContentStreamMessagePart'),
     ),
@@ -2357,10 +2238,6 @@ def _process_dataclass__3917b2b788efbec688302f5dadedc283d4c50a2e():
         ".Field(name='message_uuid', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6390dd582efec3ac653751cc487ba776aaf9f288',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.textual.widgets.messages.stream', 'FinalStreamMessagePart'),
         ('ommlds.cli.chat.interfaces.textual.widgets.messages.stream', 'StreamMessagePart'),
@@ -2483,14 +2360,6 @@ def _process_dataclass__6390dd582efec3ac653751cc487ba776aaf9f288():
         "(name='port', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='eec261fc7183d7eac72390ec16a7bdf778198fde',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ommlds.cli.chat.interfaces.web.configs', 'WebInterfaceConfig'),
     ),
@@ -2623,13 +2492,6 @@ def _process_dataclass__eec261fc7183d7eac72390ec16a7bdf778198fde():
         "rPlan.Field(name='content', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d081083bc028fb9729b8423fbe45bb996d3e439f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.completion.configs', 'CompletionConfig'),
         ('ommlds.cli.embedding.configs', 'EmbeddingConfig'),
@@ -2756,10 +2618,6 @@ def _process_dataclass__d081083bc028fb9729b8423fbe45bb996d3e439f():
         "w_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b3c5ceb1d3f2d52621e06fa7d3819d96ffea7347',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.cli.configs', 'EntrypointConfig'),
     ),
@@ -2866,10 +2724,6 @@ def _process_dataclass__b3c5ceb1d3f2d52621e06fa7d3819d96ffea7347():
         "own', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='254623427d52b86f69ed60d24a0e95b0b1b391ca',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
     cls_names=(
         ('ommlds.cli.interfaces.bare.printing.configs', 'PrintingConfig'),
     ),
@@ -2979,10 +2833,6 @@ def _process_dataclass__254623427d52b86f69ed60d24a0e95b0b1b391ca():
         "_fn=None)))"
     ),
     plan_repr_sha1='3ca2bdd121559ad92e95a0e4bdf8210452f20e5d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ommlds.cli.profiles', 'ProfileAspect.ConfigureContext'),
     ),

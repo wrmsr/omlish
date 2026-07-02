@@ -41,15 +41,6 @@ def _register(**kwargs):
         "=None)))"
     ),
     plan_repr_sha1='46c59d586838c9ad0bfaea00944f56523114cba1',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__coerce',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('omlish.inject.bindings', 'Binding'),
     ),
@@ -192,12 +183,6 @@ def _process_dataclass__46c59d586838c9ad0bfaea00944f56523114cba1():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c45a09634b0e2a6fa1c4c76e2f691964112b0ddd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.inject.eagers', 'Eager'),
     ),
@@ -328,12 +313,6 @@ def _process_dataclass__c45a09634b0e2a6fa1c4c76e2f691964112b0ddd():
         "alse, default_fn=None)))"
     ),
     plan_repr_sha1='20c0436b77a328557ecfbe556539d09e7a50f7bd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.inject.elements', 'Elements'),
     ),
@@ -454,13 +433,6 @@ def _process_dataclass__20c0436b77a328557ecfbe556539d09e7a50f7bd():
         "e, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='54394c5ebd85aa173d2f60f20fae81b348f6cb9d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('omlish.inject.errors', 'BaseKeyError'),
         ('omlish.inject.errors', 'ConflictingKeyError'),
@@ -546,9 +518,6 @@ def _process_dataclass__54394c5ebd85aa173d2f60f20fae81b348f6cb9d():
         "_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='d43eaf7e550de17fc6936c19e4e5aa545c8a93d8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.errors', 'ScopeAlreadyOpenError'),
         ('omlish.inject.errors', 'ScopeError'),
@@ -619,9 +588,6 @@ def _process_dataclass__d43eaf7e550de17fc6936c19e4e5aa545c8a93d8():
         "e=False, default_fn=None)))"
     ),
     plan_repr_sha1='1a1c1b0c2f2ad1d4b7f67f6c870a5eb6e37e231c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.helpers.constfn', 'ConstFn'),
     ),
@@ -712,13 +678,6 @@ def _process_dataclass__1a1c1b0c2f2ad1d4b7f67f6c870a5eb6e37e231c():
         "))), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='5cb76e85fd58b7b06dd5593254d86e557222901c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__validate',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('omlish.inject.helpers.id', 'Id'),
     ),
@@ -850,7 +809,6 @@ def _process_dataclass__5cb76e85fd58b7b06dd5593254d86e557222901c():
         "(), validate_fns=()), ReprPlan(fields=(), id=True, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c726b62427445e76234a6a472593ae91ca8d6457',
-    op_ref_idents=(),
     cls_names=(
         ('omlish.inject.helpers.multis', 'ItemsBinderHelper._ItemTag'),
         ('omlish.inject.helpers.wrappers', 'WrapperBinderHelper._Root'),
@@ -921,9 +879,6 @@ def _process_dataclass__c726b62427445e76234a6a472593ae91ca8d6457():
         "e, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c4cee7449949f8c11b10dcaf6b91f62f28a6fd18',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.helpers.multis', 'ItemsBinderHelper._ItemsBox'),
     ),
@@ -1012,10 +967,6 @@ def _process_dataclass__c4cee7449949f8c11b10dcaf6b91f62f28a6fd18():
         " fn=None), ReprPlan.Field(name='level', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='5e1bef09da6295e8de9fe8f2ffad3a1a4e70d5a3',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.inject.helpers.wrappers', 'WrapperBinderHelper._Level'),
     ),
@@ -1137,14 +1088,6 @@ def _process_dataclass__5e1bef09da6295e8de9fe8f2ffad3a1a4e70d5a3():
         "e, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3ea053d1a1090718f9d29a7824558f2ca9a77e31',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('omlish.inject.impl.bindings', 'BindingImpl'),
     ),
@@ -1253,9 +1196,6 @@ def _process_dataclass__3ea053d1a1090718f9d29a7824558f2ca9a77e31():
         "e, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='23940adf5b02820a6f9975e06728e5b58b744320',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.multis', 'MapProviderImpl'),
     ),
@@ -1341,9 +1281,6 @@ def _process_dataclass__23940adf5b02820a6f9975e06728e5b58b744320():
         "e, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='b721abb54732f14a7bceaf230a932d37b1a8ee48',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.multis', 'SetProviderImpl'),
     ),
@@ -1431,10 +1368,6 @@ def _process_dataclass__b721abb54732f14a7bceaf230a932d37b1a8ee48():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a0f40dc1d602e06fadec23a1aa53c8d57356f22f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.privates', 'ExposedPrivateProviderImpl'),
     ),
@@ -1498,10 +1431,6 @@ def _process_dataclass__a0f40dc1d602e06fadec23a1aa53c8d57356f22f():
         "an.Field(name='p', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='0f6ba4c593adbc50913cf38fc7c075e91843dbde',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.privates', 'PrivateInfo'),
     ),
@@ -1615,9 +1544,6 @@ def _process_dataclass__0f6ba4c593adbc50913cf38fc7c075e91843dbde():
         ")"
     ),
     plan_repr_sha1='c5f6a36b3a0205325ea2602947f4888237a21382',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.privates', 'PrivateInjectorId'),
     ),
@@ -1723,10 +1649,6 @@ def _process_dataclass__c5f6a36b3a0205325ea2602947f4888237a21382():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='bbf0fd5802ba5ae35dd7ebcd29d05cb860a10674',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.privates', 'PrivateInjectorProviderImpl'),
     ),
@@ -1789,10 +1711,6 @@ def _process_dataclass__bbf0fd5802ba5ae35dd7ebcd29d05cb860a10674():
         "rPlan.Field(name='kt', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='fd0f4351f533bc90a8c6f24973004fcc1931cf0d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.providers', 'AsyncCallableProviderImpl'),
         ('omlish.inject.impl.providers', 'CallableProviderImpl'),
@@ -1886,9 +1804,6 @@ def _process_dataclass__fd0f4351f533bc90a8c6f24973004fcc1931cf0d():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='365eedd17dff52bfa369a9578066fd43141c41fd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.providers', 'ConstProviderImpl'),
         ('omlish.inject.impl.providers', 'LinkProviderImpl'),
@@ -1976,9 +1891,6 @@ def _process_dataclass__365eedd17dff52bfa369a9578066fd43141c41fd():
         "), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8e1f31f368d04d4784c49dcc2d91408279e36285',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.impl.providers', 'InternalProvider'),
     ),
@@ -2068,11 +1980,6 @@ def _process_dataclass__8e1f31f368d04d4784c49dcc2d91408279e36285():
         "lse, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='61f34069d7091014f66ca9e1c1d27dbbc1a4e03f',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default_factory',
-    ),
     cls_names=(
         ('omlish.inject.impl.scopes', 'SeededScopeImpl.State'),
     ),
@@ -2196,12 +2103,6 @@ def _process_dataclass__61f34069d7091014f66ca9e1c1d27dbbc1a4e03f():
         "d=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='b979bbe6ca7a161e5e2fe6604bcea68e06fc59c8',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('omlish.inject.inspect', 'Kwarg'),
     ),
@@ -2336,11 +2237,6 @@ def _process_dataclass__b979bbe6ca7a161e5e2fe6604bcea68e06fc59c8():
         "only=False, fn=None),), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='ec85913f6431e41be518686dc3e52259fa455ed0',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__init_fns__0',
-    ),
     cls_names=(
         ('omlish.inject.inspect', 'Kwargs'),
     ),
@@ -2461,10 +2357,6 @@ def _process_dataclass__ec85913f6431e41be518686dc3e52259fa455ed0():
         "n=None), ReprPlan.Field(name='kwargs', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='f2793a7065e1cafc84c6ee922ea605627889fb75',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.inject.inspect', 'KwargsTarget'),
     ),
@@ -2590,14 +2482,6 @@ def _process_dataclass__f2793a7065e1cafc84c6ee922ea605627889fb75():
         "y=True, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=True, default_fn=None)))"
     ),
     plan_repr_sha1='e780a7b78a8d3e5c6ddd87c0bc5ae50bda8d0db2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__validate',
-        '__dataclass__repr__fns__1__fn',
-    ),
     cls_names=(
         ('omlish.inject.keys', 'Key'),
     ),
@@ -2735,9 +2619,6 @@ def _process_dataclass__e780a7b78a8d3e5c6ddd87c0bc5ae50bda8d0db2():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='01ca4dd7c51876d086eb4230f400151c659e0842',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.listeners', 'ProvisionListenerBinding'),
     ),
@@ -2858,13 +2739,6 @@ def _process_dataclass__01ca4dd7c51876d086eb4230f400151c659e0842():
         "(name='dst', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6ed12b80942097addba0fe978453312450cdf8d9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__validate',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__coerce',
-    ),
     cls_names=(
         ('omlish.inject.multis', 'MapBinding'),
     ),
@@ -3008,10 +2882,6 @@ def _process_dataclass__6ed12b80942097addba0fe978453312450cdf8d9():
         "'multi_key', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='864a29bd231d03e4f0141a4dc7872a66df50771d',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__validate',
-    ),
     cls_names=(
         ('omlish.inject.multis', 'MapProvider'),
         ('omlish.inject.multis', 'SetProvider'),
@@ -3138,12 +3008,6 @@ def _process_dataclass__864a29bd231d03e4f0141a4dc7872a66df50771d():
         "me='dst', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='1ba38fd546769fabc04fa41bd279c7fcbbad22f2',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__validate',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-    ),
     cls_names=(
         ('omlish.inject.multis', 'SetBinding'),
     ),
@@ -3278,9 +3142,6 @@ def _process_dataclass__1ba38fd546769fabc04fa41bd279c7fcbbad22f2():
         "None)))"
     ),
     plan_repr_sha1='d1633dcd9bb962f0e548a4a63b764b808cdac621',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.origins', 'Origin'),
         ('omlish.inject.origins', 'Origins'),
@@ -3398,12 +3259,6 @@ def _process_dataclass__d1633dcd9bb962f0e548a4a63b764b808cdac621():
         ", terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='c35199aac6d207aea4ae186fa99b44f431914e53',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-    ),
     cls_names=(
         ('omlish.inject.overrides', 'Overrides'),
     ),
@@ -3531,10 +3386,6 @@ def _process_dataclass__c35199aac6d207aea4ae186fa99b44f431914e53():
         "se, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='95e8d2726657f6c6d0abe6bace53f80710e3d314',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-    ),
     cls_names=(
         ('omlish.inject.privates', 'Expose'),
     ),
@@ -3651,10 +3502,6 @@ def _process_dataclass__95e8d2726657f6c6d0abe6bace53f80710e3d314():
         ", kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='8b45b0d38754c357aabee0be30419e40d1746bc4',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-    ),
     cls_names=(
         ('omlish.inject.privates', 'Private'),
     ),
@@ -3771,10 +3618,6 @@ def _process_dataclass__8b45b0d38754c357aabee0be30419e40d1746bc4():
         " terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='465d8361a14bec38d3a20f2ef3aaeaed5cd23067',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__validate',
-    ),
     cls_names=(
         ('omlish.inject.providers', 'AsyncFnProvider'),
         ('omlish.inject.providers', 'FnProvider'),
@@ -3897,9 +3740,6 @@ def _process_dataclass__465d8361a14bec38d3a20f2ef3aaeaed5cd23067():
         "n(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='454972cdb0715dc22365cb0a504288ac36355c45',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.inject.providers', 'ConstProvider'),
     ),
@@ -4013,10 +3853,6 @@ def _process_dataclass__454972cdb0715dc22365cb0a504288ac36355c45():
         " terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='310f8fbacb05af68e1c4c6c6f947aabbfa4eee3c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__validate',
-    ),
     cls_names=(
         ('omlish.inject.providers', 'CtorProvider'),
     ),
@@ -4139,10 +3975,6 @@ def _process_dataclass__310f8fbacb05af68e1c4c6c6f947aabbfa4eee3c():
         "lse, default_fn=None)))"
     ),
     plan_repr_sha1='399a0f677e522382f8e81b442490afcfdd485c6a',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-    ),
     cls_names=(
         ('omlish.inject.providers', 'LinkProvider'),
     ),
@@ -4258,10 +4090,6 @@ def _process_dataclass__399a0f677e522382f8e81b442490afcfdd485c6a():
         "one),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a01535be51a62c3aedc3529e0204c6135d8d9e99',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-    ),
     cls_names=(
         ('omlish.inject.scopes', 'ScopeBinding'),
     ),
@@ -4381,12 +4209,6 @@ def _process_dataclass__a01535be51a62c3aedc3529e0204c6135d8d9e99():
         "se=False, default_fn=None)))"
     ),
     plan_repr_sha1='67e893f944c9f60c3bb7298d6024e3f17b097447',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__coerce',
-    ),
     cls_names=(
         ('omlish.inject.scopes', 'ScopeSeededProvider'),
     ),
@@ -4513,10 +4335,6 @@ def _process_dataclass__67e893f944c9f60c3bb7298d6024e3f17b097447():
         "alse, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e3da1b32863a0a4aca9ff268877a77ad5d6dd328',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-    ),
     cls_names=(
         ('omlish.inject.scopes', 'SeededScope'),
     ),

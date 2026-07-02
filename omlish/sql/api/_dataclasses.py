@@ -37,12 +37,6 @@ def _register(**kwargs):
         "er', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='5ae94c3ed2c354e407c4c2dafde59484b9d0ac88',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('omlish.sql.api.asquery', 'AsQueryContext'),
     ),
@@ -165,13 +159,6 @@ def _process_dataclass__5ae94c3ed2c354e407c4c2dafde59484b9d0ac88():
         "fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='6e6d18636070554815585022cec70aa6f15ef9a9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('omlish.sql.api.columns', 'Column'),
     ),
@@ -297,9 +284,6 @@ def _process_dataclass__6e6d18636070554815585022cec70aa6f15ef9a9():
         "ault_fn=None)))"
     ),
     plan_repr_sha1='27b7ef913853316df2ddbd85bfa36f10e967641c',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.sql.api.queries', 'ManyParams'),
     ),
@@ -399,7 +383,6 @@ def _process_dataclass__27b7ef913853316df2ddbd85bfa36f10e967641c():
         "shPlan(action='add', fields=(), cache=False), ReprPlan(fields=(), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='63c05de795f82e8dacde3eceff4abc81b79a0bee',
-    op_ref_idents=(),
     cls_names=(
         ('omlish.sql.api.queries', 'NoParams'),
     ),
@@ -482,12 +465,6 @@ def _process_dataclass__63c05de795f82e8dacde3eceff4abc81b79a0bee():
         "efault_fn=None)))"
     ),
     plan_repr_sha1='d03cdfffda7bb99085bfaa4380f5c6f32b0f0e5e',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('omlish.sql.api.queries', 'Query'),
     ),
@@ -608,7 +585,6 @@ def _process_dataclass__d03cdfffda7bb99085bfaa4380f5c6f32b0f0e5e():
         "d=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
     cls_names=(
         ('omlish.sql.api.queries', 'QueryParams'),
     ),
@@ -693,9 +669,6 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         "rse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a7abe5eeac180c2c591f3d3a53805368068716bd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('omlish.sql.api.queries', 'RowParams'),
     ),
@@ -803,10 +776,6 @@ def _process_dataclass__a7abe5eeac180c2c591f3d3a53805368068716bd():
         "lse, default_fn=None)))"
     ),
     plan_repr_sha1='afba95cc077e24ab1876f8a8bb8cea66aee709a9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('omlish.sql.api.rows', 'Row'),
     ),

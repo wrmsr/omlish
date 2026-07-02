@@ -39,9 +39,6 @@ def _register(**kwargs):
         "ault_fn=None)))"
     ),
     plan_repr_sha1='56a73cc80905fe58ffa6800ba93fc9b519922728',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'CapacityProviderConfig'),
     ),
@@ -151,10 +148,6 @@ def _process_dataclass__56a73cc80905fe58ffa6800ba93fc9b519922728():
         "=(ReprPlan.Field(name='target_arn', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='a668802e6cc60181d0d91b2bd31db6e6a3724a65',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'DeadLetterConfig'),
     ),
@@ -270,12 +263,6 @@ def _process_dataclass__a668802e6cc60181d0d91b2bd31db6e6a3724a65():
         "on_timeout', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='017f0ccfabf58bb95e85ed87d1549bbb2e98094f',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'DurableConfig'),
     ),
@@ -400,12 +387,6 @@ def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
         "e, default_fn=None)))"
     ),
     plan_repr_sha1='1d985e02ba3b7e1901dfcdb20eb2f1da1c066cf3',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'EnvironmentError_'),
         ('ominfra.clouds.aws.models.services.lambda_', 'ImageConfigError'),
@@ -531,12 +512,6 @@ def _process_dataclass__1d985e02ba3b7e1901dfcdb20eb2f1da1c066cf3():
         "rue, fn=None), ReprPlan.Field(name='error', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='317c843e53bb9dfbb0f4e22012dab481c78eee00',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'EnvironmentResponse'),
     ),
@@ -657,9 +632,6 @@ def _process_dataclass__317c843e53bb9dfbb0f4e22012dab481c78eee00():
         "erse=False, default_fn=None)))"
     ),
     plan_repr_sha1='ba17cf6d4b72f343a67190bab2265616e5cbaebc',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'EphemeralStorage'),
     ),
@@ -772,10 +744,6 @@ def _process_dataclass__ba17cf6d4b72f343a67190bab2265616e5cbaebc():
         "cal_mount_path', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='782e9b5d3cf1915925c20121ed1c830c7d6ccaf2',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'FileSystemConfig'),
     ),
@@ -1040,88 +1008,6 @@ def _process_dataclass__782e9b5d3cf1915925c20121ed1c830c7d6ccaf2():
         "one), ReprPlan.Field(name='durable_config', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='991a280c77951d2f7d6f4ac41957571807c76d74',
-    op_ref_idents=(
-        '__dataclass__init__fields__01__annotation',
-        '__dataclass__init__fields__01__default',
-        '__dataclass__init__fields__02__annotation',
-        '__dataclass__init__fields__02__default',
-        '__dataclass__init__fields__03__annotation',
-        '__dataclass__init__fields__03__default',
-        '__dataclass__init__fields__04__annotation',
-        '__dataclass__init__fields__04__default',
-        '__dataclass__init__fields__05__annotation',
-        '__dataclass__init__fields__05__default',
-        '__dataclass__init__fields__06__annotation',
-        '__dataclass__init__fields__06__default',
-        '__dataclass__init__fields__07__annotation',
-        '__dataclass__init__fields__07__default',
-        '__dataclass__init__fields__08__annotation',
-        '__dataclass__init__fields__08__default',
-        '__dataclass__init__fields__09__annotation',
-        '__dataclass__init__fields__09__default',
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__24__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__28__default',
-        '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__31__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__34__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__35__default',
-        '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__38__annotation',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__39__annotation',
-        '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__40__annotation',
-        '__dataclass__init__fields__40__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'FunctionConfiguration'),
     ),
@@ -1630,14 +1516,6 @@ def _process_dataclass__991a280c77951d2f7d6f4ac41957571807c76d74():
         "e, default_fn=None)))"
     ),
     plan_repr_sha1='ae03700d2ed8d061b79f46b2ac2de69041ed914c',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'ImageConfig'),
     ),
@@ -1772,12 +1650,6 @@ def _process_dataclass__ae03700d2ed8d061b79f46b2ac2de69041ed914c():
         "e, default_fn=None)))"
     ),
     plan_repr_sha1='f187f9f7e4a3a31f7e7c47ced435e80463092461',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'ImageConfigResponse'),
     ),
@@ -1901,12 +1773,6 @@ def _process_dataclass__f187f9f7e4a3a31f7e7c47ced435e80463092461():
         ".Field(name='message', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='4727185bc15d0b892fa2952d4b56ab294b06b6b7',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'InvalidParameterValueException'),
         ('ominfra.clouds.aws.models.services.lambda_', 'ServiceException'),
@@ -2040,13 +1906,6 @@ def _process_dataclass__4727185bc15d0b892fa2952d4b56ab294b06b6b7():
         "=False, default_fn=None)))"
     ),
     plan_repr_sha1='08a84a56c4ace2c2aec3f509afa8f03692366b56',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'LambdaManagedInstancesCapacityProviderConfig'),
     ),
@@ -2188,16 +2047,6 @@ def _process_dataclass__08a84a56c4ace2c2aec3f509afa8f03692366b56():
         "se=False, default_fn=None)))"
     ),
     plan_repr_sha1='e1e72a9e7b3e49b7385462d8740c9876d598e19a',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'Layer'),
     ),
@@ -2349,16 +2198,6 @@ def _process_dataclass__e1e72a9e7b3e49b7385462d8740c9876d598e19a():
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='380cb4006162c5599b728986e1364c0bb6b53532',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'ListFunctionsRequest'),
     ),
@@ -2503,12 +2342,6 @@ def _process_dataclass__380cb4006162c5599b728986e1364c0bb6b53532():
         " id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='eadc397a64213fa413966469ed9bbbd79b79aa63',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'ListFunctionsResponse'),
     ),
@@ -2641,16 +2474,6 @@ def _process_dataclass__eadc397a64213fa413966469ed9bbbd79b79aa63():
         " id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3789e83e8304a69b04615c05af44097dc01b657f',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'LoggingConfig'),
     ),
@@ -2795,12 +2618,6 @@ def _process_dataclass__3789e83e8304a69b04615c05af44097dc01b657f():
         "r', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='f7b1a123934c098577316105a6d2620d7d9e6557',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'RuntimeVersionConfig'),
     ),
@@ -2925,12 +2742,6 @@ def _process_dataclass__f7b1a123934c098577316105a6d2620d7d9e6557():
         "e='optimization_status', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='019cda7bb51f31d049f4fa706f3c46d80940f395',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'SnapStartResponse'),
     ),
@@ -3052,9 +2863,6 @@ def _process_dataclass__019cda7bb51f31d049f4fa706f3c46d80940f395():
         "=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='acba8e67f2ea6e7d9058cd7cead360bc0a73cf1a',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'TenancyConfig'),
     ),
@@ -3175,16 +2983,6 @@ def _process_dataclass__acba8e67f2ea6e7d9058cd7cead360bc0a73cf1a():
         "t_fn=None)))"
     ),
     plan_repr_sha1='79dadd11fd00d21c8fe99901d2f1bb38785142ff',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'TooManyRequestsException'),
     ),
@@ -3325,10 +3123,6 @@ def _process_dataclass__79dadd11fd00d21c8fe99901d2f1bb38785142ff():
         "y=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='3e1414118d801b3653e991849c989db02da4f8ab',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'TracingConfigResponse'),
     ),
@@ -3451,16 +3245,6 @@ def _process_dataclass__3e1414118d801b3653e991849c989db02da4f8ab():
         "al_stack', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='adc0193a1c11249e7e0ecd78b9755bc5f0aaada7',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'VpcConfigResponse'),
     ),

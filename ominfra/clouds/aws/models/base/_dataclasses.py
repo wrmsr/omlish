@@ -33,9 +33,6 @@ def _register(**kwargs):
         "an(fields=(ReprPlan.Field(name='e', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='09d620230085f2ec30d46bc47d392ca3f53879f5',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.base.base', 'ListValueType'),
     ),
@@ -142,10 +139,6 @@ def _process_dataclass__09d620230085f2ec30d46bc47d392ca3f53879f5():
         "alse, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='578f7d51b95e4fe4ec2ad0437b5688e4ff9ac9e6',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.base.base', 'MapValueType'),
     ),
@@ -267,15 +260,6 @@ def _process_dataclass__578f7d51b95e4fe4ec2ad0437b5688e4ff9ac9e6():
         "n=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='28e083342d85b6259c08f4deabe13615b48d50bd',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.base.base', 'Operation'),
     ),
@@ -386,7 +370,6 @@ def _process_dataclass__28e083342d85b6259c08f4deabe13615b48d50bd():
         "lan(fields=(), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='fe6ee985e5454d23ff07c1fb86524a86d9239cf5',
-    op_ref_idents=(),
     cls_names=(
         ('ominfra.clouds.aws.models.base.base', 'Shape'),
     ),
@@ -483,10 +466,6 @@ def _process_dataclass__fe6ee985e5454d23ff07c1fb86524a86d9239cf5():
         "e), ReprPlan.Field(name='value', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     plan_repr_sha1='e99da15cf5726b0f5d37d0fa8c353b161d357ea9',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-    ),
     cls_names=(
         ('ominfra.clouds.aws.models.base.base', 'Tag'),
     ),
