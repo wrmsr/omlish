@@ -79,19 +79,10 @@ def _process_dataclass__d177836dcedc950662bdf1c8a8d52e05fc91c5c7():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
@@ -229,19 +220,10 @@ def _process_dataclass__375fd7fd537e2cfb878109217fe4c57607b10510():
         *,
         __class__,
         __dataclass__init__fields__0__annotation,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
@@ -346,19 +328,10 @@ def _process_dataclass__80a0a85b19250d1d39ff826c429bd05f9be201e1():
         *,
         __class__,
         __dataclass__init__fields__0__annotation,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
@@ -471,19 +444,10 @@ def _process_dataclass__b3f39a9348415b6ae3908bd546728de8b2b6d308():
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
@@ -610,19 +574,11 @@ def _process_dataclass__56c73a66344b180e8ef52aca8500185dd538bf10():
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default_factory,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
@@ -737,19 +693,10 @@ def _process_dataclass__32f5b8178dfdf24f4db24e8d8cd63ebd10bf83f3():
         *,
         __class__,
         __dataclass__init__fields__0__annotation,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
@@ -867,19 +814,11 @@ def _process_dataclass__440e63ab60e5c95ef453ad0e63ffc0977bb48371():
         __dataclass__init__fields__1__default_factory,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default_factory,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
@@ -990,19 +929,10 @@ def _process_dataclass__6c47afef6781ac6bd88758815660ccbfefe8540e():
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
@@ -1116,19 +1046,10 @@ def _process_dataclass__ebef99260c9b05bfd28fc9433dcc32af80493f10():
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__3__annotation,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
         __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
         __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):

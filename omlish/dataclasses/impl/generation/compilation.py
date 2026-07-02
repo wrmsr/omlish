@@ -23,6 +23,7 @@ from .ops import Op
 from .ops import OpRef
 from .ops import Ref
 from .ops import SetAttrOp
+from .ops import add_ref
 from .ops import get_op_refs
 
 
@@ -106,9 +107,10 @@ class OpCompiler:
             if_present: IfAttrPresent,
             *,
             set_qualname: bool = False,
+            refs: set[Ref],
     ) -> list[str]:
-        return [''.join([
-            f'{SET_CLS_ATTR_GLOBAL.ident}(',
+        stmt = ''.join([
+            f'{add_ref(SET_CLS_ATTR_GLOBAL, refs).ident}(',
             ', '.join([
                 f'{CLS_IDENT}',
                 f'{attr_name!r}',
@@ -117,7 +119,8 @@ class OpCompiler:
                 *(['set_qualname=True'] if set_qualname else []),
             ]),
             ')',
-        ])]
+        ])
+        return [stmt]
 
     def compile(
             self,
@@ -125,6 +128,7 @@ class OpCompiler:
             ops: ta.Sequence[Op],
     ) -> CompileResult:
         body_lines: list[str] = []
+        refs: set[Ref] = set()
 
         for i, op in enumerate(ops):
             if i:
@@ -134,7 +138,7 @@ class OpCompiler:
                 if isinstance(v := op.value, OpRef):
                     vs = v.ident()
                     body_lines.extend([
-                        f'if isinstance({vs}, {FUNCTION_TYPE_GLOBAL.ident}):'
+                        f'if isinstance({vs}, {add_ref(FUNCTION_TYPE_GLOBAL, refs).ident}):'
                         f'    {vs}.__qualname__ = f"{{{CLS_IDENT}.__qualname__}}.{{{vs}.__name__}}"',
                     ])
                 else:
@@ -144,6 +148,7 @@ class OpCompiler:
                     op.name,
                     vs,
                     op.if_present,
+                    refs=refs,
                 ))
 
             elif isinstance(op, AddMethodOp):
@@ -155,6 +160,7 @@ class OpCompiler:
                         op.name,
                         op.if_present,
                         set_qualname=True,
+                        refs=refs,
                     ),
                 ])
 
@@ -163,12 +169,13 @@ class OpCompiler:
 
                 gen_lines = [
                     f'def {gen_ident}():',
-                    f'    @{PROPERTY_GLOBAL.ident}',
+                    f'    @{add_ref(PROPERTY_GLOBAL, refs).ident}',
                     *[
                         f'    {l}'
                         for l in check.not_none(op.get_src).splitlines()
                     ],
                 ]
+
                 if op.set_src is not None:
                     gen_lines.extend([
                         f'',
@@ -196,7 +203,7 @@ class OpCompiler:
 
         #
 
-        refs = frozenset.union(*[get_op_refs(o) for o in ops])
+        refs.update(*[get_op_refs(o) for o in ops])
 
         params: list[OpCompiler._FnParam] = [
             OpCompiler._FnParam(CLS_IDENT),
@@ -217,6 +224,7 @@ class OpCompiler:
                 noqa=k.ident != k.ident.lower() or not v.src.startswith('.'),
             )
             for k, v in sorted(FN_GLOBALS.items(), key=lambda t: t[0])
+            if k in refs
         ])
 
         #
@@ -244,5 +252,5 @@ class OpCompiler:
             hdr_lines=self._style.header_lines(),
             fn_lines=fn_lines,
 
-            refs=refs,
+            refs=frozenset(refs),
         )

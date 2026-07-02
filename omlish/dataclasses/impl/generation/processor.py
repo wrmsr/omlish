@@ -69,6 +69,14 @@ class CodegenMissingWarning(Warning):
     pass
 
 
+def _get_fn_params(fn: ta.Any) -> ta.Sequence[str]:
+    return (fn_co := fn.__code__).co_varnames[:fn_co.co_argcount + fn_co.co_kwonlyargcount]
+
+
+def _call_with_kwargs(fn: ta.Any, **kwargs: ta.Any) -> ta.Any:
+    return fn(**{n: kwargs[n] for n in _get_fn_params(fn)})
+
+
 @register_processor_type(phase=ProcessorPhase.GENERATION)
 class GeneratorProcessor(Processor):
     PROCESS_FN_NAME: ta.ClassVar[str] = '_process_dataclass'
@@ -163,7 +171,7 @@ class GeneratorProcessor(Processor):
                 else:
                     raise TypeError(r)
 
-            fn(**kw)
+            _call_with_kwargs(fn, **kw)
 
             if (cg := self._codegen) is not None and (cb := cg.callback) is not None:
                 cb(  # noqa
@@ -271,7 +279,7 @@ class GeneratorProcessor(Processor):
         }
 
         fn = cg_fn()
-        fn(**fn_kw)
+        _call_with_kwargs(fn, **fn_kw)
 
         return True
 

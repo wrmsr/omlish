@@ -10,6 +10,8 @@ from .idents import IDENT_PREFIX
 
 T = ta.TypeVar('T')
 
+RefT = ta.TypeVar('RefT', bound='Ref')
+
 
 ##
 
@@ -57,6 +59,11 @@ class OpRef(_OpRef[T]):
 OpRefMap: ta.TypeAlias = ta.Mapping[OpRef, ta.Any]
 
 Ref: ta.TypeAlias = OpRef | FnGlobal
+
+
+def add_ref(ref: RefT, refs: ta.MutableSet[Ref]) -> RefT:
+    refs.add(ref)
+    return ref
 
 
 ##
