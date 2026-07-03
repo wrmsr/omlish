@@ -72,7 +72,7 @@ def test_reflect_namedtuple_fields_replaces_type_var_tuple_for_parameterized_ali
     assert field.name == 'values'
     assert type_str(field.raw_type) == 'tuple[Unpack[Ts]]'
     assert type_str(field.replaced_type) == 'tuple[builtins.int, builtins.str]'
-    assert to_runtime_annotation(field.replaced_type, mirror=mirror) == tuple[int, str]
+    assert to_runtime_annotation(field.replaced_type) == tuple[int, str]
 
 
 def test_reflect_namedtuple_fields_replaces_type_var_tuple_with_fixed_edges() -> None:
@@ -106,7 +106,6 @@ def test_reflect_namedtuple_field_with_variadic_alias_expands_and_can_preserve_a
     assert to_runtime_annotation(
         field.replaced_type,
         type_alias_policy='preserve',
-        mirror=mirror,
     ) == alias[int, str]
 
 
@@ -137,7 +136,6 @@ def test_reflect_namedtuple_field_annotations_returns_runtime_annotations() -> N
             Box[str],  # type: ignore[misc]
             mirror=mirror,
         ).fields[0].replaced_type,
-        mirror=mirror,
     ) == list[str]
 
 
@@ -154,7 +152,7 @@ def test_generic_namedtuple_replaces_field_with_literal_newtype() -> None:
     # shape = get_runtime_type_shape(field.replaced_type, mirror)
 
     assert isinstance(field.raw_type, types.TypeVarType)
-    assert to_runtime_annotation(field.replaced_type, mirror=mirror) == mode
+    assert to_runtime_annotation(field.replaced_type) == mode
     # assert shape.new_type is not None
     # assert shape.new_type.obj is mode
     # assert shape.literal_value_type is not None
@@ -210,7 +208,7 @@ def test_namedtuple_recursive_alias_field_structural_type_key_matches_unrolled_t
     [field] = inspection.fields
     unrolled = mirror.reflect_type(int | list[alias])  # type: ignore
 
-    assert to_runtime_annotation(field.replaced_type, mirror=mirror) == alias
+    assert to_runtime_annotation(field.replaced_type) == alias
     assert type_key(field.replaced_type, 'structural') == type_key(unrolled, 'structural')
 
 

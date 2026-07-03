@@ -4,7 +4,6 @@ import typing as ta
 
 from .core.symbols import TypeInfo
 from .core.types import Type
-from .core.types import TypeVarLikeType
 
 
 DynamicTypeNameSuffix: ta.TypeAlias = ta.Literal['id', 'counter']
@@ -66,10 +65,6 @@ class Mirror:
     @property
     @abc.abstractmethod
     def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def resolve_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
         raise NotImplementedError
 
     @abc.abstractmethod

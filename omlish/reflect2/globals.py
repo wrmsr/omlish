@@ -3,7 +3,6 @@ import typing as ta
 
 from .core.symbols import TypeInfo
 from .core.typekeys import Type
-from .core.types import TypeVarLikeType
 from .mirror import Mirror
 from .mirrorimpl import MirrorImpl
 
@@ -70,10 +69,6 @@ def get_newtype_info(obj: object, *, mirror: Mirror | None = None) -> TypeInfo:
 
 ##
 # reflector
-
-
-def resolve_runtime_type_param(typ: TypeVarLikeType, *, mirror: Mirror | None = None) -> object | None:
-    return or_global_mirror(mirror).resolve_runtime_type_param(typ)
 
 
 def reflect_type(obj: object, *, mirror: Mirror | None = None) -> Type:

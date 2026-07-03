@@ -15,17 +15,12 @@ from ..dataclasses import inspect_dataclass
 from ..errors import ReflectionError
 from ..errors import UnreflectableTypeError
 from ..errors import UnsupportedTypeOperationError
-from ..mirror import Mirror
 from .helpers import make_mirror
 
 
-def field_runtime_annotations(
-        fields: ta.Iterable[DataclassField],
-        *,
-        mirror: Mirror,
-) -> dict[str, ta.Any]:
+def field_runtime_annotations(fields: ta.Iterable[DataclassField]) -> dict[str, ta.Any]:
     return {
-        field.name: to_runtime_annotation(field.replaced_type, mirror=mirror)
+        field.name: to_runtime_annotation(field.replaced_type)
         for field in fields
     }
 
@@ -79,8 +74,8 @@ def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple() -> None:
     assert field.owner is Box
     assert type_str(field.raw_type) == 'tuple[Unpack[Ts]]'
     assert type_str(field.replaced_type) == 'tuple[builtins.int, builtins.str]'
-    assert to_runtime_annotation(field.replaced_type, mirror=mirror) == tuple[int, str]
-    assert field_runtime_annotations([field], mirror=mirror) == {'values': tuple[int, str]}
+    assert to_runtime_annotation(field.replaced_type) == tuple[int, str]
+    assert field_runtime_annotations([field]) == {'values': tuple[int, str]}
 
 
 def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple_with_fixed_edges() -> None:
@@ -102,7 +97,7 @@ def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple_with_fixed_e
 
     assert type_str(field.raw_type) == 'tuple[T, Unpack[Ts], U]'
     assert type_str(field.replaced_type) == 'tuple[builtins.int, builtins.str, builtins.bool, builtins.bytes]'
-    assert field_runtime_annotations([field], mirror=mirror) == {'values': tuple[int, str, bool, bytes]}
+    assert field_runtime_annotations([field]) == {'values': tuple[int, str, bool, bytes]}
 
 
 def test_reflect_dataclass_field_with_variadic_alias_expands_and_can_preserve_alias() -> None:
@@ -122,11 +117,10 @@ def test_reflect_dataclass_field_with_variadic_alias_expands_and_can_preserve_al
     field = inspection.fields_by_name['values']
 
     assert type_str(field.replaced_type) == f'{__name__}.Alias[tuple[builtins.int, builtins.str]]'
-    assert field_runtime_annotations([field], mirror=mirror) == {'values': tuple[int, str]}
+    assert field_runtime_annotations([field]) == {'values': tuple[int, str]}
     assert to_runtime_annotation(
         field.replaced_type,
         type_alias_policy='preserve',
-        mirror=mirror,
     ) == alias[int, str]
 
 
@@ -173,7 +167,7 @@ def test_reflect_dataclass_field_annotations_returns_replaced_runtime_annotation
 
     mirror = make_mirror()
     di = inspect_dataclass(Box[int], mirror=mirror)  # type: ignore
-    assert field_runtime_annotations(di.fields, mirror=mirror) == {'v': int}
+    assert field_runtime_annotations(di.fields) == {'v': int}
 
 
 # def test_dataclass_literal_new_type_field_preserves_annotation_and_exposes_effective_shape() -> None:
@@ -209,7 +203,7 @@ def test_inspect_dataclass_excludes_classvar_and_initvar_pseudo_fields() -> None
     inspection = inspect_dataclass(Item, mirror=mirror)
 
     assert [field.name for field in inspection.fields] == ['value']
-    assert field_runtime_annotations(inspection.fields, mirror=mirror) == {'value': int}
+    assert field_runtime_annotations(inspection.fields) == {'value': int}
 
 
 def test_reflect_dataclass_fields_replaces_each_generic_layer() -> None:
@@ -509,6 +503,6 @@ def test_reflect_dataclass_field_annotations_emit_replaced_runtime_annotations()
 
     mirror = make_mirror()
     di = inspect_dataclass(IntBox, mirror=mirror)
-    annotations = field_runtime_annotations(di.fields, mirror=mirror)
+    annotations = field_runtime_annotations(di.fields)
 
     assert annotations == {'value': list[int]}

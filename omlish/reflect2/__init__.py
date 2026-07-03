@@ -140,7 +140,6 @@ with _lang.auto_proxy_init(globals()):
         get_type_info,
         get_newtype_info,
 
-        resolve_runtime_type_param,
         reflect_type,
     )
 

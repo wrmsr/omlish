@@ -251,6 +251,7 @@ class TypeVarLikeType(ProperType):
         '_id',
         '_upper_bound',
         '_default',
+        '_runtime_object',
     )
 
     def __init__(
@@ -260,6 +261,8 @@ class TypeVarLikeType(ProperType):
             id: TypeVarId,
             upper_bound: Type,
             default: Type,
+            *,
+            runtime_object: object | None = None,
     ) -> None:
         super().__init__()
 
@@ -268,6 +271,7 @@ class TypeVarLikeType(ProperType):
         self._id = id
         self._upper_bound = upper_bound
         self._default = default
+        self._runtime_object = runtime_object
 
     @property
     def name(self) -> str:
@@ -289,6 +293,10 @@ class TypeVarLikeType(ProperType):
     def default(self) -> Type:
         return self._default
 
+    @property
+    def runtime_object(self) -> object | None:
+        return self._runtime_object
+
 
 @ta.final
 class TypeVarType(TypeVarLikeType):
@@ -306,6 +314,8 @@ class TypeVarType(TypeVarLikeType):
             upper_bound: Type,
             default: Type,
             variance: VarianceKind = VarianceKind.IN,
+            *,
+            runtime_object: object | None = None,
     ) -> None:
         super().__init__(
             name,
@@ -313,6 +323,7 @@ class TypeVarType(TypeVarLikeType):
             id,
             upper_bound,
             default,
+            runtime_object=runtime_object,
         )
 
         self._values = tuple(values)
@@ -344,6 +355,8 @@ class ParamSpecType(TypeVarLikeType):
             upper_bound: Type,
             default: Type,
             flavor: int = 0,
+            *,
+            runtime_object: object | None = None,
     ) -> None:
         super().__init__(
             name,
@@ -351,6 +364,7 @@ class ParamSpecType(TypeVarLikeType):
             id,
             upper_bound,
             default,
+            runtime_object=runtime_object,
         )
 
         self._flavor = flavor
@@ -377,6 +391,8 @@ class TypeVarTupleType(TypeVarLikeType):
             upper_bound: Type,
             default: Type,
             tuple_fallback: Type,
+            *,
+            runtime_object: object | None = None,
     ) -> None:
         super().__init__(
             name,
@@ -384,6 +400,7 @@ class TypeVarTupleType(TypeVarLikeType):
             id,
             upper_bound,
             default,
+            runtime_object=runtime_object,
         )
 
         self._tuple_fallback = tuple_fallback

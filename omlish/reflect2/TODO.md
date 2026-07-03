@@ -14,3 +14,5 @@
 - clarify.. point.. of fullname indirection
   - !! invert fullname<->obj priority - we're obj-major, fullname secondary
     - but lose ability for 'hpyothetical' types?
+- should TypeTranslator recurse into TypeVarLike type fields? it doesn't...
+- !! uncached _ReflectorRun !! - (kinda) solves immortal ref problem

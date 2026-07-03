@@ -27,8 +27,6 @@ from .core.types import UnpackType
 from .core.typevisitor import DefaultTypeVisitor
 from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
-from .globals import or_global_mirror
-from .mirror import Mirror
 from .ops import get_runtime_object_or_none
 
 
@@ -68,10 +66,11 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
         return cls
 
     def _to_type_var_annotation(self, typ: TypeVarLikeType) -> object:
-        if self._type_var_resolver is None:
-            raise ReflectionTypeError(f'Runtime annotation is unavailable for type variable: {typ!r}')
+        if self._type_var_resolver is not None:
+            obj = self._type_var_resolver(typ)
+        else:
+            obj = typ._runtime_object
 
-        obj = self._type_var_resolver(typ)
         if obj is None:
             raise ReflectionTypeError(f'Runtime annotation is unavailable for type variable: {typ!r}')
 
@@ -271,15 +270,9 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
 def to_runtime_annotation(
         typ: Type,
         *,
-        mirror: Mirror | None = None,
         type_alias_policy: TypeAliasAnnotationPolicy | None = None,
         type_var_resolver: TypeVarResolver | None = None,
 ) -> object:
-    mirror = or_global_mirror(mirror)
-
-    if type_var_resolver is None:
-        type_var_resolver = mirror.resolve_runtime_type_param
-
     return typ.accept(_AnnotationMaker(
         type_alias_policy=type_alias_policy,
         type_var_resolver=type_var_resolver,
