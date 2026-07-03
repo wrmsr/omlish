@@ -1,8 +1,8 @@
 from ..mirror import DynamicTypeNameSuffix
 from ..mirror import ForwardRefResolver
 from ..mirror import Mirror
-from ..mirror import MirrorImpl
 from ..mirror import UnresolvedForwardRefPolicy
+from ..mirrorimpl import MirrorImpl
 
 
 def make_mirror(

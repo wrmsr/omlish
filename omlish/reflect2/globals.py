@@ -3,7 +3,7 @@ from .core.symbols import TypeInfo
 from .core.typekeys import Type
 from .core.types import TypeVarLikeType
 from .mirror import Mirror
-from .mirror import MirrorImpl
+from .mirrorimpl import MirrorImpl
 
 
 ##
