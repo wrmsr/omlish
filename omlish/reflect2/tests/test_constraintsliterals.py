@@ -12,17 +12,17 @@ from ..core.types import Type
 from ..core.types import TypeAliasType
 from ..core.types import TypeVarLikeType
 from ..core.types import UnionType
-from .helpers import make_reflector
+from .helpers import make_mirror
 
 
 def test_runtime_constraints_preserve_reflected_newtype_identity() -> None:
     t_var = ta.TypeVar('T')  # type: ignore  # noqa
     user_id = ta.NewType('UserId', int)  # type: ignore  # noqa
     account_id = ta.NewType('AccountId', int)  # type: ignore  # noqa
-    reflector = make_reflector()
-    template = reflector.reflect_type(list[t_var])  # type: ignore
-    actual = reflector.reflect_type(list[user_id])
-    account_type = reflector.reflect_type(account_id)
+    mirror = make_mirror()
+    template = mirror.reflect_type(list[t_var])  # type: ignore
+    actual = mirror.reflect_type(list[user_id])
+    account_type = mirror.reflect_type(account_id)
 
     assert isinstance(template, Instance)
     assert isinstance(template.args[0], TypeVarLikeType)
@@ -38,9 +38,9 @@ def test_runtime_constraints_preserve_newtype_inside_actual_alias() -> None:
     t_var = ta.TypeVar('T')  # type: ignore  # noqa
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore  # noqa
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
-    reflector = make_reflector()
-    template = reflector.reflect_type(list[t_var])  # type: ignore
-    actual = reflector.reflect_type(mode_list)
+    mirror = make_mirror()
+    template = mirror.reflect_type(list[t_var])  # type: ignore
+    actual = mirror.reflect_type(mode_list)
 
     assert isinstance(template, Instance)
     assert isinstance(actual, TypeAliasType)
@@ -56,9 +56,9 @@ def test_runtime_constraints_solve_nested_collection_to_newtype_literal_item() -
     t_var = ta.TypeVar('T')  # type: ignore  # noqa
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore  # noqa
     mode_map = ta.TypeAliasType('ModeMap', ta.Mapping[str, list[mode]])  # type: ignore
-    reflector = make_reflector()
-    template = reflector.reflect_type(ta.Mapping[str, list[t_var]])  # type: ignore
-    actual = reflector.reflect_type(mode_map)
+    mirror = make_mirror()
+    template = mirror.reflect_type(ta.Mapping[str, list[t_var]])  # type: ignore
+    actual = mirror.reflect_type(mode_map)
 
     assert isinstance(template, Instance)
     assert isinstance(actual, TypeAliasType)
@@ -75,9 +75,9 @@ def test_runtime_constraints_solve_nested_collection_to_newtype_literal_item() -
 
 def test_runtime_constraints_solve_type_var_to_literal_value() -> None:
     t_var = ta.TypeVar('T')  # type: ignore  # noqa
-    reflector = make_reflector()
-    template = reflector.reflect_type(list[t_var])  # type: ignore
-    actual = reflector.reflect_type(list[ta.Literal['active']])
+    mirror = make_mirror()
+    template = mirror.reflect_type(list[t_var])  # type: ignore
+    actual = mirror.reflect_type(list[ta.Literal['active']])
 
     assert isinstance(template, Instance)
     assert isinstance(template.args[0], TypeVarLikeType)
@@ -91,9 +91,9 @@ def test_runtime_constraints_solve_type_var_to_literal_value() -> None:
 
 def test_runtime_constraints_match_literal_tagged_union_and_solve_payload() -> None:
     t_var = ta.TypeVar('T')  # type: ignore  # noqa
-    reflector = make_reflector()
-    template = reflector.reflect_type(ta.Literal['ok'] | tuple[t_var])  # type: ignore
-    actual = reflector.reflect_type(tuple[ta.Literal['active']] | ta.Literal['ok'])
+    mirror = make_mirror()
+    template = mirror.reflect_type(ta.Literal['ok'] | tuple[t_var])  # type: ignore
+    actual = mirror.reflect_type(tuple[ta.Literal['active']] | ta.Literal['ok'])
 
     assert isinstance(template, UnionType)
     tuple_template = next(item for item in template.items if isinstance(item, TupleType))

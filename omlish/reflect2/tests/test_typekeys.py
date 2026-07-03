@@ -4,47 +4,47 @@ import typing as ta
 
 from ..core.typekeys import type_key
 from ..core.typekeys import type_key_or_none
-from .helpers import make_reflector
+from .helpers import make_mirror
 
 
 def test_reflected_string_type_key_common_combinations_are_explicit() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    assert type_key(reflector.reflect_type(list[int])) == "I['builtins.list',I['builtins.int']]"
-    assert type_key(reflector.reflect_type(dict[str, int])) == (
+    assert type_key(mirror.reflect_type(list[int])) == "I['builtins.list',I['builtins.int']]"
+    assert type_key(mirror.reflect_type(dict[str, int])) == (
         "I['builtins.dict',I['builtins.str'],I['builtins.int']]"
     )
-    assert type_key(reflector.reflect_type(ta.Mapping[str, ta.Sequence[int]])) == (
+    assert type_key(mirror.reflect_type(ta.Mapping[str, ta.Sequence[int]])) == (
         "I['collections.abc.Mapping',I['builtins.str'],"
         "I['collections.abc.Sequence',I['builtins.int']]]"
     )
-    assert type_key(reflector.reflect_type(ta.Literal['x', 'y'])) == (
+    assert type_key(mirror.reflect_type(ta.Literal['x', 'y'])) == (
         "U[L[str:'x',I['builtins.str']],L[str:'y',I['builtins.str']]]"
     )
-    assert type_key(reflector.reflect_type(ta.Annotated[int, 'cfg'])) == (
+    assert type_key(mirror.reflect_type(ta.Annotated[int, 'cfg'])) == (
         "Ann[I['builtins.int'],$0]",
         ('cfg',),
     )
 
 
 def test_reflect_type_key_reuses_equivalent_runtime_forms() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    assert type_key(reflector.reflect_type(list[int])) == \
-           type_key(reflector.reflect_type(list[int]))
-    assert type_key(reflector.reflect_type(int | str)) == \
-           type_key(reflector.reflect_type(str | int))
+    assert type_key(mirror.reflect_type(list[int])) == \
+           type_key(mirror.reflect_type(list[int]))
+    assert type_key(mirror.reflect_type(int | str)) == \
+           type_key(mirror.reflect_type(str | int))
 
 
 def test_reflect_type_key_keeps_distinct_parameterizations_apart() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    assert type_key(reflector.reflect_type(list[int])) != \
-           type_key(reflector.reflect_type(list[str]))
+    assert type_key(mirror.reflect_type(list[int])) != \
+           type_key(mirror.reflect_type(list[str]))
 
 
 def test_reflect_type_key_or_none_suppresses_unsupported_reflected_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    assert type_key_or_none(reflector.reflect_type(t_var)) is not None
+    assert type_key_or_none(mirror.reflect_type(t_var)) is not None

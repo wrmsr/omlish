@@ -4,7 +4,7 @@ import typing as ta
 
 from ..core import symbols
 from ..core import types
-from .helpers import make_reflector
+from .helpers import make_mirror
 
 
 class LocalThing:
@@ -12,14 +12,14 @@ class LocalThing:
 
 
 def test_runtime_universe_returns_stable_type_info_for_runtime_class() -> None:
-    universe = make_reflector()
+    universe = make_mirror()
 
     assert universe.get_type_info(list) is universe.get_type_info(list)
     assert universe.get_type_info('builtins.list') is universe.get_type_info(list)
 
 
 def test_runtime_universe_uses_known_builtin_and_collections_fullnames() -> None:
-    universe = make_reflector()
+    universe = make_mirror()
 
     assert universe.get_type_info(list).fullname == 'builtins.list'
     assert universe.get_type_info(dict).fullname == 'builtins.dict'
@@ -29,7 +29,7 @@ def test_runtime_universe_uses_known_builtin_and_collections_fullnames() -> None
 
 
 def test_runtime_universe_adds_generic_type_vars() -> None:
-    universe = make_reflector()
+    universe = make_mirror()
 
     list_info = universe.get_type_info(list)
     dict_info = universe.get_type_info(dict)
@@ -43,7 +43,7 @@ def test_runtime_universe_adds_generic_type_vars() -> None:
 
 
 def test_runtime_universe_adds_known_collection_abc_bases() -> None:
-    universe = make_reflector()
+    universe = make_mirror()
 
     str_info = universe.get_type_info(str)
     bytes_info = universe.get_type_info(bytes)
@@ -119,7 +119,7 @@ def test_runtime_universe_adds_known_collection_abc_bases() -> None:
 
 
 def test_runtime_universe_assigns_id_qualified_fullname_for_dynamic_classes() -> None:
-    universe = make_reflector()
+    universe = make_mirror()
 
     info = universe.get_type_info(LocalThing)
 
@@ -128,7 +128,7 @@ def test_runtime_universe_assigns_id_qualified_fullname_for_dynamic_classes() ->
 
 
 def test_runtime_universe_can_assign_deterministic_counter_dynamic_names() -> None:
-    universe = make_reflector(
+    universe = make_mirror(
         dynamic_type_name_suffix='counter',
     )
 
@@ -147,7 +147,7 @@ def test_runtime_universe_can_assign_deterministic_counter_dynamic_names() -> No
 
 
 def test_runtime_universe_keeps_same_name_dynamic_classes_distinct() -> None:
-    universe = make_reflector(
+    universe = make_mirror(
         dynamic_type_name_suffix='counter',
     )
 
@@ -163,7 +163,7 @@ def test_runtime_universe_keeps_same_name_dynamic_classes_distinct() -> None:
 
 
 def test_runtime_universe_keeps_newtype_runtime_object() -> None:
-    universe = make_reflector()
+    universe = make_mirror()
     user_id = ta.NewType('UserId', int)  # type: ignore
 
     info = universe.get_newtype_info(user_id)
@@ -174,6 +174,6 @@ def test_runtime_universe_keeps_newtype_runtime_object() -> None:
 
 
 def test_default_runtime_universe_helper_is_stable() -> None:
-    universe = make_reflector()
+    universe = make_mirror()
     assert universe.get_type_info(tuple) is universe.get_type_info(tuple)
     assert universe.get_type_info(tuple).fullname == 'builtins.tuple'

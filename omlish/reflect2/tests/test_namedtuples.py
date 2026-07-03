@@ -10,7 +10,7 @@ from ..core.typekeys import type_key
 from ..errors import ReflectionError
 from ..namedtuples import inspect_namedtuple
 from ..namedtuples import is_namedtuple
-from .helpers import make_reflector
+from .helpers import make_mirror
 
 
 def test_is_namedtuple_accepts_typing_namedtuple_class() -> None:
@@ -33,8 +33,8 @@ def test_inspect_namedtuple_exposes_ordered_fields_and_annotations() -> None:
         x: int
         y: str
 
-    reflector = make_reflector()
-    inspection = inspect_namedtuple(Point, reflector=reflector)
+    mirror = make_mirror()
+    inspection = inspect_namedtuple(Point, mirror=mirror)
 
     assert inspection.origin is Point
     assert [field.name for field in inspection.fields] == ['x', 'y']
@@ -49,8 +49,8 @@ def test_reflect_namedtuple_fields_replaces_type_var_for_parameterized_alias() -
         value: t_var  # type: ignore
         values: list[t_var]  # type: ignore
 
-    reflector = make_reflector()
-    fields = inspect_namedtuple(Box[int], reflector=reflector).fields  # type: ignore
+    mirror = make_mirror()
+    fields = inspect_namedtuple(Box[int], mirror=mirror).fields  # type: ignore
 
     assert [field.name for field in fields] == ['value', 'values']
     assert isinstance(fields[0].raw_type, types.TypeVarType)
@@ -66,13 +66,13 @@ def test_reflect_namedtuple_fields_replaces_type_var_tuple_for_parameterized_ali
     class Box(ta.NamedTuple, ta.Generic[*ts_var]):  # type: ignore
         values: tuple[*ts_var]  # type: ignore
 
-    reflector = make_reflector()
-    [field] = inspect_namedtuple(Box[int, str], reflector=reflector).fields  # type: ignore
+    mirror = make_mirror()
+    [field] = inspect_namedtuple(Box[int, str], mirror=mirror).fields  # type: ignore
 
     assert field.name == 'values'
     assert type_str(field.raw_type) == 'tuple[Unpack[Ts]]'
     assert type_str(field.replaced_type) == 'tuple[builtins.int, builtins.str]'
-    assert to_runtime_annotation(field.replaced_type, reflector=reflector) == tuple[int, str]
+    assert to_runtime_annotation(field.replaced_type, mirror=mirror) == tuple[int, str]
 
 
 def test_reflect_namedtuple_fields_replaces_type_var_tuple_with_fixed_edges() -> None:
@@ -83,8 +83,8 @@ def test_reflect_namedtuple_fields_replaces_type_var_tuple_with_fixed_edges() ->
     class Box(ta.NamedTuple, ta.Generic[t_var, *ts_var, u_var]):  # type: ignore
         values: tuple[t_var, *ts_var, u_var]  # type: ignore
 
-    reflector = make_reflector()
-    inspection = inspect_namedtuple(Box[int, str, bool, bytes], reflector=reflector)  # type: ignore
+    mirror = make_mirror()
+    inspection = inspect_namedtuple(Box[int, str, bool, bytes], mirror=mirror)  # type: ignore
     field = inspection.fields_by_name['values']
 
     assert type_str(field.raw_type) == 'tuple[T, Unpack[Ts], U]'
@@ -98,15 +98,15 @@ def test_reflect_namedtuple_field_with_variadic_alias_expands_and_can_preserve_a
     class Box(ta.NamedTuple, ta.Generic[*ts_var]):  # type: ignore
         values: alias[*ts_var]  # type: ignore
 
-    reflector = make_reflector()
-    inspection = inspect_namedtuple(Box[int, str], reflector=reflector)  # type: ignore
+    mirror = make_mirror()
+    inspection = inspect_namedtuple(Box[int, str], mirror=mirror)  # type: ignore
     field = inspection.fields_by_name['values']
 
     assert type_str(field.replaced_type) == f'{__name__}.Alias[tuple[builtins.int, builtins.str]]'
     assert to_runtime_annotation(
         field.replaced_type,
         type_alias_policy='preserve',
-        reflector=reflector,
+        mirror=mirror,
     ) == alias[int, str]
 
 
@@ -117,8 +117,8 @@ def test_reflect_namedtuple_field_types_accepts_parameterized_alias() -> None:
         left: t_var  # type: ignore
         right: tuple[t_var, str]  # type: ignore
 
-    reflector = make_reflector()
-    fields = inspect_namedtuple(Pair[int], reflector=reflector).fields_by_name  # type: ignore
+    mirror = make_mirror()
+    fields = inspect_namedtuple(Pair[int], mirror=mirror).fields_by_name  # type: ignore
 
     assert [*fields] == ['left', 'right']
     assert type_str(fields['left'].replaced_type) == 'builtins.int'
@@ -131,13 +131,13 @@ def test_reflect_namedtuple_field_annotations_returns_runtime_annotations() -> N
     class Box(ta.NamedTuple, ta.Generic[t_var]):  # type: ignore
         value: list[t_var]  # type: ignore
 
-    reflector = make_reflector()
+    mirror = make_mirror()
     assert to_runtime_annotation(
         inspect_namedtuple(
             Box[str],  # type: ignore[misc]
-            reflector=reflector,
+            mirror=mirror,
         ).fields[0].replaced_type,
-        reflector=reflector,
+        mirror=mirror,
     ) == list[str]
 
 
@@ -148,13 +148,13 @@ def test_generic_namedtuple_replaces_field_with_literal_newtype() -> None:
     class Box(ta.NamedTuple, ta.Generic[t_var]):  # type: ignore
         value: t_var  # type: ignore
 
-    reflector = make_reflector()
-    inspection = inspect_namedtuple(Box[mode], reflector=reflector)  # type: ignore
+    mirror = make_mirror()
+    inspection = inspect_namedtuple(Box[mode], mirror=mirror)  # type: ignore
     field = inspection.fields_by_name['value']
-    # shape = get_runtime_type_shape(field.replaced_type, reflector)
+    # shape = get_runtime_type_shape(field.replaced_type, mirror)
 
     assert isinstance(field.raw_type, types.TypeVarType)
-    assert to_runtime_annotation(field.replaced_type, reflector=reflector) == mode
+    assert to_runtime_annotation(field.replaced_type, mirror=mirror) == mode
     # assert shape.new_type is not None
     # assert shape.new_type.obj is mode
     # assert shape.literal_value_type is not None
@@ -169,16 +169,16 @@ def test_generic_namedtuple_literal_newtype_field_keys_preserve_new_type_identit
     class Box(ta.NamedTuple, ta.Generic[t_var]):  # type: ignore
         value: t_var  # type: ignore
 
-    reflector = make_reflector()
-    [mode_field] = inspect_namedtuple(Box[mode], reflector=reflector).fields  # type: ignore
-    [other_field] = inspect_namedtuple(Box[other_mode], reflector=reflector).fields  # type: ignore
+    mirror = make_mirror()
+    [mode_field] = inspect_namedtuple(Box[mode], mirror=mirror).fields  # type: ignore
+    [other_field] = inspect_namedtuple(Box[other_mode], mirror=mirror).fields  # type: ignore
 
     mode_key = type_key(mode_field.replaced_type)
     other_key = type_key(other_field.replaced_type)
 
     assert mode_key != other_key
-    assert mode_key == type_key(reflector.reflect_type(mode))
-    assert other_key == type_key(reflector.reflect_type(other_mode))
+    assert mode_key == type_key(mirror.reflect_type(mode))
+    assert other_key == type_key(mirror.reflect_type(other_mode))
 
 
 def test_namedtuple_alias_field_structural_type_key_matches_expanded_type() -> None:
@@ -188,13 +188,13 @@ def test_namedtuple_alias_field_structural_type_key_matches_expanded_type() -> N
     class Config(ta.NamedTuple):
         modes: mode_list  # type: ignore
 
-    reflector = make_reflector()
-    inspection = inspect_namedtuple(Config, reflector=reflector)
+    mirror = make_mirror()
+    inspection = inspect_namedtuple(Config, mirror=mirror)
 
     assert type_key(inspection.fields_by_name['modes'].replaced_type) != \
            type_key(inspection.fields_by_name['modes'].replaced_type, 'structural')
     assert type_key(inspection.fields_by_name['modes'].replaced_type, 'structural') == \
-           type_key(reflector.reflect_type(list[mode]), 'structural')  # noqa
+           type_key(mirror.reflect_type(list[mode]), 'structural')  # noqa
 
 
 def test_namedtuple_recursive_alias_field_structural_type_key_matches_unrolled_type() -> None:
@@ -203,14 +203,14 @@ def test_namedtuple_recursive_alias_field_structural_type_key_matches_unrolled_t
     class Config(ta.NamedTuple):
         node: alias  # type: ignore
 
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'Node': alias}[frr.name],
     )
-    inspection = inspect_namedtuple(Config, reflector=reflector)
+    inspection = inspect_namedtuple(Config, mirror=mirror)
     [field] = inspection.fields
-    unrolled = reflector.reflect_type(int | list[alias])  # type: ignore
+    unrolled = mirror.reflect_type(int | list[alias])  # type: ignore
 
-    assert to_runtime_annotation(field.replaced_type, reflector=reflector) == alias
+    assert to_runtime_annotation(field.replaced_type, mirror=mirror) == alias
     assert type_key(field.replaced_type, 'structural') == type_key(unrolled, 'structural')
 
 
@@ -218,9 +218,9 @@ def test_inspect_namedtuple_rejects_non_namedtuple() -> None:
     class Plain(tuple):  # noqa
         pass
 
-    reflector = make_reflector()
+    mirror = make_mirror()
     with pytest.raises(ReflectionError, match='namedtuple source'):
-        inspect_namedtuple(Plain, reflector=reflector)
+        inspect_namedtuple(Plain, mirror=mirror)
 
 
 def test_inspect_namedtuple_fails_closed_for_missing_annotation() -> None:
@@ -229,6 +229,6 @@ def test_inspect_namedtuple_fails_closed_for_missing_annotation() -> None:
 
     del Point.__annotations__['x']
 
-    reflector = make_reflector()
+    mirror = make_mirror()
     with pytest.raises(ReflectionError, match='Missing namedtuple field annotation'):
-        inspect_namedtuple(Point, reflector=reflector)
+        inspect_namedtuple(Point, mirror=mirror)

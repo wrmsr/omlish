@@ -4,7 +4,7 @@ import typing as ta
 import pytest
 
 from ...errors import ReflectionError
-from ...tests.helpers import make_reflector
+from ...tests.helpers import make_mirror
 from .. import symbols
 from .. import typeops
 from .. import types
@@ -361,7 +361,7 @@ def test_make_simplified_union_keeps_any_with_other_items() -> None:
 
 
 def test_make_simplified_union_removes_reflected_generic_subclass_before_base() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -370,8 +370,8 @@ def test_make_simplified_union_removes_reflected_generic_subclass_before_base() 
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    child = reflector.reflect_type(IntBox)
-    int_box = reflector.reflect_type(Box[int])  # type: ignore
+    child = mirror.reflect_type(IntBox)
+    int_box = mirror.reflect_type(Box[int])  # type: ignore
 
     typ = typeops.make_simplified_union([child, int_box])
 
@@ -379,7 +379,7 @@ def test_make_simplified_union_removes_reflected_generic_subclass_before_base() 
 
 
 def test_make_simplified_union_removes_reflected_generic_subclass_after_base() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -388,8 +388,8 @@ def test_make_simplified_union_removes_reflected_generic_subclass_after_base() -
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    child = reflector.reflect_type(IntBox)
-    int_box = reflector.reflect_type(Box[int])  # type: ignore
+    child = mirror.reflect_type(IntBox)
+    int_box = mirror.reflect_type(Box[int])  # type: ignore
 
     typ = typeops.make_simplified_union([int_box, child])
 
@@ -397,7 +397,7 @@ def test_make_simplified_union_removes_reflected_generic_subclass_after_base() -
 
 
 def test_make_simplified_union_keeps_reflected_generic_subclass_with_different_base_arg() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -406,8 +406,8 @@ def test_make_simplified_union_keeps_reflected_generic_subclass_with_different_b
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    child = reflector.reflect_type(IntBox)
-    str_box = reflector.reflect_type(Box[str])  # type: ignore
+    child = mirror.reflect_type(IntBox)
+    str_box = mirror.reflect_type(Box[str])  # type: ignore
 
     typ = typeops.make_simplified_union([child, str_box])
 

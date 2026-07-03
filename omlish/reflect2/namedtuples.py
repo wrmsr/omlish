@@ -8,8 +8,8 @@ from .core.types import Type
 from .core.types import TypeVarLikeType
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
-from .globals import or_global_reflector
-from .reflector import TypeReflector
+from .globals import or_global_mirror
+from .mirror import Mirror
 
 
 ##
@@ -60,21 +60,21 @@ def _get_namedtuple_annotations(origin: type) -> dict[str, object]:
 
 
 class NamedtupleInspector:
-    def __init__(self, reflector: TypeReflector) -> None:
+    def __init__(self, mirror: Mirror) -> None:
         super().__init__()
 
-        self._reflector = reflector
+        self._mirror = mirror
 
     def _get_replacements(
             self,
             obj: object,
             origin: type,
     ) -> dict[TypeVarLikeType, Type]:
-        instance = self._reflector.reflect_type(obj)
+        instance = self._mirror.reflect_type(obj)
         if not isinstance(instance, Instance):
             raise ReflectionTypeError(f'Unsupported namedtuple reflected type: {instance!r}')
 
-        origin_info = self._reflector.get_type_info(origin)
+        origin_info = self._mirror.get_type_info(origin)
         if instance._type is not origin_info:
             raise UnsupportedTypeOperationError(f'Namedtuple origin mismatch: {instance!r} != {origin_info._fullname}')
 
@@ -100,7 +100,7 @@ class NamedtupleInspector:
             except KeyError:
                 raise ReflectionTypeError(f'Missing namedtuple field annotation: {origin!r}.{name}') from None
 
-            raw_type = self._reflector.reflect_type(annotation)
+            raw_type = self._mirror.reflect_type(annotation)
             replaced_type = (
                 substitute_type(raw_type, replacements)
                 if replacements else raw_type
@@ -119,5 +119,5 @@ class NamedtupleInspector:
         )
 
 
-def inspect_namedtuple(obj: object, *, reflector: TypeReflector | None = None) -> NamedtupleInspection:
-    return NamedtupleInspector(or_global_reflector(reflector)).inspect_namedtuple(obj)
+def inspect_namedtuple(obj: object, *, mirror: Mirror | None = None) -> NamedtupleInspection:
+    return NamedtupleInspector(or_global_mirror(mirror)).inspect_namedtuple(obj)

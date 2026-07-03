@@ -7,9 +7,9 @@ from .core.subtypes import MroEntry
 from .core.types import Type
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
-from .globals import or_global_reflector
+from .globals import or_global_mirror
+from .mirror import Mirror
 from .ops import reflect_mro_entries_by_info
-from .reflector import TypeReflector
 
 
 ##
@@ -92,15 +92,15 @@ def _replace_field_type(
 
 
 class DataclassInspector:
-    def __init__(self, reflector: TypeReflector) -> None:
+    def __init__(self, mirror: Mirror) -> None:
         super().__init__()
 
-        self._reflector = reflector
+        self._mirror = mirror
 
     def inspect_dataclass(self, obj: object) -> DataclassInspection:
         origin = _get_origin_dataclass(obj)
         owners = _get_dataclass_field_owners(origin)
-        entries_by_info = reflect_mro_entries_by_info(obj, reflector=self._reflector)
+        entries_by_info = reflect_mro_entries_by_info(obj, mirror=self._mirror)
 
         ret: list[DataclassField] = []
         for field in dc.fields(origin):
@@ -109,7 +109,7 @@ class DataclassInspector:
             except KeyError:
                 raise ReflectionTypeError(f'Missing dataclass field owner: {origin!r}.{field.name}') from None
 
-            owner_info = self._reflector.get_type_info(owner)
+            owner_info = self._mirror.get_type_info(owner)
             try:
                 owner_entry = entries_by_info[owner_info]
             except KeyError:
@@ -117,7 +117,7 @@ class DataclassInspector:
                     f'Dataclass field owner is not in reflected MRO: {origin!r}.{field.name}',
                 ) from None
 
-            raw_type = self._reflector.reflect_type(_get_field_annotation(field, owner))
+            raw_type = self._mirror.reflect_type(_get_field_annotation(field, owner))
             ret.append(DataclassField(
                 field,
                 field.name,
@@ -138,5 +138,5 @@ class DataclassInspector:
         )
 
 
-def inspect_dataclass(obj: object, *, reflector: TypeReflector | None = None) -> DataclassInspection:
-    return DataclassInspector(or_global_reflector(reflector)).inspect_dataclass(obj)
+def inspect_dataclass(obj: object, *, mirror: Mirror | None = None) -> DataclassInspection:
+    return DataclassInspector(or_global_mirror(mirror)).inspect_dataclass(obj)

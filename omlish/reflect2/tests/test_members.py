@@ -7,7 +7,7 @@ from ..core.strconv import type_str
 from ..errors import ReflectionError
 from ..members import MemberKind
 from ..members import inspect_members
-from .helpers import make_reflector
+from .helpers import make_mirror
 
 
 def test_inspect_runtime_members_classifies_descriptor_kinds() -> None:
@@ -29,8 +29,8 @@ def test_inspect_runtime_members_classifies_descriptor_kinds() -> None:
         def prop(self) -> int:
             return 1
 
-    reflector = make_reflector()
-    inspection = inspect_members(Example, reflector=reflector)
+    mirror = make_mirror()
+    inspection = inspect_members(Example, mirror=mirror)
 
     assert inspection.origin is Example
     assert inspection.members_by_name['data'].kind == MemberKind.DATA
@@ -53,8 +53,8 @@ def test_inspect_runtime_members_exposes_unbound_signatures() -> None:
         def class_method(cls, value: int) -> str:
             return str(value)
 
-    reflector = make_reflector()
-    members = inspect_members(Example, reflector=reflector).members_by_name
+    mirror = make_mirror()
+    members = inspect_members(Example, mirror=mirror).members_by_name
 
     assert tuple(members['method'].signature.parameters) == ('self', 'value')  # type: ignore
     assert members['method'].signature.return_annotation is str  # type: ignore
@@ -75,8 +75,8 @@ def test_inspect_runtime_members_reflects_method_signatures() -> None:
         def class_method(cls, value: int) -> str:
             return str(value)
 
-    reflector = make_reflector()
-    members = inspect_members(Example, reflector=reflector).members_by_name
+    mirror = make_mirror()
+    members = inspect_members(Example, mirror=mirror).members_by_name
 
     method_sig = members['method'].reflected_signature
     assert method_sig is not None
@@ -104,18 +104,18 @@ def test_inspect_runtime_members_preserves_literal_newtype_method_signature_shap
         def set_mode(self, mode: mode) -> mode:
             return mode
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['set_mode']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['set_mode']
     signature = member.reflected_signature
     call_signature = member.get_call_signature()
 
     assert signature is not None
     assert call_signature is not None
     assert [parameter.name for parameter in signature.parameters] == ['self', 'mode']
-    # assert reflector.to_runtime_annotation(signature.parameters[1].typ) is mode
-    # assert reflector.to_runtime_annotation(signature.return_type) is mode
-    # parameter_shape = get_runtime_type_shape(call_signature.parameters[0].typ, reflector)
-    # return_shape = get_runtime_type_shape(call_signature.return_type, reflector)
+    # assert mirror.to_runtime_annotation(signature.parameters[1].typ) is mode
+    # assert mirror.to_runtime_annotation(signature.return_type) is mode
+    # parameter_shape = get_runtime_type_shape(call_signature.parameters[0].typ, mirror)
+    # return_shape = get_runtime_type_shape(call_signature.return_type, mirror)
     # assert parameter_shape.new_type is not None
     # assert parameter_shape.new_type.obj is mode
     # assert parameter_shape.literal_value_type is not None
@@ -131,8 +131,8 @@ def test_inspect_runtime_members_preserves_parameter_kinds_and_defaults() -> Non
         def method(self, value: int, /, named: str, *, flag: bool = False) -> None:
             raise NotImplementedError
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['method']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['method']
     signature = member.reflected_signature
 
     assert signature is not None
@@ -161,7 +161,7 @@ def test_inspect_runtime_members_preserves_parameter_kinds_and_defaults() -> Non
 #         def method(self, value: int, *, flag: bool) -> None:
 #             raise NotImplementedError
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     left_key = mr.get_member_call_signature_key(mr.inspect_runtime_members(Left).members_by_name['method'])
 #     different_kind_key = mr.get_member_call_signature_key(
 #         mr.inspect_runtime_members(DifferentKind).members_by_name['method'],
@@ -180,8 +180,8 @@ def test_inspect_runtime_members_reflects_property_getter_return_type() -> None:
         def value(self) -> int:
             return 1
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['value']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['value']
 
     assert member.kind == MemberKind.PROPERTY
     assert member.reflected_signature is not None
@@ -194,8 +194,8 @@ def test_inspect_runtime_members_uses_any_for_omitted_annotations() -> None:
         def method(self, value):
             return value
 
-    reflector = make_reflector()
-    reflected_signature = inspect_members(Example, reflector=reflector).members_by_name['method'].reflected_signature
+    mirror = make_mirror()
+    reflected_signature = inspect_members(Example, mirror=mirror).members_by_name['method'].reflected_signature
 
     assert reflected_signature is not None
     assert all(isinstance(parameter.typ, types.AnyType) for parameter in reflected_signature.parameters)
@@ -207,8 +207,8 @@ def test_get_member_call_signature_drops_self_for_instance_method() -> None:
         def method(self, value: int) -> str:
             return str(value)
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['method']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['method']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -223,8 +223,8 @@ def test_get_member_call_signature_drops_cls_for_classmethod() -> None:
         def create(cls, value: int) -> str:
             return str(value)
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['create']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['create']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -238,8 +238,8 @@ def test_get_member_call_signature_keeps_staticmethod_parameters() -> None:
         def create(value: int) -> str:
             return str(value)
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['create']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['create']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -253,8 +253,8 @@ def test_get_member_value_type_exposes_property_return_type() -> None:
         def value(self) -> int:
             return 1
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['value']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['value']
     value_type = member.get_value_type()
 
     assert value_type is not None
@@ -271,7 +271,7 @@ def test_get_member_value_type_exposes_property_return_type() -> None:
 #         def method(self, value: int) -> str:
 #             return str(value)
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     left = mr.inspect_runtime_members(Left).members_by_name['method']
 #     right = mr.inspect_runtime_members(Right).members_by_name['method']
 #
@@ -287,7 +287,7 @@ def test_get_member_value_type_exposes_property_return_type() -> None:
 #         def method(self, value: int) -> int:
 #             return value
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     left = mr.inspect_runtime_members(Left).members_by_name['method']
 #     right = mr.inspect_runtime_members(Right).members_by_name['method']
 #
@@ -303,7 +303,7 @@ def test_get_member_value_type_exposes_property_return_type() -> None:
 #         def method(self, value: str) -> str:
 #             return value
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     left = mr.inspect_runtime_members(Left).members_by_name['method']
 #     right = mr.inspect_runtime_members(Right).members_by_name['method']
 #
@@ -320,7 +320,7 @@ def test_get_member_value_type_exposes_property_return_type() -> None:
 #         def method(value: int) -> str:
 #             return str(value)
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     left = mr.inspect_runtime_members(Left).members_by_name['method']
 #     right = mr.inspect_runtime_members(Right).members_by_name['method']
 #
@@ -333,7 +333,7 @@ def test_get_member_value_type_exposes_property_return_type() -> None:
 #         def value(self) -> int:
 #             return 1
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     member = mr.inspect_runtime_members(Example).members_by_name['value']
 #
 #     assert mr.get_member_value_type_key(member) == type_key(types.Instance(TypeUniverse().get_type_info(int), []))
@@ -352,7 +352,7 @@ def test_get_member_value_type_exposes_property_return_type() -> None:
 #         types.Instance(TypeUniverse().get_type_info(int), []),
 #     )
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     try:
 #         mr.member_signature_key(call_signature)
 #     except ReflectionError as e:
@@ -370,8 +370,8 @@ def test_callable_data_member_has_no_member_call_signature() -> None:
         callback = staticmethod(lambda value: value)
         callable_value = CallableValue()
 
-    reflector = make_reflector()
-    members = inspect_members(Example, reflector=reflector).members_by_name
+    mirror = make_mirror()
+    members = inspect_members(Example, mirror=mirror).members_by_name
 
     assert members['callback'].kind == MemberKind.STATICMETHOD
     assert members['callback'].get_call_signature() is not None
@@ -388,8 +388,8 @@ def test_inspect_runtime_members_uses_subclass_owner_for_overrides() -> None:
         def method(self) -> str:  # type: ignore
             return 'x'
 
-    reflector = make_reflector()
-    member = inspect_members(Child, reflector=reflector).members_by_name['method']
+    mirror = make_mirror()
+    member = inspect_members(Child, mirror=mirror).members_by_name['method']
 
     assert member.owner is Child
     assert member.kind == MemberKind.FUNCTION
@@ -404,8 +404,8 @@ def test_inspect_runtime_members_uses_subclass_owner_for_overrides() -> None:
 #         def method(self) -> int:
 #             return self.value
 #
-#     reflector = TypeReflector(TypeUniverse())
-#     record = inspect_record(Example, reflector)
+#     mirror = Mirror(TypeUniverse())
+#     record = inspect_record(Example, mirror)
 #     members = inspect_runtime_members(Example)
 #
 #     assert [field.name for field in record.fields] == ['value']
@@ -418,8 +418,8 @@ def test_inspect_runtime_members_uses_subclass_owner_for_overrides() -> None:
 #     class Example:
 #         value: int = 1
 #
-#     reflector = TypeReflector(TypeUniverse())
-#     record = inspect_record(Example, reflector)
+#     mirror = Mirror(TypeUniverse())
+#     record = inspect_record(Example, mirror)
 #     members = inspect_runtime_members(Example)
 #
 #     assert [field.name for field in record.fields] == ['value']
@@ -431,8 +431,8 @@ def test_inspect_runtime_members_accepts_parameterized_alias_origin() -> None:
         def get(self) -> T:
             raise NotImplementedError
 
-    reflector = make_reflector()
-    inspection = inspect_members(Box[int], reflector=reflector)
+    mirror = make_mirror()
+    inspection = inspect_members(Box[int], mirror=mirror)
 
     assert inspection.origin is Box
     assert inspection.members_by_name['get'].kind == MemberKind.FUNCTION
@@ -443,8 +443,8 @@ def test_inspect_runtime_members_replaces_parameterized_alias_method_return() ->
         def get(self) -> T:
             raise NotImplementedError
 
-    reflector = make_reflector()
-    member = inspect_members(Box[int], reflector=reflector).members_by_name['get']
+    mirror = make_mirror()
+    member = inspect_members(Box[int], mirror=mirror).members_by_name['get']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -456,8 +456,8 @@ def test_inspect_runtime_members_replaces_parameterized_alias_method_parameter()
         def put(self, value: T) -> None:
             raise NotImplementedError
 
-    reflector = make_reflector()
-    member = inspect_members(Box[int], reflector=reflector).members_by_name['put']
+    mirror = make_mirror()
+    member = inspect_members(Box[int], mirror=mirror).members_by_name['put']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -471,8 +471,8 @@ def test_inspect_runtime_members_uses_any_for_unparameterized_generic_method() -
         def get(self) -> T:
             raise NotImplementedError
 
-    reflector = make_reflector()
-    member = inspect_members(Box, reflector=reflector).members_by_name['get']
+    mirror = make_mirror()
+    member = inspect_members(Box, mirror=mirror).members_by_name['get']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -487,8 +487,8 @@ def test_inspect_runtime_members_replaces_inherited_generic_method() -> None:
     class StrBox(Box[str]):
         pass
 
-    reflector = make_reflector()
-    member = inspect_members(StrBox, reflector=reflector).members_by_name['get']
+    mirror = make_mirror()
+    member = inspect_members(StrBox, mirror=mirror).members_by_name['get']
     call_signature = member.get_call_signature()
 
     assert member.owner is Box
@@ -509,18 +509,18 @@ def test_inspect_runtime_members_replaces_inherited_generic_method_with_literal_
     class ModeBox(Box[mode]):  # noqa
         pass
 
-    reflector = make_reflector()
-    members = inspect_members(ModeBox, reflector=reflector).members_by_name
+    mirror = make_mirror()
+    members = inspect_members(ModeBox, mirror=mirror).members_by_name
     get_signature = members['get'].get_call_signature()
     put_signature = members['put'].get_call_signature()
 
     assert get_signature is not None
     assert put_signature is not None
-    # assert reflector.to_runtime_annotation(get_signature.return_type) is mode
-    # assert reflector.to_runtime_annotation(put_signature.parameters[0].typ) is mode
-    # assert reflector.to_runtime_annotation(put_signature.return_type) is mode
-    # get_shape = get_runtime_type_shape(get_signature.return_type, reflector)
-    # put_shape = get_runtime_type_shape(put_signature.parameters[0].typ, reflector)
+    # assert mirror.to_runtime_annotation(get_signature.return_type) is mode
+    # assert mirror.to_runtime_annotation(put_signature.parameters[0].typ) is mode
+    # assert mirror.to_runtime_annotation(put_signature.return_type) is mode
+    # get_shape = get_runtime_type_shape(get_signature.return_type, mirror)
+    # put_shape = get_runtime_type_shape(put_signature.parameters[0].typ, mirror)
     # assert get_shape.new_type is not None
     # assert get_shape.new_type.obj is mode
     # assert get_shape.literal_value_type is not None
@@ -539,13 +539,13 @@ def test_inspect_runtime_members_replaces_inherited_generic_method_with_literal_
 #         def set_modes(self, modes: mode_list) -> mode_list:  # type: ignore
 #             return modes
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     member = mr.inspect_runtime_members(Service).members_by_name['set_modes']
 #     signature = member.get_call_signature()
 #
 #     assert signature is not None
-#     assert reflector.to_runtime_annotation(signature.parameters[0].typ) == list[mode]  # noqa
-#     assert reflector.to_runtime_annotation(signature.return_type) == list[mode]  # noqa
+#     assert mirror.to_runtime_annotation(signature.parameters[0].typ) == list[mode]  # noqa
+#     assert mirror.to_runtime_annotation(signature.return_type) == list[mode]  # noqa
 #     parameter_shape = get_runtime_collection_shape(signature.parameters[0].typ)
 #     return_shape = get_runtime_collection_shape(signature.return_type)
 #     assert parameter_shape.sequence_item is not None
@@ -560,7 +560,7 @@ def test_inspect_runtime_members_replaces_inherited_generic_method_with_literal_
 #     assert return_item.new_type.obj is mode
 #     assert return_item.literal_value_type is not None
 #     assert return_item.literal_value_type.values == ('a', 'b')
-#     assert type_key(signature.return_type) != type_key(mr._reflector.reflect_type(list[ta.Literal['a', 'b']]))
+#     assert type_key(signature.return_type) != type_key(mr._mirror.reflect_type(list[ta.Literal['a', 'b']]))
 
 
 def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() -> None:
@@ -575,26 +575,26 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
         def set_modes(self, modes: list[mode]) -> list[mode]:  # noqa
             return modes
 
-    reflector = make_reflector()
-    left_member = inspect_members(Left, reflector=reflector).members_by_name['set_modes']
-    right_member = inspect_members(Right, reflector=reflector).members_by_name['set_modes']
+    mirror = make_mirror()
+    left_member = inspect_members(Left, mirror=mirror).members_by_name['set_modes']
+    right_member = inspect_members(Right, mirror=mirror).members_by_name['set_modes']
     left_signature = left_member.get_call_signature()
     right_signature = right_member.get_call_signature()
 
     assert left_signature is not None
     assert right_signature is not None
-    # assert reflector.to_runtime_annotation(
+    # assert mirror.to_runtime_annotation(
     #     left_signature.return_type,
     #     type_alias_policy='preserve',
     # ) is mode_list
     # assert is_structurally_equivalent(left_signature.return_type, right_signature.return_type)
     # assert get_member_call_signature_key(left_member) != get_member_call_signature_key(right_member)
-    # assert get_member_call_signature_key(left_member, reflector) == get_member_call_signature_key(
+    # assert get_member_call_signature_key(left_member, mirror) == get_member_call_signature_key(
     #     right_member,
-    #     reflector,
+    #     mirror,
     # )
-    # assert get_member_call_structural_signature_key(left_member, reflector) == \
-    #        get_member_call_structural_signature_key(right_member, reflector)
+    # assert get_member_call_structural_signature_key(left_member, mirror) == \
+    #        get_member_call_structural_signature_key(right_member, mirror)
 
 
 # def test_member_structural_signature_key_preserves_new_type_identity() -> None:
@@ -609,12 +609,12 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
 #         def set_mode(self, mode: other_mode) -> other_mode:
 #             return mode
 #
-#     reflector = TypeReflector(TypeUniverse())
-#     left_member = inspect_runtime_members(Left, reflector).members_by_name['set_mode']
-#     right_member = inspect_runtime_members(Right, reflector).members_by_name['set_mode']
+#     mirror = Mirror(TypeUniverse())
+#     left_member = inspect_runtime_members(Left, mirror).members_by_name['set_mode']
+#     right_member = inspect_runtime_members(Right, mirror).members_by_name['set_mode']
 #
-#     assert get_member_call_structural_signature_key(left_member, reflector) != \
-#         get_member_call_structural_signature_key(right_member, reflector, )
+#     assert get_member_call_structural_signature_key(left_member, mirror) != \
+#         get_member_call_structural_signature_key(right_member, mirror, )
 
 
 # def test_member_recursive_alias_signature_structural_key_matches_unrolled_type() -> None:
@@ -624,32 +624,32 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
 #         def visit(self, node: alias) -> tuple[alias]:  # type: ignore
 #             raise NotImplementedError
 #
-#     reflector = TypeReflector(
+#     mirror = Mirror(
 #         TypeUniverse(),
 #         forward_ref_resolver={'Node': alias}.__getitem__,
 #     )
-#     member = inspect_runtime_members(Service, reflector).members_by_name['visit']
+#     member = inspect_runtime_members(Service, mirror).members_by_name['visit']
 #     signature = get_member_call_signature(member)
 #
 #     assert signature is not None
 #     [parameter] = signature.parameters
 #     assert structural_type_key(parameter.typ) == structural_type_key(
-#         reflector.reflect_type(int | list[alias]),  # type: ignore
+#         mirror.reflect_type(int | list[alias]),  # type: ignore
 #     )
 #     assert structural_type_key(signature.return_type) == structural_type_key(
-#         reflector.reflect_type(tuple[int | list[alias]]),  # type: ignore
+#         mirror.reflect_type(tuple[int | list[alias]]),  # type: ignore
 #     )
-#     assert get_member_call_structural_signature_key(member, reflector) == (
+#     assert get_member_call_structural_signature_key(member, mirror) == (
 #         'member_signature',
 #         (
 #             (
 #                 'node',
 #                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
-#                 reflector.structural_type_key(reflector.reflect_type(int | list[alias])),  # type: ignore
+#                 mirror.structural_type_key(mirror.reflect_type(int | list[alias])),  # type: ignore
 #                 False,
 #             ),
 #         ),
-#         reflector.structural_type_key(reflector.reflect_type(tuple[int | list[alias]])),  # type: ignore
+#         mirror.structural_type_key(mirror.reflect_type(tuple[int | list[alias]])),  # type: ignore
 #     )
 
 
@@ -667,14 +667,14 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
 #         def modes(self) -> list[mode]:  # noqa
 #             raise NotImplementedError
 #
-#     reflector = TypeReflector(TypeUniverse())
-#     left_member = inspect_runtime_members(Left, reflector).members_by_name['modes']
-#     right_member = inspect_runtime_members(Right, reflector).members_by_name['modes']
+#     mirror = Mirror(TypeUniverse())
+#     left_member = inspect_runtime_members(Left, mirror).members_by_name['modes']
+#     right_member = inspect_runtime_members(Right, mirror).members_by_name['modes']
 #
 #     assert get_member_value_type_key(left_member) != get_member_value_type_key(right_member)
-#     assert get_member_value_structural_type_key(left_member, reflector) == get_member_value_structural_type_key(
+#     assert get_member_value_structural_type_key(left_member, mirror) == get_member_value_structural_type_key(
 #         right_member,
-#         reflector,
+#         mirror,
 #     )
 
 
@@ -688,23 +688,23 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
 #         def set_modes(self, modes: box_alias[mode]) -> box_alias[mode]:  # type: ignore
 #             return modes
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     member = mr.inspect_runtime_members(Service).members_by_name['set_modes']
 #     signature = member.get_call_signature()
 #
 #     assert signature is not None
-#     assert mr._reflector.to_runtime_annotation(signature.parameters[0].typ) == list[mode]  # noqa
-#     assert mr._reflector.to_runtime_annotation(signature.return_type) == list[mode]  # noqa
-#     collection_shape = get_runtime_collection_shape(signature.parameters[0].typ, reflector)
+#     assert mr._mirror.to_runtime_annotation(signature.parameters[0].typ) == list[mode]  # noqa
+#     assert mr._mirror.to_runtime_annotation(signature.return_type) == list[mode]  # noqa
+#     collection_shape = get_runtime_collection_shape(signature.parameters[0].typ, mirror)
 #     assert collection_shape.sequence_item is not None
-#     item_shape = get_runtime_type_shape(collection_shape.sequence_item, reflector)
+#     item_shape = get_runtime_type_shape(collection_shape.sequence_item, mirror)
 #     assert item_shape.new_type is not None
 #     assert item_shape.new_type.obj is mode
 #     assert item_shape.literal_value_type is not None
 #     assert item_shape.literal_value_type.values == ('a', 'b')
-#     assert type_key(signature.return_type) != type_key(reflector.reflect_type(box_alias[other_mode]))
+#     assert type_key(signature.return_type) != type_key(mirror.reflect_type(box_alias[other_mode]))
 #     assert type_key(signature.return_type) != type_key(
-#         reflector.reflect_type(box_alias[ta.Literal['a', 'b']]),
+#         mirror.reflect_type(box_alias[ta.Literal['a', 'b']]),
 #     )
 
 
@@ -715,8 +715,8 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
 #         def check(self, value: bad_alias) -> bool:  # type: ignore
 #             return bool(value)
 #
-#     reflector = TypeReflector(TypeUniverse())
-#     member = inspect_runtime_members(Service, reflector).members_by_name['check']
+#     mirror = Mirror(TypeUniverse())
+#     member = inspect_runtime_members(Service, mirror).members_by_name['check']
 #
 #     assert member.unkeyable
 #     assert member.reflected_signature is None
@@ -726,9 +726,9 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
 
 
 def test_inspect_runtime_members_rejects_non_type_source() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     try:
-        inspect_members(1, reflector=reflector)
+        inspect_members(1, mirror=mirror)
     except ReflectionError as e:
         assert 'member source' in str(e)  # noqa
     else:
@@ -748,8 +748,8 @@ def test_member_order_is_base_then_subclass_with_overrides_in_place() -> None:
         def method(self) -> str:  # type: ignore
             return 'x'
 
-    reflector = make_reflector()
-    inspection = inspect_members(Child, reflector=reflector)
+    mirror = make_mirror()
+    inspection = inspect_members(Child, mirror=mirror)
 
     assert [member.name for member in inspection.members] == ['base_data', 'method', 'child_data']
     assert inspection.members_by_name['method'].owner is Child
@@ -769,8 +769,8 @@ def test_inspect_runtime_members_collects_typing_overloads() -> None:
         def method(self, value):
             return value
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['method']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['method']
     signatures = member.get_call_signatures()
 
     assert len(signatures) == 2
@@ -797,8 +797,8 @@ def test_inspect_runtime_members_collects_overload_keyword_only_defaults() -> No
         def method(self, value, *, flag=False):
             return value
 
-    reflector = make_reflector()
-    member = inspect_members(Example, reflector=reflector).members_by_name['method']
+    mirror = make_mirror()
+    member = inspect_members(Example, mirror=mirror).members_by_name['method']
     signatures = member.get_call_signatures()
 
     assert len(signatures) == 2
@@ -849,7 +849,7 @@ def test_inspect_runtime_members_collects_overload_keyword_only_defaults() -> No
 #         def method(self, value):
 #             return value
 #
-#     mr = make_members_reflector()
+#     mr = make_members_mirror()
 #     left_signatures = mr.inspect_runtime_members(Left).members_by_name['method'].get_call_signatures()  # noqa
 #     right_signatures = mr.inspect_runtime_members(Right).members_by_name['method'].get_call_signatures()  # noqa
 #

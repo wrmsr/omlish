@@ -134,8 +134,8 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .globals import (  # noqa
-        global_reflector,
-        or_global_reflector,
+        global_mirror,
+        or_global_mirror,
 
         get_type_info,
         get_newtype_info,
@@ -156,6 +156,15 @@ with _lang.auto_proxy_init(globals()):
         inspect_members,
     )
 
+    from .mirror import (  # noqa
+        UnresolvedForwardRefPolicy,
+
+        ForwardRefResolution,
+        ForwardRefResolver,
+
+        Mirror,
+    )
+
     from .namedtuples import (  # noqa
         NamedtupleField,
         NamedtupleInspection,
@@ -167,13 +176,4 @@ with _lang.auto_proxy_init(globals()):
     from .ops import (  # noqa
         reflect_mro_entries,
         reflect_mro_entries_by_info,
-    )
-
-    from .reflector import (  # noqa
-        UnresolvedForwardRefPolicy,
-
-        ForwardRefResolution,
-        ForwardRefResolver,
-
-        TypeReflector,
     )

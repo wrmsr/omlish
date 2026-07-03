@@ -4,7 +4,7 @@ import typing as ta
 import pytest
 
 from ...errors import UnsupportedTypeOperationError
-from ...tests.helpers import make_reflector
+from ...tests.helpers import make_mirror
 from .. import symbols
 from .. import types
 from ..meet import meet_type_list
@@ -50,7 +50,7 @@ def test_meet_nominal_subtype_returns_subtype() -> None:
 
 
 def test_meet_reflected_generic_subclass_returns_subclass() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -59,15 +59,15 @@ def test_meet_reflected_generic_subclass_returns_subclass() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    child = reflector.reflect_type(IntBox)
-    int_box = reflector.reflect_type(Box[int])  # type: ignore
+    child = mirror.reflect_type(IntBox)
+    int_box = mirror.reflect_type(Box[int])  # type: ignore
 
     assert meet_types(child, int_box) is child
     assert meet_types(int_box, child) is child
 
 
 def test_meet_reflected_generic_subclass_with_different_base_arg_returns_uninhabited() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -76,8 +76,8 @@ def test_meet_reflected_generic_subclass_with_different_base_arg_returns_uninhab
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    child = reflector.reflect_type(IntBox)
-    str_box = reflector.reflect_type(Box[str])  # type: ignore
+    child = mirror.reflect_type(IntBox)
+    str_box = mirror.reflect_type(Box[str])  # type: ignore
 
     typ = meet_types(child, str_box)
 

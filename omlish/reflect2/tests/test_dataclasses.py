@@ -15,17 +15,17 @@ from ..dataclasses import inspect_dataclass
 from ..errors import ReflectionError
 from ..errors import UnreflectableTypeError
 from ..errors import UnsupportedTypeOperationError
-from ..reflector import TypeReflector
-from .helpers import make_reflector
+from ..mirror import Mirror
+from .helpers import make_mirror
 
 
 def field_runtime_annotations(
         fields: ta.Iterable[DataclassField],
         *,
-        reflector: TypeReflector,
+        mirror: Mirror,
 ) -> dict[str, ta.Any]:
     return {
-        field.name: to_runtime_annotation(field.replaced_type, reflector=reflector)
+        field.name: to_runtime_annotation(field.replaced_type, mirror=mirror)
         for field in fields
     }
 
@@ -52,8 +52,8 @@ def test_reflect_dataclass_fields_replaces_inherited_type_var() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    reflector = make_reflector()
-    [field] = inspect_dataclass(IntBox, reflector=reflector).fields
+    mirror = make_mirror()
+    [field] = inspect_dataclass(IntBox, mirror=mirror).fields
 
     assert field.name == 'v'
     assert field.owner is Box
@@ -72,15 +72,15 @@ def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple() -> None:
     class IntStrBox(Box[int, str]):  # type: ignore
         pass
 
-    reflector = make_reflector()
-    [field] = inspect_dataclass(IntStrBox, reflector=reflector).fields
+    mirror = make_mirror()
+    [field] = inspect_dataclass(IntStrBox, mirror=mirror).fields
 
     assert field.name == 'values'
     assert field.owner is Box
     assert type_str(field.raw_type) == 'tuple[Unpack[Ts]]'
     assert type_str(field.replaced_type) == 'tuple[builtins.int, builtins.str]'
-    assert to_runtime_annotation(field.replaced_type, reflector=reflector) == tuple[int, str]
-    assert field_runtime_annotations([field], reflector=reflector) == {'values': tuple[int, str]}
+    assert to_runtime_annotation(field.replaced_type, mirror=mirror) == tuple[int, str]
+    assert field_runtime_annotations([field], mirror=mirror) == {'values': tuple[int, str]}
 
 
 def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple_with_fixed_edges() -> None:
@@ -96,13 +96,13 @@ def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple_with_fixed_e
     class MixedBox(Box[int, str, bool, bytes]):  # type: ignore
         pass
 
-    reflector = make_reflector()
-    inspection = inspect_dataclass(MixedBox, reflector=reflector)
+    mirror = make_mirror()
+    inspection = inspect_dataclass(MixedBox, mirror=mirror)
     field = inspection.fields_by_name['values']
 
     assert type_str(field.raw_type) == 'tuple[T, Unpack[Ts], U]'
     assert type_str(field.replaced_type) == 'tuple[builtins.int, builtins.str, builtins.bool, builtins.bytes]'
-    assert field_runtime_annotations([field], reflector=reflector) == {'values': tuple[int, str, bool, bytes]}
+    assert field_runtime_annotations([field], mirror=mirror) == {'values': tuple[int, str, bool, bytes]}
 
 
 def test_reflect_dataclass_field_with_variadic_alias_expands_and_can_preserve_alias() -> None:
@@ -117,16 +117,16 @@ def test_reflect_dataclass_field_with_variadic_alias_expands_and_can_preserve_al
     class IntStrBox(Box[int, str]):  # type: ignore
         pass
 
-    reflector = make_reflector()
-    inspection = inspect_dataclass(IntStrBox, reflector=reflector)
+    mirror = make_mirror()
+    inspection = inspect_dataclass(IntStrBox, mirror=mirror)
     field = inspection.fields_by_name['values']
 
     assert type_str(field.replaced_type) == f'{__name__}.Alias[tuple[builtins.int, builtins.str]]'
-    assert field_runtime_annotations([field], reflector=reflector) == {'values': tuple[int, str]}
+    assert field_runtime_annotations([field], mirror=mirror) == {'values': tuple[int, str]}
     assert to_runtime_annotation(
         field.replaced_type,
         type_alias_policy='preserve',
-        reflector=reflector,
+        mirror=mirror,
     ) == alias[int, str]
 
 
@@ -137,8 +137,8 @@ def test_reflect_dataclass_field_types_accepts_parameterized_dataclass_alias() -
     class Box(ta.Generic[t_var]):  # type: ignore
         v: t_var  # type: ignore
 
-    reflector = make_reflector()
-    inspection = inspect_dataclass(Box[str], reflector=reflector)  # type: ignore
+    mirror = make_mirror()
+    inspection = inspect_dataclass(Box[str], mirror=mirror)  # type: ignore
 
     assert type_str(inspection.fields_by_name['v'].replaced_type) == 'builtins.str'
 
@@ -156,8 +156,8 @@ def test_inspect_dataclass_exposes_ordered_fields_and_maps() -> None:
     class Child(ta.Generic[u_var], Base[int]):  # type: ignore
         third: list[u_var]  # type: ignore
 
-    reflector = make_reflector()
-    inspection = inspect_dataclass(Child[str], reflector=reflector)  # type: ignore
+    mirror = make_mirror()
+    inspection = inspect_dataclass(Child[str], mirror=mirror)  # type: ignore
 
     assert inspection.origin is Child
     assert [field.name for field in inspection.fields] == ['first', 'second', 'third']
@@ -171,9 +171,9 @@ def test_reflect_dataclass_field_annotations_returns_replaced_runtime_annotation
     class Box(ta.Generic[t_var]):  # type: ignore
         v: t_var  # type: ignore
 
-    reflector = make_reflector()
-    di = inspect_dataclass(Box[int], reflector=reflector)  # type: ignore
-    assert field_runtime_annotations(di.fields, reflector=reflector) == {'v': int}
+    mirror = make_mirror()
+    di = inspect_dataclass(Box[int], mirror=mirror)  # type: ignore
+    assert field_runtime_annotations(di.fields, mirror=mirror) == {'v': int}
 
 
 # def test_dataclass_literal_new_type_field_preserves_annotation_and_exposes_effective_shape() -> None:
@@ -185,7 +185,7 @@ def test_reflect_dataclass_field_annotations_returns_replaced_runtime_annotation
 #
 #     Config.__annotations__['mode'] = mode
 #
-#     reflector = make_reflector()
+#     mirror = make_mirror()
 #     inspection = api.inspect_dataclass(Config)
 #     field_type = inspection.fields_by_name['mode'].replaced_type
 #     shape = get_runtime_type_shape(field_type)
@@ -205,11 +205,11 @@ def test_inspect_dataclass_excludes_classvar_and_initvar_pseudo_fields() -> None
         init_only: dc.InitVar[str] = 'x'
         value: int = 2
 
-    reflector = make_reflector()
-    inspection = inspect_dataclass(Item, reflector=reflector)
+    mirror = make_mirror()
+    inspection = inspect_dataclass(Item, mirror=mirror)
 
     assert [field.name for field in inspection.fields] == ['value']
-    assert field_runtime_annotations(inspection.fields, reflector=reflector) == {'value': int}
+    assert field_runtime_annotations(inspection.fields, mirror=mirror) == {'value': int}
 
 
 def test_reflect_dataclass_fields_replaces_each_generic_layer() -> None:
@@ -231,8 +231,8 @@ def test_reflect_dataclass_fields_replaces_each_generic_layer() -> None:
     class Child(ta.Generic[y_var], Middle[dict[str, y_var]]):  # type: ignore
         child: y_var  # type: ignore
 
-    reflector = make_reflector()
-    fields = inspect_dataclass(Child[int], reflector=reflector).fields  # type: ignore
+    mirror = make_mirror()
+    fields = inspect_dataclass(Child[int], mirror=mirror).fields  # type: ignore
 
     assert [
         (
@@ -285,13 +285,13 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
     class Box(ta.Generic[t_var]):  # type: ignore
         value: t_var  # type: ignore
 
-    reflector = make_reflector()
-    mode_fields = field_type_keys(inspect_dataclass(Box[mode], reflector=reflector).fields)  # type: ignore
-    other_fields = field_type_keys(inspect_dataclass(Box[other_mode], reflector=reflector).fields)  # type: ignore
+    mirror = make_mirror()
+    mode_fields = field_type_keys(inspect_dataclass(Box[mode], mirror=mirror).fields)  # type: ignore
+    other_fields = field_type_keys(inspect_dataclass(Box[other_mode], mirror=mirror).fields)  # type: ignore
 
     assert mode_fields['value'] != other_fields['value']
-    assert mode_fields['value'] == type_key(reflector.reflect_type(mode))
-    assert other_fields['value'] == type_key(reflector.reflect_type(other_mode))
+    assert mode_fields['value'] == type_key(mirror.reflect_type(mode))
+    assert other_fields['value'] == type_key(mirror.reflect_type(other_mode))
 
 
 # def test_dataclass_field_with_new_type_literal_alias_expands_to_collection_shape() -> None:
@@ -311,8 +311,8 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
 #     assert reflect_dataclass_field_annotations(Config) == {'modes': list[mode]}  # noqa
 #     assert type_str(field.replaced_type).endswith('.ModeList')
 #     assert inspection.field_type_keys['modes'] != inspection.field_structural_type_keys['modes']
-#     assert inspection.field_structural_type_keys['modes'] == reflector.structural_type_key(
-#         reflector.reflect_type(list[mode]),  # noqa
+#     assert inspection.field_structural_type_keys['modes'] == mirror.structural_type_key(
+#         mirror.reflect_type(list[mode]),  # noqa
 #     )
 #     assert reflect_dataclass_field_structural_type_keys(Config) == inspection.field_structural_type_keys
 #     assert collection_shape.sequence_item is not None
@@ -321,7 +321,7 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
 #     assert item_shape.new_type.obj is mode
 #     assert item_shape.literal_value_type is not None
 #     assert item_shape.literal_value_type.values == ('a', 'b')
-#     assert type_key(field.replaced_type) != type_key(reflector.reflect_type(list[ta.Literal['a', 'b']]))
+#     assert type_key(field.replaced_type) != type_key(mirror.reflect_type(list[ta.Literal['a', 'b']]))
 
 
 # def test_dataclass_field_with_annotated_new_type_alias_has_nominal_and_structural_views() -> None:
@@ -334,7 +334,7 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
 #
 #     dr = make_dataclass_inspector()
 #     field = inspect_dataclass(Config).fields_by_name['modes']
-#     expanded = reflector.reflect_type(ta.Annotated[list[mode], 'cfg'])  # noqa
+#     expanded = mirror.reflect_type(ta.Annotated[list[mode], 'cfg'])  # noqa
 #     shape = get_runtime_type_shape(field.replaced_type)
 #
 #     assert shape.annotated is not None
@@ -344,8 +344,8 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
 #     assert type_key(field.replaced_type) != type_key(expanded)
 #     assert is_structurally_equivalent(field.replaced_type, expanded)
 #     assert is_structural_subtype(field.replaced_type, expanded)
-#     assert reflector.to_runtime_annotation(field.replaced_type) == ta.Annotated[list[mode], 'cfg']  # noqa
-#     assert reflector.to_runtime_annotation(
+#     assert mirror.to_runtime_annotation(field.replaced_type) == ta.Annotated[list[mode], 'cfg']  # noqa
+#     assert mirror.to_runtime_annotation(
 #         field.replaced_type,
 #         type_alias_policy='preserve',
 #     ) == ta.Annotated[mode_list, 'cfg']
@@ -359,14 +359,14 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
 #         node: alias  # type: ignore
 #
 #     dr = make_dataclass_inspector()
-#     reflector = TypeReflector(
+#     mirror = Mirror(
 #         TypeUniverse(),
 #         forward_ref_resolver={'Node': alias}.__getitem__,
 #     )
 #     field = inspect_dataclass(Config).fields_by_name['node']
-#     unrolled = reflector.reflect_type(int | list[alias])  # type: ignore
-#     wrapper = reflector.reflect_type(tuple[int | list[alias]])  # type: ignore
-#     alias_wrapper = reflector.reflect_type(tuple[alias])  # type: ignore
+#     unrolled = mirror.reflect_type(int | list[alias])  # type: ignore
+#     wrapper = mirror.reflect_type(tuple[int | list[alias]])  # type: ignore
+#     alias_wrapper = mirror.reflect_type(tuple[alias])  # type: ignore
 #
 #     assert inspect_dataclass(Config).field_annotations == {'node': alias}
 #     assert structural_type_key(field.replaced_type) == structural_type_key(unrolled)
@@ -387,16 +387,16 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
 #         pass
 #
 #     dr = make_dataclass_inspector()
-#     reflector = TypeReflector(
+#     mirror = Mirror(
 #         TypeUniverse(dynamic_type_name_suffix='counter'),
 #         forward_ref_resolver={'Node': alias}.__getitem__,
 #     )
 #     inspection = inspect_dataclass(NodeBox)
 #     field = inspection.fields_by_name['value']
-#     unrolled = reflector.reflect_type(int | list[alias])  # type: ignore
-#     double_unrolled = reflector.reflect_type(int | list[int | list[alias]])  # type: ignore
+#     unrolled = mirror.reflect_type(int | list[alias])  # type: ignore
+#     double_unrolled = mirror.reflect_type(int | list[int | list[alias]])  # type: ignore
 #     entries = reflect_mro_entries(NodeBox)
-#     box_entry = next(entry for entry in entries if entry.info is reflector.universe.get_type_info(Box))
+#     box_entry = next(entry for entry in entries if entry.info is mirror.universe.get_type_info(Box))
 #
 #     assert field.owner is Box
 #     assert isinstance(field.raw_type, types.TypeVarType)
@@ -404,7 +404,7 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
 #     assert inspection.field_annotations == {'value': alias}
 #     assert inspection.field_structural_type_keys['value'] == structural_type_key(unrolled)
 #     assert inspection.field_structural_type_keys['value'] == structural_type_key(double_unrolled)
-#     assert reflector.structural_type_key(box_entry.args[0]) == structural_type_key(unrolled)
+#     assert mirror.structural_type_key(box_entry.args[0]) == structural_type_key(unrolled)
 
 
 # def test_dataclass_field_with_generic_new_type_literal_alias_expands_to_collection_shape() -> None:
@@ -442,8 +442,8 @@ def test_reflect_dataclass_fields_uses_overriding_field_owner() -> None:
     class Child(Base[int]):  # type: ignore
         value: str
 
-    reflector = make_reflector()
-    [field] = inspect_dataclass(Child, reflector=reflector).fields
+    mirror = make_mirror()
+    [field] = inspect_dataclass(Child, mirror=mirror).fields
 
     assert field.owner is Child
     assert type_str(field.raw_type) == 'builtins.str'
@@ -454,9 +454,9 @@ def test_reflect_dataclass_fields_rejects_non_dataclass() -> None:
     class NotDataclass:
         pass
 
-    reflector = make_reflector()
+    mirror = make_mirror()
     with pytest.raises(ReflectionError, match='dataclass source'):
-        inspect_dataclass(NotDataclass, reflector=reflector)
+        inspect_dataclass(NotDataclass, mirror=mirror)
 
 
 def test_reflect_dataclass_fields_fails_closed_for_unmappable_owner() -> None:
@@ -470,16 +470,16 @@ def test_reflect_dataclass_fields_fails_closed_for_unmappable_owner() -> None:
     class Child(Base[int]):  # type: ignore
         pass
 
-    reflector = make_reflector()
-    child_type = reflector.reflect_type(Child)
-    base_type = reflector.reflect_type(Base)
+    mirror = make_mirror()
+    child_type = mirror.reflect_type(Child)
+    base_type = mirror.reflect_type(Base)
     assert isinstance(child_type, types.Instance)
     assert isinstance(base_type, types.Instance)
     child_type.type._mro = (child_type.type, base_type.type)
     child_type.type._bases = ()
 
     with pytest.raises(UnsupportedTypeOperationError):
-        inspect_dataclass(Child, reflector=reflector)
+        inspect_dataclass(Child, mirror=mirror)
 
 
 def test_inspect_dataclass_fails_closed_for_unreflectable_alias_annotation() -> None:
@@ -489,9 +489,9 @@ def test_inspect_dataclass_fails_closed_for_unreflectable_alias_annotation() -> 
     class Config:
         value: bad_alias  # type: ignore
 
-    reflector = make_reflector()
+    mirror = make_mirror()
     with pytest.raises(UnreflectableTypeError, match='TypeIs'):
-        inspect_dataclass(Config, reflector=reflector)
+        inspect_dataclass(Config, mirror=mirror)
 
     # assert ('dataclass', Config) not in api.dataclasses._inspection_cache
 
@@ -507,8 +507,8 @@ def test_reflect_dataclass_field_annotations_emit_replaced_runtime_annotations()
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    reflector = make_reflector()
-    di = inspect_dataclass(IntBox, reflector=reflector)
-    annotations = field_runtime_annotations(di.fields, reflector=reflector)
+    mirror = make_mirror()
+    di = inspect_dataclass(IntBox, mirror=mirror)
+    annotations = field_runtime_annotations(di.fields, mirror=mirror)
 
     assert annotations == {'value': list[int]}

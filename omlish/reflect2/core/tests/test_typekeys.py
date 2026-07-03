@@ -5,7 +5,7 @@ import typing as ta
 import pytest
 
 from ...errors import ReflectionError
-from ...tests.helpers import make_reflector
+from ...tests.helpers import make_mirror
 from .. import symbols
 from .. import types
 from ..subtypes import is_alpha_structurally_equivalent
@@ -427,10 +427,10 @@ def test_type_key_policy_preserves_newtype_identity_by_default() -> None:
 def test_reflected_type_key_policy_can_erase_newtype_identity() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
     account_id = ta.NewType('AccountId', int)  # type: ignore
-    reflector = make_reflector()
-    user_type = reflector.reflect_type(user_id)
-    account_type = reflector.reflect_type(account_id)
-    int_type = reflector.reflect_type(int)
+    mirror = make_mirror()
+    user_type = mirror.reflect_type(user_id)
+    account_type = mirror.reflect_type(account_id)
+    int_type = mirror.reflect_type(int)
     policy = TypeKeyPolicy(discard_newtype_identity=True)
 
     assert isinstance(user_type, types.Instance)
@@ -443,10 +443,10 @@ def test_reflected_type_key_policy_can_erase_newtype_identity() -> None:
 def test_reflected_type_key_policy_can_erase_literal_backed_newtype_identity() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     other_mode = ta.NewType('OtherMode', ta.Literal['a', 'b'])  # type: ignore
-    reflector = make_reflector()
-    mode_type = reflector.reflect_type(mode)
-    other_mode_type = reflector.reflect_type(other_mode)
-    literal_type = reflector.reflect_type(ta.Literal['a', 'b'])
+    mirror = make_mirror()
+    mode_type = mirror.reflect_type(mode)
+    other_mode_type = mirror.reflect_type(other_mode)
+    literal_type = mirror.reflect_type(ta.Literal['a', 'b'])
     policy = TypeKeyPolicy(discard_newtype_identity=True)
 
     assert isinstance(mode_type, types.Instance)
@@ -1523,10 +1523,10 @@ def test_type_key_unhashable_opaque_ref_fails_closed() -> None:
 
 
 def test_runtime_reflection_rejects_opaque_literal_values_before_literal_type_construction() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
     with pytest.raises(ReflectionError, match='Unsupported literal value'):
-        reflector.reflect_type(ta.Literal[frozenset({1})])
+        mirror.reflect_type(ta.Literal[frozenset({1})])
 
 
 def test_alpha_type_key_recursive_alias_canonicalizes_type_vars() -> None:

@@ -22,14 +22,14 @@ from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
 from ..errors import ReflectionValueError
 from ..errors import UnreflectableTypeError
-from ..reflector import ForwardRefResolution
-from .helpers import make_reflector
+from ..mirror import ForwardRefResolution
+from .helpers import make_mirror
 
 
 def test_reflects_bare_runtime_class_as_instance() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(int)
+    typ = mirror.reflect_type(int)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.int'
@@ -37,9 +37,9 @@ def test_reflects_bare_runtime_class_as_instance() -> None:
 
 
 def test_reflects_builtin_generic_alias() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(dict[str, int])
+    typ = mirror.reflect_type(dict[str, int])
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.dict'
@@ -47,9 +47,9 @@ def test_reflects_builtin_generic_alias() -> None:
 
 
 def test_reflects_omitted_generic_args_as_any() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(list)
+    typ = mirror.reflect_type(list)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.list'
@@ -59,25 +59,25 @@ def test_reflects_omitted_generic_args_as_any() -> None:
 
 
 def test_reflects_any_and_none() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    assert isinstance(reflector.reflect_type(ta.Any), types.AnyType)
-    assert isinstance(reflector.reflect_type(None), types.NoneType)
-    assert isinstance(reflector.reflect_type(type(None)), types.NoneType)
+    assert isinstance(mirror.reflect_type(ta.Any), types.AnyType)
+    assert isinstance(mirror.reflect_type(None), types.NoneType)
+    assert isinstance(mirror.reflect_type(type(None)), types.NoneType)
 
 
 def test_reflects_never_and_no_return_as_uninhabited() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    assert isinstance(reflector.reflect_type(ta.Never), types.UninhabitedType)
-    assert isinstance(reflector.reflect_type(ta.NoReturn), types.UninhabitedType)
+    assert isinstance(mirror.reflect_type(ta.Never), types.UninhabitedType)
+    assert isinstance(mirror.reflect_type(ta.NoReturn), types.UninhabitedType)
 
 
 def test_reflects_tuple_aliases() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    fixed = reflector.reflect_type(tuple[int, str])
-    variadic = reflector.reflect_type(tuple[int, ...])
+    fixed = mirror.reflect_type(tuple[int, str])
+    variadic = mirror.reflect_type(tuple[int, ...])
 
     assert isinstance(fixed, types.TupleType)
     assert [type_str(item) for item in fixed.items] == ['builtins.int', 'builtins.str']
@@ -89,29 +89,29 @@ def test_reflects_tuple_aliases() -> None:
 
 
 def test_reflects_pep604_union() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(int | None)
+    typ = mirror.reflect_type(int | None)
 
     assert isinstance(typ, types.UnionType)
     assert [type_str(item) for item in typ.items] == ['builtins.int', 'None']
 
 
 def test_reflection_cache_returns_same_type_for_same_object() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    assert reflector.reflect_type(list[int]) is reflector.reflect_type(list[int])
+    assert mirror.reflect_type(list[int]) is mirror.reflect_type(list[int])
 
 
 def test_reflection_cache_skips_unhashable_runtime_forms() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     form = ta.Annotated[int, []]  # noqa
 
     with pytest.raises(TypeError):
         hash(form)
 
-    left = reflector.reflect_type(form)
-    right = reflector.reflect_type(form)
+    left = mirror.reflect_type(form)
+    right = mirror.reflect_type(form)
 
     assert left is not right
     assert type_str(left) == type_str(right) == 'Annotated[builtins.int, ...]'
@@ -120,33 +120,33 @@ def test_reflection_cache_skips_unhashable_runtime_forms() -> None:
     assert left.metadata == right.metadata == ([],)
 
 
-def test_make_runtime_reflector_accepts_dynamic_name_suffix() -> None:
+def test_make_runtime_mirror_accepts_dynamic_name_suffix() -> None:
     class Local:
         pass
 
-    reflector = make_reflector(
+    mirror = make_mirror(
         dynamic_type_name_suffix='counter',
     )
 
-    typ = reflector.reflect_type(Local)
+    typ = mirror.reflect_type(Local)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname.endswith('.Local@1')
 
 
-def test_separate_reflectors_assign_distinct_dynamic_type_infos() -> None:
+def test_separate_mirrors_assign_distinct_dynamic_type_infos() -> None:
     class Local:
         pass
 
-    left_reflector = make_reflector(
+    left_mirror = make_mirror(
         dynamic_type_name_suffix='counter',
     )
-    right_reflector = make_reflector(
+    right_mirror = make_mirror(
         dynamic_type_name_suffix='counter',
     )
 
-    left = left_reflector.reflect_type(Local)
-    right = right_reflector.reflect_type(Local)
+    left = left_mirror.reflect_type(Local)
+    right = right_mirror.reflect_type(Local)
 
     assert isinstance(left, types.Instance)
     assert isinstance(right, types.Instance)
@@ -156,10 +156,10 @@ def test_separate_reflectors_assign_distinct_dynamic_type_infos() -> None:
 
 
 def test_reflects_type_var() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
-    typ = reflector.reflect_type(rt_type_var)
+    typ = mirror.reflect_type(rt_type_var)
 
     assert isinstance(typ, types.TypeVarType)
     assert typ.name == 'T'
@@ -170,28 +170,28 @@ def test_reflects_type_var() -> None:
 
 
 def test_reflects_bound_type_var() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     rt_type_var = ta.TypeVar('T', bound=int)  # type: ignore
 
-    typ = reflector.reflect_type(rt_type_var)
+    typ = mirror.reflect_type(rt_type_var)
 
     assert isinstance(typ, types.TypeVarType)
     assert type_str(typ.upper_bound) == 'builtins.int'
 
 
 def test_reflects_constrained_type_var() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     rt_type_var = ta.TypeVar('T', int, str)  # type: ignore
 
-    typ = reflector.reflect_type(rt_type_var)
+    typ = mirror.reflect_type(rt_type_var)
 
     assert isinstance(typ, types.TypeVarType)
     assert [type_str(value) for value in typ.values] == ['builtins.int', 'builtins.str']
 
 
 def test_reflects_type_var_variance() -> None:
-    covariant = make_reflector().reflect_type(ta.TypeVar('T', covariant=True))
-    contravariant = make_reflector().reflect_type(ta.TypeVar('T', contravariant=True))
+    covariant = make_mirror().reflect_type(ta.TypeVar('T', covariant=True))
+    contravariant = make_mirror().reflect_type(ta.TypeVar('T', contravariant=True))
 
     assert isinstance(covariant, types.TypeVarType)
     assert covariant.variance == symbols.VarianceKind.CO
@@ -200,10 +200,10 @@ def test_reflects_type_var_variance() -> None:
 
 
 def test_reflects_type_var_inside_generic_alias() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
-    typ = reflector.reflect_type(list[rt_type_var])  # type: ignore
+    typ = mirror.reflect_type(list[rt_type_var])  # type: ignore
 
     assert isinstance(typ, types.Instance)
     assert len(typ.args) == 1
@@ -212,10 +212,10 @@ def test_reflects_type_var_inside_generic_alias() -> None:
 
 
 def test_reflects_type_var_inside_multi_arg_generic_alias() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
-    typ = reflector.reflect_type(dict[str, rt_type_var])  # type: ignore
+    typ = mirror.reflect_type(dict[str, rt_type_var])  # type: ignore
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.dict'
@@ -224,10 +224,10 @@ def test_reflects_type_var_inside_multi_arg_generic_alias() -> None:
 
 
 def test_reflects_type_var_inside_abc_generic_alias() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
-    typ = reflector.reflect_type(cabc.Sequence[rt_type_var])  # type: ignore
+    typ = mirror.reflect_type(cabc.Sequence[rt_type_var])  # type: ignore
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'collections.abc.Sequence'
@@ -236,35 +236,35 @@ def test_reflects_type_var_inside_abc_generic_alias() -> None:
 
 
 def test_reflects_bound_type_var_with_parameterized_bound() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     rt_type_var = ta.TypeVar('T', bound=cabc.Sequence[int])  # type: ignore
 
-    typ = reflector.reflect_type(rt_type_var)
+    typ = mirror.reflect_type(rt_type_var)
 
     assert isinstance(typ, types.TypeVarType)
     assert type_str(typ.upper_bound) == 'collections.abc.Sequence[builtins.int]'
 
 
 def test_type_var_reflection_cache_uses_runtime_object_identity() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     left = ta.TypeVar('T')  # type: ignore
     right = ta.TypeVar('T')  # type: ignore
 
-    assert reflector.reflect_type(left) is reflector.reflect_type(left)
-    assert reflector.reflect_type(left) is not reflector.reflect_type(right)
+    assert mirror.reflect_type(left) is mirror.reflect_type(left)
+    assert mirror.reflect_type(left) is not mirror.reflect_type(right)
 
 
-def test_separate_reflectors_assign_distinct_runtime_type_vars() -> None:
+def test_separate_mirrors_assign_distinct_runtime_type_vars() -> None:
     rt_type_var = ta.TypeVar('T')  # type: ignore
-    left_reflector = make_reflector(
+    left_mirror = make_mirror(
         dynamic_type_name_suffix='id',
     )
-    right_reflector = make_reflector(
+    right_mirror = make_mirror(
         dynamic_type_name_suffix='id',
     )
 
-    left = left_reflector.reflect_type(rt_type_var)
-    right = right_reflector.reflect_type(rt_type_var)
+    left = left_mirror.reflect_type(rt_type_var)
+    right = right_mirror.reflect_type(rt_type_var)
 
     assert isinstance(left, types.TypeVarType)
     assert isinstance(right, types.TypeVarType)
@@ -272,18 +272,18 @@ def test_separate_reflectors_assign_distinct_runtime_type_vars() -> None:
     assert not is_same_type(left, right)
 
 
-def test_cross_reflector_type_var_substitution_does_not_match_by_runtime_object() -> None:
+def test_cross_mirror_type_var_substitution_does_not_match_by_runtime_object() -> None:
     rt_type_var = ta.TypeVar('T')  # type: ignore
-    key_reflector = make_reflector(
+    key_mirror = make_mirror(
         dynamic_type_name_suffix='id',
     )
-    type_reflector = make_reflector(
+    type_mirror = make_mirror(
         dynamic_type_name_suffix='id',
     )
 
-    key = key_reflector.reflect_type(rt_type_var)
-    typ = type_reflector.reflect_type(list[rt_type_var])  # type: ignore
-    value = type_reflector.reflect_type(int)
+    key = key_mirror.reflect_type(rt_type_var)
+    typ = type_mirror.reflect_type(list[rt_type_var])  # type: ignore
+    value = type_mirror.reflect_type(int)
 
     assert isinstance(key, types.TypeVarType)
     assert isinstance(typ, types.Instance)
@@ -295,23 +295,23 @@ def test_cross_reflector_type_var_substitution_does_not_match_by_runtime_object(
 
 
 def test_same_runtime_type_var_compares_same_after_reflection() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
-    left = reflector.reflect_type(list[rt_type_var])  # type: ignore
-    right = reflector.reflect_type(list[rt_type_var])  # type: ignore
+    left = mirror.reflect_type(list[rt_type_var])  # type: ignore
+    right = mirror.reflect_type(list[rt_type_var])  # type: ignore
 
     assert is_same_type(left, right)
     assert is_equivalent(left, right)
 
 
 def test_different_runtime_type_vars_with_same_name_are_not_strictly_same() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     left_var = ta.TypeVar('T')  # type: ignore
     right_var = ta.TypeVar('T')  # type: ignore
 
-    left = reflector.reflect_type(list[left_var])  # type: ignore
-    right = reflector.reflect_type(list[right_var])  # type: ignore
+    left = mirror.reflect_type(list[left_var])  # type: ignore
+    right = mirror.reflect_type(list[right_var])  # type: ignore
 
     assert not is_same_type(left, right)
     assert not is_equivalent(left, right)
@@ -319,62 +319,62 @@ def test_different_runtime_type_vars_with_same_name_are_not_strictly_same() -> N
 
 
 def test_bounded_runtime_type_vars_with_same_name_are_not_strictly_same() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     left_var = ta.TypeVar('T', bound=cabc.Sequence[int])  # type: ignore
     right_var = ta.TypeVar('T', bound=cabc.Sequence[int])  # type: ignore
 
-    left = reflector.reflect_type(list[left_var])  # type: ignore
-    right = reflector.reflect_type(list[right_var])  # type: ignore
+    left = mirror.reflect_type(list[left_var])  # type: ignore
+    right = mirror.reflect_type(list[right_var])  # type: ignore
 
     assert not is_same_type(left, right)
     assert is_alpha_equivalent(left, right)
 
 
 def test_constrained_runtime_type_vars_with_same_name_are_not_strictly_same() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     left_var = ta.TypeVar('T', int, str)  # type: ignore
     right_var = ta.TypeVar('T', int, str)  # type: ignore
 
-    left = reflector.reflect_type(list[left_var])  # type: ignore
-    right = reflector.reflect_type(list[right_var])  # type: ignore
+    left = mirror.reflect_type(list[left_var])  # type: ignore
+    right = mirror.reflect_type(list[right_var])  # type: ignore
 
     assert not is_same_type(left, right)
     assert is_alpha_equivalent(left, right)
 
 
 def test_reflection_reflects_param_spec() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     param_spec = ta.ParamSpec('P')  # type: ignore
 
-    typ = reflector.reflect_type(param_spec)
+    typ = mirror.reflect_type(param_spec)
 
     assert isinstance(typ, types.ParamSpecType)
     assert typ.name == 'P'
-    assert reflector.reflect_type(param_spec) is typ
+    assert mirror.reflect_type(param_spec) is typ
 
 
 def test_reflection_reflects_type_var_tuple() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     type_var_tuple = ta.TypeVarTuple('Ts')  # type: ignore
 
-    typ = reflector.reflect_type(type_var_tuple)
+    typ = mirror.reflect_type(type_var_tuple)
 
     assert isinstance(typ, types.TypeVarTupleType)
     assert typ.name == 'Ts'
     assert type_str(typ.tuple_fallback) == 'builtins.tuple[Any]'
-    assert reflector.reflect_type(type_var_tuple) is typ
+    assert mirror.reflect_type(type_var_tuple) is typ
 
 
 def test_reflects_unpack_wrapper() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.Unpack[tuple[int, str]])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.Unpack[tuple[int, str]])
 
     assert isinstance(typ, types.UnpackType)
     assert type_str(typ.type) == 'tuple[builtins.int, builtins.str]'
 
 
 def test_reflects_unpack_inside_tuple_alias() -> None:
-    typ = make_reflector().reflect_type(tuple[ta.Unpack[tuple[int, str]]])  # noqa
+    typ = make_mirror().reflect_type(tuple[ta.Unpack[tuple[int, str]]])  # noqa
 
     assert isinstance(typ, types.TupleType)
     assert len(typ.items) == 1
@@ -383,16 +383,16 @@ def test_reflects_unpack_inside_tuple_alias() -> None:
 
 
 def test_rejects_bare_unpack() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type(ta.Unpack)
+        mirror.reflect_type(ta.Unpack)
 
 
 def test_reflects_unpack_of_type_var_tuple() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
 
-    typ = reflector.reflect_type(ta.Unpack[ts_var])
+    typ = mirror.reflect_type(ta.Unpack[ts_var])
 
     assert isinstance(typ, types.UnpackType)
     assert isinstance(typ.type, types.TypeVarTupleType)
@@ -402,7 +402,7 @@ def test_reflects_unpack_of_type_var_tuple() -> None:
 def test_reflects_tuple_unpack_of_type_var_tuple() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
 
-    typ = make_reflector().reflect_type(tuple[ta.Unpack[ts_var]])  # type: ignore  # noqa
+    typ = make_mirror().reflect_type(tuple[ta.Unpack[ts_var]])  # type: ignore  # noqa
 
     assert isinstance(typ, types.TupleType)
     assert len(typ.items) == 1
@@ -412,7 +412,7 @@ def test_reflects_tuple_unpack_of_type_var_tuple() -> None:
 
 
 def test_reflects_single_literal() -> None:
-    typ = make_reflector().reflect_type(ta.Literal['x'])
+    typ = make_mirror().reflect_type(ta.Literal['x'])
 
     assert isinstance(typ, types.LiteralType)
     assert typ.value == 'x'
@@ -420,8 +420,8 @@ def test_reflects_single_literal() -> None:
 
 
 def test_reflects_bool_literal_with_bool_fallback() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.Literal[True])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.Literal[True])
 
     assert isinstance(typ, types.LiteralType)
     assert typ.value is True
@@ -429,8 +429,8 @@ def test_reflects_bool_literal_with_bool_fallback() -> None:
 
 
 def test_reflects_bytes_literal_with_bytes_fallback_and_string_key() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.Literal[b'x'])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.Literal[b'x'])
 
     assert isinstance(typ, types.LiteralType)
     assert typ.value == b'x'
@@ -439,8 +439,8 @@ def test_reflects_bytes_literal_with_bytes_fallback_and_string_key() -> None:
 
 
 def test_reflects_float_literal_with_float_fallback_and_opaque_key() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.Literal[1.5])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.Literal[1.5])
 
     assert isinstance(typ, types.LiteralType)
     assert typ.value == 1.5
@@ -449,8 +449,8 @@ def test_reflects_float_literal_with_float_fallback_and_opaque_key() -> None:
 
 
 def test_reflects_none_literal_with_none_fallback_and_string_key() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.Literal[None])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.Literal[None])
 
     assert isinstance(typ, types.LiteralType)
     assert typ.value is None
@@ -459,8 +459,8 @@ def test_reflects_none_literal_with_none_fallback_and_string_key() -> None:
 
 
 def test_reflects_multi_value_literal_as_union() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.Literal['x', 1, False, b'y', 1.5, None])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.Literal['x', 1, False, b'y', 1.5, None])
 
     assert isinstance(typ, types.UnionType)
     assert [item.value for item in typ.items if isinstance(item, types.LiteralType)] == [
@@ -482,14 +482,14 @@ def test_reflects_multi_value_literal_as_union() -> None:
 
 
 def test_rejects_unsupported_literal_value() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type(ta.Literal[object()])
+        mirror.reflect_type(ta.Literal[object()])
 
 
 def test_reflects_annotated_as_inner_type() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.Annotated[int, 'metadata'])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.Annotated[int, 'metadata'])
 
     assert isinstance(typ, types.AnnotatedType)
     assert type_str(typ.item) == 'builtins.int'
@@ -497,8 +497,8 @@ def test_reflects_annotated_as_inner_type() -> None:
 
 
 def test_reflects_annotated_inside_generic_alias() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(list[ta.Annotated[int, 'metadata']])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(list[ta.Annotated[int, 'metadata']])
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.list'
@@ -506,8 +506,8 @@ def test_reflects_annotated_inside_generic_alias() -> None:
 
 
 def test_reflects_annotated_literal_as_inner_literal() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.Annotated[ta.Literal['x'], object()])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.Annotated[ta.Literal['x'], object()])
 
     assert isinstance(typ, types.AnnotatedType)
     assert isinstance(typ.item, types.LiteralType)
@@ -515,8 +515,8 @@ def test_reflects_annotated_literal_as_inner_literal() -> None:
 
 
 def test_reflects_type_guard_as_type_guarded_type() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(ta.TypeGuard[int])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(ta.TypeGuard[int])
 
     assert isinstance(typ, types.TypeGuardedType)
     assert type_str(typ.type_guard) == 'builtins.int'
@@ -524,8 +524,8 @@ def test_reflects_type_guard_as_type_guarded_type() -> None:
 
 
 def test_reflects_type_guard_inside_generic_alias() -> None:
-    reflector = make_reflector()
-    typ = reflector.reflect_type(list[ta.TypeGuard[int]])
+    mirror = make_mirror()
+    typ = mirror.reflect_type(list[ta.TypeGuard[int]])
 
     assert isinstance(typ, types.Instance)
     assert type_str(typ) == 'builtins.list[builtins.int]'
@@ -533,15 +533,15 @@ def test_reflects_type_guard_inside_generic_alias() -> None:
 
 
 def test_rejects_type_is_until_distinct_representation_exists() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     with pytest.raises(UnreflectableTypeError, match='TypeIs'):
-        reflector.reflect_type(ta.TypeIs[int])
+        mirror.reflect_type(ta.TypeIs[int])
 
 
 def test_reflects_newtype_as_supertype() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
 
-    typ = make_reflector().reflect_type(user_id)
+    typ = make_mirror().reflect_type(user_id)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == f'{__name__}.UserId'
@@ -551,7 +551,7 @@ def test_reflects_newtype_as_supertype() -> None:
 def test_reflects_newtype_inside_generic_alias_as_supertype() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
 
-    typ = make_reflector().reflect_type(list[user_id])
+    typ = make_mirror().reflect_type(list[user_id])
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.list'
@@ -561,7 +561,7 @@ def test_reflects_newtype_inside_generic_alias_as_supertype() -> None:
 def test_reflects_newtype_with_literal_supertype() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
-    typ = make_reflector().reflect_type(mode)
+    typ = make_mirror().reflect_type(mode)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == f'{__name__}.Mode'
@@ -569,19 +569,19 @@ def test_reflects_newtype_with_literal_supertype() -> None:
 
 
 def test_new_type_reflection_is_cached_by_newtype_object() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     user_id = ta.NewType('UserId', int)  # type: ignore
 
-    typ = reflector.reflect_type(user_id)
+    typ = mirror.reflect_type(user_id)
 
-    assert reflector.reflect_type(user_id) is typ
-    assert reflector._type_cache[user_id] is typ  # type: ignore[attr-defined]
+    assert mirror.reflect_type(user_id) is typ
+    assert mirror._type_cache[user_id] is typ  # type: ignore[attr-defined]
 
 
 def test_reflects_type_alias_type_by_preserving_alias_identity() -> None:
     alias = ta.TypeAliasType('Alias', list[int])  # type: ignore
 
-    typ = make_reflector().reflect_type(alias)
+    typ = make_mirror().reflect_type(alias)
 
     assert isinstance(typ, types.TypeAliasType)
     assert typ.alias is not None
@@ -591,12 +591,12 @@ def test_reflects_type_alias_type_by_preserving_alias_identity() -> None:
 
 
 def test_type_alias_keys_preserve_runtime_alias_object_identity() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     left = ta.TypeAliasType('Alias', list[int])  # type: ignore
     right = ta.TypeAliasType('Alias', list[int])  # type: ignore
 
-    left_type = reflector.reflect_type(left)
-    right_type = reflector.reflect_type(right)
+    left_type = mirror.reflect_type(left)
+    right_type = mirror.reflect_type(right)
 
     assert isinstance(left_type, types.TypeAliasType)
     assert isinstance(right_type, types.TypeAliasType)
@@ -610,7 +610,7 @@ def test_type_alias_keys_preserve_runtime_alias_object_identity() -> None:
 def test_reflects_type_alias_type_inside_generic_alias() -> None:
     alias = ta.TypeAliasType('Alias', list[int])  # type: ignore
 
-    typ = make_reflector().reflect_type(dict[str, alias])  # type: ignore
+    typ = make_mirror().reflect_type(dict[str, alias])  # type: ignore
 
     assert isinstance(typ, types.Instance)
     assert type_str(typ) == f'builtins.dict[builtins.str, {__name__}.Alias]'
@@ -622,7 +622,7 @@ def test_reflects_unsubscripted_generic_type_alias_type_with_type_var() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list[t_var], type_params=(t_var,))  # type: ignore
 
-    typ = make_reflector().reflect_type(alias)
+    typ = make_mirror().reflect_type(alias)
 
     assert isinstance(typ, types.TypeAliasType)
     assert type_str(typ) == f'{__name__}.Alias'
@@ -636,7 +636,7 @@ def test_reflects_subscripted_generic_type_alias_type_by_substituting_args() -> 
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', dict[str, t_var], type_params=(t_var,))  # type: ignore
 
-    typ = make_reflector().reflect_type(alias[int])
+    typ = make_mirror().reflect_type(alias[int])
 
     assert isinstance(typ, types.TypeAliasType)
     assert type_str(typ) == f'{__name__}.Alias[builtins.int]'
@@ -647,7 +647,7 @@ def test_reflects_subscripted_variadic_type_alias_type_by_packing_args() -> None
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
 
-    typ = make_reflector().reflect_type(alias[int, str])
+    typ = make_mirror().reflect_type(alias[int, str])
 
     assert isinstance(typ, types.TypeAliasType)
     assert len(typ.args) == 1
@@ -662,7 +662,7 @@ def test_reflects_subscripted_variadic_type_alias_type_with_fixed_prefix_and_suf
     u_var = ta.TypeVar('U')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[t_var, *ts_var, u_var], type_params=(t_var, ts_var, u_var))  # type: ignore
 
-    typ = make_reflector().reflect_type(alias[int, str, bool, bytes])
+    typ = make_mirror().reflect_type(alias[int, str, bool, bytes])
 
     assert isinstance(typ, types.TypeAliasType)
     assert len(typ.args) == 3
@@ -674,39 +674,39 @@ def test_reflects_subscripted_variadic_type_alias_type_with_fixed_prefix_and_suf
 
 
 def test_rejects_overapplied_nonvariadic_type_alias_type() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list[t_var], type_params=(t_var,))  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='type alias arguments'):
-        reflector.reflect_type(alias[int, str])
+        mirror.reflect_type(alias[int, str])
 
 
 def test_rejects_underapplied_variadic_type_alias_type_with_fixed_suffix() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     u_var = ta.TypeVar('U')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var, u_var], type_params=(ts_var, u_var))  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='type alias arguments'):
-        reflector.reflect_type(alias[*()])
+        mirror.reflect_type(alias[*()])
 
 
 def test_rejects_type_alias_type_with_multiple_type_var_tuple_parameters() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     left_ts = ta.TypeVarTuple('LeftTs')  # type: ignore
     right_ts = ta.TypeVarTuple('RightTs')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*left_ts, *right_ts], type_params=(left_ts, right_ts))  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='multiple TypeVarTuple'):
-        reflector.reflect_type(alias[int, str])
+        mirror.reflect_type(alias[int, str])
 
 
 def test_reflects_direct_recursive_type_alias_type_as_alias_node() -> None:
     alias = ta.TypeAliasType('Alias', list['Alias'])  # type: ignore
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(alias)
+    typ = mirror.reflect_type(alias)
 
     assert isinstance(typ, types.TypeAliasType)
     assert typ.is_recursive
@@ -730,12 +730,12 @@ def test_reflects_indirect_recursive_type_alias_type_as_alias_nodes() -> None:
         'A': alias_a,
         'B': alias_b,
     }
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: aliases[frr.name],
     )
 
-    typ_a = reflector.reflect_type(alias_a)
-    typ_b = reflector.reflect_type(alias_b)
+    typ_a = mirror.reflect_type(alias_a)
+    typ_b = mirror.reflect_type(alias_b)
 
     assert isinstance(typ_a, types.TypeAliasType)
     assert isinstance(typ_b, types.TypeAliasType)
@@ -747,11 +747,11 @@ def test_reflects_indirect_recursive_type_alias_type_as_alias_nodes() -> None:
 def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list['Alias[T]'], type_params=(t_var,))  # type: ignore
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'Alias': alias}[frr.name],
     )
 
-    typ = reflector.reflect_type(alias[int])
+    typ = mirror.reflect_type(alias[int])
 
     assert isinstance(typ, types.TypeAliasType)
     assert typ.is_recursive
@@ -776,11 +776,11 @@ def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> Non
 def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[t_var, 'Alias[T]'], type_params=(t_var,))  # type: ignore
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'Alias': alias}[frr.name],
     )
 
-    typ = reflector.reflect_type(alias[int])
+    typ = mirror.reflect_type(alias[int])
 
     assert isinstance(typ, types.TypeAliasType)
     assert typ.is_recursive
@@ -805,11 +805,11 @@ def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() 
 def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var, 'Alias[*Ts]'], type_params=(ts_var,))  # type: ignore
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'Alias': alias}[frr.name],
     )
 
-    typ = reflector.reflect_type(alias[int, str])
+    typ = mirror.reflect_type(alias[int, str])
 
     assert isinstance(typ, types.TypeAliasType)
     assert typ.is_recursive
@@ -849,85 +849,85 @@ def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg
 
 
 def test_rejects_type_alias_type_forward_value_until_resolution_exists() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         unresolved_forward_ref_policy='raise',
     )
 
     alias = ta.TypeAliasType('Alias', 'Missing')  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflector.reflect_type(alias)
+        mirror.reflect_type(alias)
 
 
 def test_rejects_raw_string_forward_reference_until_resolution_exists() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         unresolved_forward_ref_policy='raise',
     )
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflector.reflect_type('Missing')
+        mirror.reflect_type('Missing')
 
 
 def test_rejects_annotationlib_forward_reference_until_resolution_exists() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         unresolved_forward_ref_policy='raise',
     )
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflector.reflect_type(annotationlib.ForwardRef('Missing'))
+        mirror.reflect_type(annotationlib.ForwardRef('Missing'))
 
 
 def test_rejects_typing_forward_reference_until_resolution_exists() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         unresolved_forward_ref_policy='raise',
     )
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflector.reflect_type(ta.ForwardRef('Missing'))
+        mirror.reflect_type(ta.ForwardRef('Missing'))
 
 
 def test_resolves_raw_string_forward_reference_with_resolver() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'User': int}[frr.name],
     )
 
-    typ = reflector.reflect_type('User')
+    typ = mirror.reflect_type('User')
 
     assert isinstance(typ, types.Instance)
     assert type_str(typ) == 'builtins.int'
 
 
-def test_make_runtime_reflector_accepts_forward_ref_resolver() -> None:
+def test_make_runtime_mirror_accepts_forward_ref_resolver() -> None:
     resolver = lambda frr: {'User': int}[frr.name]
-    reflector = make_reflector(
+    mirror = make_mirror(
         dynamic_type_name_suffix='id',
         forward_ref_resolver=resolver,
     )
 
-    typ = reflector.reflect_type('User')
+    typ = mirror.reflect_type('User')
 
     assert isinstance(typ, types.Instance)
     assert type_str(typ) == 'builtins.int'
 
 
 def test_resolves_annotationlib_forward_reference_with_resolver() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'User': list[int]}[frr.name],
     )
 
-    typ = reflector.reflect_type(annotationlib.ForwardRef('User'))
+    typ = mirror.reflect_type(annotationlib.ForwardRef('User'))
 
     assert isinstance(typ, types.Instance)
     assert type_str(typ) == 'builtins.list[builtins.int]'
 
 
 def test_resolves_type_alias_type_forward_value_with_resolver() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'User': str}[frr.name],
     )
     alias = ta.TypeAliasType('Alias', 'User')  # type: ignore
 
-    typ = reflector.reflect_type(alias)
+    typ = mirror.reflect_type(alias)
 
     assert isinstance(typ, types.TypeAliasType)
     assert type_str(typ) == f'{__name__}.Alias'
@@ -935,25 +935,25 @@ def test_resolves_type_alias_type_forward_value_with_resolver() -> None:
 
 
 def test_forward_reference_resolver_result_must_be_reflectable() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: object(),
     )
 
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type('User')
+        mirror.reflect_type('User')
 
 
 def test_forward_reference_resolver_does_not_mask_nested_unresolved_reference() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: annotationlib.ForwardRef('Other'),
     )
 
     with pytest.raises(UnreflectableTypeError, match='Recursive forward reference'):
-        reflector.reflect_type('User')
+        mirror.reflect_type('User')
 
 
 def test_reflects_typing_callable_with_explicit_args() -> None:
-    typ = make_reflector().reflect_type(ta.Callable[[int, str], bool])
+    typ = make_mirror().reflect_type(ta.Callable[[int, str], bool])
 
     assert isinstance(typ, types.CallableType)
     assert not typ.is_ellipsis_args
@@ -967,7 +967,7 @@ def test_reflects_typing_callable_with_explicit_args() -> None:
 def test_reflects_collections_callable_with_explicit_args() -> None:
     import collections.abc as cabc
 
-    typ = make_reflector().reflect_type(cabc.Callable[[int], str])
+    typ = make_mirror().reflect_type(cabc.Callable[[int], str])
 
     assert isinstance(typ, types.CallableType)
     assert not typ.is_ellipsis_args
@@ -976,7 +976,7 @@ def test_reflects_collections_callable_with_explicit_args() -> None:
 
 
 def test_reflects_callable_with_ellipsis_args() -> None:
-    typ = make_reflector().reflect_type(ta.Callable[..., int])
+    typ = make_mirror().reflect_type(ta.Callable[..., int])
 
     assert isinstance(typ, types.CallableType)
     assert typ.is_ellipsis_args
@@ -989,7 +989,7 @@ def test_reflects_callable_with_ellipsis_args() -> None:
 
 def test_reflects_callable_with_param_spec_args() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
-    typ = make_reflector().reflect_type(ta.Callable[param_spec, int])  # noqa
+    typ = make_mirror().reflect_type(ta.Callable[param_spec, int])  # noqa
 
     assert isinstance(typ, types.CallableType)
     assert [type(arg).__name__ for arg in typ.arg_types] == ['ParamSpecType', 'ParamSpecType']
@@ -1000,7 +1000,7 @@ def test_reflects_callable_with_param_spec_args() -> None:
 
 def test_reflects_callable_with_concatenate_args() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
-    typ = make_reflector().reflect_type(ta.Callable[ta.Concatenate[int, str, param_spec], bool])  # noqa
+    typ = make_mirror().reflect_type(ta.Callable[ta.Concatenate[int, str, param_spec], bool])  # noqa
 
     assert isinstance(typ, types.CallableType)
     assert [type_str(arg) for arg in typ.arg_types] == ['builtins.int', 'builtins.str', 'P', 'P']
@@ -1009,28 +1009,28 @@ def test_reflects_callable_with_concatenate_args() -> None:
 
 
 def test_reflects_type_type_alias() -> None:
-    typ = make_reflector().reflect_type(type[int])
+    typ = make_mirror().reflect_type(type[int])
 
     assert isinstance(typ, types.TypeType)
     assert type_str(typ.item) == 'builtins.int'
 
 
 def test_reflects_typing_type_alias() -> None:
-    typ = make_reflector().reflect_type(ta.Type[str])  # noqa
+    typ = make_mirror().reflect_type(ta.Type[str])  # noqa
 
     assert isinstance(typ, types.TypeType)
     assert type_str(typ.item) == 'builtins.str'
 
 
 def test_reflects_type_type_alias_with_any() -> None:
-    typ = make_reflector().reflect_type(type[ta.Any])
+    typ = make_mirror().reflect_type(type[ta.Any])
 
     assert isinstance(typ, types.TypeType)
     assert isinstance(typ.item, types.AnyType)
 
 
 def test_reflects_type_type_alias_inside_generic_alias() -> None:
-    typ = make_reflector().reflect_type(list[type[int]])
+    typ = make_mirror().reflect_type(list[type[int]])
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.list'
@@ -1040,7 +1040,7 @@ def test_reflects_type_type_alias_inside_generic_alias() -> None:
 
 
 def test_reflects_bare_type_as_generic_instance() -> None:
-    typ = make_reflector().reflect_type(type)
+    typ = make_mirror().reflect_type(type)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.type'
@@ -1048,21 +1048,21 @@ def test_reflects_bare_type_as_generic_instance() -> None:
 
 
 def test_reflects_class_var_as_inner_type() -> None:
-    typ = make_reflector().reflect_type(ta.ClassVar[int])
+    typ = make_mirror().reflect_type(ta.ClassVar[int])
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.int'
 
 
 def test_reflects_final_as_inner_type() -> None:
-    typ = make_reflector().reflect_type(ta.Final[str])
+    typ = make_mirror().reflect_type(ta.Final[str])
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.str'
 
 
 def test_reflects_final_inside_generic_alias() -> None:
-    typ = make_reflector().reflect_type(list[ta.Final[int]])  # type: ignore
+    typ = make_mirror().reflect_type(list[ta.Final[int]])  # type: ignore
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.list'
@@ -1070,9 +1070,9 @@ def test_reflects_final_inside_generic_alias() -> None:
 
 
 def test_reflects_required_and_not_required_wrappers() -> None:
-    reflector = make_reflector()
-    required = reflector.reflect_type(ta.Required[int])
-    not_required = reflector.reflect_type(ta.NotRequired[str])
+    mirror = make_mirror()
+    required = mirror.reflect_type(ta.Required[int])
+    not_required = mirror.reflect_type(ta.NotRequired[str])
 
     assert isinstance(required, types.RequiredType)
     assert required.required
@@ -1084,14 +1084,14 @@ def test_reflects_required_and_not_required_wrappers() -> None:
 
 
 def test_reflects_read_only_wrapper() -> None:
-    typ = make_reflector().reflect_type(ta.ReadOnly[int])
+    typ = make_mirror().reflect_type(ta.ReadOnly[int])
 
     assert isinstance(typ, types.ReadOnlyType)
     assert type_str(typ.item) == 'builtins.int'
 
 
 def test_reflects_typed_dict_wrappers_inside_generic_alias() -> None:
-    typ = make_reflector().reflect_type(tuple[ta.Required[int], ta.NotRequired[str], ta.ReadOnly[bool]])  # type: ignore
+    typ = make_mirror().reflect_type(tuple[ta.Required[int], ta.NotRequired[str], ta.ReadOnly[bool]])  # type: ignore
 
     assert isinstance(typ, types.TupleType)
     assert [type_str(item) for item in typ.items] == [
@@ -1106,7 +1106,7 @@ def test_reflects_typed_dict_class() -> None:
         title: str
         year: int
 
-    typ = make_reflector().reflect_type(Movie)
+    typ = make_mirror().reflect_type(Movie)
 
     assert isinstance(typ, types.TypedDictType)
     assert typ.required_keys == {'title', 'year'}
@@ -1125,7 +1125,7 @@ def test_reflects_typed_dict_required_not_required_and_read_only_keys() -> None:
         tag: ta.ReadOnly[ta.NotRequired[str]]
         alias: ta.NotRequired[ta.ReadOnly[int]]
 
-    typ = make_reflector().reflect_type(Movie)
+    typ = make_mirror().reflect_type(Movie)
 
     assert isinstance(typ, types.TypedDictType)
     assert typ.required_keys == {'title'}
@@ -1149,7 +1149,7 @@ def test_reflects_generic_typed_dict_alias() -> None:
         item: t_var  # type: ignore
         items: list[t_var]  # type: ignore
 
-    typ = make_reflector().reflect_type(Payload[int])  # type: ignore
+    typ = make_mirror().reflect_type(Payload[int])  # type: ignore
 
     assert isinstance(typ, types.TypedDictType)
     assert {name: type_str(item) for name, item in typ.items.items()} == {
@@ -1163,11 +1163,11 @@ def test_reflects_typed_dict_forward_refs_with_resolver() -> None:
         user: 'User'  # type: ignore  # noqa
         maybe_user: ta.NotRequired['User']  # type: ignore  # noqa
 
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'User': int}[frr.name],
     )
 
-    typ = reflector.reflect_type(Payload)
+    typ = mirror.reflect_type(Payload)
 
     assert isinstance(typ, types.TypedDictType)
     assert typ.required_keys == {'user'}
@@ -1178,87 +1178,87 @@ def test_reflects_typed_dict_forward_refs_with_resolver() -> None:
 
 
 def test_rejects_nested_required_typed_dict_item_wrapper() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
     class Payload(ta.TypedDict):
         item: ta.Required[ta.NotRequired[int]]  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='nested Required'):
-        reflector.reflect_type(Payload)
+        mirror.reflect_type(Payload)
 
 
 def test_rejects_nested_read_only_typed_dict_item_wrapper() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
     class Payload(ta.TypedDict):
         item: ta.ReadOnly[ta.ReadOnly[int]]  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='nested ReadOnly'):
-        reflector.reflect_type(Payload)
+        mirror.reflect_type(Payload)
 
 
 def test_rejects_required_typed_dict_item_wrapper_below_top_level() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
     class Payload(ta.TypedDict):
         item: list[ta.Required[int]]  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='nested TypedDict item wrapper'):
-        reflector.reflect_type(Payload)
+        mirror.reflect_type(Payload)
 
 
 def test_rejects_read_only_typed_dict_item_wrapper_below_top_level() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
     class Payload(ta.TypedDict):
         item: list[ta.ReadOnly[int]]  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='nested TypedDict item wrapper'):
-        reflector.reflect_type(Payload)
+        mirror.reflect_type(Payload)
 
 
 def test_rejects_bare_class_var_final_and_typed_dict_wrappers() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type(ta.ClassVar)
+        mirror.reflect_type(ta.ClassVar)
 
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type(ta.Final)
+        mirror.reflect_type(ta.Final)
 
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type(ta.Required)
+        mirror.reflect_type(ta.Required)
 
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type(ta.NotRequired)
+        mirror.reflect_type(ta.NotRequired)
 
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type(ta.ReadOnly)
+        mirror.reflect_type(ta.ReadOnly)
 
 
 def test_rejects_self_without_class_context() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
     with pytest.raises(UnreflectableTypeError):
-        reflector.reflect_type(ta.Self)
+        mirror.reflect_type(ta.Self)
 
 
 def test_reflects_optional_as_union_with_none() -> None:
-    typ = make_reflector().reflect_type(ta.Optional[int])  # noqa
+    typ = make_mirror().reflect_type(ta.Optional[int])  # noqa
 
     assert isinstance(typ, types.UnionType)
     assert [type_str(item) for item in typ.items] == ['builtins.int', 'None']
 
 
 def test_reflects_nested_unions_flattened_by_core_helper() -> None:
-    typ = make_reflector().reflect_type(ta.Union[int, ta.Optional[str]])  # noqa
+    typ = make_mirror().reflect_type(ta.Union[int, ta.Optional[str]])  # noqa
 
     assert isinstance(typ, types.UnionType)
     assert [type_str(item) for item in typ.items] == ['builtins.int', 'builtins.str', 'None']
 
 
 def test_reflected_class_type_info_includes_runtime_generic_bases() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -1267,22 +1267,22 @@ def test_reflected_class_type_info_includes_runtime_generic_bases() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    typ = reflector.reflect_type(IntBox)
+    typ = mirror.reflect_type(IntBox)
 
     assert isinstance(typ, types.Instance)
     assert len(typ.type.bases) == 1
     base = typ.type.bases[0]
     assert isinstance(base, types.Instance)
-    assert base.type is reflector.get_type_info(Box)
+    assert base.type is mirror.get_type_info(Box)
     assert [type_str(arg) for arg in base.args] == ['builtins.int']
     assert typ.type.mro[:2] == (
-        reflector.get_type_info(IntBox),
-        reflector.get_type_info(Box),
+        mirror.get_type_info(IntBox),
+        mirror.get_type_info(Box),
     )
 
 
 def test_reflected_class_generic_base_args_participate_in_subtyping() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -1291,9 +1291,9 @@ def test_reflected_class_generic_base_args_participate_in_subtyping() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    child = reflector.reflect_type(IntBox)
-    int_box = reflector.reflect_type(Box[int])  # type: ignore
-    str_box = reflector.reflect_type(Box[str])  # type: ignore
+    child = mirror.reflect_type(IntBox)
+    int_box = mirror.reflect_type(Box[int])  # type: ignore
+    str_box = mirror.reflect_type(Box[str])  # type: ignore
 
     assert isinstance(child, types.Instance)
     assert isinstance(int_box, types.Instance)
@@ -1303,7 +1303,7 @@ def test_reflected_class_generic_base_args_participate_in_subtyping() -> None:
 
 
 def test_reflected_class_indirect_generic_base_args_participate_in_subtyping() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -1315,9 +1315,9 @@ def test_reflected_class_indirect_generic_base_args_participate_in_subtyping() -
     class Child(Middle[t_var]):  # type: ignore
         pass
 
-    child = reflector.reflect_type(Child[int])  # type: ignore
-    int_box = reflector.reflect_type(Box[int])  # type: ignore
-    str_box = reflector.reflect_type(Box[str])  # type: ignore
+    child = mirror.reflect_type(Child[int])  # type: ignore
+    int_box = mirror.reflect_type(Box[int])  # type: ignore
+    str_box = mirror.reflect_type(Box[str])  # type: ignore
 
     assert isinstance(child, types.Instance)
     assert isinstance(int_box, types.Instance)
@@ -1327,7 +1327,7 @@ def test_reflected_class_indirect_generic_base_args_participate_in_subtyping() -
 
 
 def test_reflected_class_generic_mro_remaps_type_vars_at_each_layer() -> None:
-    reflector = make_reflector(dynamic_type_name_suffix='counter')
+    mirror = make_mirror(dynamic_type_name_suffix='counter')
     a_var = ta.TypeVar('A')  # type: ignore
     b_var = ta.TypeVar('B')  # type: ignore
     x_var = ta.TypeVar('X')  # type: ignore
@@ -1342,7 +1342,7 @@ def test_reflected_class_generic_mro_remaps_type_vars_at_each_layer() -> None:
     class Child(ta.Generic[y_var], Middle[dict[str, y_var]]):  # type: ignore
         pass
 
-    typ = reflector.reflect_type(Child[int])  # type: ignore
+    typ = mirror.reflect_type(Child[int])  # type: ignore
 
     assert isinstance(typ, types.Instance)
     mapped_mro = get_mro_instances(typ)
@@ -1389,58 +1389,58 @@ class _CtxTypedDict(ta.TypedDict):
 
 
 def test_default_resolution_resolves_type_var_bound_from_defining_module() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(_CtxBoundVar)
+    typ = mirror.reflect_type(_CtxBoundVar)
 
     assert isinstance(typ, types.TypeVarType)
     assert isinstance(typ.upper_bound, types.Instance)
-    assert reflector.get_runtime_type(typ.upper_bound.type) is _CtxBound
+    assert mirror.get_runtime_type(typ.upper_bound.type) is _CtxBound
 
 
 def test_default_resolution_resolves_nested_forward_ref_inside_type_var_bound() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(_CtxNestedVar)
+    typ = mirror.reflect_type(_CtxNestedVar)
 
     assert isinstance(typ, types.TypeVarType)
     assert isinstance(typ.upper_bound, types.Instance)
     assert typ.upper_bound.type.fullname == 'builtins.list'
     (arg,) = typ.upper_bound.args
     assert isinstance(arg, types.Instance)
-    assert reflector.get_runtime_type(arg.type) is _CtxBound
+    assert mirror.get_runtime_type(arg.type) is _CtxBound
 
 
 def test_default_resolution_resolves_generic_class_parameter_bound() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(_CtxBox[int])  # type: ignore[type-var]
+    typ = mirror.reflect_type(_CtxBox[int])  # type: ignore[type-var]
 
     assert isinstance(typ, types.Instance)
     (type_var,) = typ.type.type_vars
     assert isinstance(type_var, types.TypeVarType)
     assert isinstance(type_var.upper_bound, types.Instance)
-    assert reflector.get_runtime_type(type_var.upper_bound.type) is _CtxBound
+    assert mirror.get_runtime_type(type_var.upper_bound.type) is _CtxBound
 
 
 def test_default_resolution_resolves_typed_dict_item_forward_ref() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
 
-    typ = reflector.reflect_type(_CtxTypedDict)
+    typ = mirror.reflect_type(_CtxTypedDict)
 
     assert isinstance(typ, types.TypedDictType)
     (item,) = typ.items.values()
     assert isinstance(item, types.Instance)
-    assert reflector.get_runtime_type(item.type) is _CtxItem
+    assert mirror.get_runtime_type(item.type) is _CtxItem
 
 
 def test_default_resolution_without_owner_scope_still_rejects_bare_forward_ref() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         unresolved_forward_ref_policy='raise',
     )
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflector.reflect_type('_CtxBound')
+        mirror.reflect_type('_CtxBound')
 
 
 def test_forward_ref_resolver_receives_full_resolution_context() -> None:
@@ -1450,9 +1450,9 @@ def test_forward_ref_resolver_receives_full_resolution_context() -> None:
         captured.append(frr)
         return int
 
-    reflector = make_reflector(forward_ref_resolver=resolver)
+    mirror = make_mirror(forward_ref_resolver=resolver)
 
-    typ = reflector.reflect_type(_CtxBoundVar)
+    typ = mirror.reflect_type(_CtxBoundVar)
 
     assert isinstance(typ, types.TypeVarType)
     assert type_str(typ.upper_bound) == 'builtins.int'
@@ -1466,32 +1466,32 @@ def test_forward_ref_resolver_receives_full_resolution_context() -> None:
 
 
 def test_forward_ref_resolver_overrides_owner_scope_resolution() -> None:
-    reflector = make_reflector(forward_ref_resolver=lambda frr: str)
+    mirror = make_mirror(forward_ref_resolver=lambda frr: str)
 
-    typ = reflector.reflect_type(_CtxBoundVar)
+    typ = mirror.reflect_type(_CtxBoundVar)
 
     assert isinstance(typ, types.TypeVarType)
     assert type_str(typ.upper_bound) == 'builtins.str'
 
 
 def test_forward_ref_resolver_can_delegate_to_owner_scope_resolution() -> None:
-    reflector = make_reflector(forward_ref_resolver=lambda frr: frr.resolve())
+    mirror = make_mirror(forward_ref_resolver=lambda frr: frr.resolve())
 
-    typ = reflector.reflect_type(_CtxBoundVar)
+    typ = mirror.reflect_type(_CtxBoundVar)
 
     assert isinstance(typ, types.TypeVarType)
     assert isinstance(typ.upper_bound, types.Instance)
-    assert reflector.get_runtime_type(typ.upper_bound.type) is _CtxBound
+    assert mirror.get_runtime_type(typ.upper_bound.type) is _CtxBound
 
 
 def test_forward_ref_resolver_delegation_without_owner_scope_raises() -> None:
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: frr.resolve(),
         unresolved_forward_ref_policy='raise',
     )
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflector.reflect_type('Missing')
+        mirror.reflect_type('Missing')
 
 
 ##
@@ -1519,15 +1519,15 @@ def test_type_var_bound_resolves_in_type_var_module_not_using_class_module() -> 
         class Using(ta.Generic[type_var]):  # type: ignore  # noqa
             pass
 
-        reflector = make_reflector()
+        mirror = make_mirror()
 
-        typ = reflector.reflect_type(Using[int])  # type: ignore
+        typ = mirror.reflect_type(Using[int])  # type: ignore
 
         assert isinstance(typ, types.Instance)
         (reflected_var,) = typ.type.type_vars
         assert isinstance(reflected_var, types.TypeVarType)
         assert isinstance(reflected_var.upper_bound, types.Instance)
-        assert reflector.get_runtime_type(reflected_var.upper_bound.type) is module.Target
+        assert mirror.get_runtime_type(reflected_var.upper_bound.type) is module.Target
     finally:
         sys.modules.pop(module_name, None)
 
@@ -1546,10 +1546,10 @@ def test_same_named_forward_ref_bounds_in_distinct_modules_do_not_collide() -> N
         # The two `ForwardRef('Foo')` bounds compare equal and hash equal despite naming different classes.
         assert module_a.T.__bound__ == module_b.T.__bound__
 
-        reflector = make_reflector()
+        mirror = make_mirror()
 
-        typ_a = reflector.reflect_type(module_a.T)
-        typ_b = reflector.reflect_type(module_b.T)
+        typ_a = mirror.reflect_type(module_a.T)
+        typ_b = mirror.reflect_type(module_b.T)
 
         assert isinstance(typ_a, types.TypeVarType)
         assert isinstance(typ_b, types.TypeVarType)
@@ -1558,8 +1558,8 @@ def test_same_named_forward_ref_bounds_in_distinct_modules_do_not_collide() -> N
 
         # Without the forward-ref cache guard the second reflection would collide with the first and return module_a's
         # `Foo`.
-        assert reflector.get_runtime_type(typ_a.upper_bound.type) is module_a.Foo
-        assert reflector.get_runtime_type(typ_b.upper_bound.type) is module_b.Foo
+        assert mirror.get_runtime_type(typ_a.upper_bound.type) is module_a.Foo
+        assert mirror.get_runtime_type(typ_b.upper_bound.type) is module_b.Foo
         assert typ_a.upper_bound.type is not typ_b.upper_bound.type
     finally:
         sys.modules.pop(name_a, None)
@@ -1568,19 +1568,19 @@ def test_same_named_forward_ref_bounds_in_distinct_modules_do_not_collide() -> N
 
 def test_strict_policy_raises_on_unresolvable_forward_ref() -> None:
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        make_reflector(unresolved_forward_ref_policy='raise').reflect_type('Missing')
+        make_mirror(unresolved_forward_ref_policy='raise').reflect_type('Missing')
 
 
 def test_rejects_unsupported_unresolved_forward_ref_policy_policy() -> None:
     with pytest.raises(ReflectionValueError):
-        make_reflector(unresolved_forward_ref_policy='nonsense')  # type: ignore[arg-type]
+        make_mirror(unresolved_forward_ref_policy='nonsense')  # type: ignore[arg-type]
 
 
 def test_unbound_policy_degrades_unresolvable_forward_ref_and_retains_identity() -> None:
-    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    mirror = make_mirror(unresolved_forward_ref_policy='unbound')
     forward_ref = annotationlib.ForwardRef('Missing')
 
-    typ = reflector.reflect_type(forward_ref)
+    typ = mirror.reflect_type(forward_ref)
 
     assert isinstance(typ, types.UnboundType)
     assert typ.name == 'Missing'
@@ -1590,9 +1590,9 @@ def test_unbound_policy_degrades_unresolvable_forward_ref_and_retains_identity()
 
 
 def test_unbound_policy_on_bare_string_retains_no_runtime_object() -> None:
-    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    mirror = make_mirror(unresolved_forward_ref_policy='unbound')
 
-    typ = reflector.reflect_type('Missing')
+    typ = mirror.reflect_type('Missing')
 
     assert isinstance(typ, types.UnboundType)
     assert typ.name == 'Missing'
@@ -1605,9 +1605,9 @@ def test_unbound_policy_reflects_recursive_old_style_alias_to_finite_leaves() ->
     alias = ta.Sequence[ta.Union['_Rec', int]]  # type: ignore[name-defined]  # noqa
     forward_ref = ta.get_args(ta.get_args(alias)[0])[0]
 
-    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    mirror = make_mirror(unresolved_forward_ref_policy='unbound')
 
-    typ = reflector.reflect_type(alias)
+    typ = mirror.reflect_type(alias)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'collections.abc.Sequence'
@@ -1620,12 +1620,12 @@ def test_unbound_policy_reflects_recursive_old_style_alias_to_finite_leaves() ->
 
 def test_unbound_policy_still_prefers_resolution_when_available() -> None:
     # The policy governs only the terminal give-up; owner scope and resolvers still resolve first.
-    reflector = make_reflector(
+    mirror = make_mirror(
         unresolved_forward_ref_policy='unbound',
         forward_ref_resolver=lambda frr: {'Known': int}[frr.name],
     )
 
-    typ = reflector.reflect_type('Known')
+    typ = mirror.reflect_type('Known')
 
     assert isinstance(typ, types.Instance)
     assert type_str(typ) == 'builtins.int'
@@ -1634,12 +1634,12 @@ def test_unbound_policy_still_prefers_resolution_when_available() -> None:
 def test_unbound_policy_does_not_pollute_cache_across_owners() -> None:
     # The forward-ref cache guard still holds: a bare ForwardRef is never cached under its (ambiguous) key, so distinct
     # ForwardRef objects with the same name keep their own retained identity even in 'unbound' mode.
-    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    mirror = make_mirror(unresolved_forward_ref_policy='unbound')
     left = annotationlib.ForwardRef('Same')
     right = annotationlib.ForwardRef('Same')
 
-    left_type = reflector.reflect_type(left)
-    right_type = reflector.reflect_type(right)
+    left_type = mirror.reflect_type(left)
+    right_type = mirror.reflect_type(right)
 
     assert isinstance(left_type, types.UnboundType)
     assert isinstance(right_type, types.UnboundType)
@@ -1648,10 +1648,10 @@ def test_unbound_policy_does_not_pollute_cache_across_owners() -> None:
 
 
 def test_unbound_type_key_preserves_forward_ref_identity_by_default() -> None:
-    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    mirror = make_mirror(unresolved_forward_ref_policy='unbound')
     forward_ref = annotationlib.ForwardRef('Missing')
 
-    typ = reflector.reflect_type(forward_ref)
+    typ = mirror.reflect_type(forward_ref)
 
     # Default policy folds the retained ForwardRef into the key as an opaque ref; the structural policy drops it to a
     # bare name.
@@ -1664,22 +1664,22 @@ def test_unbound_type_key_preserves_forward_ref_identity_by_default() -> None:
 def test_unbound_type_key_identity_folds_by_forward_ref_equality() -> None:
     # ForwardRef equality is name-based, so the key's identity fold distinguishes by name; the hard object handle for
     # true `is`-distinction is UnboundType.runtime_object (see above), not the key.
-    reflector = make_reflector(unresolved_forward_ref_policy='unbound')
+    mirror = make_mirror(unresolved_forward_ref_policy='unbound')
 
-    same_a = reflector.reflect_type(annotationlib.ForwardRef('Same'))
-    same_b = reflector.reflect_type(annotationlib.ForwardRef('Same'))
-    other = reflector.reflect_type(annotationlib.ForwardRef('Other'))
+    same_a = mirror.reflect_type(annotationlib.ForwardRef('Same'))
+    same_b = mirror.reflect_type(annotationlib.ForwardRef('Same'))
+    other = mirror.reflect_type(annotationlib.ForwardRef('Other'))
 
     assert type_key(same_a) == type_key(same_b)
     assert type_key(same_a) != type_key(other)
 
 
 def test_api_threads_unresolved_forward_ref_policy_policy_leaving_global_strict() -> None:
-    tolerant = make_reflector(unresolved_forward_ref_policy='unbound')
+    tolerant = make_mirror(unresolved_forward_ref_policy='unbound')
 
     typ = tolerant.reflect_type('Missing')
     assert isinstance(typ, types.UnboundType)
     assert typ.name == 'Missing'
 
     with pytest.raises(UnreflectableTypeError):
-        make_reflector(unresolved_forward_ref_policy='raise').reflect_type('Missing')
+        make_mirror(unresolved_forward_ref_policy='raise').reflect_type('Missing')

@@ -74,7 +74,7 @@ class ForwardRefResolver(ta.Protocol):
 ##
 
 
-class TypeReflector:
+class Mirror:
     @property
     @abc.abstractmethod
     def dynamic_type_name_suffix(self) -> DynamicTypeNameSuffix:
@@ -106,7 +106,7 @@ class TypeReflector:
         raise NotImplementedError
 
     ##
-    # reflector
+    # mirror
 
     @abc.abstractmethod
     def resolve_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
@@ -199,7 +199,7 @@ DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX: ta.Final[DynamicTypeNameSuffix] = 'id'
 _DYNAMIC_TYPE_NAME_SEPARATOR: ta.Final = '@'
 
 
-class TypeReflectorImpl(TypeReflector):
+class MirrorImpl(Mirror):
     def __init__(
             self,
             *,
@@ -238,7 +238,7 @@ class TypeReflectorImpl(TypeReflector):
         self._type_cache: dict[object, Type] = {}
         self._cached_types: set[Type] = set()
 
-        # reflector
+        # mirror
 
         self._runtime_type_params_by_type: dict[TypeVarLikeType, object] = {}
         self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
@@ -489,7 +489,7 @@ class TypeReflectorImpl(TypeReflector):
             return self._get_newtype_info(obj)
 
     ##
-    # reflector
+    # mirror
 
     def resolve_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
         return self._runtime_type_params_by_type.get(typ)

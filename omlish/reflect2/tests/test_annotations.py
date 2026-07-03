@@ -8,14 +8,14 @@ from ..annotations import to_runtime_annotation
 from ..core import symbols
 from ..core import types
 from ..errors import ReflectionError
-from .helpers import make_reflector
+from .helpers import make_mirror
 
 
 def _to_annotation(obj: object) -> object:
-    reflector = make_reflector()
+    mirror = make_mirror()
     return to_runtime_annotation(
-        reflector.reflect_type(obj),
-        reflector=reflector,
+        mirror.reflect_type(obj),
+        mirror=mirror,
     )
 
 
@@ -115,8 +115,8 @@ def test_to_runtime_annotation_emits_callable_with_param_spec() -> None:
 
 def test_to_runtime_annotation_emits_callable_with_equivalent_param_spec_nodes() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
-    reflector = make_reflector()
-    reflected = reflector.reflect_type(param_spec)
+    mirror = make_mirror()
+    reflected = mirror.reflect_type(param_spec)
 
     assert isinstance(reflected, types.ParamSpecType)
     same_reflected = types.ParamSpecType(
@@ -130,15 +130,15 @@ def test_to_runtime_annotation_emits_callable_with_equivalent_param_spec_nodes()
         [reflected, same_reflected],
         [symbols.ArgKind.STAR, symbols.ArgKind.STAR2],
         [None, None],
-        reflector.reflect_type(int),
+        mirror.reflect_type(int),
         types.Instance(
-            reflector.get_type_info(cabc.Callable),  # type: ignore
+            mirror.get_type_info(cabc.Callable),  # type: ignore
             [types.AnyType(types.TypeOfAny.FROM_OMITTED_GENERICS)],
         ),
         variables=[reflected],
     )
 
-    annotation = to_runtime_annotation(callable_type, reflector=reflector)
+    annotation = to_runtime_annotation(callable_type, mirror=mirror)
 
     assert ta.get_origin(annotation) is cabc.Callable
     assert ta.get_args(annotation) == (param_spec, int)
@@ -156,26 +156,26 @@ def test_to_runtime_annotation_emits_callable_with_concatenate() -> None:
 
 
 def test_to_runtime_annotation_fails_closed_for_keyword_only_callable_shape() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     callable_type = types.CallableType(
-        [reflector.reflect_type(int)],
+        [mirror.reflect_type(int)],
         [symbols.ArgKind.NAMED],
         ['value'],
-        reflector.reflect_type(str),
+        mirror.reflect_type(str),
         types.Instance(
-            reflector.get_type_info(cabc.Callable),  # type: ignore
+            mirror.get_type_info(cabc.Callable),  # type: ignore
             [types.AnyType(types.TypeOfAny.FROM_OMITTED_GENERICS)],
         ),
     )
 
     with pytest.raises(ReflectionError, match='parameter shape'):
-        to_runtime_annotation(callable_type, reflector=reflector)
+        to_runtime_annotation(callable_type, mirror=mirror)
 
 
 def test_to_runtime_annotation_fails_closed_for_mismatched_param_spec_nodes() -> None:
-    reflector = make_reflector()
-    left = reflector.reflect_type(ta.ParamSpec('P'))
-    right = reflector.reflect_type(ta.ParamSpec('Q'))
+    mirror = make_mirror()
+    left = mirror.reflect_type(ta.ParamSpec('P'))
+    right = mirror.reflect_type(ta.ParamSpec('Q'))
 
     assert isinstance(left, types.ParamSpecType)
     assert isinstance(right, types.ParamSpecType)
@@ -183,16 +183,16 @@ def test_to_runtime_annotation_fails_closed_for_mismatched_param_spec_nodes() ->
         [left, right],
         [symbols.ArgKind.STAR, symbols.ArgKind.STAR2],
         [None, None],
-        reflector.reflect_type(int),
+        mirror.reflect_type(int),
         types.Instance(
-            reflector.get_type_info(cabc.Callable),  # type: ignore
+            mirror.get_type_info(cabc.Callable),  # type: ignore
             [types.AnyType(types.TypeOfAny.FROM_OMITTED_GENERICS)],
         ),
         variables=[left, right],
     )
 
     with pytest.raises(ReflectionError, match='parameter shape'):
-        to_runtime_annotation(callable_type, reflector=reflector)
+        to_runtime_annotation(callable_type, mirror=mirror)
 
 
 def test_to_runtime_annotation_preserves_annotated_metadata() -> None:
@@ -223,14 +223,14 @@ def test_to_runtime_annotation_expands_newtype_literal_alias() -> None:
 
 
 def test_to_runtime_annotation_can_preserve_newtype_literal_alias() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
 
-    typ = reflector.reflect_type(mode_list)
+    typ = mirror.reflect_type(mode_list)
 
-    assert to_runtime_annotation(typ, reflector=reflector) == list[mode]  # noqa
-    assert to_runtime_annotation(typ, type_alias_policy='preserve', reflector=reflector) is mode_list
+    assert to_runtime_annotation(typ, mirror=mirror) == list[mode]  # noqa
+    assert to_runtime_annotation(typ, type_alias_policy='preserve', mirror=mirror) is mode_list
 
 
 def test_to_runtime_annotation_expands_generic_newtype_literal_alias() -> None:
@@ -242,16 +242,16 @@ def test_to_runtime_annotation_expands_generic_newtype_literal_alias() -> None:
 
 
 def test_to_runtime_annotation_can_preserve_generic_newtype_literal_alias() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     t_var = ta.TypeVar('T')  # type: ignore
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore  # noqa
     box_alias = ta.TypeAliasType('BoxAlias', list[t_var], type_params=(t_var,))  # type: ignore
     form = box_alias[mode]  # noqa
 
-    typ = reflector.reflect_type(form)
+    typ = mirror.reflect_type(form)
 
-    assert to_runtime_annotation(typ, reflector=reflector) == list[mode]  # noqa
-    assert to_runtime_annotation(typ, type_alias_policy='preserve', reflector=reflector) == form
+    assert to_runtime_annotation(typ, mirror=mirror) == list[mode]  # noqa
+    assert to_runtime_annotation(typ, type_alias_policy='preserve', mirror=mirror) == form
 
 
 def test_to_runtime_annotation_expands_unsubscripted_variadic_alias() -> None:
@@ -265,12 +265,12 @@ def test_to_runtime_annotation_expands_unsubscripted_variadic_alias() -> None:
 
 
 def test_to_runtime_annotation_can_preserve_unsubscripted_variadic_alias() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
-    typ = reflector.reflect_type(alias)
+    typ = mirror.reflect_type(alias)
 
-    assert to_runtime_annotation(typ, type_alias_policy='preserve', reflector=reflector) is alias
+    assert to_runtime_annotation(typ, type_alias_policy='preserve', mirror=mirror) is alias
 
 
 def test_to_runtime_annotation_expands_subscripted_variadic_alias() -> None:
@@ -281,13 +281,13 @@ def test_to_runtime_annotation_expands_subscripted_variadic_alias() -> None:
 
 
 def test_to_runtime_annotation_can_preserve_subscripted_variadic_alias() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
     form = alias[int, str]  # noqa
-    typ = reflector.reflect_type(form)
+    typ = mirror.reflect_type(form)
 
-    assert to_runtime_annotation(typ, type_alias_policy='preserve', reflector=reflector) == form
+    assert to_runtime_annotation(typ, type_alias_policy='preserve', mirror=mirror) == form
 
 
 def test_to_runtime_annotation_can_preserve_subscripted_variadic_alias_with_fixed_edges() -> None:
@@ -301,84 +301,84 @@ def test_to_runtime_annotation_can_preserve_subscripted_variadic_alias_with_fixe
         type_params=(t_var, ts_var, u_var),  # type: ignore[type-var]
     )
     form = alias[int, str, bool, bytes]  # type: ignore[type-arg]  # noqa
-    reflector = make_reflector()
-    typ = reflector.reflect_type(form)
+    mirror = make_mirror()
+    typ = mirror.reflect_type(form)
 
-    assert to_runtime_annotation(typ, reflector=reflector) == tuple[int, str, bool, bytes]
-    assert to_runtime_annotation(typ, type_alias_policy='preserve', reflector=reflector) == form
+    assert to_runtime_annotation(typ, mirror=mirror) == tuple[int, str, bool, bytes]
+    assert to_runtime_annotation(typ, type_alias_policy='preserve', mirror=mirror) == form
 
 
 def test_to_runtime_annotation_preserves_recursive_alias_when_expand_policy_is_requested() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'Node': alias}[frr.name],
     )
-    typ = reflector.reflect_type(alias)
+    typ = mirror.reflect_type(alias)
 
-    assert to_runtime_annotation(typ, reflector=reflector) is alias
-    assert to_runtime_annotation(typ, type_alias_policy='preserve', reflector=reflector) is alias
+    assert to_runtime_annotation(typ, mirror=mirror) is alias
+    assert to_runtime_annotation(typ, type_alias_policy='preserve', mirror=mirror) is alias
 
 
 def test_to_runtime_annotation_preserves_variadic_recursive_alias_when_expand_policy_is_requested() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     form = alias[int, str]  # noqa
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'TupleNode': alias}[frr.name],
     )
-    typ = reflector.reflect_type(form)
+    typ = mirror.reflect_type(form)
 
-    assert to_runtime_annotation(typ, reflector=reflector) == form
-    assert to_runtime_annotation(typ, type_alias_policy='preserve', reflector=reflector) == form
+    assert to_runtime_annotation(typ, mirror=mirror) == form
+    assert to_runtime_annotation(typ, type_alias_policy='preserve', mirror=mirror) == form
 
 
 def test_to_runtime_annotation_preserves_generic_variadic_recursive_alias_with_type_var_tuple_arg() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     form = alias[ts_var]
-    reflector = make_reflector(
+    mirror = make_mirror(
         forward_ref_resolver=lambda frr: {'TupleNode': alias}[frr.name],
     )
-    typ = reflector.reflect_type(form)
+    typ = mirror.reflect_type(form)
 
-    assert to_runtime_annotation(typ, reflector=reflector) == form
-    assert to_runtime_annotation(typ, type_alias_policy='preserve', reflector=reflector) == form
+    assert to_runtime_annotation(typ, mirror=mirror) == form
+    assert to_runtime_annotation(typ, type_alias_policy='preserve', mirror=mirror) == form
 
 
 def test_to_runtime_annotation_fails_closed_for_malformed_preserved_variadic_alias_arg() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
-    reflector = make_reflector()
-    reflected = reflector.reflect_type(alias)
+    mirror = make_mirror()
+    reflected = mirror.reflect_type(alias)
 
     assert isinstance(reflected, types.TypeAliasType)
-    malformed = types.TypeAliasType(reflected.alias, [reflector.reflect_type(int)])
+    malformed = types.TypeAliasType(reflected.alias, [mirror.reflect_type(int)])
 
     with pytest.raises(ReflectionError, match='type alias'):
-        to_runtime_annotation(malformed, type_alias_policy='preserve', reflector=reflector)
+        to_runtime_annotation(malformed, type_alias_policy='preserve', mirror=mirror)
 
 
 def test_to_runtime_annotation_fails_closed_for_unknown_type_info() -> None:
     typ = types.Instance(types.TypeInfo('Missing', 'example.Missing'), [])
 
-    reflector = make_reflector()
+    mirror = make_mirror()
     with pytest.raises(ReflectionError, match='Runtime class is unavailable'):
-        to_runtime_annotation(typ, reflector=reflector)
+        to_runtime_annotation(typ, mirror=mirror)
 
 
 def test_to_runtime_annotation_fails_closed_for_unsupported_ir_nodes() -> None:
-    reflector = make_reflector()
+    mirror = make_mirror()
     fallback = types.Instance(
-        reflector.get_type_info(cabc.Callable),  # type: ignore
+        mirror.get_type_info(cabc.Callable),  # type: ignore
         [types.AnyType(types.TypeOfAny.FROM_OMITTED_GENERICS)],
     )
-    int_type = reflector.reflect_type(int)
+    int_type = mirror.reflect_type(int)
     unsupported = [
         types.UnboundType('Missing'),
         types.CallableArgument(int_type, 'value'),
         types.TypeList([int_type]),
         types.Overloaded([types.CallableType([int_type], [symbols.ArgKind.POS], [None], int_type, fallback)]),
-        types.TypedDictType({'x': int_type}, {'x'}, set(), reflector.reflect_type(dict[str, int])),  # type: ignore  # noqa
+        types.TypedDictType({'x': int_type}, {'x'}, set(), mirror.reflect_type(dict[str, int])),  # type: ignore  # noqa
         types.RawExpressionType(1, 'builtins.int'),
         types.PartialType(None, None),
         types.EllipsisType(),
@@ -387,12 +387,12 @@ def test_to_runtime_annotation_fails_closed_for_unsupported_ir_nodes() -> None:
 
     for typ in unsupported:
         with pytest.raises(ReflectionError, match='Runtime annotation is not implemented'):
-            to_runtime_annotation(typ, reflector=reflector)
+            to_runtime_annotation(typ, mirror=mirror)
 
 
 def test_to_runtime_annotation_fails_closed_for_unrepresentable_unpack_payload() -> None:
-    reflector = make_reflector()
-    typ = types.UnpackType(reflector.reflect_type(int))
+    mirror = make_mirror()
+    typ = types.UnpackType(mirror.reflect_type(int))
 
     with pytest.raises(ReflectionError, match='unpack type'):
-        to_runtime_annotation(typ, reflector=reflector)
+        to_runtime_annotation(typ, mirror=mirror)

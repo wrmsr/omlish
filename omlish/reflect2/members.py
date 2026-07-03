@@ -14,9 +14,9 @@ from .core.types import Type
 from .core.types import TypeOfAny
 from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
-from .globals import or_global_reflector
+from .globals import or_global_mirror
+from .mirror import Mirror
 from .ops import reflect_mro_entries_by_info
-from .reflector import TypeReflector
 
 
 ##
@@ -153,10 +153,10 @@ def _drop_first_parameter(signature: MemberSignature) -> MemberSignature:
 
 @ta.final
 class MembersInspector:
-    def __init__(self, reflector: TypeReflector) -> None:
+    def __init__(self, mirror: Mirror) -> None:
         super().__init__()
 
-        self._reflector = reflector
+        self._mirror = mirror
 
     def _reflect_annotation(
             self,
@@ -165,7 +165,7 @@ class MembersInspector:
     ) -> Type:
         if annotation is inspect.Signature.empty:
             return _make_any()
-        typ = self._reflector.reflect_type(annotation)
+        typ = self._mirror.reflect_type(annotation)
         if replacements:
             return substitute_type(typ, replacements)
         return typ
@@ -291,7 +291,7 @@ class MembersInspector:
             owner: type,
             entries_by_info: dict[object, MroEntry],
     ) -> SubstitutionMap:
-        owner_info = self._reflector.get_type_info(owner)
+        owner_info = self._mirror.get_type_info(owner)
         entry = entries_by_info.get(owner_info)
         if entry is None or not entry._info._type_vars:
             return {}
@@ -306,7 +306,7 @@ class MembersInspector:
             obj: object,
     ) -> MembersInspection:
         origin = _get_origin_type(obj)
-        entries_by_info = reflect_mro_entries_by_info(obj, reflector=self._reflector)
+        entries_by_info = reflect_mro_entries_by_info(obj, mirror=self._mirror)
         members_by_name: dict[str, Member] = {}
 
         for name, owner, _ in _iter_mro_members(origin):
@@ -319,5 +319,5 @@ class MembersInspector:
         return MembersInspection(origin, tuple(members_by_name.values()), members_by_name)
 
 
-def inspect_members(obj: object, *, reflector: TypeReflector | None = None) -> MembersInspection:
-    return MembersInspector(or_global_reflector(reflector)).inspect_members(obj)
+def inspect_members(obj: object, *, mirror: Mirror | None = None) -> MembersInspection:
+    return MembersInspector(or_global_mirror(mirror)).inspect_members(obj)

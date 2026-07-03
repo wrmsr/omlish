@@ -27,8 +27,8 @@ from .core.types import UnpackType
 from .core.typevisitor import DefaultTypeVisitor
 from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
-from .globals import or_global_reflector
-from .reflector import TypeReflector
+from .globals import or_global_mirror
+from .mirror import Mirror
 
 
 TypeVarResolver: ta.TypeAlias = ta.Callable[[TypeVarLikeType], object | None]
@@ -45,7 +45,7 @@ DEFAULT_TYPE_ALIAS_POLICY: TypeAliasAnnotationPolicy = 'expand'
 class _AnnotationMaker(DefaultTypeVisitor[object]):
     def __init__(
             self,
-            reflector: TypeReflector,
+            mirror: Mirror,
             *,
             type_alias_policy: TypeAliasAnnotationPolicy | None = None,
             type_var_resolver: TypeVarResolver | None = None,
@@ -55,7 +55,7 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
         if type_alias_policy is None:
             type_alias_policy = DEFAULT_TYPE_ALIAS_POLICY
 
-        self._reflector = reflector
+        self._mirror = mirror
 
         self._type_var_resolver = type_var_resolver
         self._type_alias_policy = type_alias_policy
@@ -64,7 +64,7 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
         raise ReflectionTypeError(f'Runtime annotation is not implemented for type: {typ!r}')
 
     def _get_runtime_type(self, info: TypeInfo) -> object:
-        cls = self._reflector.get_runtime_type(info)
+        cls = self._mirror.get_runtime_type(info)
         if cls is None:
             raise ReflectionTypeError(f'Runtime class is unavailable for type info: {info._fullname}')
         return cls
@@ -236,7 +236,7 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
         )]
 
     def _to_literal_annotation_value(self, typ: LiteralType) -> object:
-        cls = self._reflector.get_runtime_type(typ._fallback._type)
+        cls = self._mirror.get_runtime_type(typ._fallback._type)
         if (
                 isinstance(cls, type) and
                 issubclass(cls, enum.Enum) and
@@ -273,17 +273,17 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
 def to_runtime_annotation(
         typ: Type,
         *,
-        reflector: TypeReflector | None = None,
+        mirror: Mirror | None = None,
         type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
         type_var_resolver: TypeVarResolver | None = None,
 ) -> object:
-    reflector = or_global_reflector(reflector)
+    mirror = or_global_mirror(mirror)
 
     if type_var_resolver is None:
-        type_var_resolver = reflector.resolve_runtime_type_param
+        type_var_resolver = mirror.resolve_runtime_type_param
 
     return typ.accept(_AnnotationMaker(
-        reflector,
+        mirror,
         type_alias_policy=type_alias_policy,
         type_var_resolver=type_var_resolver,
     ))

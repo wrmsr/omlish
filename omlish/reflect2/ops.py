@@ -8,7 +8,7 @@ from .errors import ReflectionTypeError
 
 
 if ta.TYPE_CHECKING:
-    from .reflector import TypeReflector
+    from .mirror import Mirror
 
 
 ##
@@ -17,9 +17,9 @@ if ta.TYPE_CHECKING:
 def reflect_mro_entries(
         source: object,
         *,
-        reflector: TypeReflector,
+        mirror: Mirror,
 ) -> ta.Sequence[MroEntry]:
-    source_type = reflector.reflect_type(source)
+    source_type = mirror.reflect_type(source)
     if not isinstance(source_type, Instance):
         raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
     return get_mro_entries(source_type)
@@ -28,9 +28,9 @@ def reflect_mro_entries(
 def reflect_mro_entries_by_info(
         obj: object,
         *,
-        reflector: TypeReflector,
+        mirror: Mirror,
 ) -> dict[object, MroEntry]:
     return {
         entry._info: entry
-        for entry in reflect_mro_entries(obj, reflector=reflector)
+        for entry in reflect_mro_entries(obj, mirror=mirror)
     }
