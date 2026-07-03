@@ -13,6 +13,10 @@ from ._internals import std_field_type
 from ._internals import std_is_kw_only
 
 
+with lang.auto_proxy_import(globals()):
+    from .. import reflect2 as rfl2
+
+
 ClassAnnotations: ta.TypeAlias = ta.Mapping[str, ta.Any]
 
 
@@ -123,7 +127,7 @@ class FieldsInspection:
     def _generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:
         return col.make_map(((check.not_none(rfl.get_concrete_type(g)), g) for g in self._generic_mro), strict=True)
 
-    def generic_replaced_field_type(self, fn: str) -> rfl.Type:
+    def _generic_replaced_field_type(self, fn: str) -> rfl.Type:
         f = self.fields[fn]
         fo = self.field_owners[f.name]
         go = self._generic_mro_lookup[fo]
@@ -136,12 +140,52 @@ class FieldsInspection:
     def _generic_replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
         ret: dict[str, ta.Any] = {}
         for f in self.fields.values():
-            ret[f.name] = self.generic_replaced_field_type(f.name)
+            ret[f.name] = self._generic_replaced_field_type(f.name)
         return ret
 
     @cached.property
-    def generic_replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
+    def generic_replaced_field_annotations_old(self) -> ta.Mapping[str, ta.Any]:
         return {k: rfl.to_annotation(v) for k, v in self._generic_replaced_field_types.items()}
+
+    #
+
+    @cached.property
+    def generic_replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
+        expected = self.generic_replaced_field_annotations_old  # noqa
+
+        rty = rfl2.reflect_type(self._cls)
+
+        owners = self.field_owners
+
+        entries_by_info = {
+            entry.info: entry
+            for entry in rfl2.get_mro_entries(check.isinstance(rty, rfl2.Instance))
+        }
+
+        field_types: dict[str, ta.Any] = {}
+
+        for f in self.fields.values():
+            raw_type = rfl2.reflect_type(f.type)
+
+            owner = owners[f.name]
+            owner_info = rfl2.get_type_info(owner)
+            owner_entry = entries_by_info[owner_info]
+
+            owner_type_vars = owner_entry.info.type_vars
+            if not owner_type_vars:
+                field_types[f.name] = raw_type
+                continue
+
+            if len(owner_type_vars) != len(owner_entry.args):
+                raise TypeError(f'Mismatched owner args: {owner_entry.instance!r}')
+
+            replaced_type = rfl2.substitute_type(
+                raw_type,
+                dict(zip(owner_type_vars, owner_entry.args)),
+            )
+            field_types[f.name] = replaced_type
+
+        return field_types
 
 
 def inspect_fields(cls: type) -> FieldsInspection:

@@ -22,6 +22,7 @@ _KNOWN_FULLNAMES_BY_TYPE: ta.Final[ta.Mapping[object, str]] = {
     tuple: 'builtins.tuple',
     set: 'builtins.set',
     frozenset: 'builtins.frozenset',
+
     cabc.Iterable: 'collections.abc.Iterable',
     cabc.Iterator: 'collections.abc.Iterator',
     cabc.Sequence: 'collections.abc.Sequence',
@@ -31,6 +32,8 @@ _KNOWN_FULLNAMES_BY_TYPE: ta.Final[ta.Mapping[object, str]] = {
     cabc.Set: 'collections.abc.Set',
     cabc.MutableSet: 'collections.abc.MutableSet',
     cabc.Callable: 'collections.abc.Callable',
+    cabc.Awaitable: 'collections.abc.Awaitable',
+
     ta.Generic: 'typing.Generic',
 }
 
@@ -41,6 +44,7 @@ _KNOWN_GENERIC_ARITIES: ta.Final[ta.Mapping[str, int]] = {
     'builtins.tuple': 1,
     'builtins.set': 1,
     'builtins.frozenset': 1,
+
     'collections.abc.Iterable': 1,
     'collections.abc.Iterator': 1,
     'collections.abc.Sequence': 1,
@@ -50,18 +54,21 @@ _KNOWN_GENERIC_ARITIES: ta.Final[ta.Mapping[str, int]] = {
     'collections.abc.Set': 1,
     'collections.abc.MutableSet': 1,
     'collections.abc.Callable': 1,
+    'collections.abc.Awaitable': 1,
 }
 
 _KNOWN_GENERIC_VARIANCES: ta.Final[ta.Mapping[str, tuple[VarianceKind, ...]]] = {
     'builtins.type': (VarianceKind.CO,),
     'builtins.tuple': (VarianceKind.CO,),
     'builtins.frozenset': (VarianceKind.CO,),
+
     'collections.abc.Iterable': (VarianceKind.CO,),
     'collections.abc.Iterator': (VarianceKind.CO,),
     'collections.abc.Sequence': (VarianceKind.CO,),
     'collections.abc.Mapping': (VarianceKind.CO, VarianceKind.CO),
     'collections.abc.Set': (VarianceKind.CO,),
     'collections.abc.Callable': (VarianceKind.CO,),
+    'collections.abc.Awaitable': (VarianceKind.CO,),
 }
 
 
@@ -90,6 +97,7 @@ _KNOWN_BASE_SPECS: ta.Final[ta.Mapping[str, tuple[_KnownBaseSpec, ...]]] = {
     'builtins.frozenset': (
         ('collections.abc.Set', (0,)),
     ),
+
     'collections.abc.MutableSequence': (
         ('collections.abc.Sequence', (0,)),
     ),
@@ -168,6 +176,7 @@ _KNOWN_MRO_TAILS: ta.Final[ta.Mapping[str, tuple[str, ...]]] = {
         'collections.abc.Iterable',
         'builtins.object',
     ),
+
     'collections.abc.MutableSequence': (
         'collections.abc.Sequence',
         'collections.abc.Iterable',

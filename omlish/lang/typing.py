@@ -41,7 +41,12 @@ OptExcInfo: ta.TypeAlias = tuple[
 
 
 def has_annotations(obj: ta.Any) -> bool:
-    return hasattr(obj, '__annotate__') or hasattr(obj, '__annotations__')
+    return (
+        hasattr(obj, '__annotate__') or
+
+        # TODO: does this helpfully automatically call `__annotate__`? do we not want that?
+        hasattr(obj, '__annotations__')
+    )
 
 
 def get_annotations(obj: ta.Any) -> ta.Mapping[str, ta.Any]:

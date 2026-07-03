@@ -93,6 +93,7 @@ def strip_optional(rty: UnionType) -> Type:
 
 
 ##
+# TODO: delete / inline these
 
 
 def reflect_mro_entries(source: object, *, mirror: Mirror | None = None) -> ta.Sequence[MroEntry]:

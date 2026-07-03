@@ -10,6 +10,20 @@ with _lang.auto_proxy_init(globals()):
         type_info_str,
     )
 
+    from .core.substitute import (  # noqa
+        SubstitutionKey,
+        SubstitutionMap,
+        SubstitutionInputMap,
+
+        substitute_type,
+        substitute_types,
+    )
+
+    from .core.subtypes import (  # noqa
+        MroEntry,
+        get_mro_entries,
+    )
+
     from .core.symbols import (  # noqa
         VarianceKind,
         ArgKind,
@@ -179,9 +193,9 @@ with _lang.auto_proxy_init(globals()):
         get_runtime_type_or_none,
         get_runtime_type,
 
-        reflect_mro_entries,
-        reflect_mro_entries_by_info,
-
         is_optional,
         strip_optional,
+
+        reflect_mro_entries,
+        reflect_mro_entries_by_info,
     )
