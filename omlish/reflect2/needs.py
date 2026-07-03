@@ -14,7 +14,7 @@ if ta.TYPE_CHECKING:
 
 class NeedsLock:
     def __init__(self, *, lock: threading.RLock, **kwargs: ta.Any) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
 
         self._lock = lock
 

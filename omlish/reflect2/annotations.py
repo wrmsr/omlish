@@ -283,6 +283,9 @@ def to_runtime_annotation(
 ##
 
 
+DEFAULT_TYPE_ALIAS_POLICY: TypeAliasAnnotationPolicy = 'expand'
+
+
 @ta.final
 class TypeAnnotations(
     NeedsReflector,
@@ -299,8 +302,11 @@ class TypeAnnotations(
             self,
             typ: Type,
             *,
-            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+            type_alias_policy: TypeAliasAnnotationPolicy | None = None,
     ) -> object:
+        if type_alias_policy is None:
+            type_alias_policy = DEFAULT_TYPE_ALIAS_POLICY
+
         cache_key = (typ, type_alias_policy)
         try:
             return self._annotation_cache[cache_key]
@@ -320,8 +326,11 @@ class TypeAnnotations(
             self,
             typ: Type,
             *,
-            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+            type_alias_policy: TypeAliasAnnotationPolicy | None = None,
     ) -> object:
+        if type_alias_policy is None:
+            type_alias_policy = DEFAULT_TYPE_ALIAS_POLICY
+
         cache_key = (typ, type_alias_policy)
         try:
             return self._annotation_cache[cache_key]

@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import threading
 import typing as ta
 
@@ -170,7 +171,7 @@ class Api:
             self,
             typ: Type,
             *,
-            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+            type_alias_policy: TypeAliasAnnotationPolicy | None = None,
     ) -> object:
         return self.annotations.to_runtime_annotation(
             typ,
@@ -247,22 +248,22 @@ def or_global_api(api: Api | None) -> Api:
 
 
 def get_type_info(obj: type | str) -> TypeInfo:
-    return _GLOBAL_API.get_type_info(obj)
+    return _GLOBAL_API._universe.get_type_info(obj)
 
 
 def get_newtype_info(obj: object) -> TypeInfo:
-    return _GLOBAL_API.get_newtype_info(obj)
+    return _GLOBAL_API._universe.get_newtype_info(obj)
 
 
 def get_runtime_type(info: TypeInfo) -> object | None:
-    return _GLOBAL_API.get_runtime_type(info)
+    return _GLOBAL_API._universe.get_runtime_type(info)
 
 
 #
 
 
 def reflect_type(obj: object) -> Type:
-    return _GLOBAL_API.reflect_type(obj)
+    return _GLOBAL_API._reflector.reflect_type(obj)
 
 
 #
@@ -288,7 +289,7 @@ def type_key(
 def to_runtime_annotation(
         typ: Type,
         *,
-        type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+        type_alias_policy: TypeAliasAnnotationPolicy | None = None,
 ) -> object:
     return _GLOBAL_API.to_runtime_annotation(
         typ,

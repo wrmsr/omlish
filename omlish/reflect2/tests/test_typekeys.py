@@ -10,7 +10,7 @@ from .helpers import make_reflector
 
 def test_newtype_literal_reflection_and_key_are_cache_friendly() -> None:
     reflector = make_reflector()
-    type_keys = TypeKeys(lock=reflector._lock)
+    type_keys = TypeKeys(lock=reflector._lock, reflector=reflector)
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
     typ = reflector.reflect_type(mode)
@@ -24,7 +24,7 @@ def test_newtype_literal_reflection_and_key_are_cache_friendly() -> None:
 
 def test_type_alias_reflection_and_key_are_cache_friendly() -> None:
     reflector = make_reflector()
-    type_keys = TypeKeys(lock=reflector._lock)
+    type_keys = TypeKeys(lock=reflector._lock, reflector=reflector)
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
 
@@ -39,7 +39,7 @@ def test_type_alias_reflection_and_key_are_cache_friendly() -> None:
 
 def test_subscripted_type_alias_reflection_and_key_are_cache_friendly() -> None:
     reflector = make_reflector()
-    type_keys = TypeKeys(lock=reflector._lock)
+    type_keys = TypeKeys(lock=reflector._lock, reflector=reflector)
     t_var = ta.TypeVar('T')  # type: ignore
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     alias = ta.TypeAliasType('Alias', dict[str, t_var], type_params=(t_var,))  # type: ignore
@@ -56,7 +56,7 @@ def test_subscripted_type_alias_reflection_and_key_are_cache_friendly() -> None:
 
 def test_subscripted_variadic_type_alias_reflection_and_key_are_cache_friendly() -> None:
     reflector = make_reflector()
-    type_keys = TypeKeys(lock=reflector._lock)
+    type_keys = TypeKeys(lock=reflector._lock, reflector=reflector)
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
     form = alias[int, str]
@@ -73,7 +73,7 @@ def test_subscripted_variadic_type_alias_reflection_and_key_are_cache_friendly()
 
 def test_reflected_string_type_key_common_combinations_are_explicit() -> None:
     reflector = make_reflector()
-    type_keys = TypeKeys(lock=reflector._lock)
+    type_keys = TypeKeys(lock=reflector._lock, reflector=reflector)
 
     assert type_keys.type_key(reflector.reflect_type(list[int])) == "I['builtins.list',I['builtins.int']]"
     assert type_keys.type_key(reflector.reflect_type(dict[str, int])) == (
@@ -94,7 +94,7 @@ def test_reflected_string_type_key_common_combinations_are_explicit() -> None:
 
 def test_reflect_type_key_reuses_equivalent_runtime_forms() -> None:
     reflector = make_reflector()
-    type_keys = TypeKeys(lock=reflector._lock)
+    type_keys = TypeKeys(lock=reflector._lock, reflector=reflector)
 
     assert type_keys.type_key(reflector.reflect_type(list[int])) == \
            type_keys.type_key(reflector.reflect_type(list[int]))
@@ -104,7 +104,7 @@ def test_reflect_type_key_reuses_equivalent_runtime_forms() -> None:
 
 def test_reflect_type_key_keeps_distinct_parameterizations_apart() -> None:
     reflector = make_reflector()
-    type_keys = TypeKeys(lock=reflector._lock)
+    type_keys = TypeKeys(lock=reflector._lock, reflector=reflector)
 
     assert type_keys.type_key(reflector.reflect_type(list[int])) != \
            type_keys.type_key(reflector.reflect_type(list[str]))
@@ -113,6 +113,6 @@ def test_reflect_type_key_keeps_distinct_parameterizations_apart() -> None:
 def test_reflect_type_key_or_none_suppresses_unsupported_reflected_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     reflector = make_reflector()
-    type_keys = TypeKeys(lock=reflector._lock)
+    type_keys = TypeKeys(lock=reflector._lock, reflector=reflector)
 
     assert type_keys.type_key_or_none(reflector.reflect_type(t_var)) is not None

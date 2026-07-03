@@ -16,17 +16,18 @@ from ..universe import TypeUniverse
 
 def make_members_inspector() -> MembersInspector:
     return MembersInspector(
-        keys=TypeKeys(
-            lock=(lock := threading.RLock()),
-        ),
-        reflector=TypeReflector(
+        reflector=(reflector := TypeReflector(
             universe=TypeUniverse(
-                lock=lock,
+                lock=(lock := threading.RLock()),
             ),
             interner=Interner(
                 lock=lock,
             ),
             lock=lock,
+        )),
+        keys=TypeKeys(
+            lock=lock,
+            reflector=reflector,
         ),
         lock=lock,
     )

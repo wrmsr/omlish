@@ -832,25 +832,41 @@ def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg
 
 
 def test_rejects_type_alias_type_forward_value_until_resolution_exists() -> None:
+    reflector = make_reflector(
+        unresolved_forward_ref_policy='raise',
+    )
+
     alias = ta.TypeAliasType('Alias', 'Missing')  # type: ignore
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflect_type(alias)
+        reflector.reflect_type(alias)
 
 
 def test_rejects_raw_string_forward_reference_until_resolution_exists() -> None:
+    reflector = make_reflector(
+        unresolved_forward_ref_policy='raise',
+    )
+
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflect_type('Missing')
+        reflector.reflect_type('Missing')
 
 
 def test_rejects_annotationlib_forward_reference_until_resolution_exists() -> None:
+    reflector = make_reflector(
+        unresolved_forward_ref_policy='raise',
+    )
+
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflect_type(annotationlib.ForwardRef('Missing'))
+        reflector.reflect_type(annotationlib.ForwardRef('Missing'))
 
 
 def test_rejects_typing_forward_reference_until_resolution_exists() -> None:
+    reflector = make_reflector(
+        unresolved_forward_ref_policy='raise',
+    )
+
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflect_type(ta.ForwardRef('Missing'))
+        reflector.reflect_type(ta.ForwardRef('Missing'))
 
 
 def test_resolves_raw_string_forward_reference_with_resolver() -> None:
@@ -1389,7 +1405,9 @@ def test_default_resolution_resolves_typed_dict_item_forward_ref() -> None:
 
 
 def test_default_resolution_without_owner_scope_still_rejects_bare_forward_ref() -> None:
-    reflector = make_reflector()
+    reflector = make_reflector(
+        unresolved_forward_ref_policy='raise',
+    )
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
         reflector.reflect_type('_CtxBound')
@@ -1437,7 +1455,10 @@ def test_forward_ref_resolver_can_delegate_to_owner_scope_resolution() -> None:
 
 
 def test_forward_ref_resolver_delegation_without_owner_scope_raises() -> None:
-    reflector = make_reflector(forward_ref_resolver=lambda frr: frr.resolve())
+    reflector = make_reflector(
+        forward_ref_resolver=lambda frr: frr.resolve(),
+        unresolved_forward_ref_policy='raise',
+    )
 
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
         reflector.reflect_type('Missing')
@@ -1515,18 +1536,9 @@ def test_same_named_forward_ref_bounds_in_distinct_modules_do_not_collide() -> N
         sys.modules.pop(name_b, None)
 
 
-##
-# Totality: the `unresolved_forward_ref_policy` policy.
-#
-# By default an unresolvable forward reference raises (strict). Under the 'unbound' policy it degrades to a first-class
-# UnboundType leaf that retains the original ForwardRef object for identity - mirroring the old system's ForwardRef
-# nodes, and letting genuinely-unresolvable lite recursive aliases (e.g. omdev.packaging's RequiresMarkerList) reflect
-# to a finite, cacheable structure.
-
-
-def test_default_policy_raises_on_unresolvable_forward_ref() -> None:
+def test_strict_policy_raises_on_unresolvable_forward_ref() -> None:
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        make_reflector().reflect_type('Missing')
+        make_reflector(unresolved_forward_ref_policy='raise').reflect_type('Missing')
 
 
 def test_rejects_unsupported_unresolved_forward_ref_policy_policy() -> None:
@@ -1640,4 +1652,4 @@ def test_api_threads_unresolved_forward_ref_policy_policy_leaving_global_strict(
     assert typ.name == 'Missing'
 
     with pytest.raises(UnreflectableTypeError):
-        global_api().reflect_type('Missing')
+        make_reflector(unresolved_forward_ref_policy='raise').reflect_type('Missing')

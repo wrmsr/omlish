@@ -49,7 +49,7 @@ from .needs import NeedsUniverse
 from .universe import TypeUniverse
 
 
-UnresolvedForwardRefPolicy: ta.TypeAlias = ta.Literal['raise', 'unbound']
+UnresolvedForwardRefPolicy: ta.TypeAlias = ta.Literal['unbound', 'raise']
 
 
 ##
@@ -140,7 +140,7 @@ def _contains_any_type_alias(
 ##
 
 
-DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'raise'
+DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'unbound'
 
 
 @ta.final
@@ -167,6 +167,7 @@ class TypeReflector(
         self._unresolved_forward_ref_policy = unresolved_forward_ref_policy
 
         self._type_cache: dict[object, Type] = {}
+        self._cached_types: set[Type] = set()
 
         self._runtime_type_params_by_type: dict[TypeVarLikeType, object] = {}
         self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
@@ -237,6 +238,8 @@ class TypeReflector(
             self._type_cache[obj] = typ
         except TypeError:
             pass
+        else:
+            self._cached_types.add(typ)
 
         return typ
 

@@ -10,13 +10,17 @@ from .core.typekeys import make_type_key_not_implemented_exception
 from .core.typekeys import type_key_or_none
 from .core.types import Type
 from .needs import NeedsLock
+from .needs import NeedsReflector
 
 
 ##
 
 
 @ta.final
-class TypeKeys(NeedsLock):
+class TypeKeys(
+    NeedsReflector,
+    NeedsLock,
+):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
@@ -30,6 +34,10 @@ class TypeKeys(NeedsLock):
             policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
     ) -> TypeKey | None:
         tk_policy = get_type_key_policy(policy)
+
+        if typ not in self._reflector._cached_types:
+            return type_key_or_none(typ, tk_policy)
+
         cache_key = (tk_policy, typ)
         try:
             return self._type_key_cache[cache_key]
@@ -46,6 +54,7 @@ class TypeKeys(NeedsLock):
             policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
     ) -> TypeKey | None:
         tk_policy = get_type_key_policy(policy)
+
         cache_key = (tk_policy, typ)
         try:
             return self._type_key_cache[cache_key]
