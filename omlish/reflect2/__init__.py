@@ -176,4 +176,7 @@ with _lang.auto_proxy_init(globals()):
     from .ops import (  # noqa
         reflect_mro_entries,
         reflect_mro_entries_by_info,
+
+        is_optional,
+        strip_optional,
     )

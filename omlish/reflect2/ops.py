@@ -9,6 +9,7 @@ from .core.types import NoneType
 from .core.types import Type
 from .core.types import UnionType
 from .errors import ReflectionTypeError
+from .globals import or_global_mirror
 
 
 if ta.TYPE_CHECKING:
@@ -18,22 +19,14 @@ if ta.TYPE_CHECKING:
 ##
 
 
-def reflect_mro_entries(
-        source: object,
-        *,
-        mirror: Mirror,
-) -> ta.Sequence[MroEntry]:
-    source_type = mirror.reflect_type(source)
+def reflect_mro_entries(source: object, *, mirror: Mirror | None = None) -> ta.Sequence[MroEntry]:
+    source_type = or_global_mirror(mirror).reflect_type(source)
     if not isinstance(source_type, Instance):
         raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
     return get_mro_entries(source_type)
 
 
-def reflect_mro_entries_by_info(
-        obj: object,
-        *,
-        mirror: Mirror,
-) -> dict[object, MroEntry]:
+def reflect_mro_entries_by_info(obj: object, *, mirror: Mirror | None = None) -> dict[object, MroEntry]:
     return {
         entry._info: entry
         for entry in reflect_mro_entries(obj, mirror=mirror)
