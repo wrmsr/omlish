@@ -21,6 +21,17 @@ if ta.TYPE_CHECKING:
 ##
 
 
+def typeof(obj: object, *, mirror: Mirror | None = None) -> Type:
+    try:
+        cls = getattr(obj, '__orig_class__')
+    except AttributeError:
+        cls = type(obj)
+    return or_global_mirror(mirror).reflect_type(cls)
+
+
+##
+
+
 def get_runtime_object_or_none(robj: Type | TypeInfo) -> object | None:
     if isinstance(robj, Type):
         if isinstance(robj, UnboundType):

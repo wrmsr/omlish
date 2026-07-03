@@ -10,6 +10,7 @@ import typing as ta
 
 from .. import c3
 from .. import check
+from .. import lang
 from .. import reflect as rfl
 
 
@@ -20,7 +21,7 @@ T = ta.TypeVar('T')
 
 
 def get_impl_func_cls_set(func: ta.Callable, *, arg_offset: int = 0) -> frozenset[type]:
-    if not rfl.has_annotations(func):
+    if not lang.has_annotations(func):
         raise TypeError(f'Invalid impl func: {func!r}')
 
     def erase(a):
@@ -29,8 +30,7 @@ def get_impl_func_cls_set(func: ta.Callable, *, arg_offset: int = 0) -> frozense
         else:
             return check.isinstance(a, type)
 
-    # Exclude 'return' to support difficult to handle return types - they are unimportant.
-    th_dct = rfl.get_filtered_type_hints(func, exclude=['return'])
+    th_dct = ta.get_type_hints(func)
 
     ps = inspect.signature(func).parameters
     p = list(ps.values())[arg_offset]

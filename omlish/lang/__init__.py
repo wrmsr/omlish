@@ -563,6 +563,9 @@ with _auto_proxy_init(globals(), update_exports=True):
         ExcInfo,
         OptExcInfo,
 
+        has_annotations,
+        get_annotations,
+
         opt_exc_info,
 
         static_check_isinstance,
@@ -727,8 +730,6 @@ with _auto_proxy_init(globals(), update_exports=True):
 
         CanInt,
         CanFloat,
-
-        typing_annotations_attr,
     )
 
     from ..lite.wrappers import (  # noqa

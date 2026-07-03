@@ -10,7 +10,8 @@ from .. import dispatch
 T = ta.TypeVar('T')
 
 
-Part: ta.TypeAlias = ta.Union[str, ta.Sequence['Part'], 'DataPart']
+type Part = str | ta.Sequence[Part] | DataPart
+
 PartT = ta.TypeVar('PartT', bound=Part)
 
 

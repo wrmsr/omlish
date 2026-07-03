@@ -173,6 +173,8 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .ops import (  # noqa
+        typeof,
+
         get_runtime_object_or_none,
         get_runtime_object,
         get_runtime_type_or_none,

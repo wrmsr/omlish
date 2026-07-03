@@ -5,6 +5,7 @@ TODO:
   - probably need to gen types per inst
  - typed_factory
 """
+import annotationlib
 import inspect
 import types
 import typing as ta
@@ -34,6 +35,17 @@ OptExcInfo: ta.TypeAlias = tuple[
     BaseException | None,
     types.TracebackType | None,
 ]
+
+
+##
+
+
+def has_annotations(obj: ta.Any) -> bool:
+    return hasattr(obj, '__annotate__') or hasattr(obj, '__annotations__')
+
+
+def get_annotations(obj: ta.Any) -> ta.Mapping[str, ta.Any]:
+    return annotationlib.get_annotations(obj, format=annotationlib.Format.FORWARDREF)
 
 
 ##
