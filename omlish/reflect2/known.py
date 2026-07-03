@@ -7,7 +7,7 @@ from .core.symbols import VarianceKind
 ##
 
 
-_KNOWN_FULLNAMES_BY_TYPE: ta.Final[dict[object, str]] = {
+_KNOWN_FULLNAMES_BY_TYPE: ta.Final[ta.Mapping[object, str]] = {
     object: 'builtins.object',
     type: 'builtins.type',
     type(None): 'builtins.None',
@@ -34,7 +34,7 @@ _KNOWN_FULLNAMES_BY_TYPE: ta.Final[dict[object, str]] = {
     ta.Generic: 'typing.Generic',
 }
 
-_KNOWN_GENERIC_ARITIES: ta.Final[dict[str, int]] = {
+_KNOWN_GENERIC_ARITIES: ta.Final[ta.Mapping[str, int]] = {
     'builtins.type': 1,
     'builtins.list': 1,
     'builtins.dict': 2,
@@ -52,7 +52,7 @@ _KNOWN_GENERIC_ARITIES: ta.Final[dict[str, int]] = {
     'collections.abc.Callable': 1,
 }
 
-_KNOWN_GENERIC_VARIANCES: ta.Final[dict[str, tuple[VarianceKind, ...]]] = {
+_KNOWN_GENERIC_VARIANCES: ta.Final[ta.Mapping[str, tuple[VarianceKind, ...]]] = {
     'builtins.type': (VarianceKind.CO,),
     'builtins.tuple': (VarianceKind.CO,),
     'builtins.frozenset': (VarianceKind.CO,),
@@ -68,7 +68,7 @@ _KNOWN_GENERIC_VARIANCES: ta.Final[dict[str, tuple[VarianceKind, ...]]] = {
 _KnownBaseArg: ta.TypeAlias = int | str
 _KnownBaseSpec: ta.TypeAlias = tuple[str, tuple[_KnownBaseArg, ...]]
 
-_KNOWN_BASE_SPECS: ta.Final[dict[str, tuple[_KnownBaseSpec, ...]]] = {
+_KNOWN_BASE_SPECS: ta.Final[ta.Mapping[str, tuple[_KnownBaseSpec, ...]]] = {
     'builtins.str': (
         ('collections.abc.Sequence', ('builtins.str',)),
     ),
@@ -110,7 +110,7 @@ _KNOWN_BASE_SPECS: ta.Final[dict[str, tuple[_KnownBaseSpec, ...]]] = {
     ),
 }
 
-_KNOWN_MRO_TAILS: ta.Final[dict[str, tuple[str, ...]]] = {
+_KNOWN_MRO_TAILS: ta.Final[ta.Mapping[str, tuple[str, ...]]] = {
     'builtins.type': (
         'builtins.object',
     ),

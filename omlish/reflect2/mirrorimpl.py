@@ -317,11 +317,12 @@ class MirrorImpl(Mirror):
             info._mro = tuple(mro)
 
     def _get_type_info(self, obj: type | str) -> TypeInfo:
+        runtime_object: object
         if isinstance(obj, str):
             fullname = obj
-            runtime_type = None
+            runtime_object = None
         else:
-            runtime_type = obj
+            runtime_object = obj
             try:
                 fullname = self._fullnames_by_type[obj]
             except KeyError:
@@ -342,17 +343,24 @@ class MirrorImpl(Mirror):
         except KeyError:
             pass
 
+        if runtime_object is None:
+            runtime_object = self._types_by_fullname.get(fullname)
+
         info = self._make_type_info(
             fullname,
-            runtime_object=runtime_type,
+            runtime_object=runtime_object,
         )
         self._infos_by_fullname[fullname] = info
         self._configure_known_type_info(info)
-        if runtime_type is not None and issubclass(runtime_type, enum.Enum):
+        if (
+                runtime_object is not None and
+                isinstance(runtime_object, type) and
+                issubclass(runtime_object, enum.Enum)
+        ):
             info._is_enum = True
             info._enum_members = tuple(
                 member.name
-                for member in runtime_type
+                for member in runtime_object
             )
         return info
 
