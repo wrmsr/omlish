@@ -57,10 +57,9 @@ def field_type_keys(
         fields: ta.Iterable[DataclassField],
         *,
         policy: ta.Any = 'default',
-        api: Api,
 ) -> dict[str, TypeKey]:
     return {
-        field.name: api.type_key(field.replaced_type, policy)
+        field.name: type_key(field.replaced_type, policy)
         for field in fields
     }
 
@@ -309,8 +308,8 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
         value: t_var  # type: ignore
 
     api = make_api()
-    mode_fields = field_type_keys(api.inspect_dataclass(Box[mode]).fields, api=api)  # type: ignore
-    other_fields = field_type_keys(api.inspect_dataclass(Box[other_mode]).fields, api=api)  # type: ignore
+    mode_fields = field_type_keys(api.inspect_dataclass(Box[mode]).fields)  # type: ignore
+    other_fields = field_type_keys(api.inspect_dataclass(Box[other_mode]).fields)  # type: ignore
 
     assert mode_fields['value'] != other_fields['value']
     assert mode_fields['value'] == type_key(api.reflect_type(mode))

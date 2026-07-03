@@ -5,7 +5,6 @@ import typing as ta
 if ta.TYPE_CHECKING:
     from .interning import Interner
     from .reflector import TypeReflector
-    from .typekeys import TypeKeys
     from .universe import TypeUniverse
 
 
@@ -47,13 +46,3 @@ class NeedsReflector:
         super().__init__(**kwargs)
 
         self._reflector = reflector
-
-
-##
-
-
-class NeedsKeys:
-    def __init__(self, *, keys: TypeKeys, **kwargs: ta.Any) -> None:
-        super().__init__(**kwargs)
-
-        self._keys = keys

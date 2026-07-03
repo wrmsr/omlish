@@ -34,8 +34,8 @@ with _lang.auto_proxy_init(globals()):
 
         get_type_key_policy,
 
-        type_key_or_none as type_key_or_none_,
-        type_key as type_key_,
+        type_key_or_none,
+        type_key,
 
         tuple_type_key_or_none,
         tuple_type_key,
@@ -126,9 +126,6 @@ with _lang.auto_proxy_init(globals()):
         get_runtime_type,
 
         reflect_type,
-
-        type_key_or_none,
-        type_key,
 
         to_runtime_annotation,
 

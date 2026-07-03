@@ -10,13 +10,12 @@ from ..interning import Interner
 from ..members import MemberKind
 from ..members import MembersInspector
 from ..reflector import TypeReflector
-from ..typekeys import TypeKeys
 from ..universe import TypeUniverse
 
 
 def make_members_inspector() -> MembersInspector:
     return MembersInspector(
-        reflector=(reflector := TypeReflector(
+        reflector=TypeReflector(
             universe=TypeUniverse(
                 lock=(lock := threading.RLock()),
             ),
@@ -24,10 +23,6 @@ def make_members_inspector() -> MembersInspector:
                 lock=lock,
             ),
             lock=lock,
-        )),
-        keys=TypeKeys(
-            lock=lock,
-            reflector=reflector,
         ),
         lock=lock,
     )

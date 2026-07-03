@@ -27,7 +27,6 @@ from .core.types import UnpackType
 from .core.typevisitor import DefaultTypeVisitor
 from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
-from .needs import NeedsLock
 from .needs import NeedsReflector
 from .needs import NeedsUniverse
 from .universe import TypeUniverse
@@ -289,39 +288,7 @@ DEFAULT_TYPE_ALIAS_POLICY: TypeAliasAnnotationPolicy = 'expand'
 @ta.final
 class TypeAnnotations(
     NeedsReflector,
-    NeedsLock,
 ):
-    def __init__(self, **kwargs: ta.Any) -> None:
-        super().__init__(**kwargs)
-
-        self._annotation_cache: dict[tuple[Type, TypeAliasAnnotationPolicy], object] = {}
-
-    #
-
-    def _to_runtime_annotation(
-            self,
-            typ: Type,
-            *,
-            type_alias_policy: TypeAliasAnnotationPolicy | None = None,
-    ) -> object:
-        if type_alias_policy is None:
-            type_alias_policy = DEFAULT_TYPE_ALIAS_POLICY
-
-        cache_key = (typ, type_alias_policy)
-        try:
-            return self._annotation_cache[cache_key]
-        except KeyError:
-            pass
-
-        annotation = to_runtime_annotation(
-            typ,
-            self._reflector._universe,
-            type_var_resolver=self._reflector.get_runtime_type_param,
-            type_alias_policy=type_alias_policy,
-        )
-        self._annotation_cache[cache_key] = annotation
-        return annotation
-
     def to_runtime_annotation(
             self,
             typ: Type,
@@ -331,14 +298,9 @@ class TypeAnnotations(
         if type_alias_policy is None:
             type_alias_policy = DEFAULT_TYPE_ALIAS_POLICY
 
-        cache_key = (typ, type_alias_policy)
-        try:
-            return self._annotation_cache[cache_key]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._to_runtime_annotation(
-                typ,
-                type_alias_policy=type_alias_policy,
-            )
+        return to_runtime_annotation(
+            typ,
+            self._reflector._universe,
+            type_var_resolver=self._reflector.get_runtime_type_param,
+            type_alias_policy=type_alias_policy,
+        )

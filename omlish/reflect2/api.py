@@ -3,14 +3,9 @@ import threading
 import typing as ta
 
 from .core.symbols import TypeInfo
-from .core.typekeys import TYPE_KEY
-from .core.typekeys import StandardTypeKeyPolicy
-from .core.typekeys import TypeKey
-from .core.typekeys import TypeKeyPolicy
 from .core.types import Type
 from .interning import Interner
 from .needs import NeedsInterner
-from .needs import NeedsKeys
 from .needs import NeedsLock
 from .needs import NeedsReflector
 from .needs import NeedsUniverse
@@ -30,7 +25,6 @@ if ta.TYPE_CHECKING:
     from .members import MembersInspector
     from .namedtuples import NamedtupleInspection
     from .namedtuples import NamedtupleInspector
-    from .typekeys import TypeKeys
 
 
 T = ta.TypeVar('T')
@@ -85,9 +79,6 @@ class Api:
         if issubclass(cls, NeedsReflector):
             nkw['reflector'] = self._reflector
 
-        if issubclass(cls, NeedsKeys):
-            nkw['keys'] = self.keys
-
         return cls(**kwargs, **nkw)
 
     def _init_injected(self, cls: type[T], attr: str) -> T:
@@ -124,34 +115,6 @@ class Api:
 
     def reflect_type(self, obj: object) -> Type:
         return self._reflector.reflect_type(obj)
-
-    #
-
-    _keys: TypeKeys
-
-    @property
-    def keys(self) -> TypeKeys:
-        try:
-            return self._keys
-        except AttributeError:
-            pass
-
-        from .typekeys import TypeKeys
-        return self._init_injected(TypeKeys, '_keys')
-
-    def type_key_or_none(
-            self,
-            typ: Type,
-            policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
-    ) -> TypeKey | None:
-        return self.keys.type_key_or_none(typ, policy)
-
-    def type_key(
-            self,
-            typ: Type,
-            policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
-    ) -> TypeKey:
-        return self.keys.type_key(typ, policy)
 
     #
 
@@ -264,23 +227,6 @@ def get_runtime_type(info: TypeInfo) -> object | None:
 
 def reflect_type(obj: object) -> Type:
     return _GLOBAL_API._reflector.reflect_type(obj)
-
-
-#
-
-
-def type_key_or_none(
-        typ: Type,
-        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
-) -> TypeKey | None:
-    return _GLOBAL_API.type_key_or_none(typ, policy)
-
-
-def type_key(
-        typ: Type,
-        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
-) -> TypeKey:
-    return _GLOBAL_API.type_key(typ, policy)
 
 
 #

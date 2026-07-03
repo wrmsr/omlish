@@ -30,7 +30,6 @@ def _make_annotations() -> TypeAnnotations:
     )
     annotations = TypeAnnotations(
         reflector=reflector,
-        lock=lock,
     )
     return annotations
 
@@ -216,53 +215,6 @@ def test_to_runtime_annotation_fails_closed_for_mismatched_param_spec_nodes() ->
         annotations.to_runtime_annotation(callable_type)
 
 
-def test_reflector_runtime_annotation_cache_reuses_emitted_annotation() -> None:
-    annotations = _make_annotations()
-    typ = annotations._reflector.reflect_type(ta.Annotated[list[int], 'cfg'])
-
-    assert annotations.to_runtime_annotation(typ) is annotations.to_runtime_annotation(typ)
-    assert annotations.to_runtime_annotation(
-        typ,
-        type_alias_policy='preserve',
-    ) is annotations.to_runtime_annotation(typ, type_alias_policy='preserve')
-
-
-def test_reflector_runtime_annotation_cache_reuses_recursive_variadic_alias_annotations() -> None:
-    ts_var = ta.TypeVarTuple('Ts')  # type: ignore
-    alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
-    form = alias[int, str]  # noqa
-    annotations = TypeAnnotations(
-        reflector=TypeReflector(
-            universe=TypeUniverse(
-                lock=(lock := threading.RLock()),
-            ),
-            interner=Interner(
-                lock=lock,
-            ),
-            lock=lock,
-            forward_ref_resolver=lambda frr: {'TupleNode': alias}[frr.name],
-        ),
-        lock=lock,
-    )
-    typ = annotations._reflector.reflect_type(form)
-
-    assert annotations.to_runtime_annotation(typ) is annotations.to_runtime_annotation(typ)
-    assert annotations.to_runtime_annotation(
-        typ,
-        type_alias_policy='preserve',
-    ) is annotations.to_runtime_annotation(typ, type_alias_policy='preserve')
-
-
-def test_reflector_runtime_annotation_cache_does_not_store_failures() -> None:
-    annotations = _make_annotations()
-    typ = types.PartialType(None, None)
-
-    for _ in range(2):
-        with pytest.raises(ReflectionError, match='Runtime annotation is not implemented'):
-            annotations.to_runtime_annotation(typ)
-        assert all(key[0] is not typ for key in annotations._annotation_cache)
-
-
 def test_to_runtime_annotation_preserves_annotated_metadata() -> None:
     metadata = object()
     annotation = _to_annotation(ta.Annotated[int, 'cfg', metadata])
@@ -389,7 +341,6 @@ def test_to_runtime_annotation_preserves_recursive_alias_when_expand_policy_is_r
             lock=lock,
             forward_ref_resolver=lambda frr: {'Node': alias}[frr.name],
         ),
-        lock=lock,
     )
     typ = annotations._reflector.reflect_type(alias)
 
@@ -412,7 +363,6 @@ def test_to_runtime_annotation_preserves_variadic_recursive_alias_when_expand_po
             lock=lock,
             forward_ref_resolver=lambda frr: {'TupleNode': alias}[frr.name],
         ),
-        lock=lock,
     )
     typ = annotations._reflector.reflect_type(form)
 
@@ -435,7 +385,6 @@ def test_to_runtime_annotation_preserves_generic_variadic_recursive_alias_with_t
             lock=lock,
             forward_ref_resolver=lambda frr: {'TupleNode': alias}[frr.name],
         ),
-        lock=lock,
     )
     typ = annotations._reflector.reflect_type(form)
 

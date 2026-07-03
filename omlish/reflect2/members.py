@@ -14,7 +14,6 @@ from .core.types import Type
 from .core.types import TypeOfAny
 from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
-from .needs import NeedsKeys
 from .needs import NeedsLock
 from .needs import NeedsReflector
 from .ops import reflect_mro_entries_by_info
@@ -154,7 +153,6 @@ def _drop_first_parameter(signature: MemberSignature) -> MemberSignature:
 
 @ta.final
 class MembersInspector(
-    NeedsKeys,
     NeedsReflector,
     NeedsLock,
 ):
@@ -346,63 +344,3 @@ class MembersInspector(
 
         with self._lock:
             return self._inspect_members(obj)
-
-    #
-
-    # def _member_type_key(
-    #         self,
-    #         typ: Type,
-    #         policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
-    # ) -> TypeKey:
-    #     cur = typ
-    #     if isinstance(cur, AnnotatedType):
-    #         cur = cur.item
-    #     if isinstance(cur, TypeAliasType):
-    #         cur = get_type_alias_target(cur)
-    #     return self._keys.type_key(cur, policy)
-
-    # # FIXME: uhh no dude you can't just invent a new type key..
-    # def member_signature_key(
-    #         self,
-    #         signature: RuntimeMemberSignature,
-    #         policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
-    # ) -> TypeKey:
-    #     return TypeKey((
-    #         'member_signature',
-    #         tuple(
-    #             (
-    #                 parameter.name,
-    #                 parameter.kind,
-    #                 self._member_type_key(parameter.typ, policy),
-    #                 parameter.has_default,
-    #             )
-    #             for parameter in signature.parameters
-    #         ),
-    #         self._member_type_key(signature.return_type, policy),
-    #     ))
-
-    # def get_member_call_signature_key(
-    #         self,
-    #         member: RuntimeMember,
-    #         policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
-    # ) -> TypeKey | None:
-    #     if member.unkeyable:
-    #         raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
-    #
-    #     signature = self.get_member_call_signature(member)
-    #     if signature is None:
-    #         return None
-    #     return self.member_signature_key(signature, policy)
-
-    # def get_member_value_type_key(
-    #         self,
-    #         member: RuntimeMember,
-    #         policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
-    # ) -> TypeKey | None:
-    #     if member.unkeyable:
-    #         raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
-    #
-    #     typ = self.get_member_value_type(member)
-    #     if typ is None:
-    #         return None
-    #     return self._member_type_key(typ, policy)
