@@ -324,16 +324,25 @@ class TypeTranslator(TypeVisitor[Type]):
         return [typ.accept(self) for typ in typs]
 
     def visit_type_alias_type(self, typ: TypeAliasType) -> Type:
-        return TypeAliasType(typ._alias, self.translate_types(typ._args))
+        return TypeAliasType(
+            typ._alias,
+            self.translate_types(typ._args),
+        )
 
     def visit_type_guarded_type(self, typ: TypeGuardedType) -> Type:
         return TypeGuardedType(typ._type_guard.accept(self))
 
     def visit_annotated_type(self, typ: AnnotatedType) -> Type:
-        return AnnotatedType(typ._item.accept(self), typ._metadata)
+        return AnnotatedType(
+            typ._item.accept(self),
+            typ._metadata,
+        )
 
     def visit_required_type(self, typ: RequiredType) -> Type:
-        return RequiredType(typ._item.accept(self), required=typ._required)
+        return RequiredType(
+            typ._item.accept(self),
+            required=typ._required,
+        )
 
     def visit_read_only_type(self, typ: ReadOnlyType) -> Type:
         return ReadOnlyType(typ._item.accept(self))
@@ -348,16 +357,26 @@ class TypeTranslator(TypeVisitor[Type]):
         return typ
 
     def visit_unbound_type(self, typ: UnboundType) -> Type:
-        return UnboundType(typ._name, self.translate_types(typ._args))
+        return UnboundType(
+            typ._name,
+            self.translate_types(typ._args),
+            runtime_object=typ._runtime_object,
+        )
 
     def visit_callable_argument(self, typ: CallableArgument) -> Type:
-        return CallableArgument(typ._typ.accept(self), typ._name, typ._constructor)
+        return CallableArgument(
+            typ._typ.accept(self),
+            typ._name,
+            typ._constructor,
+        )
 
     def visit_type_list(self, typ: TypeList) -> Type:
         return TypeList(self.translate_types(typ._items))
 
     def visit_unpack_type(self, typ: UnpackType) -> Type:
-        return UnpackType(typ._type.accept(self))
+        return UnpackType(
+            typ._type.accept(self),
+        )
 
     def visit_any(self, typ: AnyType) -> Type:
         return typ
@@ -422,7 +441,10 @@ class TypeTranslator(TypeVisitor[Type]):
         partial_fallback = typ._partial_fallback.accept(self)
         if not isinstance(partial_fallback, Instance):
             raise ReflectionTypeError(partial_fallback)
-        return TupleType(self.translate_types(typ._items), partial_fallback)
+        return TupleType(
+            self.translate_types(typ._items),
+            partial_fallback,
+        )
 
     def visit_typeddict_type(self, typ: TypedDictType) -> Type:
         fallback = typ._fallback.accept(self)
@@ -442,14 +464,21 @@ class TypeTranslator(TypeVisitor[Type]):
         fallback = typ._fallback.accept(self)
         if not isinstance(fallback, Instance):
             raise ReflectionTypeError(fallback)
-        return LiteralType(typ._value, fallback)
+        return LiteralType(
+            typ._value,
+            fallback,
+        )
 
     def visit_union_type(self, typ: UnionType) -> Type:
         return UnionType(self.translate_types(typ._items))
 
     def visit_partial_type(self, typ: PartialType) -> Type:
         value_type = None if typ._value_type is None else typ._value_type.accept(self)
-        return PartialType(typ._type, typ._var, value_type)
+        return PartialType(
+            typ._type,
+            typ._var,
+            value_type,
+        )
 
     def visit_ellipsis_type(self, typ: EllipsisType) -> Type:
         return typ
@@ -458,7 +487,10 @@ class TypeTranslator(TypeVisitor[Type]):
         return TypeType(typ._item.accept(self))
 
     def visit_placeholder_type(self, typ: PlaceholderType) -> Type:
-        return PlaceholderType(typ._fullname, self.translate_types(typ._args))
+        return PlaceholderType(
+            typ._fullname,
+            self.translate_types(typ._args),
+        )
 
 
 ##
