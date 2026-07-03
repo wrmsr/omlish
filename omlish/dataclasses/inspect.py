@@ -4,9 +4,7 @@ import weakref
 
 from .. import cached
 from .. import check
-from .. import collections as col
 from .. import lang
-from .. import reflect as rfl
 from ._internals import STD_FIELDS_ATTR
 from ._internals import StdFieldType
 from ._internals import std_field_type
@@ -14,7 +12,7 @@ from ._internals import std_is_kw_only
 
 
 with lang.auto_proxy_import(globals()):
-    from .. import reflect2 as rfl2
+    from .. import reflect2 as rfl
 
 
 ClassAnnotations: ta.TypeAlias = ta.Mapping[str, ta.Any]
@@ -27,7 +25,7 @@ def _get_cls_annotations(cls: type) -> ClassAnnotations:
     # Does not use ta.get_type_hints because that's what std dataclasses do [1]. Might be worth revisiting? A part
     # of why they don't is to not import typing for efficiency but we don't care about that degree of startup speed.
     # [1]: https://github.com/python/cpython/blob/54c63a32d06cb5f07a66245c375eac7d7efb964a/Lib/dataclasses.py#L985-L986  # noqa
-    return rfl.get_annotations(cls)
+    return lang.get_annotations(cls)
 
 
 _CLS_ANNOTATIONS_CACHE: ta.MutableMapping[type, ClassAnnotations] = weakref.WeakKeyDictionary()
@@ -117,58 +115,26 @@ class FieldsInspection:
     def field_owners(self) -> ta.Mapping[str, type]:
         return self._find_fields().field_owners
 
-    ##
-
-    @cached.property
-    def _generic_mro(self) -> ta.Sequence[rfl.Type]:
-        return rfl.ALIAS_UPDATING_GENERIC_SUBSTITUTION.generic_mro(self._cls)
-
-    @cached.property
-    def _generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:
-        return col.make_map(((check.not_none(rfl.get_concrete_type(g)), g) for g in self._generic_mro), strict=True)
-
-    def _generic_replaced_field_type(self, fn: str) -> rfl.Type:
-        f = self.fields[fn]
-        fo = self.field_owners[f.name]
-        go = self._generic_mro_lookup[fo]
-        tvr = rfl.get_type_var_replacements(go)
-        fty = rfl.typeof(f.type)
-        rty = rfl.replace_type_vars(fty, tvr, update_aliases=True)
-        return rty
-
-    @cached.property
-    def _generic_replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
-        ret: dict[str, ta.Any] = {}
-        for f in self.fields.values():
-            ret[f.name] = self._generic_replaced_field_type(f.name)
-        return ret
-
-    @cached.property
-    def generic_replaced_field_annotations_old(self) -> ta.Mapping[str, ta.Any]:
-        return {k: rfl.to_annotation(v) for k, v in self._generic_replaced_field_types.items()}
-
     #
 
     @cached.property
     def generic_replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
-        # expected = self.generic_replaced_field_annotations_old  # noqa
-
-        rty = rfl2.reflect_type(self._cls)
+        rty = rfl.reflect_type(self._cls)
 
         owners = self.field_owners
 
         entries_by_info = {
             entry.info: entry
-            for entry in rfl2.get_mro_entries(check.isinstance(rty, rfl2.Instance))
+            for entry in rfl.get_mro_entries(check.isinstance(rty, rfl.Instance))
         }
 
-        field_types: dict[str, rfl2.Type] = {}
+        field_types: dict[str, rfl.Type] = {}
 
         for f in self.fields.values():
-            raw_type = rfl2.reflect_type(f.type)
+            raw_type = rfl.reflect_type(f.type)
 
             owner = owners[f.name]
-            owner_info = rfl2.get_type_info(owner)
+            owner_info = rfl.get_type_info(owner)
             owner_entry = entries_by_info[owner_info]
 
             owner_type_vars = owner_entry.info.type_vars
@@ -179,14 +145,14 @@ class FieldsInspection:
             if len(owner_type_vars) != len(owner_entry.args):
                 raise TypeError(f'Mismatched owner args: {owner_entry.instance!r}')
 
-            replaced_type = rfl2.substitute_type(
+            replaced_type = rfl.substitute_type(
                 raw_type,
                 dict(zip(owner_type_vars, owner_entry.args)),
             )
             field_types[f.name] = replaced_type
 
         field_anns = {
-            k: rfl2.to_runtime_annotation(v)
+            k: rfl.to_runtime_annotation(v)
             for k, v in field_types.items()
         }
 

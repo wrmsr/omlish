@@ -78,13 +78,13 @@ def get_runtime_type(robj: Type | TypeInfo) -> type:
 
 
 def is_optional(rty: Type) -> bool:
-    return isinstance(rty, UnionType) and any(isinstance(item, NoneType) for item in rty.items)
+    return isinstance(rty, UnionType) and any(isinstance(item, NoneType) for item in rty._items)
 
 
 def strip_optional(rty: UnionType) -> Type:
     items = [
         item
-        for item in rty.items
+        for item in rty._items
         if not isinstance(item, NoneType)
     ]
     if len(items) == 1:

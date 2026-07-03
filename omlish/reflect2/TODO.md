@@ -9,6 +9,7 @@
     - but have no ref to it, and still usable without a ref to it
     - forwardref resolution can already produce arbitrary results, so they already aren't really 'universal' (lol)
   - types/symbols immutable/final before being returned to callers
+    - if you didn't immediately make it you don't mutate it
 - metaclasses
 - dedupe universe lookup tables - we store more refs to stuff now
 - clarify.. point.. of fullname indirection
