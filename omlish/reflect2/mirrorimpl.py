@@ -430,7 +430,7 @@ class MirrorImpl(Mirror):
             return self._get_newtype_info(obj)
 
     ##
-    # mirror
+    # reflector
 
     def resolve_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
         return self._runtime_type_params_by_type.get(typ)

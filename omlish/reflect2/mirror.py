@@ -34,6 +34,11 @@ DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'u
 
 
 class Mirror:
+    """
+    TypeInfo and Type objects strictly flow *out of* a mirror, never into. The only methods that take them as parameters
+    simply query internal state for their presence - no mutation is done on their behalf.
+    """
+
     @property
     @abc.abstractmethod
     def dynamic_type_name_suffix(self) -> DynamicTypeNameSuffix:
