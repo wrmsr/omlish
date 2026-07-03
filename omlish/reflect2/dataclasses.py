@@ -7,9 +7,9 @@ from .core.subtypes import MroEntry
 from .core.types import Type
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
-from .needs import NeedsLock
-from .needs import NeedsReflector
+from .globals import or_global_reflector
 from .ops import reflect_mro_entries_by_info
+from .reflector import TypeReflector
 
 
 ##
@@ -91,18 +91,13 @@ def _replace_field_type(
     return substitute_type(raw_type, dict(zip(owner_type_vars, owner_entry._args)))
 
 
-class DataclassInspector(
-    NeedsReflector,
-    NeedsLock,
-):
-    def __init__(self, **kwargs: ta.Any) -> None:
-        super().__init__(**kwargs)
+class DataclassInspector:
+    def __init__(self, reflector: TypeReflector) -> None:
+        super().__init__()
 
-        self._inspection_cache: dict[object, DataclassInspection] = {}
+        self._reflector = reflector
 
-    #
-
-    def _inspect_dataclass_uncached(self, obj: object) -> DataclassInspection:
+    def inspect_dataclass(self, obj: object) -> DataclassInspection:
         origin = _get_origin_dataclass(obj)
         owners = _get_dataclass_field_owners(origin)
         entries_by_info = reflect_mro_entries_by_info(obj, reflector=self._reflector)
@@ -114,7 +109,7 @@ class DataclassInspector(
             except KeyError:
                 raise ReflectionTypeError(f'Missing dataclass field owner: {origin!r}.{field.name}') from None
 
-            owner_info = self._reflector._universe._get_type_info(owner)
+            owner_info = self._reflector.get_type_info(owner)
             try:
                 owner_entry = entries_by_info[owner_info]
             except KeyError:
@@ -142,21 +137,6 @@ class DataclassInspector(
             fields_by_name,
         )
 
-    def _inspect_dataclass(self, obj: object) -> DataclassInspection:
-        try:
-            return self._inspection_cache[obj]
-        except KeyError:
-            pass
 
-        ret = self._inspect_dataclass_uncached(obj)
-        self._inspection_cache[obj] = ret
-        return ret
-
-    def inspect_dataclass(self, obj: object) -> DataclassInspection:
-        try:
-            return self._inspection_cache[obj]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._inspect_dataclass(obj)
+def inspect_dataclass(obj: object, *, reflector: TypeReflector | None = None) -> DataclassInspection:
+    return DataclassInspector(or_global_reflector(reflector)).inspect_dataclass(obj)

@@ -1,54 +1,31 @@
 # ruff: noqa: F821 PLC0132 SLF001
 # ruff: noqa: PYI059
 import dataclasses as dc
-import threading
 import typing as ta
 
 import pytest
 
-from ..api import Api
+from ..annotations import to_runtime_annotation
 from ..core import types
 from ..core.strconv import type_str
 from ..core.typekeys import TypeKey
 from ..core.typekeys import type_key
 from ..dataclasses import DataclassField
-from ..dataclasses import DataclassInspector
+from ..dataclasses import inspect_dataclass
 from ..errors import ReflectionError
 from ..errors import UnreflectableTypeError
 from ..errors import UnsupportedTypeOperationError
-from ..interning import Interner
 from ..reflector import TypeReflector
-from ..universe import TypeUniverse
-
-
-def make_dataclass_inspector() -> DataclassInspector:
-    return DataclassInspector(
-        reflector=TypeReflector(
-            universe=TypeUniverse(
-                lock=(lock := threading.RLock()),
-            ),
-            interner=Interner(
-                lock=lock,
-            ),
-            lock=lock,
-        ),
-        lock=lock,
-    )
-
-
-def make_api() -> Api:
-    return Api(
-        dynamic_type_name_suffix='counter',
-    )
+from .helpers import make_reflector
 
 
 def field_runtime_annotations(
         fields: ta.Iterable[DataclassField],
         *,
-        api: Api,
+        reflector: TypeReflector,
 ) -> dict[str, ta.Any]:
     return {
-        field.name: api.to_runtime_annotation(field.replaced_type)
+        field.name: to_runtime_annotation(field.replaced_type, reflector=reflector)
         for field in fields
     }
 
@@ -75,8 +52,8 @@ def test_reflect_dataclass_fields_replaces_inherited_type_var() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    dr = make_dataclass_inspector()
-    [field] = dr.inspect_dataclass(IntBox).fields
+    reflector = make_reflector()
+    [field] = inspect_dataclass(IntBox, reflector=reflector).fields
 
     assert field.name == 'v'
     assert field.owner is Box
@@ -95,15 +72,15 @@ def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple() -> None:
     class IntStrBox(Box[int, str]):  # type: ignore
         pass
 
-    api = make_api()
-    [field] = api.inspect_dataclass(IntStrBox).fields
+    reflector = make_reflector()
+    [field] = inspect_dataclass(IntStrBox, reflector=reflector).fields
 
     assert field.name == 'values'
     assert field.owner is Box
     assert type_str(field.raw_type) == 'tuple[Unpack[Ts]]'
     assert type_str(field.replaced_type) == 'tuple[builtins.int, builtins.str]'
-    assert api.to_runtime_annotation(field.replaced_type) == tuple[int, str]
-    assert field_runtime_annotations([field], api=api) == {'values': tuple[int, str]}
+    assert to_runtime_annotation(field.replaced_type, reflector=reflector) == tuple[int, str]
+    assert field_runtime_annotations([field], reflector=reflector) == {'values': tuple[int, str]}
 
 
 def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple_with_fixed_edges() -> None:
@@ -119,13 +96,13 @@ def test_reflect_dataclass_fields_replaces_inherited_type_var_tuple_with_fixed_e
     class MixedBox(Box[int, str, bool, bytes]):  # type: ignore
         pass
 
-    api = make_api()
-    inspection = api.inspect_dataclass(MixedBox)
+    reflector = make_reflector()
+    inspection = inspect_dataclass(MixedBox, reflector=reflector)
     field = inspection.fields_by_name['values']
 
     assert type_str(field.raw_type) == 'tuple[T, Unpack[Ts], U]'
     assert type_str(field.replaced_type) == 'tuple[builtins.int, builtins.str, builtins.bool, builtins.bytes]'
-    assert field_runtime_annotations([field], api=api) == {'values': tuple[int, str, bool, bytes]}
+    assert field_runtime_annotations([field], reflector=reflector) == {'values': tuple[int, str, bool, bytes]}
 
 
 def test_reflect_dataclass_field_with_variadic_alias_expands_and_can_preserve_alias() -> None:
@@ -140,15 +117,16 @@ def test_reflect_dataclass_field_with_variadic_alias_expands_and_can_preserve_al
     class IntStrBox(Box[int, str]):  # type: ignore
         pass
 
-    api = make_api()
-    inspection = api.inspect_dataclass(IntStrBox)
+    reflector = make_reflector()
+    inspection = inspect_dataclass(IntStrBox, reflector=reflector)
     field = inspection.fields_by_name['values']
 
     assert type_str(field.replaced_type) == f'{__name__}.Alias[tuple[builtins.int, builtins.str]]'
-    assert field_runtime_annotations([field], api=api) == {'values': tuple[int, str]}
-    assert api.to_runtime_annotation(
+    assert field_runtime_annotations([field], reflector=reflector) == {'values': tuple[int, str]}
+    assert to_runtime_annotation(
         field.replaced_type,
         type_alias_policy='preserve',
+        reflector=reflector,
     ) == alias[int, str]
 
 
@@ -159,8 +137,8 @@ def test_reflect_dataclass_field_types_accepts_parameterized_dataclass_alias() -
     class Box(ta.Generic[t_var]):  # type: ignore
         v: t_var  # type: ignore
 
-    dr = make_dataclass_inspector()
-    inspection = dr.inspect_dataclass(Box[str])  # type: ignore
+    reflector = make_reflector()
+    inspection = inspect_dataclass(Box[str], reflector=reflector)  # type: ignore
 
     assert type_str(inspection.fields_by_name['v'].replaced_type) == 'builtins.str'
 
@@ -178,8 +156,8 @@ def test_inspect_dataclass_exposes_ordered_fields_and_maps() -> None:
     class Child(ta.Generic[u_var], Base[int]):  # type: ignore
         third: list[u_var]  # type: ignore
 
-    dr = make_dataclass_inspector()
-    inspection = dr.inspect_dataclass(Child[str])  # type: ignore
+    reflector = make_reflector()
+    inspection = inspect_dataclass(Child[str], reflector=reflector)  # type: ignore
 
     assert inspection.origin is Child
     assert [field.name for field in inspection.fields] == ['first', 'second', 'third']
@@ -193,9 +171,9 @@ def test_reflect_dataclass_field_annotations_returns_replaced_runtime_annotation
     class Box(ta.Generic[t_var]):  # type: ignore
         v: t_var  # type: ignore
 
-    api = make_api()
-    di = api.inspect_dataclass(Box[int])  # type: ignore
-    assert field_runtime_annotations(di.fields, api=api) == {'v': int}
+    reflector = make_reflector()
+    di = inspect_dataclass(Box[int], reflector=reflector)  # type: ignore
+    assert field_runtime_annotations(di.fields, reflector=reflector) == {'v': int}
 
 
 # def test_dataclass_literal_new_type_field_preserves_annotation_and_exposes_effective_shape() -> None:
@@ -207,7 +185,7 @@ def test_reflect_dataclass_field_annotations_returns_replaced_runtime_annotation
 #
 #     Config.__annotations__['mode'] = mode
 #
-#     api = make_api()
+#     reflector = make_reflector()
 #     inspection = api.inspect_dataclass(Config)
 #     field_type = inspection.fields_by_name['mode'].replaced_type
 #     shape = get_runtime_type_shape(field_type)
@@ -227,11 +205,11 @@ def test_inspect_dataclass_excludes_classvar_and_initvar_pseudo_fields() -> None
         init_only: dc.InitVar[str] = 'x'
         value: int = 2
 
-    api = make_api()
-    inspection = api.inspect_dataclass(Item)
+    reflector = make_reflector()
+    inspection = inspect_dataclass(Item, reflector=reflector)
 
     assert [field.name for field in inspection.fields] == ['value']
-    assert field_runtime_annotations(inspection.fields, api=api) == {'value': int}
+    assert field_runtime_annotations(inspection.fields, reflector=reflector) == {'value': int}
 
 
 def test_reflect_dataclass_fields_replaces_each_generic_layer() -> None:
@@ -253,8 +231,8 @@ def test_reflect_dataclass_fields_replaces_each_generic_layer() -> None:
     class Child(ta.Generic[y_var], Middle[dict[str, y_var]]):  # type: ignore
         child: y_var  # type: ignore
 
-    api = make_api()
-    fields = api.inspect_dataclass(Child[int]).fields  # type: ignore
+    reflector = make_reflector()
+    fields = inspect_dataclass(Child[int], reflector=reflector).fields  # type: ignore
 
     assert [
         (
@@ -307,13 +285,13 @@ def test_generic_dataclass_literal_newtype_field_keys_preserve_new_type_identity
     class Box(ta.Generic[t_var]):  # type: ignore
         value: t_var  # type: ignore
 
-    api = make_api()
-    mode_fields = field_type_keys(api.inspect_dataclass(Box[mode]).fields)  # type: ignore
-    other_fields = field_type_keys(api.inspect_dataclass(Box[other_mode]).fields)  # type: ignore
+    reflector = make_reflector()
+    mode_fields = field_type_keys(inspect_dataclass(Box[mode], reflector=reflector).fields)  # type: ignore
+    other_fields = field_type_keys(inspect_dataclass(Box[other_mode], reflector=reflector).fields)  # type: ignore
 
     assert mode_fields['value'] != other_fields['value']
-    assert mode_fields['value'] == type_key(api.reflect_type(mode))
-    assert other_fields['value'] == type_key(api.reflect_type(other_mode))
+    assert mode_fields['value'] == type_key(reflector.reflect_type(mode))
+    assert other_fields['value'] == type_key(reflector.reflect_type(other_mode))
 
 
 # def test_dataclass_field_with_new_type_literal_alias_expands_to_collection_shape() -> None:
@@ -464,8 +442,8 @@ def test_reflect_dataclass_fields_uses_overriding_field_owner() -> None:
     class Child(Base[int]):  # type: ignore
         value: str
 
-    api = make_api()
-    [field] = api.inspect_dataclass(Child).fields
+    reflector = make_reflector()
+    [field] = inspect_dataclass(Child, reflector=reflector).fields
 
     assert field.owner is Child
     assert type_str(field.raw_type) == 'builtins.str'
@@ -476,9 +454,9 @@ def test_reflect_dataclass_fields_rejects_non_dataclass() -> None:
     class NotDataclass:
         pass
 
-    api = make_api()
+    reflector = make_reflector()
     with pytest.raises(ReflectionError, match='dataclass source'):
-        api.inspect_dataclass(NotDataclass)
+        inspect_dataclass(NotDataclass, reflector=reflector)
 
 
 def test_reflect_dataclass_fields_fails_closed_for_unmappable_owner() -> None:
@@ -492,16 +470,16 @@ def test_reflect_dataclass_fields_fails_closed_for_unmappable_owner() -> None:
     class Child(Base[int]):  # type: ignore
         pass
 
-    api = make_api()
-    child_type = api.reflect_type(Child)
-    base_type = api.reflect_type(Base)
+    reflector = make_reflector()
+    child_type = reflector.reflect_type(Child)
+    base_type = reflector.reflect_type(Base)
     assert isinstance(child_type, types.Instance)
     assert isinstance(base_type, types.Instance)
     child_type.type._mro = (child_type.type, base_type.type)
     child_type.type._bases = ()
 
     with pytest.raises(UnsupportedTypeOperationError):
-        api.inspect_dataclass(Child)
+        inspect_dataclass(Child, reflector=reflector)
 
 
 def test_inspect_dataclass_fails_closed_for_unreflectable_alias_annotation() -> None:
@@ -511,11 +489,11 @@ def test_inspect_dataclass_fails_closed_for_unreflectable_alias_annotation() -> 
     class Config:
         value: bad_alias  # type: ignore
 
-    api = make_api()
+    reflector = make_reflector()
     with pytest.raises(UnreflectableTypeError, match='TypeIs'):
-        api.inspect_dataclass(Config)
+        inspect_dataclass(Config, reflector=reflector)
 
-    assert ('dataclass', Config) not in api.dataclasses._inspection_cache
+    # assert ('dataclass', Config) not in api.dataclasses._inspection_cache
 
 
 def test_reflect_dataclass_field_annotations_emit_replaced_runtime_annotations() -> None:
@@ -529,8 +507,8 @@ def test_reflect_dataclass_field_annotations_emit_replaced_runtime_annotations()
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    api = make_api()
-    di = api.inspect_dataclass(IntBox)
-    annotations = field_runtime_annotations(di.fields, api=api)
+    reflector = make_reflector()
+    di = inspect_dataclass(IntBox, reflector=reflector)
+    annotations = field_runtime_annotations(di.fields, reflector=reflector)
 
     assert annotations == {'value': list[int]}

@@ -27,30 +27,35 @@ from .core.types import UnpackType
 from .core.typevisitor import DefaultTypeVisitor
 from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
-from .needs import NeedsReflector
-from .needs import NeedsUniverse
-from .universe import TypeUniverse
+from .globals import or_global_reflector
+from .reflector import TypeReflector
 
 
 TypeVarResolver: ta.TypeAlias = ta.Callable[[TypeVarLikeType], object | None]
+
 TypeAliasAnnotationPolicy: ta.TypeAlias = ta.Literal['expand', 'preserve']
 
 
 ##
 
 
-class _AnnotationMaker(
-    DefaultTypeVisitor[object],
-    NeedsUniverse,
-):
+DEFAULT_TYPE_ALIAS_POLICY: TypeAliasAnnotationPolicy = 'expand'
+
+
+class _AnnotationMaker(DefaultTypeVisitor[object]):
     def __init__(
             self,
+            reflector: TypeReflector,
             *,
+            type_alias_policy: TypeAliasAnnotationPolicy | None = None,
             type_var_resolver: TypeVarResolver | None = None,
-            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
-            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__()
+
+        if type_alias_policy is None:
+            type_alias_policy = DEFAULT_TYPE_ALIAS_POLICY
+
+        self._reflector = reflector
 
         self._type_var_resolver = type_var_resolver
         self._type_alias_policy = type_alias_policy
@@ -59,7 +64,7 @@ class _AnnotationMaker(
         raise ReflectionTypeError(f'Runtime annotation is not implemented for type: {typ!r}')
 
     def _get_runtime_type(self, info: TypeInfo) -> object:
-        cls = self._universe.get_runtime_type(info)
+        cls = self._reflector.get_runtime_type(info)
         if cls is None:
             raise ReflectionTypeError(f'Runtime class is unavailable for type info: {info._fullname}')
         return cls
@@ -231,7 +236,7 @@ class _AnnotationMaker(
         )]
 
     def _to_literal_annotation_value(self, typ: LiteralType) -> object:
-        cls = self._universe.get_runtime_type(typ._fallback._type)
+        cls = self._reflector.get_runtime_type(typ._fallback._type)
         if (
                 isinstance(cls, type) and
                 issubclass(cls, enum.Enum) and
@@ -267,40 +272,18 @@ class _AnnotationMaker(
 
 def to_runtime_annotation(
         typ: Type,
-        universe: TypeUniverse | None = None,
         *,
-        type_var_resolver: TypeVarResolver | None = None,
+        reflector: TypeReflector | None = None,
         type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+        type_var_resolver: TypeVarResolver | None = None,
 ) -> object:
+    reflector = or_global_reflector(reflector)
+
+    if type_var_resolver is None:
+        type_var_resolver = reflector.resolve_runtime_type_param
+
     return typ.accept(_AnnotationMaker(
-        type_var_resolver=type_var_resolver,
+        reflector,
         type_alias_policy=type_alias_policy,
-        universe=universe,
+        type_var_resolver=type_var_resolver,
     ))
-
-
-##
-
-
-DEFAULT_TYPE_ALIAS_POLICY: TypeAliasAnnotationPolicy = 'expand'
-
-
-@ta.final
-class TypeAnnotations(
-    NeedsReflector,
-):
-    def to_runtime_annotation(
-            self,
-            typ: Type,
-            *,
-            type_alias_policy: TypeAliasAnnotationPolicy | None = None,
-    ) -> object:
-        if type_alias_policy is None:
-            type_alias_policy = DEFAULT_TYPE_ALIAS_POLICY
-
-        return to_runtime_annotation(
-            typ,
-            self._reflector._universe,
-            type_var_resolver=self._reflector.get_runtime_type_param,
-            type_alias_policy=type_alias_policy,
-        )

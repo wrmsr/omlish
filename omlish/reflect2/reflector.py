@@ -1,9 +1,11 @@
 # ruff: noqa: SLF001
+import abc
 import annotationlib
 import collections.abc as cabc
 import contextlib
 import enum
 import sys
+import threading
 import types as pytypes
 import typing as ta
 
@@ -43,11 +45,15 @@ from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import ReflectionValueError
 from .errors import UnreflectableTypeError
-from .needs import NeedsInterner
-from .needs import NeedsLock
-from .needs import NeedsUniverse
-from .universe import TypeUniverse
+from .known import _KNOWN_BASE_SPECS
+from .known import _KNOWN_FULLNAMES_BY_TYPE
+from .known import _KNOWN_GENERIC_ARITIES
+from .known import _KNOWN_GENERIC_VARIANCES
+from .known import _KNOWN_MRO_TAILS
+from .known import _KnownBaseArg
 
+
+DynamicTypeNameSuffix: ta.TypeAlias = ta.Literal['id', 'counter']
 
 UnresolvedForwardRefPolicy: ta.TypeAlias = ta.Literal['unbound', 'raise']
 
@@ -63,6 +69,52 @@ class ForwardRefResolution(ta.NamedTuple):
 
 class ForwardRefResolver(ta.Protocol):
     def __call__(self, frr: ForwardRefResolution, /) -> object: ...
+
+
+##
+
+
+class TypeReflector:
+    @property
+    @abc.abstractmethod
+    def dynamic_type_name_suffix(self) -> DynamicTypeNameSuffix:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def forward_ref_resolver(self) -> ForwardRefResolver | None:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
+        raise NotImplementedError
+
+    ##
+    # universe
+
+    @abc.abstractmethod
+    def get_runtime_type(self, info: TypeInfo) -> object | None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_type_info(self, obj: type | str) -> TypeInfo:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_newtype_info(self, obj: object) -> TypeInfo:
+        raise NotImplementedError
+
+    ##
+    # reflector
+
+    @abc.abstractmethod
+    def resolve_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reflect_type(self, obj: object) -> Type:
+        raise NotImplementedError
 
 
 ##
@@ -142,32 +194,51 @@ def _contains_any_type_alias(
 
 DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'unbound'
 
+DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX: ta.Final[DynamicTypeNameSuffix] = 'id'
 
-@ta.final
-class TypeReflector(
-    NeedsUniverse,
-    NeedsInterner,
-    NeedsLock,
-):
+_DYNAMIC_TYPE_NAME_SEPARATOR: ta.Final = '@'
+
+
+class TypeReflectorImpl(TypeReflector):
     def __init__(
             self,
             *,
+            dynamic_type_name_suffix: DynamicTypeNameSuffix | None = None,
             forward_ref_resolver: ForwardRefResolver | None = None,
             unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
-            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__()
+
+        if dynamic_type_name_suffix is None:
+            dynamic_type_name_suffix = DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX
+        elif dynamic_type_name_suffix not in ('id', 'counter'):
+            raise ReflectionValueError(f'Unsupported dynamic type name suffix mode: {dynamic_type_name_suffix!r}')
 
         if unresolved_forward_ref_policy is None:
             unresolved_forward_ref_policy = DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
         elif unresolved_forward_ref_policy not in ('raise', 'unbound'):
             raise ReflectionValueError(f'Unsupported unresolved forward ref policy: {unresolved_forward_ref_policy!r}')
 
+        self._dynamic_type_name_suffix = dynamic_type_name_suffix
         self._forward_ref_resolver = forward_ref_resolver
         self._unresolved_forward_ref_policy = unresolved_forward_ref_policy
 
+        self._lock = threading.RLock()
+
+        # universe
+
+        self._next_dynamic_type_index = 1
+
+        self._infos_by_fullname: dict[str, TypeInfo] = {}
+        self._fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
+        self._types_by_fullname: dict[str, object] = {
+            fullname: obj
+            for obj, fullname in self._fullnames_by_type.items()
+        }
         self._type_cache: dict[object, Type] = {}
         self._cached_types: set[Type] = set()
+
+        # reflector
 
         self._runtime_type_params_by_type: dict[TypeVarLikeType, object] = {}
         self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
@@ -182,10 +253,8 @@ class TypeReflector(
         self._next_type_var_id = 1
 
     @property
-    def universe(self) -> TypeUniverse:
-        # TODO: this (and its private field access internally) is still used sloppily as a transitive dep, but the
-        #       reflector+universe pair is foundational enough that I'll accept it for now
-        return self._universe
+    def dynamic_type_name_suffix(self) -> DynamicTypeNameSuffix:
+        return self._dynamic_type_name_suffix
 
     @property
     def forward_ref_resolver(self) -> ForwardRefResolver | None:
@@ -195,10 +264,235 @@ class TypeReflector(
     def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
         return self._unresolved_forward_ref_policy
 
-    def get_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
-        return self._runtime_type_params_by_type.get(typ)
+    ##
+    # universe
+
+    def get_runtime_type(self, info: TypeInfo) -> object | None:
+        return self._types_by_fullname.get(info._fullname)
+
+    def _make_dynamic_type_name_hint(self, obj: type) -> str:
+        module = getattr(obj, '__module__', None)
+        qualname = getattr(obj, '__qualname__', None)
+        if isinstance(module, str) and module and isinstance(qualname, str) and qualname:
+            return qualname if module == 'builtins' else f'{module}.{qualname}'
+
+        name = getattr(obj, '__name__', None)
+        if isinstance(name, str) and name:
+            return name
+
+        return 'type'
+
+    def _make_dynamic_type_fullname(self, obj: type) -> str:
+        hint = self._make_dynamic_type_name_hint(obj)
+        if self.dynamic_type_name_suffix == 'counter':
+            suffix = str(self._next_dynamic_type_index)
+            self._next_dynamic_type_index += 1
+        else:
+            suffix = f'{id(obj):x}'
+        return f'{hint}{_DYNAMIC_TYPE_NAME_SEPARATOR}{suffix}'
+
+    def _make_newtype_fullname(self, obj: object) -> str:
+        module = getattr(obj, '__module__', None)
+        qualname = getattr(obj, '__qualname__', None)
+        if isinstance(module, str) and module and isinstance(qualname, str) and qualname:
+            return qualname if module == 'builtins' else f'{module}.{qualname}'
+
+        name = getattr(obj, '__name__', None)
+        if isinstance(name, str) and name:
+            return name
+
+        return f'NewType@{id(obj):x}'
+
+    def _make_type_var(
+            self,
+            fullname: str,
+            index: int,
+            variance: VarianceKind,
+    ) -> TypeVarType:
+        object_info = self._get_type_info('builtins.object')
+        object_type = Instance(object_info, ())
+        default = _ANY_TYPES[TypeOfAny.FROM_OMITTED_GENERICS]
+        name = f'T{index}'
+        return TypeVarType(
+            name,
+            f'{fullname}.{name}',
+            TypeVarId(index + 1),
+            (),
+            object_type,
+            default,
+            variance,
+        )
+
+    def _make_type_info(
+            self,
+            fullname: str,
+            *,
+            runtime_object: object | None = None,
+    ) -> TypeInfo:
+        name = fullname.rsplit('.', 1)[-1]
+        arity = _KNOWN_GENERIC_ARITIES.get(fullname, 0)
+        variances = list(_KNOWN_GENERIC_VARIANCES.get(fullname, (VarianceKind.IN,) * arity))
+        type_vars: list[TypeVarLikeType] = [
+            self._make_type_var(fullname, index, variance)
+            for index, variance in enumerate(variances)
+        ]
+        return TypeInfo(
+            name,
+            fullname,
+            type_vars=type_vars,
+            variances=variances,
+            runtime_object=runtime_object,
+        )
+
+    def _make_known_bases(self, info: TypeInfo) -> ta.Sequence[Type]:
+        specs = _KNOWN_BASE_SPECS.get(info._fullname, ())
+        bases: list[Type] = []
+        for target_fullname, arg_specs in specs:
+            bases.append(Instance(
+                self._get_type_info(target_fullname),
+                [
+                    self._make_known_base_arg(info, arg_spec)
+                    for arg_spec in arg_specs
+                ],
+            ))
+        return bases
+
+    def _make_known_base_arg(self, info: TypeInfo, arg_spec: _KnownBaseArg) -> Type:
+        if isinstance(arg_spec, int):
+            return info.type_vars[arg_spec]
+        return Instance(self._get_type_info(arg_spec), ())
+
+    def _make_known_mro(self, info: TypeInfo) -> ta.Sequence[TypeInfo] | None:
+        tail = _KNOWN_MRO_TAILS.get(info._fullname)
+        if tail is None:
+            return None
+        return [info, *[self._get_type_info(fullname) for fullname in tail]]
 
     #
+
+    def _configure_known_type_info(self, info: TypeInfo) -> None:
+        info._bases = tuple(self._make_known_bases(info))
+        if (mro := self._make_known_mro(info)) is not None:
+            info._mro = tuple(mro)
+
+    def _get_type_info(self, obj: type | str) -> TypeInfo:
+        if isinstance(obj, str):
+            fullname = obj
+            runtime_type = None
+        else:
+            runtime_type = obj
+            try:
+                fullname = self._fullnames_by_type[obj]
+            except KeyError:
+                fullname = self._make_dynamic_type_fullname(obj)
+                try:
+                    ex_ty = self._types_by_fullname[fullname]
+                except KeyError:
+                    pass
+                else:
+                    raise ReflectionValueError(
+                        f'Dynamic fullname {fullname!r} for type {obj!r} already used by type {ex_ty!r}',
+                    )
+                self._fullnames_by_type[obj] = fullname
+                self._types_by_fullname[fullname] = obj
+
+        try:
+            return self._infos_by_fullname[fullname]
+        except KeyError:
+            pass
+
+        info = self._make_type_info(
+            fullname,
+            runtime_object=runtime_type,
+        )
+        self._infos_by_fullname[fullname] = info
+        self._configure_known_type_info(info)
+        if runtime_type is not None and issubclass(runtime_type, enum.Enum):
+            info._is_enum = True
+            info._enum_members = tuple(
+                member.name
+                for member in runtime_type
+            )
+        return info
+
+    def get_type_info(self, obj: type | str) -> TypeInfo:
+        if isinstance(obj, str):
+            try:
+                return self._infos_by_fullname[obj]
+            except KeyError:
+                pass
+        else:
+            try:
+                fullname = self._fullnames_by_type[obj]
+            except KeyError:
+                pass
+            else:
+                try:
+                    return self._infos_by_fullname[fullname]
+                except KeyError:
+                    pass
+
+        with self._lock:
+            return self._get_type_info(obj)
+
+    #
+
+    def _get_newtype_info(self, obj: object) -> TypeInfo:
+        if not isinstance(obj, ta.NewType):  # noqa
+            raise TypeError('get_newtype_info only accepts `typing.NewType` objects')
+
+        try:
+            fullname = self._fullnames_by_type[obj]
+        except KeyError:
+            fullname = self._make_newtype_fullname(obj)
+            if fullname in self._types_by_fullname:
+                fullname = f'{fullname}@{id(obj):x}'
+            self._fullnames_by_type[obj] = fullname
+            self._types_by_fullname[fullname] = obj
+
+        try:
+            return self._infos_by_fullname[fullname]
+        except KeyError:
+            pass
+
+        name = fullname.rsplit('.', 1)[-1]
+        info = TypeInfo(
+            name,
+            fullname,
+            runtime_object=obj,
+        )
+        self._infos_by_fullname[fullname] = info
+
+        supertype = getattr(obj, '__supertype__')
+        if isinstance(supertype, type):
+            base_type = self._get_type_info(supertype)
+            info._newtype_supertype = Instance(base_type, ())
+        else:
+            base_type = self._get_type_info('builtins.object')
+        info._bases = (Instance(base_type, ()),)
+        info._mro = (info, *base_type._mro)
+
+        return info
+
+    def get_newtype_info(self, obj: object) -> TypeInfo:
+        try:
+            fullname = self._fullnames_by_type[obj]
+        except KeyError:
+            pass
+        else:
+            try:
+                return self._infos_by_fullname[fullname]
+            except KeyError:
+                pass
+
+        with self._lock:
+            return self._get_newtype_info(obj)
+
+    ##
+    # reflector
+
+    def resolve_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
+        return self._runtime_type_params_by_type.get(typ)
 
     def _is_uncacheable_reflect_type(self, obj: object) -> bool:
         # Forward-ref resolution is context-dependent (see _reflect_forward_ref): the same ForwardRef / str resolves
@@ -443,7 +737,7 @@ class TypeReflector(
         return TypeAliasType(self._get_type_alias_symbol(obj), args)
 
     def _make_tuple_fallback(self) -> Instance:
-        return Instance(self._universe._get_type_info(tuple), [_make_any()])
+        return Instance(self._get_type_info(tuple), [_make_any()])
 
     def _reflect_type_alias_forward_ref_arg(
             self,
@@ -589,7 +883,7 @@ class TypeReflector(
         return _contains_any_type_alias(typ, active_aliases, set())
 
     def _reflect_newtype(self, obj: object) -> Instance:
-        info = self._universe._get_newtype_info(obj)
+        info = self._get_newtype_info(obj)
         info._newtype_supertype = self._reflect_type(obj.__supertype__)  # type: ignore[attr-defined]
         return Instance(info, ())
 
@@ -674,7 +968,7 @@ class TypeReflector(
         return typ
 
     def _reflect_instance(self, origin: type, args: tuple[object, ...]) -> Instance:
-        info = self._universe._get_type_info(origin)
+        info = self._get_type_info(origin)
         self._prepare_runtime_type_info(origin, info)
         reflected_args = self._reflect_instance_args(origin, info, args)
 
@@ -737,7 +1031,7 @@ class TypeReflector(
             mro = getattr(origin, '__mro__', None)
             if mro is not None and info._mro == (info,):
                 info._mro = tuple(
-                    self._universe._get_type_info(cls)
+                    self._get_type_info(cls)
                     for cls in mro
                     if isinstance(cls, type)
                 )
@@ -793,7 +1087,7 @@ class TypeReflector(
         return base
 
     def _reflect_tuple(self, args: tuple[object, ...]) -> Type:
-        info = self._universe._get_type_info(tuple)
+        info = self._get_type_info(tuple)
 
         if len(args) == 2 and args[1] is Ellipsis:
             return Instance(info, [self._reflect_type(args[0])])
@@ -818,7 +1112,7 @@ class TypeReflector(
 
     def _reflect_callable(self, args: tuple[object, ...]) -> CallableType:
         fallback = Instance(
-            self._universe._get_type_info(cabc.Callable),  # type: ignore[arg-type]
+            self._get_type_info(cabc.Callable),  # type: ignore[arg-type]
             [_make_any()],
         )
 
@@ -883,13 +1177,13 @@ class TypeReflector(
 
     def _reflect_literal_value(self, obj: object) -> LiteralType:
         if isinstance(obj, enum.Enum):
-            fallback = Instance(self._universe._get_type_info(obj.__class__), ())
+            fallback = Instance(self._get_type_info(obj.__class__), ())
             return LiteralType(obj.name, fallback)
 
         if not _is_literal_value(obj):
             raise UnreflectableTypeError(f'Unsupported literal value: {obj!r}')
 
-        fallback = Instance(self._universe._get_type_info(type(obj)), ())
+        fallback = Instance(self._get_type_info(type(obj)), ())
         return LiteralType(ta.cast(LiteralValue, obj), fallback)
 
     def _reflect_type_var(self, obj: ta.TypeVar) -> TypeVarType:
@@ -905,7 +1199,7 @@ class TypeReflector(
         with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
             bound = obj.__bound__
             if bound is None:
-                upper_bound: Type = Instance(self._universe._get_type_info(object), ())
+                upper_bound: Type = Instance(self._get_type_info(object), ())
             else:
                 upper_bound = self._reflect_type(bound)
 
@@ -931,7 +1225,7 @@ class TypeReflector(
         return type_var
 
     def _reflect_param_spec(self, obj: ta.ParamSpec) -> ParamSpecType:
-        upper_bound = Instance(self._universe._get_type_info(object), ())
+        upper_bound = Instance(self._get_type_info(object), ())
 
         with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
             default_obj = getattr(obj, '__default__', ta.NoDefault)
@@ -952,7 +1246,7 @@ class TypeReflector(
         return param_spec
 
     def _reflect_type_var_tuple(self, obj: ta.TypeVarTuple) -> TypeVarTupleType:
-        upper_bound = Instance(self._universe._get_type_info(object), ())
+        upper_bound = Instance(self._get_type_info(object), ())
 
         with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
             default_obj = getattr(obj, '__default__', ta.NoDefault)
@@ -961,7 +1255,7 @@ class TypeReflector(
             else:
                 default = self._reflect_type(default_obj)
 
-        tuple_fallback = Instance(self._universe._get_type_info(tuple), [_make_any()])
+        tuple_fallback = Instance(self._get_type_info(tuple), [_make_any()])
         type_var_tuple = TypeVarTupleType(
             obj.__name__,
             obj.__name__,

@@ -109,31 +109,17 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .annotations import (  # noqa
-        TypeVarResolver,
         TypeAliasAnnotationPolicy,
 
-        to_runtime_annotation as to_runtime_annotation_,
+        to_runtime_annotation,
     )
 
-    from .api import (  # noqa
-        Api,
+    from .dataclasses import (  # noqa
+        DataclassField,
+        DataclassInspection,
 
-        global_api,
-        or_global_api,
-
-        get_type_info,
-        get_newtype_info,
-        get_runtime_type,
-
-        reflect_type,
-
-        to_runtime_annotation,
-
-        inspect_members,
-
+        DataclassInspector,
         inspect_dataclass,
-
-        inspect_namedtuple,
     )
 
     from .errors import (  # noqa
@@ -145,6 +131,37 @@ with _lang.auto_proxy_init(globals()):
         UnsupportedTypeOperationError,
         UnreflectableTypeError,
         ProtocolReflectionError,
+    )
+
+    from .globals import (  # noqa
+        global_reflector,
+        or_global_reflector,
+
+        get_type_info,
+        get_newtype_info,
+        get_runtime_type,
+
+        resolve_runtime_type_param,
+        reflect_type,
+    )
+
+    from .members import (  # noqa
+        MemberKind,
+        MemberParameter,
+        MemberSignature,
+        Member,
+        MembersInspection,
+
+        MembersInspector,
+        inspect_members,
+    )
+
+    from .namedtuples import (  # noqa
+        NamedtupleField,
+        NamedtupleInspection,
+
+        NamedtupleInspector,
+        inspect_namedtuple,
     )
 
     from .ops import (  # noqa
@@ -159,8 +176,4 @@ with _lang.auto_proxy_init(globals()):
         ForwardRefResolver,
 
         TypeReflector,
-    )
-
-    from .universe import (  # noqa
-        TypeUniverse,
     )

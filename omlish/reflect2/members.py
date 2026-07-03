@@ -14,9 +14,9 @@ from .core.types import Type
 from .core.types import TypeOfAny
 from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
-from .needs import NeedsLock
-from .needs import NeedsReflector
+from .globals import or_global_reflector
 from .ops import reflect_mro_entries_by_info
+from .reflector import TypeReflector
 
 
 ##
@@ -152,16 +152,11 @@ def _drop_first_parameter(signature: MemberSignature) -> MemberSignature:
 
 
 @ta.final
-class MembersInspector(
-    NeedsReflector,
-    NeedsLock,
-):
-    def __init__(self, **kwargs: ta.Any) -> None:
-        super().__init__(**kwargs)
+class MembersInspector:
+    def __init__(self, reflector: TypeReflector) -> None:
+        super().__init__()
 
-        self._inspection_cache: dict[object, MembersInspection] = {}
-
-    #
+        self._reflector = reflector
 
     def _reflect_annotation(
             self,
@@ -170,7 +165,7 @@ class MembersInspector(
     ) -> Type:
         if annotation is inspect.Signature.empty:
             return _make_any()
-        typ = self._reflector._reflect_type(annotation)
+        typ = self._reflector.reflect_type(annotation)
         if replacements:
             return substitute_type(typ, replacements)
         return typ
@@ -296,7 +291,7 @@ class MembersInspector(
             owner: type,
             entries_by_info: dict[object, MroEntry],
     ) -> SubstitutionMap:
-        owner_info = self._reflector._universe._get_type_info(owner)
+        owner_info = self._reflector.get_type_info(owner)
         entry = entries_by_info.get(owner_info)
         if entry is None or not entry._info._type_vars:
             return {}
@@ -306,7 +301,7 @@ class MembersInspector(
             )
         return dict(zip(entry._info._type_vars, entry._args))
 
-    def _inspect_members_uncached(
+    def inspect_members(
             self,
             obj: object,
     ) -> MembersInspection:
@@ -323,24 +318,6 @@ class MembersInspector(
 
         return MembersInspection(origin, tuple(members_by_name.values()), members_by_name)
 
-    def _inspect_members(
-            self,
-            obj: object,
-    ) -> MembersInspection:
-        try:
-            return self._inspection_cache[obj]
-        except KeyError:
-            pass
 
-        ret = self._inspect_members_uncached(obj)
-        self._inspection_cache[obj] = ret
-        return ret
-
-    def inspect_members(self, obj: object) -> MembersInspection:
-        try:
-            return self._inspection_cache[obj]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._inspect_members(obj)
+def inspect_members(obj: object, *, reflector: TypeReflector | None = None) -> MembersInspection:
+    return MembersInspector(or_global_reflector(reflector)).inspect_members(obj)

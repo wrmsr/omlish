@@ -8,8 +8,8 @@ from .core.types import Type
 from .core.types import TypeVarLikeType
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
-from .needs import NeedsLock
-from .needs import NeedsReflector
+from .globals import or_global_reflector
+from .reflector import TypeReflector
 
 
 ##
@@ -59,14 +59,11 @@ def _get_namedtuple_annotations(origin: type) -> dict[str, object]:
     return annotations
 
 
-class NamedtupleInspector(
-    NeedsReflector,
-    NeedsLock,
-):
-    def __init__(self, **kwargs: ta.Any) -> None:
-        super().__init__(**kwargs)
+class NamedtupleInspector:
+    def __init__(self, reflector: TypeReflector) -> None:
+        super().__init__()
 
-        self._inspection_cache: dict[object, NamedtupleInspection] = {}
+        self._reflector = reflector
 
     def _get_replacements(
             self,
@@ -77,7 +74,7 @@ class NamedtupleInspector(
         if not isinstance(instance, Instance):
             raise ReflectionTypeError(f'Unsupported namedtuple reflected type: {instance!r}')
 
-        origin_info = self._reflector._universe._get_type_info(origin)
+        origin_info = self._reflector.get_type_info(origin)
         if instance._type is not origin_info:
             raise UnsupportedTypeOperationError(f'Namedtuple origin mismatch: {instance!r} != {origin_info._fullname}')
 
@@ -91,7 +88,7 @@ class NamedtupleInspector(
 
         return dict(zip(origin_info.type_vars, instance._args))
 
-    def _inspect_namedtuple_uncached(self, obj: object) -> NamedtupleInspection:
+    def inspect_namedtuple(self, obj: object) -> NamedtupleInspection:
         origin = _get_origin_namedtuple(obj)
         annotations = _get_namedtuple_annotations(origin)
         replacements = self._get_replacements(obj, origin)
@@ -121,21 +118,6 @@ class NamedtupleInspector(
             fields_by_name,
         )
 
-    def _inspect_namedtuple(self, obj: object) -> NamedtupleInspection:
-        try:
-            return self._inspection_cache[obj]
-        except KeyError:
-            pass
 
-        ret = self._inspect_namedtuple_uncached(obj)
-        self._inspection_cache[obj] = ret
-        return ret
-
-    def inspect_namedtuple(self, obj: object) -> NamedtupleInspection:
-        try:
-            return self._inspection_cache[obj]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._inspect_namedtuple(obj)
+def inspect_namedtuple(obj: object, *, reflector: TypeReflector | None = None) -> NamedtupleInspection:
+    return NamedtupleInspector(or_global_reflector(reflector)).inspect_namedtuple(obj)

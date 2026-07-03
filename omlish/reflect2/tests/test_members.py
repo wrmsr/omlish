@@ -1,31 +1,13 @@
 # ruff: noqa: F821 PLC0132 SLF001
 import inspect
-import threading
 import typing as ta
 
 from ..core import types
 from ..core.strconv import type_str
 from ..errors import ReflectionError
-from ..interning import Interner
 from ..members import MemberKind
-from ..members import MembersInspector
-from ..reflector import TypeReflector
-from ..universe import TypeUniverse
-
-
-def make_members_inspector() -> MembersInspector:
-    return MembersInspector(
-        reflector=TypeReflector(
-            universe=TypeUniverse(
-                lock=(lock := threading.RLock()),
-            ),
-            interner=Interner(
-                lock=lock,
-            ),
-            lock=lock,
-        ),
-        lock=lock,
-    )
+from ..members import inspect_members
+from .helpers import make_reflector
 
 
 def test_inspect_runtime_members_classifies_descriptor_kinds() -> None:
@@ -47,8 +29,8 @@ def test_inspect_runtime_members_classifies_descriptor_kinds() -> None:
         def prop(self) -> int:
             return 1
 
-    mr = make_members_inspector()
-    inspection = mr.inspect_members(Example)
+    reflector = make_reflector()
+    inspection = inspect_members(Example, reflector=reflector)
 
     assert inspection.origin is Example
     assert inspection.members_by_name['data'].kind == MemberKind.DATA
@@ -71,8 +53,8 @@ def test_inspect_runtime_members_exposes_unbound_signatures() -> None:
         def class_method(cls, value: int) -> str:
             return str(value)
 
-    mr = make_members_inspector()
-    members = mr.inspect_members(Example).members_by_name
+    reflector = make_reflector()
+    members = inspect_members(Example, reflector=reflector).members_by_name
 
     assert tuple(members['method'].signature.parameters) == ('self', 'value')  # type: ignore
     assert members['method'].signature.return_annotation is str  # type: ignore
@@ -93,8 +75,8 @@ def test_inspect_runtime_members_reflects_method_signatures() -> None:
         def class_method(cls, value: int) -> str:
             return str(value)
 
-    mr = make_members_inspector()
-    members = mr.inspect_members(Example).members_by_name
+    reflector = make_reflector()
+    members = inspect_members(Example, reflector=reflector).members_by_name
 
     method_sig = members['method'].reflected_signature
     assert method_sig is not None
@@ -122,8 +104,8 @@ def test_inspect_runtime_members_preserves_literal_newtype_method_signature_shap
         def set_mode(self, mode: mode) -> mode:
             return mode
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['set_mode']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['set_mode']
     signature = member.reflected_signature
     call_signature = member.get_call_signature()
 
@@ -149,8 +131,8 @@ def test_inspect_runtime_members_preserves_parameter_kinds_and_defaults() -> Non
         def method(self, value: int, /, named: str, *, flag: bool = False) -> None:
             raise NotImplementedError
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['method']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['method']
     signature = member.reflected_signature
 
     assert signature is not None
@@ -198,8 +180,8 @@ def test_inspect_runtime_members_reflects_property_getter_return_type() -> None:
         def value(self) -> int:
             return 1
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['value']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['value']
 
     assert member.kind == MemberKind.PROPERTY
     assert member.reflected_signature is not None
@@ -212,8 +194,8 @@ def test_inspect_runtime_members_uses_any_for_omitted_annotations() -> None:
         def method(self, value):
             return value
 
-    mr = make_members_inspector()
-    reflected_signature = mr.inspect_members(Example).members_by_name['method'].reflected_signature
+    reflector = make_reflector()
+    reflected_signature = inspect_members(Example, reflector=reflector).members_by_name['method'].reflected_signature
 
     assert reflected_signature is not None
     assert all(isinstance(parameter.typ, types.AnyType) for parameter in reflected_signature.parameters)
@@ -225,8 +207,8 @@ def test_get_member_call_signature_drops_self_for_instance_method() -> None:
         def method(self, value: int) -> str:
             return str(value)
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['method']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['method']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -241,8 +223,8 @@ def test_get_member_call_signature_drops_cls_for_classmethod() -> None:
         def create(cls, value: int) -> str:
             return str(value)
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['create']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['create']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -256,8 +238,8 @@ def test_get_member_call_signature_keeps_staticmethod_parameters() -> None:
         def create(value: int) -> str:
             return str(value)
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['create']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['create']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -271,8 +253,8 @@ def test_get_member_value_type_exposes_property_return_type() -> None:
         def value(self) -> int:
             return 1
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['value']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['value']
     value_type = member.get_value_type()
 
     assert value_type is not None
@@ -388,8 +370,8 @@ def test_callable_data_member_has_no_member_call_signature() -> None:
         callback = staticmethod(lambda value: value)
         callable_value = CallableValue()
 
-    mr = make_members_inspector()
-    members = mr.inspect_members(Example).members_by_name
+    reflector = make_reflector()
+    members = inspect_members(Example, reflector=reflector).members_by_name
 
     assert members['callback'].kind == MemberKind.STATICMETHOD
     assert members['callback'].get_call_signature() is not None
@@ -406,8 +388,8 @@ def test_inspect_runtime_members_uses_subclass_owner_for_overrides() -> None:
         def method(self) -> str:  # type: ignore
             return 'x'
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Child).members_by_name['method']
+    reflector = make_reflector()
+    member = inspect_members(Child, reflector=reflector).members_by_name['method']
 
     assert member.owner is Child
     assert member.kind == MemberKind.FUNCTION
@@ -449,8 +431,8 @@ def test_inspect_runtime_members_accepts_parameterized_alias_origin() -> None:
         def get(self) -> T:
             raise NotImplementedError
 
-    mr = make_members_inspector()
-    inspection = mr.inspect_members(Box[int])
+    reflector = make_reflector()
+    inspection = inspect_members(Box[int], reflector=reflector)
 
     assert inspection.origin is Box
     assert inspection.members_by_name['get'].kind == MemberKind.FUNCTION
@@ -461,8 +443,8 @@ def test_inspect_runtime_members_replaces_parameterized_alias_method_return() ->
         def get(self) -> T:
             raise NotImplementedError
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Box[int]).members_by_name['get']
+    reflector = make_reflector()
+    member = inspect_members(Box[int], reflector=reflector).members_by_name['get']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -474,8 +456,8 @@ def test_inspect_runtime_members_replaces_parameterized_alias_method_parameter()
         def put(self, value: T) -> None:
             raise NotImplementedError
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Box[int]).members_by_name['put']
+    reflector = make_reflector()
+    member = inspect_members(Box[int], reflector=reflector).members_by_name['put']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -489,8 +471,8 @@ def test_inspect_runtime_members_uses_any_for_unparameterized_generic_method() -
         def get(self) -> T:
             raise NotImplementedError
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Box).members_by_name['get']
+    reflector = make_reflector()
+    member = inspect_members(Box, reflector=reflector).members_by_name['get']
     call_signature = member.get_call_signature()
 
     assert call_signature is not None
@@ -505,8 +487,8 @@ def test_inspect_runtime_members_replaces_inherited_generic_method() -> None:
     class StrBox(Box[str]):
         pass
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(StrBox).members_by_name['get']
+    reflector = make_reflector()
+    member = inspect_members(StrBox, reflector=reflector).members_by_name['get']
     call_signature = member.get_call_signature()
 
     assert member.owner is Box
@@ -527,8 +509,8 @@ def test_inspect_runtime_members_replaces_inherited_generic_method_with_literal_
     class ModeBox(Box[mode]):  # noqa
         pass
 
-    mr = make_members_inspector()
-    members = mr.inspect_members(ModeBox).members_by_name
+    reflector = make_reflector()
+    members = inspect_members(ModeBox, reflector=reflector).members_by_name
     get_signature = members['get'].get_call_signature()
     put_signature = members['put'].get_call_signature()
 
@@ -593,9 +575,9 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
         def set_modes(self, modes: list[mode]) -> list[mode]:  # noqa
             return modes
 
-    mr = make_members_inspector()
-    left_member = mr.inspect_members(Left).members_by_name['set_modes']
-    right_member = mr.inspect_members(Right).members_by_name['set_modes']
+    reflector = make_reflector()
+    left_member = inspect_members(Left, reflector=reflector).members_by_name['set_modes']
+    right_member = inspect_members(Right, reflector=reflector).members_by_name['set_modes']
     left_signature = left_member.get_call_signature()
     right_signature = right_member.get_call_signature()
 
@@ -744,9 +726,9 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
 
 
 def test_inspect_runtime_members_rejects_non_type_source() -> None:
-    mr = make_members_inspector()
+    reflector = make_reflector()
     try:
-        mr.inspect_members(1)
+        inspect_members(1, reflector=reflector)
     except ReflectionError as e:
         assert 'member source' in str(e)  # noqa
     else:
@@ -766,8 +748,8 @@ def test_member_order_is_base_then_subclass_with_overrides_in_place() -> None:
         def method(self) -> str:  # type: ignore
             return 'x'
 
-    mr = make_members_inspector()
-    inspection = mr.inspect_members(Child)
+    reflector = make_reflector()
+    inspection = inspect_members(Child, reflector=reflector)
 
     assert [member.name for member in inspection.members] == ['base_data', 'method', 'child_data']
     assert inspection.members_by_name['method'].owner is Child
@@ -787,8 +769,8 @@ def test_inspect_runtime_members_collects_typing_overloads() -> None:
         def method(self, value):
             return value
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['method']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['method']
     signatures = member.get_call_signatures()
 
     assert len(signatures) == 2
@@ -815,8 +797,8 @@ def test_inspect_runtime_members_collects_overload_keyword_only_defaults() -> No
         def method(self, value, *, flag=False):
             return value
 
-    mr = make_members_inspector()
-    member = mr.inspect_members(Example).members_by_name['method']
+    reflector = make_reflector()
+    member = inspect_members(Example, reflector=reflector).members_by_name['method']
     signatures = member.get_call_signatures()
 
     assert len(signatures) == 2
