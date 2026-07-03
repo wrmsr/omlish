@@ -35,7 +35,7 @@ def get_newtype_info(obj: object, *, mirror: Mirror | None = None) -> TypeInfo:
 
 
 ##
-# mirror
+# reflector
 
 
 def resolve_runtime_type_param(typ: TypeVarLikeType, *, mirror: Mirror | None = None) -> object | None:

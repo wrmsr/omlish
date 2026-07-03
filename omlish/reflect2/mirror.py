@@ -61,7 +61,7 @@ class Mirror:
         raise NotImplementedError
 
     ##
-    # mirror
+    # reflector
 
     @abc.abstractmethod
     def resolve_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:

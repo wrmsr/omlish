@@ -178,7 +178,7 @@ class MirrorImpl(Mirror):
         self._type_cache: dict[object, Type] = {}
         self._cached_types: set[Type] = set()
 
-        # mirror
+        # reflector
 
         self._runtime_type_params_by_type: dict[TypeVarLikeType, object] = {}
         self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
