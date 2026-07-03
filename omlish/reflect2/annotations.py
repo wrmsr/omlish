@@ -274,7 +274,7 @@ def to_runtime_annotation(
         typ: Type,
         *,
         mirror: Mirror | None = None,
-        type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+        type_alias_policy: TypeAliasAnnotationPolicy | None = None,
         type_var_resolver: TypeVarResolver | None = None,
 ) -> object:
     mirror = or_global_mirror(mirror)

@@ -1,4 +1,3 @@
-# ruff: noqa: SLF001
 import abc
 import annotationlib
 import typing as ta
@@ -27,6 +26,11 @@ class ForwardRefResolver(ta.Protocol):
 
 
 ##
+
+
+DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX: ta.Final[DynamicTypeNameSuffix] = 'id'
+
+DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'unbound'
 
 
 class Mirror:

@@ -50,6 +50,8 @@ from .known import _KNOWN_GENERIC_ARITIES
 from .known import _KNOWN_GENERIC_VARIANCES
 from .known import _KNOWN_MRO_TAILS
 from .known import _KnownBaseArg
+from .mirror import DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX
+from .mirror import DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
 from .mirror import DynamicTypeNameSuffix
 from .mirror import ForwardRefResolution
 from .mirror import ForwardRefResolver
@@ -132,10 +134,6 @@ def _contains_any_type_alias(
 ##
 
 
-DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'unbound'
-
-DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX: ta.Final[DynamicTypeNameSuffix] = 'id'
-
 _DYNAMIC_TYPE_NAME_SEPARATOR: ta.Final = '@'
 
 
@@ -175,17 +173,20 @@ class MirrorImpl(Mirror):
             fullname: obj
             for obj, fullname in self._fullnames_by_type.items()
         }
+
         self._type_cache: dict[object, Type] = {}
-        self._cached_types: set[Type] = set()
+        self._cached_types: dict[Type, Type] = {}  # all keys are identical to their values - interning via `setdefault`
 
         # reflector
 
         self._runtime_type_params_by_type: dict[TypeVarLikeType, object] = {}
+
         self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
         self._resolving_type_aliases: set[ta.TypeAliasType] = set()
         self._type_alias_stack: list[ta.TypeAliasType] = []
 
         self._prepared_infos: set[type] = set()
+
         self._resolving_forward_refs: set[str] = set()
         self._forward_ref_owner_stack: list[object] = []
 
@@ -473,7 +474,7 @@ class MirrorImpl(Mirror):
         except TypeError:
             pass
         else:
-            self._cached_types.add(typ)
+            self._cached_types[typ] = typ
 
         return typ
 
