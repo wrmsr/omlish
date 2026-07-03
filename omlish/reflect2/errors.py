@@ -28,3 +28,7 @@ class UnreflectableTypeError(ReflectionTypeError):
 
 class ProtocolReflectionError(ReflectionTypeError):
     pass
+
+
+class RecursiveTypeReflectionError(ReflectionTypeError):
+    pass

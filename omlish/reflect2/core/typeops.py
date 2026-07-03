@@ -1,6 +1,7 @@
 # ruff: noqa: SLF001
 import typing as ta
 
+from ..errors import RecursiveTypeReflectionError
 from ..errors import ReflectionTypeError
 from .symbols import TypeAlias
 from .types import _UNINHABITED_TYPE
@@ -37,10 +38,6 @@ from .typevisitor import DefaultTypeVisitor
 
 
 ##
-
-
-class RecursiveTypeError(ReflectionTypeError):
-    pass
 
 
 def get_type_alias_target(typ: TypeAliasType) -> Type:
@@ -82,7 +79,7 @@ def get_proper_type(typ: Type | None) -> ProperType | None:
         if typ._alias is None:
             raise ReflectionTypeError('unfixed type alias')
         if typ._alias in seen_aliases or typ.is_recursive:
-            raise RecursiveTypeError(typ._alias._fullname)
+            raise RecursiveTypeReflectionError(typ._alias._fullname)
         seen_aliases.add(typ._alias)
         typ = get_type_alias_target(typ)
 

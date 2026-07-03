@@ -3,6 +3,7 @@ import typing as ta
 
 import pytest
 
+from ...errors import RecursiveTypeReflectionError
 from ...errors import ReflectionError
 from ...tests.helpers import make_mirror
 from .. import symbols
@@ -130,7 +131,7 @@ def test_get_proper_type_rejects_direct_recursive_alias() -> None:
     alias_type = types.TypeAliasType(alias, [])
     alias._target = types.UnionType([types.NoneType(), alias_type])
 
-    with pytest.raises(typeops.RecursiveTypeError):
+    with pytest.raises(RecursiveTypeReflectionError):
         typeops.get_proper_type(alias_type)
 
 
@@ -140,7 +141,7 @@ def test_get_proper_type_rejects_indirect_recursive_alias_cycle() -> None:
     alias_a._target = types.TypeAliasType(alias_b, [])
     alias_b._target = types.UnionType([types.NoneType(), types.TypeAliasType(alias_a, [])])
 
-    with pytest.raises(typeops.RecursiveTypeError):
+    with pytest.raises(RecursiveTypeReflectionError):
         typeops.get_proper_type(types.TypeAliasType(alias_a, []))
 
 
@@ -149,7 +150,7 @@ def test_flatten_nested_unions_rejects_recursive_aliases_by_default() -> None:
     alias_type = types.TypeAliasType(alias, [])
     alias._target = types.UnionType([types.NoneType(), alias_type])
 
-    with pytest.raises(typeops.RecursiveTypeError):
+    with pytest.raises(RecursiveTypeReflectionError):
         typeops.flatten_nested_unions([alias_type])
 
 
