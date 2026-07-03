@@ -2,19 +2,6 @@
 from .. import lang as _lang
 
 
-# These core types are hidden behind an alias so `rfl.Type` type hints can be inspected without actually importing the
-# core.
-type Symbol = Symbol_
-type TypeInfo = TypeInfo_
-type TypeAlias = TypeAlias_
-
-type TypeKey = TypeKey_
-type TupleTypeKey = TupleTypeKey_
-
-type LiteralValue = LiteralValue_
-type Type = Type_
-
-
 with _lang.auto_proxy_init(globals()):
     #
 
@@ -41,14 +28,14 @@ with _lang.auto_proxy_init(globals()):
         VarianceKind,
         ArgKind,
 
-        Symbol as Symbol_,
-        TypeInfo as TypeInfo_,
-        TypeAlias as TypeAlias_,
+        Symbol,
+        TypeInfo,
+        TypeAlias,
     )
 
     from .core.typekeys import (  # noqa
-        TypeKey as TypeKey_,
-        TupleTypeKey as TupleTypeKey_,
+        TypeKey,
+        TupleTypeKey,
 
         StandardTypeKeyPolicy,
 
@@ -86,10 +73,10 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .core.types import (  # noqa
-        LiteralValue as LiteralValue_,
+        LiteralValue,
         is_literal_value,
 
-        Type as Type_,
+        Type,
         TypeAliasType,
         TypeGuardedType,
         AnnotatedType,
