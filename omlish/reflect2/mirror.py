@@ -39,23 +39,13 @@ class Mirror:
     simply query internal state for their presence - no mutation is done on their behalf.
     """
 
+    ##
+    # universe
+
     @property
     @abc.abstractmethod
     def dynamic_type_name_suffix(self) -> DynamicTypeNameSuffix:
         raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def forward_ref_resolver(self) -> ForwardRefResolver | None:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
-        raise NotImplementedError
-
-    ##
-    # universe
 
     @abc.abstractmethod
     def get_type_info(self, obj: type | str) -> TypeInfo:
@@ -67,6 +57,16 @@ class Mirror:
 
     ##
     # reflector
+
+    @property
+    @abc.abstractmethod
+    def forward_ref_resolver(self) -> ForwardRefResolver | None:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
+        raise NotImplementedError
 
     @abc.abstractmethod
     def resolve_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:

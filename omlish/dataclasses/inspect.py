@@ -116,24 +116,24 @@ class FieldsInspection:
     ##
 
     @cached.property
-    def generic_mro(self) -> ta.Sequence[rfl.Type]:
+    def _generic_mro(self) -> ta.Sequence[rfl.Type]:
         return rfl.ALIAS_UPDATING_GENERIC_SUBSTITUTION.generic_mro(self._cls)
 
     @cached.property
-    def generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:
-        return col.make_map(((check.not_none(rfl.get_concrete_type(g)), g) for g in self.generic_mro), strict=True)
+    def _generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:
+        return col.make_map(((check.not_none(rfl.get_concrete_type(g)), g) for g in self._generic_mro), strict=True)
 
     def generic_replaced_field_type(self, fn: str) -> rfl.Type:
         f = self.fields[fn]
         fo = self.field_owners[f.name]
-        go = self.generic_mro_lookup[fo]
+        go = self._generic_mro_lookup[fo]
         tvr = rfl.get_type_var_replacements(go)
         fty = rfl.typeof(f.type)
         rty = rfl.replace_type_vars(fty, tvr, update_aliases=True)
         return rty
 
     @cached.property
-    def generic_replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
+    def _generic_replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
         ret: dict[str, ta.Any] = {}
         for f in self.fields.values():
             ret[f.name] = self.generic_replaced_field_type(f.name)
@@ -141,7 +141,7 @@ class FieldsInspection:
 
     @cached.property
     def generic_replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
-        return {k: rfl.to_annotation(v) for k, v in self.generic_replaced_field_types.items()}
+        return {k: rfl.to_annotation(v) for k, v in self._generic_replaced_field_types.items()}
 
 
 def inspect_fields(cls: type) -> FieldsInspection:
