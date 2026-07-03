@@ -9,7 +9,7 @@ from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
 from .globals import or_global_mirror
 from .mirror import Mirror
-from .ops import reflect_mro_entries_by_info
+from .ops import get_mro_entries_by_info
 
 
 ##
@@ -100,7 +100,8 @@ class DataclassInspector:
     def inspect_dataclass(self, obj: object) -> DataclassInspection:
         origin = _get_origin_dataclass(obj)
         owners = _get_dataclass_field_owners(origin)
-        entries_by_info = reflect_mro_entries_by_info(obj, mirror=self._mirror)
+        rty = self._mirror.reflect_type(obj)
+        entries_by_info = get_mro_entries_by_info(rty)
 
         ret: list[DataclassField] = []
         for field in dc.fields(origin):

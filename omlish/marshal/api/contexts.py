@@ -88,7 +88,10 @@ class BaseContext(lang.Abstract, lang.Sealed):
         # if not isinstance(o, rfl.TypeInfo) and override(o) is None:
         #     _reflect2_smoke_api().reflect_type(o)
 
-        return rfl.Reflector(override=override).typeof(o)
+        try:
+            return rfl.Reflector(override=override).typeof(o)
+        except Exception as e:  # noqa
+            raise
 
 
 # Regrettable, but we want to forbid non-factory contexts from having different configs than their factory context.

@@ -8,6 +8,7 @@ import typing as ta
 from .core.substitute import SubstitutionMap
 from .core.substitute import substitute_type
 from .core.subtypes import MroEntry
+from .core.symbols import TypeInfo
 from .core.types import _ANY_TYPES
 from .core.types import AnyType
 from .core.types import Type
@@ -16,7 +17,7 @@ from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
 from .globals import or_global_mirror
 from .mirror import Mirror
-from .ops import reflect_mro_entries_by_info
+from .ops import get_mro_entries_by_info
 
 
 ##
@@ -289,7 +290,7 @@ class MembersInspector:
     def _get_owner_replacements(
             self,
             owner: type,
-            entries_by_info: dict[object, MroEntry],
+            entries_by_info: dict[TypeInfo, MroEntry],
     ) -> SubstitutionMap:
         owner_info = self._mirror.get_type_info(owner)
         entry = entries_by_info.get(owner_info)
@@ -306,7 +307,8 @@ class MembersInspector:
             obj: object,
     ) -> MembersInspection:
         origin = _get_origin_type(obj)
-        entries_by_info = reflect_mro_entries_by_info(obj, mirror=self._mirror)
+        rty = self._mirror.reflect_type(obj)
+        entries_by_info = get_mro_entries_by_info(rty)
         members_by_name: dict[str, Member] = {}
 
         for name, owner, _ in _iter_mro_members(origin):

@@ -151,7 +151,7 @@ class FieldsInspection:
 
     @cached.property
     def generic_replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
-        expected = self.generic_replaced_field_annotations_old  # noqa
+        # expected = self.generic_replaced_field_annotations_old  # noqa
 
         rty = rfl2.reflect_type(self._cls)
 
@@ -162,7 +162,7 @@ class FieldsInspection:
             for entry in rfl2.get_mro_entries(check.isinstance(rty, rfl2.Instance))
         }
 
-        field_types: dict[str, ta.Any] = {}
+        field_types: dict[str, rfl2.Type] = {}
 
         for f in self.fields.values():
             raw_type = rfl2.reflect_type(f.type)
@@ -185,7 +185,12 @@ class FieldsInspection:
             )
             field_types[f.name] = replaced_type
 
-        return field_types
+        field_anns = {
+            k: rfl2.to_runtime_annotation(v)
+            for k, v in field_types.items()
+        }
+
+        return field_anns
 
 
 def inspect_fields(cls: type) -> FieldsInspection:

@@ -93,18 +93,9 @@ def strip_optional(rty: UnionType) -> Type:
 
 
 ##
-# TODO: delete / inline these
 
 
-def reflect_mro_entries(source: object, *, mirror: Mirror | None = None) -> ta.Sequence[MroEntry]:
-    source_type = or_global_mirror(mirror).reflect_type(source)
-    if not isinstance(source_type, Instance):
-        raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
-    return get_mro_entries(source_type)
-
-
-def reflect_mro_entries_by_info(obj: object, *, mirror: Mirror | None = None) -> dict[object, MroEntry]:
-    return {
-        entry._info: entry
-        for entry in reflect_mro_entries(obj, mirror=mirror)
-    }
+def get_mro_entries_by_info(rty: Type) -> dict[TypeInfo, MroEntry]:
+    if not isinstance(rty, Instance):
+        raise ReflectionTypeError(f'Unsupported MRO source: {rty!r}')
+    return {entry._info: entry for entry in get_mro_entries(rty)}
