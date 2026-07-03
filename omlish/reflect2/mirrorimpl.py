@@ -175,7 +175,7 @@ class MirrorImpl(Mirror):
         }
 
         self._type_cache: dict[object, Type] = {}
-        self._cached_types: dict[Type, Type] = {}  # all keys are identical to their values - interning via `setdefault`
+        self._cached_types: set[Type] = set()
 
         # reflector
 
@@ -474,7 +474,7 @@ class MirrorImpl(Mirror):
         except TypeError:
             pass
         else:
-            self._cached_types[typ] = typ
+            self._cached_types.add(typ)
 
         return typ
 
