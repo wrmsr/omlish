@@ -4,20 +4,11 @@ TODO:
   - eval (ta.get_type_hints) vs forwardref (inspect.get_annotations)?
  - remove, or at least address, get_filtered_type_hints wrt 3.14
 """
+import annotationlib
 import typing as ta
 
 from .. import check
-from .. import lang
 from ..lite.typing import typing_annotations_attr
-
-
-if ta.TYPE_CHECKING:
-    import inspect
-else:
-    inspect = lang.proxy_import('inspect')
-
-
-annotationlib = lang.lazy_import('annotationlib', optional=True, cache_failure=True)
 
 
 ##
@@ -27,14 +18,8 @@ def has_annotations(obj: ta.Any) -> bool:
     return hasattr(obj, typing_annotations_attr())
 
 
-##
-
-
 def get_annotations(obj: ta.Any) -> ta.Mapping[str, ta.Any]:
-    if (al := annotationlib()) is not None:
-        return al.get_annotations(obj, format=al.Format.FORWARDREF)  # noqa
-    else:
-        return inspect.get_annotations(obj)
+    return annotationlib.get_annotations(obj, format=annotationlib.Format.FORWARDREF)  # noqa
 
 
 ##
