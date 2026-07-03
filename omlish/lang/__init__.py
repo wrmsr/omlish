@@ -563,6 +563,8 @@ with _auto_proxy_init(globals(), update_exports=True):
         ExcInfo,
         OptExcInfo,
 
+        TypeForm,
+
         has_annotations,
         get_annotations,
 

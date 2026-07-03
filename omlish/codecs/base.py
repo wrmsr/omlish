@@ -10,7 +10,6 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect as rfl
 from ..funcs import pairs as fps
 from ..manifests.base import ModAttrManifest
 
@@ -75,8 +74,8 @@ class Codec:
         coerce=lang.opt_fn(lambda s: [check_codec_name(a) for a in s]),
     )
 
-    input: rfl.Type = dc.xfield(coerce=rfl.typeof)
-    output: rfl.Type = dc.xfield(coerce=rfl.typeof)
+    input: lang.TypeForm
+    output: lang.TypeForm
 
     options: type | None = None
 

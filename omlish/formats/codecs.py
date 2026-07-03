@@ -1,7 +1,7 @@
 import typing as ta
 
 from .. import codecs
-from .. import reflect as rfl
+from .. import lang
 
 
 ObjectCodecT = ta.TypeVar('ObjectCodecT', bound='ObjectCodec')
@@ -20,8 +20,8 @@ def make_object_codec(
         dumps: ta.Callable,
         loads: ta.Callable,
         *,
-        input: rfl.Type,  # noqa
-        output: rfl.Type = rfl.typeof(ta.Any),
+        input: lang.TypeForm,  # noqa
+        output: lang.TypeForm = ta.Any,
         aliases: ta.Sequence[str] | None = None,
 ) -> ObjectCodecT:
     return cls(

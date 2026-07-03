@@ -40,6 +40,13 @@ OptExcInfo: ta.TypeAlias = tuple[
 ##
 
 
+# Placeholder for https://peps.python.org/pep-0747/
+TypeForm: ta.TypeAlias = ta.Any
+
+
+##
+
+
 def has_annotations(obj: ta.Any) -> bool:
     return (
         hasattr(obj, '__annotate__') or
