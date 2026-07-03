@@ -3,7 +3,6 @@ import typing as ta
 
 from ... import codecs
 from ... import lang
-from ... import reflect as rfl
 from ..coro import buffer_bytes_stepped_reader_coro
 from .base import Compression
 from .base import IncrementalCompression
@@ -54,8 +53,8 @@ def make_compression_codec(
         name=name,
         aliases=aliases,
 
-        input=rfl.typeof(lang.Bytes),
-        output=rfl.typeof(lang.Bytes),
+        input=lang.Bytes,
+        output=lang.Bytes,
 
         new=lambda *args, **kwargs: CompressionEagerCodec(cls(*args, **kwargs)),
 

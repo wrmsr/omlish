@@ -10,7 +10,7 @@ import pytest
 from ... import cached
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect as rfl  # noqa
+from ... import reflect2 as rfl  # noqa
 from ..inspect import inspect_fields  # noqa
 
 
@@ -224,7 +224,7 @@ def test_generics():
     class Box(ta.Generic[T]):
         v: T
 
-    rty0 = rfl.typeof(Box[int])  # noqa
+    rty0 = rfl.reflect_type(Box[int])  # noqa
 
     assert Box[int](5).v == 5
 
@@ -232,7 +232,7 @@ def test_generics():
     class IntBox(Box[int]):
         pass
 
-    rty1 = rfl.typeof(IntBox)  # noqa
+    rty1 = rfl.reflect_type(IntBox)  # noqa
 
     assert IntBox(5).v == 5
 
