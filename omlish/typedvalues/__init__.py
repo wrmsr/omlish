@@ -27,14 +27,6 @@ with _lang.auto_proxy_init(globals()):
         consume,
     )
 
-    from .generic import (  # noqa
-        TypedValueGeneric,
-    )
-
-    from .holder import (  # noqa
-        TypedValueHolder,
-    )
-
     from .of_ import (  # noqa
         of,
     )
