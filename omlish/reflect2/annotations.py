@@ -46,7 +46,6 @@ DEFAULT_TYPE_ALIAS_POLICY: TypeAliasAnnotationPolicy = 'expand'
 class _AnnotationMaker(DefaultTypeVisitor[object]):
     def __init__(
             self,
-            mirror: Mirror,
             *,
             type_alias_policy: TypeAliasAnnotationPolicy | None = None,
             type_var_resolver: TypeVarResolver | None = None,
@@ -55,8 +54,6 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
 
         if type_alias_policy is None:
             type_alias_policy = DEFAULT_TYPE_ALIAS_POLICY
-
-        self._mirror = mirror
 
         self._type_var_resolver = type_var_resolver
         self._type_alias_policy = type_alias_policy
@@ -284,7 +281,6 @@ def to_runtime_annotation(
         type_var_resolver = mirror.resolve_runtime_type_param
 
     return typ.accept(_AnnotationMaker(
-        mirror,
         type_alias_policy=type_alias_policy,
         type_var_resolver=type_var_resolver,
     ))

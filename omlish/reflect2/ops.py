@@ -5,6 +5,7 @@ from .core.subtypes import MroEntry
 from .core.subtypes import get_mro_entries
 from .core.symbols import TypeInfo
 from .core.typeops import make_union
+from .core.types import AnyType
 from .core.types import Instance
 from .core.types import NoneType
 from .core.types import Type
@@ -36,6 +37,12 @@ def get_runtime_object_or_none(robj: Type | TypeInfo) -> object | None:
     if isinstance(robj, Type):
         if isinstance(robj, UnboundType):
             return robj._runtime_object
+
+        if isinstance(robj, NoneType):
+            return type(None)
+
+        if isinstance(robj, AnyType):
+            return ta.Any
 
         if not isinstance(robj, Instance):
             return None
