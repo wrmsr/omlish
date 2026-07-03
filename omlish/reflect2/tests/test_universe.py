@@ -4,6 +4,7 @@ import typing as ta
 
 from ..core import symbols
 from ..core import types
+from ..ops import get_runtime_object_or_none
 from .helpers import make_mirror
 
 
@@ -169,7 +170,7 @@ def test_runtime_universe_keeps_newtype_runtime_object() -> None:
     info = universe.get_newtype_info(user_id)
 
     assert info.fullname == f'{__name__}.UserId'
-    assert universe.get_runtime_type(info) is user_id
+    assert get_runtime_object_or_none(info) is user_id
     assert [base.type.fullname for base in info.bases if isinstance(base, types.Instance)] == ['builtins.int']
 
 

@@ -58,10 +58,6 @@ class Mirror:
     # universe
 
     @abc.abstractmethod
-    def get_runtime_type(self, info: TypeInfo) -> object | None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def get_type_info(self, obj: type | str) -> TypeInfo:
         raise NotImplementedError
 

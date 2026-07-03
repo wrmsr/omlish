@@ -22,10 +22,6 @@ def or_global_mirror(mirror: Mirror | None) -> Mirror:
 # universe
 
 
-def get_runtime_type(info: TypeInfo, *, mirror: Mirror | None = None) -> object | None:
-    return or_global_mirror(mirror).get_runtime_type(info)
-
-
 def get_type_info(obj: type | str, *, mirror: Mirror | None = None) -> TypeInfo:
     return or_global_mirror(mirror).get_type_info(obj)
 

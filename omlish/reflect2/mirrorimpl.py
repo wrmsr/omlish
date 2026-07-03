@@ -208,8 +208,9 @@ class MirrorImpl(Mirror):
     ##
     # universe
 
-    def get_runtime_type(self, info: TypeInfo) -> object | None:
-        return self._types_by_fullname.get(info._fullname)
+    # NOTE: phased out - now should go through Symbol.runtime_object, but these should effectively be in sync
+    # def get_runtime_type(self, info: TypeInfo) -> object | None:
+    #     return self._types_by_fullname.get(info._fullname)
 
     def _make_dynamic_type_name_hint(self, obj: type) -> str:
         module = getattr(obj, '__module__', None)

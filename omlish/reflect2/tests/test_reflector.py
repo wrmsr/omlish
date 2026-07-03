@@ -23,6 +23,7 @@ from ..core.typeops import get_proper_type
 from ..errors import ReflectionValueError
 from ..errors import UnreflectableTypeError
 from ..mirror import ForwardRefResolution
+from ..ops import get_runtime_type_or_none
 from .helpers import make_mirror
 
 
@@ -1395,7 +1396,7 @@ def test_default_resolution_resolves_type_var_bound_from_defining_module() -> No
 
     assert isinstance(typ, types.TypeVarType)
     assert isinstance(typ.upper_bound, types.Instance)
-    assert mirror.get_runtime_type(typ.upper_bound.type) is _CtxBound
+    assert get_runtime_type_or_none(typ.upper_bound.type) is _CtxBound
 
 
 def test_default_resolution_resolves_nested_forward_ref_inside_type_var_bound() -> None:
@@ -1408,7 +1409,7 @@ def test_default_resolution_resolves_nested_forward_ref_inside_type_var_bound() 
     assert typ.upper_bound.type.fullname == 'builtins.list'
     (arg,) = typ.upper_bound.args
     assert isinstance(arg, types.Instance)
-    assert mirror.get_runtime_type(arg.type) is _CtxBound
+    assert get_runtime_type_or_none(arg.type) is _CtxBound
 
 
 def test_default_resolution_resolves_generic_class_parameter_bound() -> None:
@@ -1420,7 +1421,7 @@ def test_default_resolution_resolves_generic_class_parameter_bound() -> None:
     (type_var,) = typ.type.type_vars
     assert isinstance(type_var, types.TypeVarType)
     assert isinstance(type_var.upper_bound, types.Instance)
-    assert mirror.get_runtime_type(type_var.upper_bound.type) is _CtxBound
+    assert get_runtime_type_or_none(type_var.upper_bound.type) is _CtxBound
 
 
 def test_default_resolution_resolves_typed_dict_item_forward_ref() -> None:
@@ -1431,7 +1432,7 @@ def test_default_resolution_resolves_typed_dict_item_forward_ref() -> None:
     assert isinstance(typ, types.TypedDictType)
     (item,) = typ.items.values()
     assert isinstance(item, types.Instance)
-    assert mirror.get_runtime_type(item.type) is _CtxItem
+    assert get_runtime_type_or_none(item.type) is _CtxItem
 
 
 def test_default_resolution_without_owner_scope_still_rejects_bare_forward_ref() -> None:
@@ -1481,7 +1482,7 @@ def test_forward_ref_resolver_can_delegate_to_owner_scope_resolution() -> None:
 
     assert isinstance(typ, types.TypeVarType)
     assert isinstance(typ.upper_bound, types.Instance)
-    assert mirror.get_runtime_type(typ.upper_bound.type) is _CtxBound
+    assert get_runtime_type_or_none(typ.upper_bound.type) is _CtxBound
 
 
 def test_forward_ref_resolver_delegation_without_owner_scope_raises() -> None:
@@ -1527,7 +1528,7 @@ def test_type_var_bound_resolves_in_type_var_module_not_using_class_module() -> 
         (reflected_var,) = typ.type.type_vars
         assert isinstance(reflected_var, types.TypeVarType)
         assert isinstance(reflected_var.upper_bound, types.Instance)
-        assert mirror.get_runtime_type(reflected_var.upper_bound.type) is module.Target
+        assert get_runtime_type_or_none(reflected_var.upper_bound.type) is module.Target
     finally:
         sys.modules.pop(module_name, None)
 
@@ -1558,8 +1559,8 @@ def test_same_named_forward_ref_bounds_in_distinct_modules_do_not_collide() -> N
 
         # Without the forward-ref cache guard the second reflection would collide with the first and return module_a's
         # `Foo`.
-        assert mirror.get_runtime_type(typ_a.upper_bound.type) is module_a.Foo
-        assert mirror.get_runtime_type(typ_b.upper_bound.type) is module_b.Foo
+        assert get_runtime_type_or_none(typ_a.upper_bound.type) is module_a.Foo
+        assert get_runtime_type_or_none(typ_b.upper_bound.type) is module_b.Foo
         assert typ_a.upper_bound.type is not typ_b.upper_bound.type
     finally:
         sys.modules.pop(name_a, None)

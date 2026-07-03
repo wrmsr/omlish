@@ -29,6 +29,7 @@ from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
 from .globals import or_global_mirror
 from .mirror import Mirror
+from .ops import get_runtime_object_or_none
 
 
 TypeVarResolver: ta.TypeAlias = ta.Callable[[TypeVarLikeType], object | None]
@@ -63,8 +64,8 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
     def visit_type(self, typ: Type) -> object:
         raise ReflectionTypeError(f'Runtime annotation is not implemented for type: {typ!r}')
 
-    def _get_runtime_type(self, info: TypeInfo) -> object:
-        cls = self._mirror.get_runtime_type(info)
+    def _get_runtime_object(self, info: TypeInfo) -> object:
+        cls = get_runtime_object_or_none(info)
         if cls is None:
             raise ReflectionTypeError(f'Runtime class is unavailable for type info: {info._fullname}')
         return cls
@@ -197,7 +198,7 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
         return None
 
     def visit_instance(self, typ: Instance) -> object:
-        cls = self._get_runtime_type(typ._type)
+        cls = self._get_runtime_object(typ._type)
         if not typ._args:
             return cls
 
@@ -236,7 +237,7 @@ class _AnnotationMaker(DefaultTypeVisitor[object]):
         )]
 
     def _to_literal_annotation_value(self, typ: LiteralType) -> object:
-        cls = self._mirror.get_runtime_type(typ._fallback._type)
+        cls = self._get_runtime_object(typ._fallback._type)
         if (
                 isinstance(cls, type) and
                 issubclass(cls, enum.Enum) and

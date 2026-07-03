@@ -139,7 +139,6 @@ with _lang.auto_proxy_init(globals()):
 
         get_type_info,
         get_newtype_info,
-        get_runtime_type,
 
         resolve_runtime_type_param,
         reflect_type,
@@ -174,6 +173,11 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .ops import (  # noqa
+        get_runtime_object_or_none,
+        get_runtime_object,
+        get_runtime_type_or_none,
+        get_runtime_type,
+
         reflect_mro_entries,
         reflect_mro_entries_by_info,
 
