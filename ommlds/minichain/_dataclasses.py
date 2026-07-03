@@ -2132,12 +2132,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
 
         @__dataclass___recursive_repr()
         def __repr__(self):
-            parts = []
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
+            return f"{self.__class__.__qualname__}()"
 
         __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
 
@@ -2491,12 +2486,7 @@ def _process_dataclass__9e1d955ccb433717c9538685d2a5ad412ce027f5():
 
         @__dataclass___recursive_repr()
         def __repr__(self):
-            parts = []
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
+            return f"{self.__class__.__qualname__}()"
 
         __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
 
@@ -9573,12 +9563,7 @@ def _process_dataclass__d54bb147650f2eef0cd7c9669f2e1ff9c0e24fdb():
 
         @__dataclass___recursive_repr()
         def __repr__(self):
-            parts = []
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
+            return f"{self.__class__.__qualname__}()"
 
         __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
 
@@ -19279,12 +19264,7 @@ def _process_dataclass__32aca8223fa20a902d4408c1bd046d52b1c41318():
 
         @__dataclass___recursive_repr()
         def __repr__(self):
-            parts = []
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
+            return f"{self.__class__.__qualname__}()"
 
         __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
 

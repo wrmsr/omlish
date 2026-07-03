@@ -110,20 +110,32 @@ class ReprGenerator(Generator[ReprPlan]):
                     f'    parts.append(f"{pfx}{{self.{f.name}!r}}")',
                 )
 
+        body_lines: list[str] = [
+            f'@{REPRLIB_RECURSIVE_REPR_GLOBAL.ident}()',
+            f'def __repr__(self):',
+        ]
+
+        name_src = f'f"{{self.__class__.__qualname__}}{'@{id(self):x}' if pl.id else ''}'
+
+        if part_lines:
+            body_lines.extend([
+                f'    parts = []',
+                *part_lines,
+                f'    return (',
+                f'        {name_src}("',
+                f'        f"{{\', \'.join(parts)}}"',
+                f'        f")"',
+                f'    )',
+            ])
+        else:
+            body_lines.append(
+                f'    return {name_src}()"',
+            )
+
         return [
             AddMethodOp(
                 '__repr__',
-                '\n'.join([
-                    f'@{REPRLIB_RECURSIVE_REPR_GLOBAL.ident}()',
-                    f'def __repr__(self):',
-                    f'    parts = []',
-                    *part_lines,
-                    f'    return (',
-                    f'        f"{{self.__class__.__qualname__}}{'@{id(self):x}' if pl.id else ''}("',
-                    f'        f"{{\', \'.join(parts)}}"',
-                    f'        f")"',
-                    f'    )',
-                ]),
+                '\n'.join(body_lines),
                 frozenset(ors),
             ),
         ]

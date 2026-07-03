@@ -832,12 +832,7 @@ def _process_dataclass__c726b62427445e76234a6a472593ae91ca8d6457():
 
         @__dataclass___recursive_repr()
         def __repr__(self):
-            parts = []
-            return (
-                f"{self.__class__.__qualname__}@{id(self):x}("
-                f"{', '.join(parts)}"
-                f")"
-            )
+            return f"{self.__class__.__qualname__}@{id(self):x}()"
 
         __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
 
