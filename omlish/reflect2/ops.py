@@ -77,11 +77,18 @@ def get_runtime_type(robj: Type | TypeInfo) -> type:
 ##
 
 
+def _is_optional(rty: UnionType) -> bool:
+    return any(isinstance(item, NoneType) for item in rty._items)
+
+
 def is_optional(rty: Type) -> bool:
-    return isinstance(rty, UnionType) and any(isinstance(item, NoneType) for item in rty._items)
+    return isinstance(rty, UnionType) and _is_optional(rty)
 
 
-def strip_optional(rty: UnionType) -> Type:
+def strip_optional(rty: Type) -> Type:
+    if not isinstance(rty, UnionType) or not _is_optional(rty):
+        return rty
+
     items = [
         item
         for item in rty._items
