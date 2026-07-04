@@ -1,3 +1,14 @@
+# fmt: off
+# ruff: noqa: I001
+from .. import lang as _lang
+
+
+with _lang.auto_proxy_init(globals()):
+    from .contextual import (  # noqa
+        async_contextual_or_new,
+        contextual_or_new,
+    )
+
 from .managers import (  # noqa
     ResourceManagerRef,
     ResourceManagerRefNotRegisteredError,

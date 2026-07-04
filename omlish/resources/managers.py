@@ -245,6 +245,7 @@ class ResourceManager(
 
         @contextlib.contextmanager
         def inner():
+            # FIXME: does this need to be wrapped in ResourceManaged?
             yield resources
 
         return inner()
@@ -357,6 +358,7 @@ class AsyncResourceManager(
 
         @contextlib.asynccontextmanager
         async def inner():
+            # FIXME: does this need to be wrapped in ResourceManaged?
             yield resources
 
         return inner()
