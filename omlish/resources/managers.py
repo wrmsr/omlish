@@ -243,12 +243,7 @@ class ResourceManager(
         if resources is None:
             return cls.new(**kwargs)
 
-        @contextlib.contextmanager
-        def inner():
-            # FIXME: does this need to be wrapped in ResourceManaged?
-            yield resources
-
-        return inner()
+        return ResourceManaged(resources, resources)
 
     #
 
@@ -356,12 +351,7 @@ class AsyncResourceManager(
         if resources is None:
             return cls.new(**kwargs)
 
-        @contextlib.asynccontextmanager
-        async def inner():
-            # FIXME: does this need to be wrapped in ResourceManaged?
-            yield resources
-
-        return inner()
+        return AsyncResourceManaged(resources, resources)
 
     #
 
