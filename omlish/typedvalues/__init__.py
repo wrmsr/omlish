@@ -35,6 +35,10 @@ with _lang.auto_proxy_init(globals()):
         reflect_typed_values_impls,
     )
 
+    from .reflect2 import (  # noqa
+        reflect2_typed_values_impls,
+    )
+
     from .scalars import (  # noqa
         ScalarTypedValue,
 

@@ -1259,6 +1259,9 @@ class MirrorImpl(Mirror):
         return self._reflector._unresolved_forward_ref_policy
 
     def reflect_type(self, obj: object) -> Type:
+        if isinstance(obj, Type):
+            return obj
+
         if not self._reflector._is_uncacheable_reflect_type(obj):
             try:
                 return self._reflector._type_cache[obj]

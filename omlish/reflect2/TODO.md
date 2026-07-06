@@ -1,4 +1,5 @@
-- protocols
+- ta.TypeForm - `type CanType = Type | ta.TypeForm`, reflect_type -> ...
+- protocols ?
 - overloads
 - infer_variance??
 - audit: does TypeUniverse._get_type_info work right when hit by str then hit by type?
