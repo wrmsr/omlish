@@ -14,6 +14,8 @@ from .symbols import VarianceKind
 
 
 if ta.TYPE_CHECKING:
+    from .typekeys import StandardTypeKeyPolicy
+    from .typekeys import TypeKey
     from .typevisitor import TypeVisitor
 
 
@@ -51,7 +53,14 @@ def is_literal_value(value: object) -> bool:
 class Type:
     """Strict single inheritance hierarchy. All non-final classes are considered abstract."""
 
-    __slots__ = ()
+    __slots__ = (
+        '_type_key_cache',
+    )
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._type_key_cache: dict[StandardTypeKeyPolicy, TypeKey | None] = {}
 
     def __str__(self) -> str:
         from .strconv import type_str
@@ -63,8 +72,34 @@ class Type:
 
         return type_str(self)
 
+    #
+
     def accept(self, visitor: TypeVisitor[T]) -> T:
         raise NotImplementedError
+
+    #
+
+    def type_key_or_none(self, policy: StandardTypeKeyPolicy = 'default') -> TypeKey | None:
+        try:
+            return self._type_key_cache[policy]
+        except KeyError:
+            pass
+
+        from .typekeys import type_key_or_none
+
+        tk = type_key_or_none(self, policy)
+        self._type_key_cache[policy] = tk
+        return tk
+
+    def type_key(self, policy: StandardTypeKeyPolicy = 'default') -> TypeKey:
+        key = self.type_key_or_none(policy)
+
+        if key is None:
+            from .typekeys import make_type_key_not_implemented_exception
+
+            raise make_type_key_not_implemented_exception(self, policy)
+
+        return key
 
 
 @ta.final

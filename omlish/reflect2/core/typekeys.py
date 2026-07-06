@@ -103,7 +103,9 @@ _STANDARD_TYPE_KEY_POLICIES: ta.Final[ta.Mapping[StandardTypeKeyPolicy, TypeKeyP
 }
 
 
-def get_type_key_policy(policy: StandardTypeKeyPolicy | TypeKeyPolicy) -> TypeKeyPolicy:
+def get_type_key_policy(policy: StandardTypeKeyPolicy | TypeKeyPolicy | None) -> TypeKeyPolicy:
+    if policy is None:
+        return TYPE_KEY
     if isinstance(policy, TypeKeyPolicy):
         return policy
     return _STANDARD_TYPE_KEY_POLICIES[policy]
@@ -131,7 +133,7 @@ def type_key_policy_display(policy: TypeKeyPolicy) -> str:
 
 def make_type_key_not_implemented_exception(
         typ: Type,
-        policy: TypeKeyPolicy | StandardTypeKeyPolicy,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy | None,
 ) -> ReflectionTypeError:
     return ReflectionTypeError(
         f'{type_key_policy_display(get_type_key_policy(policy))} is not implemented for type: {typ!r}',
@@ -143,14 +145,14 @@ def make_type_key_not_implemented_exception(
 
 def type_key_or_none(
         typ: Type,
-        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy | None = None,
 ) -> TypeKey | None:
     return _TypeKeyBuilder(_StringTypeKeyWriter(), get_type_key_policy(policy)).key(typ)
 
 
 def type_key(
         typ: Type,
-        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy | None = None,
 ) -> TypeKey:
     key = type_key_or_none(typ, policy)
     if key is None:
@@ -163,14 +165,14 @@ def type_key(
 
 def tuple_type_key_or_none(
         typ: Type,
-        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy | None = None,
 ) -> TupleTypeKey | None:
     return _TypeKeyBuilder(_TupleTypeKeyWriter(), get_type_key_policy(policy)).key(typ)
 
 
 def tuple_type_key(
         typ: Type,
-        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy | None = None,
 ) -> TupleTypeKey:
     key = tuple_type_key_or_none(typ, policy)
     if key is None:
