@@ -135,8 +135,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.43.39
-types-boto3>=1.43.39
+boto3>=1.43.40
+types-boto3>=1.43.40
 botocore-stubs>=1.43.14
 
 antlr4-python3-runtime==4.13.2
@@ -144,7 +144,7 @@ antlr4-python3-runtime==4.13.2
 mlx==0.31.2; sys_platform == "darwin"  # @omlish-venv !14t !4dt !15 !15t
 mlx-lm==0.31.3; sys_platform == "darwin"  # @omlish-venv !14t !14dt !15 !15t
 
-apsw==3.53.2.0
+apsw==3.53.3.0
 
 rapidocr-onnxruntime==1.4.4  # @omlish-venv !14t !14dt !15 !15t
 # opencv-python==4.12.0.88  # @omlish-venv !14t !14dt  # FIXME: downgrades numpy
