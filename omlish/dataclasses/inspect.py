@@ -3,7 +3,6 @@ import typing as ta
 import weakref
 
 from .. import cached
-from .. import check
 from .. import lang
 from ._internals import STD_FIELDS_ATTR
 from ._internals import StdFieldType
@@ -123,10 +122,7 @@ class FieldsInspection:
 
         owners = self.field_owners
 
-        entries_by_info = {
-            entry.info: entry
-            for entry in rfl.get_mro_entries(check.isinstance(rty, rfl.Instance))
-        }
+        mro = rfl.get_mro(rty)
 
         field_types: dict[str, rfl.Type] = {}
 
@@ -135,21 +131,9 @@ class FieldsInspection:
 
             owner = owners[f.name]
             owner_info = rfl.get_type_info(owner)
-            owner_entry = entries_by_info[owner_info]
+            owner_entry = mro.by_info[owner_info]
 
-            owner_type_vars = owner_entry.info.type_vars
-            if not owner_type_vars:
-                field_types[f.name] = raw_type
-                continue
-
-            if len(owner_type_vars) != len(owner_entry.args):
-                raise TypeError(f'Mismatched owner args: {owner_entry.instance!r}')
-
-            replaced_type = rfl.substitute_type(
-                raw_type,
-                dict(zip(owner_type_vars, owner_entry.args)),
-            )
-            field_types[f.name] = replaced_type
+            field_types[f.name] = owner_entry.substitute_type(raw_type)
 
         field_anns = {
             k: rfl.to_runtime_annotation(v)

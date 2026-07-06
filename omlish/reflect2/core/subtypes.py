@@ -43,6 +43,10 @@ from .types import UnionType
 from .types import UnpackType
 
 
+if ta.TYPE_CHECKING:
+    from .substitute import SubstitutionMap
+
+
 ##
 
 
@@ -71,6 +75,29 @@ class MroEntry:
     @property
     def args(self) -> ta.Sequence[Type]:
         return self._args
+
+    #
+
+    def get_substitution_map(self) -> SubstitutionMap:
+        owner_type_vars = self._info._type_vars
+        if not owner_type_vars:
+            return {}
+
+        if len(owner_type_vars) != len(self._args):
+            raise UnsupportedTypeOperationError(
+                f'Cannot build mro substitution map with mismatched mro owner args: {self._instance!r}',
+            )
+
+        return dict(zip(owner_type_vars, self._args))
+
+    def substitute_type(self, raw_type: Type) -> Type:
+        subst_map = self.get_substitution_map()
+        if not subst_map:
+            return raw_type
+
+        from .substitute import substitute_type
+
+        return substitute_type(raw_type, subst_map)
 
 
 ##

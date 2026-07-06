@@ -2,14 +2,12 @@
 import dataclasses as dc
 import typing as ta
 
-from .core.substitute import substitute_type
-from .core.subtypes import MroEntry
 from .core.types import Type
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
 from .globals import or_global_mirror
 from .mirror import Mirror
-from .ops import get_mro_entries_by_info
+from .ops import get_mro
 
 
 ##
@@ -75,22 +73,6 @@ def _get_field_annotation(field: dc.Field, owner: type) -> object:
     return annotations.get(field.name, field.type)
 
 
-def _replace_field_type(
-        raw_type: Type,
-        owner_entry: MroEntry,
-) -> Type:
-    owner_type_vars = owner_entry._info._type_vars
-    if not owner_type_vars:
-        return raw_type
-
-    if len(owner_type_vars) != len(owner_entry._args):
-        raise UnsupportedTypeOperationError(
-            f'Cannot replace dataclass field type with mismatched owner args: {owner_entry._instance!r}',
-        )
-
-    return substitute_type(raw_type, dict(zip(owner_type_vars, owner_entry._args)))
-
-
 class DataclassInspector:
     def __init__(self, mirror: Mirror) -> None:
         super().__init__()
@@ -101,7 +83,7 @@ class DataclassInspector:
         origin = _get_origin_dataclass(obj)
         owners = _get_dataclass_field_owners(origin)
         rty = self._mirror.reflect_type(obj)
-        entries_by_info = get_mro_entries_by_info(rty)
+        mro = get_mro(rty)
 
         ret: list[DataclassField] = []
         for field in dc.fields(origin):
@@ -112,7 +94,7 @@ class DataclassInspector:
 
             owner_info = self._mirror.get_type_info(owner)
             try:
-                owner_entry = entries_by_info[owner_info]
+                owner_entry = mro.by_info[owner_info]
             except KeyError:
                 raise UnsupportedTypeOperationError(
                     f'Dataclass field owner is not in reflected MRO: {origin!r}.{field.name}',
@@ -124,7 +106,7 @@ class DataclassInspector:
                 field.name,
                 owner,
                 raw_type,
-                _replace_field_type(raw_type, owner_entry),
+                owner_entry.substitute_type(raw_type),
             ))
 
         fields = tuple(ret)

@@ -196,5 +196,6 @@ with _lang.auto_proxy_init(globals()):
         is_optional,
         strip_optional,
 
-        get_mro_entries_by_info,
+        Mro,
+        get_mro,
     )

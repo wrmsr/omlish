@@ -102,7 +102,49 @@ def strip_optional(rty: Type) -> Type:
 ##
 
 
-def get_mro_entries_by_info(rty: Type) -> dict[TypeInfo, MroEntry]:
+class Mro(ta.Sequence[MroEntry]):
+    def __init__(self, entries: ta.Iterable[MroEntry]) -> None:
+        super().__init__()
+
+        self._seq = tuple(entries)
+
+    #
+
+    def __len__(self) -> int:
+        return len(self._seq)
+
+    def __iter__(self) -> ta.Iterator[MroEntry]:
+        return iter(self._seq)
+
+    def __contains__(self, entry: object) -> bool:
+        return entry in self._seq
+
+    @ta.overload
+    def __getitem__(self, index: int, /) -> MroEntry: ...
+
+    @ta.overload
+    def __getitem__(self, index: slice, /) -> ta.Sequence[MroEntry]: ...
+
+    def __getitem__(self, index, /):
+        return self._seq[index]
+
+    #
+
+    _by_info: ta.Mapping[TypeInfo, MroEntry]
+
+    @property
+    def by_info(self) -> ta.Mapping[TypeInfo, MroEntry]:
+        try:
+            return self._by_info
+        except AttributeError:
+            pass
+
+        dct = {entry._info: entry for entry in self._seq}
+        self._by_info = dct
+        return dct
+
+
+def get_mro(rty: Type) -> Mro:
     if not isinstance(rty, Instance):
         raise ReflectionTypeError(f'Unsupported MRO source: {rty!r}')
-    return {entry._info: entry for entry in get_mro_entries(rty)}
+    return Mro(get_mro_entries(rty))

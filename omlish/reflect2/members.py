@@ -7,8 +7,6 @@ import typing as ta
 
 from .core.substitute import SubstitutionMap
 from .core.substitute import substitute_type
-from .core.subtypes import MroEntry
-from .core.symbols import TypeInfo
 from .core.types import _ANY_TYPES
 from .core.types import AnyType
 from .core.types import Type
@@ -17,7 +15,7 @@ from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
 from .globals import or_global_mirror
 from .mirror import Mirror
-from .ops import get_mro_entries_by_info
+from .ops import get_mro
 
 
 ##
@@ -287,35 +285,21 @@ class MembersInspector:
             replacements,
         )
 
-    def _get_owner_replacements(
-            self,
-            owner: type,
-            entries_by_info: dict[TypeInfo, MroEntry],
-    ) -> SubstitutionMap:
-        owner_info = self._mirror.get_type_info(owner)
-        entry = entries_by_info.get(owner_info)
-        if entry is None or not entry._info._type_vars:
-            return {}
-        if len(entry._info._type_vars) != len(entry._args):
-            raise ReflectionTypeError(
-                f'Cannot replace member signature type with mismatched owner args: {entry.instance!r}',
-            )
-        return dict(zip(entry._info._type_vars, entry._args))
-
     def inspect_members(
             self,
             obj: object,
     ) -> MembersInspection:
         origin = _get_origin_type(obj)
         rty = self._mirror.reflect_type(obj)
-        entries_by_info = get_mro_entries_by_info(rty)
+        mro = get_mro(rty)
         members_by_name: dict[str, Member] = {}
 
         for name, owner, _ in _iter_mro_members(origin):
+            owner_info = self._mirror.get_type_info(owner)
             members_by_name[name] = self._classify_member(
                 name,
                 owner,
-                self._get_owner_replacements(owner, entries_by_info),
+                mro.by_info[owner_info].get_substitution_map(),
             )
 
         return MembersInspection(origin, tuple(members_by_name.values()), members_by_name)
