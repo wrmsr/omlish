@@ -42,7 +42,7 @@ class WrapperBinderHelper:
 
         @cached.property
         def key(self) -> Key:
-            return Key(ta.Any, tag=self)
+            return as_key(ta.Any, tag=self)
 
     @property
     def top(self) -> Key:

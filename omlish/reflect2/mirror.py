@@ -68,5 +68,9 @@ class Mirror:
         raise NotImplementedError
 
     @abc.abstractmethod
+    def can_reflect_type(self, obj: object) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def reflect_type(self, obj: object) -> Type:
         raise NotImplementedError

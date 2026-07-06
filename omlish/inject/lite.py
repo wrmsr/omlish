@@ -11,6 +11,7 @@ from ..lite import inject as lij
 from .bindings import Binding
 from .elements import Elements
 from .keys import Key
+from .keys import as_key
 from .providers import ConstProvider
 from .providers import CtorProvider
 from .providers import FnProvider
@@ -59,7 +60,7 @@ def convert_from_lite(o):
     elif isinstance(o, lij.InjectorKey):
         check.not_equal(o.cls_, lij.InjectorKeyCls)
         check.arg(not o.array)
-        return Key(rfl.typeof(o.cls_), tag=o.tag)
+        return as_key(rfl.typeof(o.cls_), tag=o.tag)
 
     elif isinstance(o, lij.InjectorBinding):
         blp = convert_from_lite(o.provider)

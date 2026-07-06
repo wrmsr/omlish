@@ -24,7 +24,7 @@ r"""
 
             if fiw_ben_lst:
                 for ben in fiw_ben_lst:
-                    ben_bp_key: inj.Key = inj.Key(bp_impl, tag=ben)
+                    ben_bp_key: inj.Key = inj.as_key(bp_impl, tag=ben)
                     lst.extend([
                         inj.private(
                             inj.bind(_types.BackendName, to_const=ben),
@@ -34,7 +34,7 @@ r"""
                         bp_stack.push_bind(to_key=ben_bp_key),
                     ])
 
-                fiw_key: inj.Key = inj.Key(_meta.FirstInWinsBackendProvider, tag=bp_iface)
+                fiw_key: inj.Key = inj.as_key(_meta.FirstInWinsBackendProvider, tag=bp_iface)
                 lst.extend([
                     inj.private(
                         inj.set_binder[_types.BackendProvider]().bind(bp_stack.top),
@@ -50,7 +50,7 @@ r"""
             lst.append(bp_stack.push_bind(to_ctor=bp_impl, singleton=True))
 
         if bp_iface is _types.ChatChoicesServiceBackendProvider:
-            rt_key: inj.Key = inj.Key(_meta.RetryBackendProvider, tag=bp_iface)
+            rt_key: inj.Key = inj.as_key(_meta.RetryBackendProvider, tag=bp_iface)
             lst.extend([
                 inj.private(
                     inj.bind(_types.BackendProvider, to_key=bp_stack.top),
@@ -60,7 +60,7 @@ r"""
             ])
 
         elif bp_iface is _types.ChatChoicesStreamServiceBackendProvider:
-            rts_key: inj.Key = inj.Key(_meta.RetryStreamBackendProvider, tag=bp_iface)
+            rts_key: inj.Key = inj.as_key(_meta.RetryStreamBackendProvider, tag=bp_iface)
             lst.extend([
                 inj.private(
                     inj.bind(_types.BackendProvider, to_key=bp_stack.top),

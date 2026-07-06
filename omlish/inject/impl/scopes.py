@@ -13,6 +13,7 @@ from ..errors import ScopeAlreadyOpenError
 from ..errors import ScopeNotOpenError
 from ..injector import AsyncInjector
 from ..keys import Key
+from ..keys import as_key
 from ..providers import FnProvider
 from ..providers import Provider
 from ..scopes import ScopeSeededProvider
@@ -164,7 +165,7 @@ class SeededScopeImpl(ScopeImpl):
     def auto_elements(self) -> Elements:
         return as_elements(
             Binding(
-                Key(SeededScope.Manager, tag=self._ss),
+                as_key(SeededScope.Manager, tag=self._ss),
                 FnProvider(lang.typed_partial(SeededScopeImpl.Manager, ss=self._ss)),
                 scope=Singleton(),
             ),

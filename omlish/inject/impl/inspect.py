@@ -10,6 +10,7 @@ from ..inspect import Kwarg
 from ..inspect import Kwargs
 from ..inspect import KwargsTarget
 from ..keys import Key
+from ..keys import as_key
 from ..types import Tag
 
 
@@ -118,7 +119,7 @@ def build_kwargs_target(
             if (tag_obj := check.opt_single(e for e in rty.md if isinstance(e, Tag))) is not None:
                 tag = tag_obj.tag
 
-        k: Key = Key(rfl.strip_rfl_annotations(rty), tag=tag)
+        k: Key = as_key(rfl.strip_rfl_annotations(rty), tag=tag)
         if tags is not None and (pt := tags.get(p.name)) is not None:
             k = dc.replace(k, tag=pt)
 

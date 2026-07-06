@@ -96,7 +96,7 @@ def async_enter_seeded_scope(
 ) -> ta.AsyncContextManager[None]:
     @contextlib.asynccontextmanager
     async def inner():
-        async with (await i.provide(Key(SeededScope.Manager, tag=ss)))(keys):
+        async with (await i.provide(as_key(SeededScope.Manager, tag=ss)))(keys):
             yield
     return inner()
 

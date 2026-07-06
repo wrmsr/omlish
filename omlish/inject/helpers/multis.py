@@ -37,7 +37,7 @@ def bind_set_entry_const(
 
     if tag is None:
         tag = Id(id(obj), tag=multi_key.tag)
-    obj_key: Key = Key(type(obj), tag=tag)
+    obj_key: Key = as_key(type(obj), tag=tag)
 
     return as_elements(
         bind(obj_key, to_const=obj),
@@ -57,7 +57,7 @@ def bind_map_entry_const(
 
     if tag is None:
         tag = Id(id(obj), tag=multi_key.tag)
-    obj_key: Key = Key(type(obj), tag=tag)
+    obj_key: Key = as_key(type(obj), tag=tag)
 
     return as_elements(
         bind(obj_key, to_const=obj),
@@ -117,8 +117,8 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
 
     def bind_item(self, **kwargs: ta.Any) -> Elements:
         tag = ItemsBinderHelper._ItemTag()
-        item_key: Key = Key(ta.Any, tag=tag)
-        items_box_key: Key = Key(self._items_box, tag=tag)
+        item_key: Key = as_key(ta.Any, tag=tag)
+        items_box_key: Key = as_key(self._items_box, tag=tag)
         return as_elements(
             self._set_binder,
             bind(item_key, **kwargs),

@@ -154,7 +154,15 @@ with _lang.auto_proxy_init(globals()):
         get_type_info,
         get_newtype_info,
 
+        can_reflect_type,
         reflect_type,
+    )
+
+    from .internals import (  # noqa
+        is_simple_generic_alias_type,
+
+        get_orig_bases,
+        get_orig_class,
     )
 
     from .members import (  # noqa

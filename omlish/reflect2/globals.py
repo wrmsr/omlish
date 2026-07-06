@@ -71,6 +71,13 @@ def get_newtype_info(obj: object, *, mirror: Mirror | None = None) -> TypeInfo:
 # reflector
 
 
+def can_reflect_type(obj: object, *, mirror: Mirror | None = None) -> bool:
+    if isinstance(obj, (Type, type)):
+        return True
+
+    return or_global_mirror(mirror).can_reflect_type(obj)
+
+
 def reflect_type(obj: object, *, mirror: Mirror | None = None) -> Type:
     if isinstance(obj, Type):
         return obj

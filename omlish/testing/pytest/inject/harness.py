@@ -56,7 +56,7 @@ class Harness:
             *[
                 inj.as_elements(
                     inj.bind_scope(ss),
-                    inj.bind_scope_seed(inj.Key(pytest.FixtureRequest, tag=pts), ss),
+                    inj.bind_scope_seed(inj.as_key(pytest.FixtureRequest, tag=pts), ss),
                 )
                 for pts, ss in _SCOPES_BY_PYTEST_SCOPE.items()
             ],
@@ -88,19 +88,19 @@ class Harness:
         return check.not_none(self._inj)[target]
 
     def session(self) -> pytest.FixtureRequest:
-        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.SESSION)]
+        return self[inj.as_key(pytest.FixtureRequest, tag=PytestScope.SESSION)]
 
     def package(self) -> pytest.FixtureRequest:
-        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.PACKAGE)]
+        return self[inj.as_key(pytest.FixtureRequest, tag=PytestScope.PACKAGE)]
 
     def module(self) -> pytest.FixtureRequest:
-        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.MODULE)]
+        return self[inj.as_key(pytest.FixtureRequest, tag=PytestScope.MODULE)]
 
     def class_(self) -> pytest.FixtureRequest:
-        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.CLASS)]
+        return self[inj.as_key(pytest.FixtureRequest, tag=PytestScope.CLASS)]
 
     def function(self) -> pytest.FixtureRequest:
-        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.FUNCTION)]
+        return self[inj.as_key(pytest.FixtureRequest, tag=PytestScope.FUNCTION)]
 
     ##
 
@@ -112,7 +112,7 @@ class Harness:
     ) -> ta.Generator[None]:
         ss = _SCOPES_BY_PYTEST_SCOPE[pytest_scope]
         with inj.enter_seeded_scope(check.not_none(self._inj), ss, {
-            inj.Key(pytest.FixtureRequest, tag=pytest_scope): request,
+            inj.as_key(pytest.FixtureRequest, tag=pytest_scope): request,
         }):
             yield
 

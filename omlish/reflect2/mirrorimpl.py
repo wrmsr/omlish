@@ -111,7 +111,7 @@ def _is_newtype(obj: object) -> bool:
 
 
 def _is_forward_ref(obj: object) -> bool:
-    return isinstance(obj, str | annotationlib.ForwardRef)
+    return isinstance(obj, (str, annotationlib.ForwardRef))
 
 
 def _is_typed_dict_class(obj: object) -> bool:
@@ -448,6 +448,38 @@ class _ReflectorRun:
             self._reflector._cached_types.add(typ)
 
         return typ
+
+    #
+
+    _CAN_REFLECT_OBJECT_IDS: ta.Final[ta.Mapping[int, ta.Any]] = {id(obj): obj for obj in [
+        ta.Any,
+        ta.Never,
+        ta.NoReturn,
+    ]}
+
+    _CAN_REFLECT_OBJECT_TYPES: ta.Final[tuple[type, ...]] = (
+        ta.TypeAliasType,
+        ta.TypeVar,
+        ta.ParamSpec,
+        ta.TypeVarTuple,
+        type,
+    )
+
+    _CAN_REFLECT_OBJECT_PREDICATES: ta.Final[ta.Sequence[ta.Callable[[object], bool]]] = (
+        _is_none_type,
+        _is_forward_ref,
+        _is_newtype,
+        _is_typed_dict_class,
+    )
+
+    @classmethod
+    def _can_reflect_type(cls, obj: object) -> bool:
+        return (
+            id(obj) in cls._CAN_REFLECT_OBJECT_IDS or
+            isinstance(obj, cls._CAN_REFLECT_OBJECT_TYPES) or
+            ta.get_origin(obj) is not None or
+            any(fn(obj) for fn in cls._CAN_REFLECT_OBJECT_PREDICATES)
+        )
 
     #
 
@@ -1257,6 +1289,9 @@ class MirrorImpl(Mirror):
     @property
     def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
         return self._reflector._unresolved_forward_ref_policy
+
+    def can_reflect_type(self, obj: object) -> bool:
+        return isinstance(obj, (Type, type)) or _ReflectorRun._can_reflect_type(obj)
 
     def reflect_type(self, obj: object) -> Type:
         if isinstance(obj, Type):

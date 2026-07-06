@@ -8,6 +8,7 @@ from .types import Tag
 
 
 T = ta.TypeVar('T')
+T2 = ta.TypeVar('T2')
 
 
 ##
@@ -18,17 +19,44 @@ T = ta.TypeVar('T')
 class Key(lang.Final, ta.Generic[T]):
     ty: rfl.Type = dc.xfield(coerce=rfl.typeof)
 
+    _: dc.KW_ONLY
+
     tag: ta.Any = dc.xfield(
         default=None,
-        kw_only=True,
         validate=lambda o: not isinstance(o, Tag),
         repr_fn=lang.opt_repr,
     )
 
 
-def as_key(o: ta.Any) -> Key:
+##
+
+
+class TAG_NOT_SET(lang.Marker):  # noqa
+    pass
+
+
+@ta.overload
+def as_key(o: Key[T2]) -> Key[T2]:
+    ...
+
+
+@ta.overload
+def as_key(o: type[T2], *, tag: ta.Any | type[TAG_NOT_SET] = type[TAG_NOT_SET]) -> Key[T2]:
+    ...
+
+
+@ta.overload
+def as_key(o: ta.Any, *, tag: ta.Any | type[TAG_NOT_SET] = type[TAG_NOT_SET]) -> Key:
+    ...
+
+
+def as_key(o, *, tag=TAG_NOT_SET):
+    if isinstance(o, Key):
+        if tag is not TAG_NOT_SET:
+            raise TypeError(f'Cannot specify tag {tag!r} for existing Key instance {o!r}')
+        return o
+
     if o is None or o is inspect.Parameter.empty:
         raise TypeError(o)
-    if isinstance(o, Key):
-        return o
-    return Key(rfl.typeof(o))
+
+    return Key(rfl.typeof(o), tag=tag if tag is not TAG_NOT_SET else None)

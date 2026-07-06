@@ -9,6 +9,7 @@ from ..eagers import Eager
 from ..elements import Element
 from ..injector import AsyncInjector
 from ..keys import Key
+from ..keys import as_key
 from ..privates import Expose
 from ..privates import Private
 from ..providers import Provider
@@ -78,7 +79,7 @@ class PrivateInfo(lang.Final):
 
     @cached.property
     def pik(self) -> Key:
-        return Key(AsyncInjectorImpl, tag=self.id)
+        return as_key(AsyncInjectorImpl, tag=self.id)
 
     @cached.function
     def element_collection(self) -> ElementCollection:

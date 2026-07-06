@@ -6,7 +6,7 @@ from ... import lang
 from ..elements import CollectedElements
 from ..injector import AsyncInjector
 from ..inspect import KwargsTarget
-from ..keys import Key
+from ..keys import as_key
 from ..maysync import MaysyncInjector
 from ..sync import Injector
 from .injector import AsyncInjectorImpl
@@ -41,8 +41,8 @@ def create_maysync_injector(ce: CollectedElements, p: MaysyncInjector | None = N
         ce,
         ap,
         internal_consts={
-            Key(MaysyncInjector): si,
-            Key(Injector): si,
+            as_key(MaysyncInjector): si,
+            as_key(Injector): si,
         },
     )
     si._ai = ai

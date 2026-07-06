@@ -20,7 +20,7 @@ def bind_impl(cls: type[Configurable], impl_cls: type[Configurable]) -> inj.Elem
         raise TypeError(impl_cls, cls)
     inst = ImplFor(cls, impl_cls)
     return inj.as_elements(
-        inj.set_binder[ImplFor](tag=cls).bind(inj.Key(ImplFor, tag=id(inst))),
+        inj.set_binder[ImplFor](tag=cls).bind(inj.as_key(ImplFor, tag=id(inst))),
         inj.bind(ImplFor, tag=id(inst), to_const=inst),
     )
 
@@ -39,7 +39,7 @@ class Factory(ta.Generic[ConfigT, ConfigurableT]):
 
 def bind_factory(cls: type[Configurable]) -> inj.Elements:
     def outer(i: inj.Injector):
-        ifs = i.provide(inj.Key(ta.AbstractSet[ImplFor], tag=cls))
+        ifs = i.provide(inj.as_key(ta.AbstractSet[ImplFor], tag=cls))
         ifd = {ic.impl_cls.Config: ic for ic in ifs}
 
         def inner(config):
@@ -62,7 +62,7 @@ def test_inject():
         bind_impl(Thing, BThing),
         bind_factory(Thing),
     )
-    fac: ta.Any = i[inj.Key(Factory[Thing.Config, Thing])]
+    fac: ta.Any = i[inj.as_key(Factory[Thing.Config, Thing])]
 
     assert isinstance(fac(AThing.Config()), AThing)
     assert isinstance(fac(BThing.Config()), BThing)

@@ -309,7 +309,7 @@ close, and binding an `AsyncExitStack` const gives provider functions something 
   instantiates those dependencies when *it* is provided, even if they're never used — if construction is expensive
   or demands further bindings, tests must bind or override them.
 - **NewTypes are real keys.** `ta.NewType('ServerPort', int)` keeps an `int` injectable without ambiguity; tags
-  (`inj.Key(Conn, tag='primary')`) handle same-type multiples.
+  (`inj.as_key(Conn, tag='primary')`) handle same-type multiples.
 - **Singleton is opt-in**, per binding. Forgetting it on a stateful service means N instances and very confusing
   bugs.
 - **Annotations referencing proxied imports are fine**; *evaluating* them at module import time (e.g. a module-level

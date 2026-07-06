@@ -63,27 +63,27 @@ def test_wrappers_injection():
         inj.bind(ThingDoer, tag=0, to_const=ConstThingDoer('2', '1', '3')),
 
         inj.private(
-            inj.bind(ThingDoer, to_key=inj.Key(ThingDoer, tag=0)),
+            inj.bind(ThingDoer, to_key=inj.as_key(ThingDoer, tag=0)),
             inj.bind(ThingDoer, tag=1, to_ctor=SortingThingDoer, expose=True),
         ),
 
         inj.private(
-            inj.bind(ThingDoer, to_key=inj.Key(ThingDoer, tag=1)),
+            inj.bind(ThingDoer, to_key=inj.as_key(ThingDoer, tag=1)),
             inj.bind(ThingDoer, tag=2, to_fn=ReversingThingDoer, expose=True),
         ),
 
         inj.private(
-            inj.bind(ThingDoer, to_key=inj.Key(ThingDoer, tag=2)),
+            inj.bind(ThingDoer, to_key=inj.as_key(ThingDoer, tag=2)),
             inj.bind(ThingDoer, tag=3, to_fn=functools.partial(ItemAppendingThingDoer, item='foo'), expose=True),
         ),
 
-        inj.bind(ThingDoer, to_key=inj.Key(ThingDoer, tag=3)),
+        inj.bind(ThingDoer, to_key=inj.as_key(ThingDoer, tag=3)),
     )
 
-    assert list(injector.provide(inj.Key(ThingDoer, tag=0)).do_thing()) == ['2', '1', '3']
-    assert list(injector.provide(inj.Key(ThingDoer, tag=1)).do_thing()) == ['1', '2', '3']
-    assert list(injector.provide(inj.Key(ThingDoer, tag=2)).do_thing()) == ['3', '2', '1']
-    assert list(injector.provide(inj.Key(ThingDoer, tag=3)).do_thing()) == ['3', '2', '1', 'foo']
+    assert list(injector.provide(inj.as_key(ThingDoer, tag=0)).do_thing()) == ['2', '1', '3']
+    assert list(injector.provide(inj.as_key(ThingDoer, tag=1)).do_thing()) == ['1', '2', '3']
+    assert list(injector.provide(inj.as_key(ThingDoer, tag=2)).do_thing()) == ['3', '2', '1']
+    assert list(injector.provide(inj.as_key(ThingDoer, tag=3)).do_thing()) == ['3', '2', '1', 'foo']
     assert list(injector[ThingDoer].do_thing()) == ['3', '2', '1', 'foo']
 
     assert injector[ThingDoer] is not injector[ThingDoer]

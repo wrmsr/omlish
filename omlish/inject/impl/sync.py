@@ -6,7 +6,7 @@ from ... import lang
 from ..elements import CollectedElements
 from ..injector import AsyncInjector
 from ..inspect import KwargsTarget
-from ..keys import Key
+from ..keys import as_key
 from ..sync import Injector
 from .injector import AsyncInjectorImpl
 
@@ -40,7 +40,7 @@ def create_injector(ce: CollectedElements, p: Injector | None = None) -> Injecto
         ce,
         ap,
         internal_consts={
-            Key(Injector): si,
+            as_key(Injector): si,
         },
     )
     si._ai = ai

@@ -25,11 +25,11 @@ A `Key` identifies a dependency by its type and an optional tag for disambiguati
 from omlish import inject as inj
 
 # Simple key by type
-int_key = inj.Key(int)
+int_key = inj.as_key(int)
 
 # Tagged key for multiple bindings of the same type
-db_conn_key = inj.Key(DbConnection, tag='primary')
-cache_conn_key = inj.Key(DbConnection, tag='cache')
+db_conn_key = inj.as_key(DbConnection, tag='primary')
+cache_conn_key = inj.as_key(DbConnection, tag='cache')
 
 # Convert any type to a key
 key = inj.as_key(MyService)
@@ -251,8 +251,8 @@ Collect multiple bindings into sets or maps:
 ```python
 # Set bindings
 inj.set_binder[Plugin]().bind(
-    inj.Key(Plugin, tag='auth'),
-    inj.Key(Plugin, tag='logging'),
+    inj.as_key(Plugin, tag='auth'),
+    inj.as_key(Plugin, tag='logging'),
 )
 plugins = injector[ta.AbstractSet[Plugin]]
 

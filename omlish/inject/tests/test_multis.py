@@ -7,23 +7,23 @@ from ... import inject as inj
 def test_set_multi():
     i = inj.create_injector(
         inj.bind(420, tag='four twenty'),
-        inj.set_binder[int]().bind(inj.Key(int, tag='four twenty')),
+        inj.set_binder[int]().bind(inj.as_key(int, tag='four twenty')),
 
         inj.bind(421, tag='four twenty one'),
-        inj.set_binder[int]().bind(inj.Key(int, tag='four twenty one')),
+        inj.set_binder[int]().bind(inj.as_key(int, tag='four twenty one')),
     )
-    assert i.provide(inj.Key(ta.AbstractSet[int])) == {420, 421}
+    assert i.provide(ta.AbstractSet[int]) == {420, 421}
 
 
 def test_map_multi():
     i = inj.create_injector(
         inj.bind(420, tag='four twenty'),
-        inj.map_binder[str, int]().bind('a', inj.Key(int, tag='four twenty')),
+        inj.map_binder[str, int]().bind('a', inj.as_key(int, tag='four twenty')),
 
         inj.bind(421, tag='four twenty one'),
-        inj.map_binder[str, int]().bind('b', inj.Key(int, tag='four twenty one')),
+        inj.map_binder[str, int]().bind('b', inj.as_key(int, tag='four twenty one')),
     )
-    assert i.provide(inj.Key(ta.Mapping[str, int])) == {'a': 420, 'b': 421}
+    assert i.provide(ta.Mapping[str, int]) == {'a': 420, 'b': 421}
 
 
 def test_private_multis():
@@ -36,8 +36,8 @@ def test_private_multis():
             inj.bind('b!'),
             inj.bind(str, tag='b', to_key=str, expose=True),
         ),
-        inj.set_binder[str]().bind(inj.Key(str, tag='a')),
-        inj.set_binder[str]().bind(inj.Key(str, tag='b')),
+        inj.set_binder[str]().bind(inj.as_key(str, tag='a')),
+        inj.set_binder[str]().bind(inj.as_key(str, tag='b')),
     )
     assert set(i[ta.AbstractSet[str]]) == {'a!', 'b!'}
 

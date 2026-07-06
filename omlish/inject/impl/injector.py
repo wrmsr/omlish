@@ -52,7 +52,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         self._p: AsyncInjectorImpl | None = check.isinstance(p, (AsyncInjectorImpl, None))
 
         self._internal_consts: dict[Key, ta.Any] = {
-            Key(AsyncInjector): self,
+            as_key(AsyncInjector): self,
             **(internal_consts or {}),
         }
 

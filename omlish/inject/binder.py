@@ -111,9 +111,9 @@ def bind(
     elif isinstance(obj, type):
         if not has_to:
             to_ctor = obj
-        key = Key(obj)
+        key = as_key(obj)
     elif isinstance(obj, rfl.TYPES) or rfl.is_type(obj):
-        key = Key(obj)
+        key = as_key(obj)
     elif _is_fn(obj) and not has_to:
         sig = _inspect.signature(obj)
         ty = rfl.typeof(sig.return_annotation)
@@ -121,12 +121,12 @@ def bind(
             to_async_fn = obj
         else:
             to_fn = obj
-        key = Key(ty)
+        key = as_key(ty)
     else:
         if to_const is not None:
             raise TypeError('Cannot bind instance with to_const')
         to_const = obj
-        key = Key(type(obj))
+        key = as_key(type(obj))
     del has_to
 
     ##
