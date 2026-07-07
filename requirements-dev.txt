@@ -4,7 +4,7 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.47.0
 
-uv>=0.11.26
+uv>=0.11.27
 
 pytest==9.1.1
 pytest-benchmark==5.2.3
@@ -27,13 +27,13 @@ types-psutil==7.2.2.20260518
 types-pygments==2.20.0.20260518
 types-pymysql==1.1.0.20260518
 types-pyyaml==6.0.12.20260518
-types-regex==2026.5.9.20260518
-types-setuptools==82.0.0.20260518
+types-regex==2026.6.28.20260630
+types-setuptools==83.0.0.20260706
 types-ujson==5.10.0.20250822
 
 black==26.5.1
 mypy==2.1.0
-pipdeptree==3.1.0
+pipdeptree==3.1.1
 
 astpretty==3.0.0
 
@@ -101,7 +101,7 @@ wikitextparser==1.0.2  # !! GPL
 executing==2.2.1
 asttokens==3.0.1
 
-numpy==2.5.0
+numpy==2.5.1
 
 # must be kept in sync
 textual==8.2.8
@@ -116,7 +116,7 @@ snowflake-connector-python[secure-local-storage]==4.6.0  # @omlish-venv !15t
 
 trino==0.338.0  # @omlish-venv !14t !14dt !15t  # orjson
 
-huggingface-hub==1.21.0  # @omlish-venv !15t
+huggingface-hub==1.22.0  # @omlish-venv !15t
 hf-xet==1.5.1  # @omlish-venv !15t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
@@ -135,8 +135,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.43.40
-types-boto3>=1.43.40
+boto3>=1.43.42
+types-boto3>=1.43.41
 botocore-stubs>=1.43.14
 
 antlr4-python3-runtime==4.13.2
@@ -149,7 +149,7 @@ apsw==3.53.3.0
 rapidocr-onnxruntime==1.4.4  # @omlish-venv !14t !14dt !15 !15t
 # opencv-python==4.12.0.88  # @omlish-venv !14t !14dt  # FIXME: downgrades numpy
 
-pillow==12.2.0
+pillow==12.3.0
 
 # accelerate==1.13.0  # @omlish-venv !15 !15t
 

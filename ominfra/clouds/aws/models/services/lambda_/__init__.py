@@ -327,6 +327,11 @@ class DurableConfig(
     _base.Shape,
     shape_name='DurableConfig',
 ):
+    kms_key_arn: KMSKeyArn | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='KMSKeyArn',
+        shape_name='KMSKeyArn',
+    ))
+
     retention_period_in_days: RetentionPeriodInDays | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='RetentionPeriodInDays',
         shape_name='RetentionPeriodInDays',

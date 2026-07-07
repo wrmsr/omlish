@@ -40,13 +40,13 @@ all = [
     'torch ~= 2.12',
     'transformers ~= 5.11',
     'sentence-transformers ~= 5.5',
-    'huggingface-hub ~= 1.21',
+    'huggingface-hub ~= 1.22',
     'datasets ~= 5.0',
     'regex >= 2026.6',
     'numpy >= 2.5',
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
-    'pillow ~= 12.2',
+    'pillow ~= 12.3',
     'ddgs ~= 9.14',
     'tavily-python ~= 0.7',
     'mwparserfromhell ~= 0.7',
@@ -69,7 +69,7 @@ backends = [
     'sentence-transformers ~= 5.5',
 ]
 huggingface = [
-    'huggingface-hub ~= 1.21',
+    'huggingface-hub ~= 1.22',
     'datasets ~= 5.0',
 ]
 nanochat = [
@@ -83,7 +83,7 @@ ocr = [
     'rapidocr-onnxruntime ~= 1.4',
 ]
 pillow = [
-    'pillow ~= 12.2',
+    'pillow ~= 12.3',
 ]
 search = [
     'ddgs ~= 9.14',

@@ -42,7 +42,7 @@ class Project(ProjectBase):
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 1.21',
+            'huggingface-hub ~= 1.22',
             'datasets ~= 5.0',
         ],
 
@@ -61,7 +61,7 @@ class Project(ProjectBase):
         ],
 
         'pillow': [
-            'pillow ~= 12.2',
+            'pillow ~= 12.3',
         ],
 
         'search': [

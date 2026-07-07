@@ -6930,6 +6930,12 @@ class Image(
         shape_name='Boolean',
     ))
 
+    public_ssm_parameter_name: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PublicSsmParameterName',
+        serialization_name='publicSsmParameterName',
+        shape_name='String',
+    ))
+
     image_watermarks: ImageWatermarkList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ImageWatermarks',
         serialization_name='imageWatermarkSet',

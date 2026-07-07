@@ -237,27 +237,31 @@ def _process_dataclass__a668802e6cc60181d0d91b2bd31db6e6a3724a65():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('retention_period_in_days', 'execution_timeout')), EqPlan(fields=('retention_perio"
-        "d_in_days', 'execution_timeout')), FrozenPlan(fields=('__shape__', 'retention_period_in_days', 'execution_time"
-        "out'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('retention_period_in_days', 'executio"
-        "n_timeout'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.field"
-        "s.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VA"
-        "R, coerce=None, validate=None, check_type=None), InitPlan.Field(name='retention_period_in_days', annotation=Op"
-        "Ref(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init="
-        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
-        "eld(name='execution_timeout', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fiel"
-        "ds.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('retention_period_in_days',"
-        " 'execution_timeout'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPla"
-        "n(fields=(ReprPlan.Field(name='retention_period_in_days', kw_only=True, fn=None), ReprPlan.Field(name='executi"
-        "on_timeout', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('kms_key_arn', 'retention_period_in_days', 'execution_timeout')), EqPlan(fields=('"
+        "kms_key_arn', 'retention_period_in_days', 'execution_timeout')), FrozenPlan(fields=('__shape__', 'kms_key_arn'"
+        ", 'retention_period_in_days', 'execution_timeout'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', "
+        "fields=('kms_key_arn', 'retention_period_in_days', 'execution_timeout'), cache=False), InitPlan(fields=(InitPl"
+        "an.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='kms_key_arn', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init."
+        "fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='retention_period_in_days', annotation=OpRef(name='ini"
+        "t.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='exe"
+        "cution_timeout', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None)), self_param='self', std_params=(), kw_only_params=('kms_key_arn', 'retention_period_in_days"
+        "', 'execution_timeout'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprP"
+        "lan(fields=(ReprPlan.Field(name='kms_key_arn', kw_only=True, fn=None), ReprPlan.Field(name='retention_period_i"
+        "n_days', kw_only=True, fn=None), ReprPlan.Field(name='execution_timeout', kw_only=True, fn=None)), id=False, t"
+        "erse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='017f0ccfabf58bb95e85ed87d1549bbb2e98094f',
+    plan_repr_sha1='fbbb6e2071547bf32b1bfbfe979fd22fa6cd540d',
     cls_names=(
         ('ominfra.clouds.aws.models.services.lambda_', 'DurableConfig'),
     ),
 )
-def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
+def _process_dataclass__fbbb6e2071547bf32b1bfbfe979fd22fa6cd540d():
     def _process_dataclass(
         *,
         __class__,
@@ -265,6 +269,8 @@ def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
         __dataclass__None=None,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
@@ -275,6 +281,7 @@ def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
             if self.__class__ is not __class__:
                 raise TypeError(self)
             return __class__(  # noqa
+                kms_key_arn=self.kms_key_arn,
                 retention_period_in_days=self.retention_period_in_days,
                 execution_timeout=self.execution_timeout,
             )
@@ -287,6 +294,7 @@ def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
+                self.kms_key_arn == other.kms_key_arn and
                 self.retention_period_in_days == other.retention_period_in_days and
                 self.execution_timeout == other.execution_timeout
             )
@@ -295,6 +303,7 @@ def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
 
         __dataclass___frozen_fields = {
             '__shape__',
+            'kms_key_arn',
             'retention_period_in_days',
             'execution_timeout',
         }
@@ -321,6 +330,7 @@ def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
 
         def __hash__(self):
             return hash((
+                self.kms_key_arn,
                 self.retention_period_in_days,
                 self.execution_timeout,
             ))
@@ -330,9 +340,11 @@ def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
         def __init__(
             self,
             *,
-            retention_period_in_days: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            execution_timeout: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            kms_key_arn: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            retention_period_in_days: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            execution_timeout: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'kms_key_arn', kms_key_arn)
             __dataclass__object_setattr(self, 'retention_period_in_days', retention_period_in_days)
             __dataclass__object_setattr(self, 'execution_timeout', execution_timeout)
 
@@ -341,6 +353,7 @@ def _process_dataclass__017f0ccfabf58bb95e85ed87d1549bbb2e98094f():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
+            parts.append(f"kms_key_arn={self.kms_key_arn!r}")
             parts.append(f"retention_period_in_days={self.retention_period_in_days!r}")
             parts.append(f"execution_timeout={self.execution_timeout!r}")
             return (
