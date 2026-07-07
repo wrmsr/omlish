@@ -104,6 +104,10 @@ with _auto_proxy_init(globals(), update_exports=True):
         BindableClass,
     )
 
+    from .classes.intersections import (  # noqa
+        Intersection,
+    )
+
     from .classes.mro import (  # noqa
         try_mro,
     )
@@ -541,10 +545,6 @@ with _auto_proxy_init(globals(), update_exports=True):
         is_dunder,
         is_sunder,
 
-        is_ident_start,
-        is_ident_cont,
-        is_ident,
-
         BOOL_STRINGS,
         BOOL_FALSE_STRINGS,
         BOOL_TRUE_STRINGS,
@@ -581,6 +581,12 @@ with _auto_proxy_init(globals(), update_exports=True):
         typed_partial,
 
         SequenceNotStr,
+    )
+
+    from .unicode import (  # noqa
+        is_ident_start,
+        is_ident_cont,
+        is_ident,
     )
 
     from .units import (  # noqa
