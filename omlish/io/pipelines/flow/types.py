@@ -48,25 +48,40 @@ class IoPipelineFlowMessages(NamespaceClass):
     ):
         pass
 
+    ##
+    # TODO / WIP:
+
+    # Additions to omlish/io/pipelines/flow/types.py - replaces the commented-out TODO block inside
+    # IoPipelineFlowMessages. Semantics (~ Netty `fireChannelWritabilityChanged`):
+    #
+    #  - Level-triggered writability, edge-notified: emitters send one message per *transition*, never repeats.
+    #    ReadyForOutput means 'output may flow'; PauseOutput means 'stop producing output'.
+    #  - They flow INBOUND (transport -> app), originated by the transport head (or a dedicated watermark handler
+    #    watching an OutboundBytesBufferingIoPipelineHandler) from its unflushed backlog vs high/low watermarks.
+    #  - Handlers that buffer outbound data (ssl, compression, ...) do not forward these blindly: they combine the
+    #    transport-side signal with their own buffer level and re-announce the COMBINED value inbound, again only on
+    #    change. Pass-through handlers just propagate.
+    #  - The implied initial state is writable; a pipeline that never sends either message behaves as if ReadyForOutput
+    #    were always in effect. As with the other flow messages, these are only ever sent when an IoPipelineFlow service
+    #    is present.
+
     #
 
-    # # TODO:
-    # @ta.final
-    # @dc.dataclass(frozen=True)
-    # class ReadyForOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
-    #     IoPipelineMessages.MayPropagate,
-    #     IoPipelineMessages.NeverOutbound,
-    # ):
-    #     pass
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class ReadyForOutput(  # ~ Netty `ChannelInboundInvoker::fireChannelWritabilityChanged` # noqa
+        IoPipelineMessages.MayPropagate,
+        IoPipelineMessages.NeverOutbound,
+    ):
+        pass
 
-    # # TODO:
-    # @ta.final
-    # @dc.dataclass(frozen=True)
-    # class PauseOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
-    #     IoPipelineMessages.MayPropagate,
-    #     IoPipelineMessages.NeverOutbound,
-    # ):
-    #     pass
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class PauseOutput(  # ~ Netty `ChannelInboundInvoker::fireChannelWritabilityChanged` # noqa
+        IoPipelineMessages.MayPropagate,
+        IoPipelineMessages.NeverOutbound,
+    ):
+        pass
 
 
 ##

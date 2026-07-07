@@ -52,7 +52,7 @@ def __omlish_amalg__():  # noqa
             dict(path='asyncs.py', sha1='a78bd64bada44716809c19e95d6ca4a96f3a28d7'),
             dict(path='bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),
-            dict(path='flow/types.py', sha1='ac9a91d0a8115443984a75a63ffac51a7acef580'),
+            dict(path='flow/types.py', sha1='bb7f198fa1c466c76bb0867121bd16c2e77437a9'),
             dict(path='handlers/fns.py', sha1='6dd1901ebdbdb31caeffab06d239f1c41e3f2726'),
             dict(path='handlers/queues.py', sha1='f49d19c5dd7de77299bedbfb3a77a36479fd1edf'),
             dict(path='sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
@@ -4145,25 +4145,40 @@ class IoPipelineFlowMessages(NamespaceClass):
     ):
         pass
 
+    ##
+    # TODO / WIP:
+
+    # Additions to omlish/io/pipelines/flow/types.py - replaces the commented-out TODO block inside
+    # IoPipelineFlowMessages. Semantics (~ Netty `fireChannelWritabilityChanged`):
+    #
+    #  - Level-triggered writability, edge-notified: emitters send one message per *transition*, never repeats.
+    #    ReadyForOutput means 'output may flow'; PauseOutput means 'stop producing output'.
+    #  - They flow INBOUND (transport -> app), originated by the transport head (or a dedicated watermark handler
+    #    watching an OutboundBytesBufferingIoPipelineHandler) from its unflushed backlog vs high/low watermarks.
+    #  - Handlers that buffer outbound data (ssl, compression, ...) do not forward these blindly: they combine the
+    #    transport-side signal with their own buffer level and re-announce the COMBINED value inbound, again only on
+    #    change. Pass-through handlers just propagate.
+    #  - The implied initial state is writable; a pipeline that never sends either message behaves as if ReadyForOutput
+    #    were always in effect. As with the other flow messages, these are only ever sent when an IoPipelineFlow service
+    #    is present.
+
     #
 
-    # # TODO:
-    # @ta.final
-    # @dc.dataclass(frozen=True)
-    # class ReadyForOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
-    #     IoPipelineMessages.MayPropagate,
-    #     IoPipelineMessages.NeverOutbound,
-    # ):
-    #     pass
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class ReadyForOutput(  # ~ Netty `ChannelInboundInvoker::fireChannelWritabilityChanged` # noqa
+        IoPipelineMessages.MayPropagate,
+        IoPipelineMessages.NeverOutbound,
+    ):
+        pass
 
-    # # TODO:
-    # @ta.final
-    # @dc.dataclass(frozen=True)
-    # class PauseOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
-    #     IoPipelineMessages.MayPropagate,
-    #     IoPipelineMessages.NeverOutbound,
-    # ):
-    #     pass
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class PauseOutput(  # ~ Netty `ChannelInboundInvoker::fireChannelWritabilityChanged` # noqa
+        IoPipelineMessages.MayPropagate,
+        IoPipelineMessages.NeverOutbound,
+    ):
+        pass
 
 
 ##
