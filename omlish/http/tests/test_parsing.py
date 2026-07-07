@@ -493,7 +493,7 @@ class TestRelaxationKnobs(unittest.TestCase):
             hp.parse_http_message(b'GET /\x01path HTTP/1.1\r\n\r\n', config=cfg)
 
     def test_allow_space_before_colon(self) -> None:
-        cfg = hp.HttpParser.Config(allow_space_before_colon=True)
+        cfg = hp.HttpParser.Config(dangerous_allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost : example.com\r\n\r\n'
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.host, 'example.com')
@@ -501,7 +501,7 @@ class TestRelaxationKnobs(unittest.TestCase):
     def test_space_before_colon_all_whitespace_name(self) -> None:
         """A line like ': value' (colon at start) produces EmptyFieldName."""
 
-        cfg = hp.HttpParser.Config(allow_space_before_colon=True)
+        cfg = hp.HttpParser.Config(dangerous_allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\n: value\r\n\r\n'
         with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
@@ -509,7 +509,7 @@ class TestRelaxationKnobs(unittest.TestCase):
     def test_whitespace_line_start_is_obs_fold(self) -> None:
         """A line starting with whitespace is obs-fold, not a whitespace-only name."""
 
-        cfg = hp.HttpParser.Config(allow_space_before_colon=True)
+        cfg = hp.HttpParser.Config(dangerous_allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\n  : value\r\n\r\n'
         # This triggers obs-fold detection, not EmptyFieldName
         with self.assertRaises(hp.HeaderFieldHttpParseError):
@@ -602,7 +602,7 @@ class TestRelaxationKnobs(unittest.TestCase):
         self.assertEqual(msg.headers['x-empty'], '')
 
     def test_reject_empty_header_values(self) -> None:
-        cfg = hp.HttpParser.Config(allow_empty_header_values=False)
+        cfg = hp.HttpParser.Config(reject_empty_header_values=True)
         data = _resp(headers=[('X-Empty', '')])
         with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
@@ -1897,14 +1897,14 @@ class TestHttpHeadParserConfigDefaults(unittest.TestCase):
     def test_all_defaults(self) -> None:
         cfg = hp.HttpParser.Config()
         self.assertFalse(cfg.allow_obs_fold)
-        self.assertFalse(cfg.allow_space_before_colon)
+        self.assertFalse(cfg.dangerous_allow_space_before_colon)
         self.assertFalse(cfg.allow_multiple_content_lengths)
         self.assertFalse(cfg.allow_content_length_with_te)
         self.assertFalse(cfg.allow_bare_lf)
         self.assertFalse(cfg.allow_missing_host)
         self.assertFalse(cfg.allow_multiple_hosts)
         self.assertFalse(cfg.allow_unknown_transfer_encoding)
-        self.assertTrue(cfg.allow_empty_header_values)
+        self.assertFalse(cfg.reject_empty_header_values)
         self.assertFalse(cfg.allow_bare_cr_in_value)
         self.assertFalse(cfg.allow_te_without_chunked_in_response)
         self.assertFalse(cfg.allow_transfer_encoding_http10)
@@ -2213,7 +2213,7 @@ class TestConfigPassThrough(unittest.TestCase):
 
     def test_empty_value_rejected_when_configured(self) -> None:
         data = b'X-Empty:\r\n\r\n'
-        cfg = hp.HttpParser.Config(allow_empty_header_values=False)
+        cfg = hp.HttpParser.Config(reject_empty_header_values=True)
         with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data, config=cfg)
         self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE)

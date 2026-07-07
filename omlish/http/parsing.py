@@ -345,14 +345,14 @@ class HttpParser:
         """Strictness knobs. Defaults are maximally strict."""
 
         allow_obs_fold: bool = False
-        allow_space_before_colon: bool = False  # DANGEROUS - upstreams may not handle well
+        dangerous_allow_space_before_colon: bool = False  # DANGEROUS - upstreams may not handle well
         allow_multiple_content_lengths: bool = False
         allow_content_length_with_te: bool = False
         allow_bare_lf: bool = False
         allow_missing_host: bool = False
         allow_multiple_hosts: bool = False
         allow_unknown_transfer_encoding: bool = False
-        allow_empty_header_values: bool = True
+        reject_empty_header_values: bool = False
         allow_bare_cr_in_value: bool = False
         allow_te_without_chunked_in_response: bool = False
         allow_transfer_encoding_http10: bool = False
@@ -1021,7 +1021,7 @@ class _HttpParseContext:
 
         # Check for space before colon
         if name_bytes[-1] in self._OWS_CHARS:
-            if not self.config.allow_space_before_colon:
+            if not self.config.dangerous_allow_space_before_colon:
                 raise HeaderFieldHttpParseError(
                     code=HeaderFieldHttpParseErrorCode.SPACE_BEFORE_COLON,
                     message='Whitespace between field-name and colon',
@@ -1072,7 +1072,7 @@ class _HttpParseContext:
         value_stripped = self._strip_ows(value_bytes)
 
         # Check for empty value
-        if not value_stripped and not self.config.allow_empty_header_values:
+        if not value_stripped and self.config.reject_empty_header_values:
             raise HeaderFieldHttpParseError(
                 code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
                 message='Empty header field value not allowed',

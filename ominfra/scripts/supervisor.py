@@ -143,7 +143,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/http/headers.py', sha1='aa2182505c9b09e2b658df8f8b3d927bc5fae13b'),
-            dict(path='../../omlish/http/parsing.py', sha1='f17fface99badc291b77c2b4e1aba93f9ae3fa28'),
+            dict(path='../../omlish/http/parsing.py', sha1='1adee35518ee930557f2c3b19fd4253df98a5b3c'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
             dict(path='../../omlish/http/urlrouting/types.py', sha1='197017272bd5353b59b71b66dc80e6b0707a14ed'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e54c78728659a0c15fec4b5647e5c8c349109e55'),
@@ -6139,14 +6139,14 @@ class HttpParser:
         """Strictness knobs. Defaults are maximally strict."""
 
         allow_obs_fold: bool = False
-        allow_space_before_colon: bool = False  # DANGEROUS - upstreams may not handle well
+        dangerous_allow_space_before_colon: bool = False  # DANGEROUS - upstreams may not handle well
         allow_multiple_content_lengths: bool = False
         allow_content_length_with_te: bool = False
         allow_bare_lf: bool = False
         allow_missing_host: bool = False
         allow_multiple_hosts: bool = False
         allow_unknown_transfer_encoding: bool = False
-        allow_empty_header_values: bool = True
+        reject_empty_header_values: bool = False
         allow_bare_cr_in_value: bool = False
         allow_te_without_chunked_in_response: bool = False
         allow_transfer_encoding_http10: bool = False
@@ -6815,7 +6815,7 @@ class _HttpParseContext:
 
         # Check for space before colon
         if name_bytes[-1] in self._OWS_CHARS:
-            if not self.config.allow_space_before_colon:
+            if not self.config.dangerous_allow_space_before_colon:
                 raise HeaderFieldHttpParseError(
                     code=HeaderFieldHttpParseErrorCode.SPACE_BEFORE_COLON,
                     message='Whitespace between field-name and colon',
@@ -6866,7 +6866,7 @@ class _HttpParseContext:
         value_stripped = self._strip_ows(value_bytes)
 
         # Check for empty value
-        if not value_stripped and not self.config.allow_empty_header_values:
+        if not value_stripped and self.config.reject_empty_header_values:
             raise HeaderFieldHttpParseError(
                 code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
                 message='Empty header field value not allowed',
