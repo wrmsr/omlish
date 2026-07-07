@@ -152,7 +152,6 @@ with _lang.auto_proxy_init(globals()):
         or_global_mirror,
 
         get_type_info,
-        get_newtype_info,
 
         can_reflect_type,
         reflect_type,

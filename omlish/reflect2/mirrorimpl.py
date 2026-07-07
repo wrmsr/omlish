@@ -136,13 +136,13 @@ class _Universe:
     def __init__(self) -> None:
         super().__init__()
 
-        self.fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
+        self._fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
         self._types_by_fullname: dict[str, object] = {
             fullname: obj
-            for obj, fullname in self.fullnames_by_type.items()
+            for obj, fullname in self._fullnames_by_type.items()
         }
 
-        self.infos_by_fullname: dict[str, TypeInfo] = {}
+        self._infos_by_fullname: dict[str, TypeInfo] = {}
 
     #
 
@@ -240,6 +240,19 @@ class _Universe:
 
     #
 
+    def get_cached_type_info(self, obj: type | str | ta.NewType) -> TypeInfo | None:
+        if isinstance(obj, str):
+            return self._infos_by_fullname.get(obj)
+        else:
+            try:
+                fullname = self._fullnames_by_type[obj]
+            except KeyError:
+                return None
+            else:
+                return self._infos_by_fullname.get(fullname)
+
+    #
+
     def get_type_info(self, obj: type | str) -> TypeInfo:
         runtime_object: object
         if isinstance(obj, str):
@@ -248,7 +261,7 @@ class _Universe:
         else:
             runtime_object = obj
             try:
-                fullname = self.fullnames_by_type[obj]
+                fullname = self._fullnames_by_type[obj]
             except KeyError:
                 fullname = self._make_dynamic_type_fullname(obj)
                 try:
@@ -259,11 +272,11 @@ class _Universe:
                     raise ReflectionValueError(
                         f'Dynamic fullname {fullname!r} for type {obj!r} already used by type {ex_ty!r}',
                     )
-                self.fullnames_by_type[obj] = fullname
+                self._fullnames_by_type[obj] = fullname
                 self._types_by_fullname[fullname] = obj
 
         try:
-            return self.infos_by_fullname[fullname]
+            return self._infos_by_fullname[fullname]
         except KeyError:
             pass
 
@@ -274,7 +287,7 @@ class _Universe:
             fullname,
             runtime_object=runtime_object,
         )
-        self.infos_by_fullname[fullname] = info
+        self._infos_by_fullname[fullname] = info
         info._bases = tuple(self._make_known_bases(info))
         if (mro := self._make_known_mro(info)) is not None:
             info._mro = tuple(mro)
@@ -297,16 +310,16 @@ class _Universe:
             raise TypeError('get_newtype_info only accepts `typing.NewType` objects')
 
         try:
-            fullname = self.fullnames_by_type[obj]
+            fullname = self._fullnames_by_type[obj]
         except KeyError:
             fullname = self._make_newtype_fullname(obj)
             if fullname in self._types_by_fullname:
                 fullname = f'{fullname}@{id(obj):x}'
-            self.fullnames_by_type[obj] = fullname
+            self._fullnames_by_type[obj] = fullname
             self._types_by_fullname[fullname] = obj
 
         try:
-            return self.infos_by_fullname[fullname]
+            return self._infos_by_fullname[fullname]
         except KeyError:
             pass
 
@@ -316,7 +329,7 @@ class _Universe:
             fullname,
             runtime_object=obj,
         )
-        self.infos_by_fullname[fullname] = info
+        self._infos_by_fullname[fullname] = info
 
         supertype = getattr(obj, '__supertype__')
         if isinstance(supertype, type):
@@ -1206,39 +1219,18 @@ class MirrorImpl(Mirror):
     ##
     # universe
 
-    def get_type_info(self, obj: type | str) -> TypeInfo:
-        if isinstance(obj, str):
-            try:
-                return self._universe.infos_by_fullname[obj]
-            except KeyError:
-                pass
-        else:
-            try:
-                fullname = self._universe.fullnames_by_type[obj]
-            except KeyError:
-                pass
+    def get_type_info(self, obj: type | str | ta.NewType) -> TypeInfo:
+        if (cached := self._universe.get_cached_type_info(obj)) is not None:
+            return cached
+
+        with self._lock:
+            if (cached := self._universe.get_cached_type_info(obj)) is not None:
+                return cached
+
+            if isinstance(obj, ta.NewType):
+                return self._universe.get_newtype_info(obj)
             else:
-                try:
-                    return self._universe.infos_by_fullname[fullname]
-                except KeyError:
-                    pass
-
-        with self._lock:
-            return self._universe.get_type_info(obj)
-
-    def get_newtype_info(self, obj: object) -> TypeInfo:
-        try:
-            fullname = self._universe.fullnames_by_type[obj]
-        except KeyError:
-            pass
-        else:
-            try:
-                return self._universe.infos_by_fullname[fullname]
-            except KeyError:
-                pass
-
-        with self._lock:
-            return self._universe.get_newtype_info(obj)
+                return self._universe.get_type_info(obj)
 
     ##
     # reflector

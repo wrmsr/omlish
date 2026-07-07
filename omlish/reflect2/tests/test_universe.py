@@ -163,7 +163,7 @@ def test_runtime_universe_keeps_newtype_runtime_object() -> None:
     universe = make_mirror()
     user_id = ta.NewType('UserId', int)  # type: ignore
 
-    info = universe.get_newtype_info(user_id)
+    info = universe.get_type_info(user_id)
 
     assert info.fullname == f'{__name__}.UserId'
     assert get_runtime_object_or_none(info) is user_id

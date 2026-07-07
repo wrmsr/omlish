@@ -38,11 +38,7 @@ class Mirror:
     # universe
 
     @abc.abstractmethod
-    def get_type_info(self, obj: type | str) -> TypeInfo:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_newtype_info(self, obj: object) -> TypeInfo:
+    def get_type_info(self, obj: type | str | ta.NewType) -> TypeInfo:
         raise NotImplementedError
 
     ##
