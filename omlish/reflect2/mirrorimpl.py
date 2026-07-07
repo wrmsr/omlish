@@ -249,6 +249,9 @@ class _Universe:
             except KeyError:
                 return None
             else:
+                # NOTE: This is racy with `get_type_info` below - this runs without any lock, and `_fullnames_by_type`
+                # will be populated before `_infos_by_fullname` - if this does happen it'll just be retried under the
+                # lock.
                 return self._infos_by_fullname.get(fullname)
 
     #
@@ -367,7 +370,7 @@ class _Reflector:
 
         #
 
-        self.type_cache: dict[object, Type] = {}
+        self._type_cache: dict[object, Type] = {}
         self._cached_types: set[Type] = set()
 
         self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
@@ -387,6 +390,14 @@ class _Reflector:
             return True
 
         return False
+
+    def get_cached_reflected_type(self, obj: object) -> Type | None:
+        try:
+            return self._type_cache[obj]
+        except KeyError:
+            return None
+        except TypeError:
+            return None
 
     def reflect_type(self, obj: object) -> Type:
         return _ReflectorRun(self).reflect_type(obj)
@@ -413,7 +424,7 @@ class _ReflectorRun:
             return self._reflect_type_uncached(obj)
 
         try:
-            return self._reflector.type_cache[obj]
+            return self._reflector._type_cache[obj]
         except KeyError:
             pass
         except TypeError:
@@ -422,7 +433,7 @@ class _ReflectorRun:
         typ = self._reflect_type_uncached(obj)
 
         try:
-            self._reflector.type_cache[obj] = typ
+            self._reflector._type_cache[obj] = typ
         except TypeError:
             pass
         else:
@@ -1251,12 +1262,8 @@ class MirrorImpl(Mirror):
             return obj
 
         if not self._reflector.is_uncacheable_reflect_type(obj):
-            try:
-                return self._reflector.type_cache[obj]
-            except KeyError:
-                pass
-            except TypeError:
-                pass
+            if (cached := self._reflector.get_cached_reflected_type(obj)) is not None:
+                return cached
 
         with self._lock:
             return self._reflector.reflect_type(obj)
