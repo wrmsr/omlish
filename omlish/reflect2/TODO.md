@@ -19,3 +19,6 @@
     - but lose ability for 'hpyothetical' types?
 - should TypeTranslator recurse into TypeVarLike type fields? it doesn't...
 - !! uncached _ReflectorRun !! - (kinda) solves immortal ref problem
+  - parent universes probably
+- audit typekeys for algo explosion - the whole 'try to stringify' thing might amplify wasted work
+- delete tuple typekeys?
