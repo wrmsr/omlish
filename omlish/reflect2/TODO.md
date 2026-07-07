@@ -25,3 +25,4 @@
   - fix _prepared_infos (and probably _runtime_aliases) leak on failed _TypeReflector run
 - lazy knowns
   - how to square with caching / parent sharing??
+- `__match_args__` on Types?
