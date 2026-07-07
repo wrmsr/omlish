@@ -1,3 +1,0 @@
-- dataclass confer defaults without metaclass (default omit None repr)
-- make marshal use reflect2 lol
-- 
