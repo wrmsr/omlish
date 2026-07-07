@@ -8,7 +8,6 @@ from .types import Tag
 
 
 T = ta.TypeVar('T')
-T2 = ta.TypeVar('T2')
 
 
 ##
@@ -36,12 +35,12 @@ class TAG_NOT_SET(lang.Marker):  # noqa
 
 
 @ta.overload
-def as_key(o: Key[T2]) -> Key[T2]:
+def as_key(o: Key[T]) -> Key[T]:
     ...
 
 
 @ta.overload
-def as_key(o: type[T2], *, tag: ta.Any | type[TAG_NOT_SET] = type[TAG_NOT_SET]) -> Key[T2]:
+def as_key(o: type[T], *, tag: ta.Any | type[TAG_NOT_SET] = type[TAG_NOT_SET]) -> Key[T]:
     ...
 
 
