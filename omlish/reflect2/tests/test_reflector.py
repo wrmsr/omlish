@@ -17,6 +17,7 @@ from ..core.subtypes import is_alpha_equivalent
 from ..core.subtypes import is_equivalent
 from ..core.subtypes import is_same_type
 from ..core.subtypes import is_subtype
+from ..core.typekeys import TypeKeyPolicy
 from ..core.typekeys import tuple_type_key
 from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
@@ -760,7 +761,12 @@ def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> Non
     )
 
 
-def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() -> None:
+def make_any_tuple_tk(*, include_type_of_any: bool) -> ta.Any:
+    return ('any', *([types.TypeOfAny.FROM_OMITTED_GENERICS] if include_type_of_any else []))
+
+
+@pytest.mark.parametrize('include_type_of_any', [False, True])
+def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node(include_type_of_any) -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[t_var, 'Alias[T]'], type_params=(t_var,))  # type: ignore
     mirror = make_mirror(
@@ -771,7 +777,9 @@ def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() 
 
     assert isinstance(typ, types.TypeAliasType)
     assert typ.is_recursive
-    assert tuple_type_key(typ) == (
+    assert tuple_type_key(typ, TypeKeyPolicy(
+        include_type_of_any=include_type_of_any,
+    )) == (
         'recursive_type_alias',
         (('instance', 'builtins.int', (), ()),),
         (
@@ -784,12 +792,13 @@ def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() 
                     (('instance', 'builtins.int', (), ()),),
                 ),
             ),
-            ('instance', 'builtins.tuple', (('any', types.TypeOfAny.FROM_OMITTED_GENERICS),), ()),
+            ('instance', 'builtins.tuple', (make_any_tuple_tk(include_type_of_any=include_type_of_any),), ()),
         ),
     )
 
 
-def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg() -> None:
+@pytest.mark.parametrize('include_type_of_any', [False, True])
+def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg(include_type_of_any) -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var, 'Alias[*Ts]'], type_params=(ts_var,))  # type: ignore
     mirror = make_mirror(
@@ -812,9 +821,11 @@ def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg
             ('instance', 'builtins.int', (), ()),
             ('instance', 'builtins.str', (), ()),
         ),
-        ('instance', 'builtins.tuple', (('any', types.TypeOfAny.FROM_OMITTED_GENERICS),), ()),
+        ('instance', 'builtins.tuple', (make_any_tuple_tk(include_type_of_any=include_type_of_any),), ()),
     )
-    assert tuple_type_key(typ) == (
+    assert tuple_type_key(typ, TypeKeyPolicy(
+        include_type_of_any=include_type_of_any,
+    )) == (
         'recursive_type_alias',
         (packed_arg_key,),
         (
@@ -830,7 +841,7 @@ def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg
                     ),
                 ),
             ),
-            ('instance', 'builtins.tuple', (('any', types.TypeOfAny.FROM_OMITTED_GENERICS),), ()),
+            ('instance', 'builtins.tuple', (make_any_tuple_tk(include_type_of_any=include_type_of_any),), ()),
         ),
     )
 

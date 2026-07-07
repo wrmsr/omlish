@@ -4,7 +4,7 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect as rfl
+from .. import reflect2 as rfl
 from .bindings import Binding
 from .elements import Element
 from .elements import ElementGenerator
@@ -22,7 +22,8 @@ V = ta.TypeVar('V')
 
 
 def is_set_multi_key(mk: Key) -> bool:
-    return rfl.get_concrete_type(mk.ty) is collections.abc.Set
+    pty = check.isinstance(rfl.get_proper_type(mk.rty), rfl.Instance)
+    return pty.type.runtime_object is collections.abc.Set
 
 
 @dc.dataclass(frozen=True)
@@ -42,7 +43,8 @@ class SetProvider(Provider):
 
 
 def is_map_multi_key(mk: Key) -> bool:
-    return rfl.get_concrete_type(mk.ty) is collections.abc.Mapping
+    pty = check.isinstance(rfl.get_proper_type(mk.rty), rfl.Instance)
+    return pty.type.runtime_object is collections.abc.Mapping
 
 
 @dc.dataclass(frozen=True)
@@ -71,9 +73,10 @@ class SetBinder(ElementGenerator, ta.Generic[T]):
 
     @lang.cached_property
     def _multi_key(self) -> Key:
-        oty = rfl.typeof(rfl.get_orig_class(self))
-        ety = check.single(check.isinstance(oty, rfl.Generic).args)
-        return as_key(ta.AbstractSet[ety], tag=self._tag)  # type: ignore
+        oty = rfl.reflect_type(rfl.get_orig_class(self))
+        ety = check.single(check.isinstance(oty, rfl.Instance).args)
+        ea = rfl.to_runtime_annotation(ety)
+        return as_key(ta.AbstractSet[ea], tag=self._tag)  # type: ignore
 
     @lang.cached_property
     def _set_provider_binding(self) -> Element:
@@ -105,9 +108,10 @@ class MapBinder(ElementGenerator, ta.Generic[K, V]):
 
     @lang.cached_property
     def _multi_key(self) -> Key:
-        oty = rfl.typeof(rfl.get_orig_class(self))
-        kty, vty = check.isinstance(oty, rfl.Generic).args
-        return as_key(ta.Mapping[kty, vty], tag=self._tag)  # type: ignore
+        oty = rfl.reflect_type(rfl.get_orig_class(self))
+        kty, vty = check.isinstance(oty, rfl.Instance).args
+        ka, va = rfl.to_runtime_annotation(kty), rfl.to_runtime_annotation(vty)
+        return as_key(ta.Mapping[ka, va], tag=self._tag)  # type: ignore
 
     @lang.cached_property
     def _map_provider_binding(self) -> Element:

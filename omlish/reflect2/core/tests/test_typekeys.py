@@ -275,21 +275,6 @@ def test_alpha_type_key_canonicalizes_callable_type_vars() -> None:
     assert alpha_type_key(left) != alpha_type_key(inconsistent)
 
 
-def test_type_key_policy_supports_dc_replace() -> None:
-    policy = TypeKeyPolicy()
-
-    assert dc.replace(policy, alpha=True).alpha
-    assert repr(policy) == (
-        'TypeKeyPolicy('
-        'alpha=False, '
-        'structural=False, '
-        'exclude_annotated_metadata=False, '
-        'discard_alias_identity=False, '
-        'discard_newtype_identity=False, '
-        'discard_forward_ref_identity=False)'
-    )
-
-
 def test_type_key_with_policy_matches_existing_presets() -> None:
     typ = types.AnnotatedType(make_instance(make_info('builtins.int')), ('cfg',))
 

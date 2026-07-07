@@ -23,3 +23,5 @@
 - need some kind of 'transactional' _TypeReflector run
   - collections.ChainedMap
   - fix _prepared_infos (and probably _runtime_aliases) leak on failed _TypeReflector run
+- lazy knowns
+  - how to square with caching / parent sharing??

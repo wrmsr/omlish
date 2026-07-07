@@ -2374,28 +2374,27 @@ def _process_dataclass__f2793a7065e1cafc84c6ee922ea605627889fb75():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('ty', 'tag')), EqPlan(fields=('ty', 'tag')), FrozenPlan(fields=('ty', 'tag'), allo"
-        "w_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ty', 'tag'), cache=True), InitPlan(fields=(Init"
-        "Plan.Field(name='ty', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=N"
-        "one, check_type=None), InitPlan.Field(name='tag', annotation=OpRef(name='init.fields.1.annotation'), default=O"
-        "pRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=OpRef(name='init.fields.1.validate'), check_type=None)), self_param='self', std_pa"
-        "rams=('ty',), kw_only_params=('tag',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_"
-        "fns=()), ReprPlan(fields=(ReprPlan.Field(name='ty', kw_only=False, fn=None), ReprPlan.Field(name='tag', kw_onl"
-        "y=True, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=True, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('rty', 'tag')), FrozenPlan(fields=('rty', 'tag'), allow_dynamic_dunder_attrs=False"
+        "), InitPlan(fields=(InitPlan.Field(name='rty', annotation=OpRef(name='init.fields.0.annotation'), default=None"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=OpRef("
+        "name='init.fields.0.validate'), check_type=None), InitPlan.Field(name='tag', annotation=OpRef(name='init.field"
+        "s.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=OpRef(name='init.fields.1.validate'), check_type=None))"
+        ", self_param='self', std_params=('rty',), kw_only_params=('tag',), frozen=True, slots=False, post_init_params="
+        "(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='rty', kw_only=False, fn=None), ReprPl"
+        "an.Field(name='tag', kw_only=True, fn=OpRef(name='repr.fns.1.fn'))), id=False, terse=True, default_fn=None)))"
     ),
-    plan_repr_sha1='e780a7b78a8d3e5c6ddd87c0bc5ae50bda8d0db2',
+    plan_repr_sha1='f17c52a259b66c9f11a806f00836fd49793a69a9',
     cls_names=(
         ('omlish.inject.keys', 'Key'),
     ),
 )
-def _process_dataclass__e780a7b78a8d3e5c6ddd87c0bc5ae50bda8d0db2():
+def _process_dataclass__f17c52a259b66c9f11a806f00836fd49793a69a9():
     def _process_dataclass(
         *,
         __class__,
         __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__coerce,
+        __dataclass__init__fields__0__validate,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__1__validate,
@@ -2411,26 +2410,14 @@ def _process_dataclass__e780a7b78a8d3e5c6ddd87c0bc5ae50bda8d0db2():
             if self.__class__ is not __class__:
                 raise TypeError(self)
             return __class__(  # noqa
-                ty=self.ty,
+                rty=self.rty,
                 tag=self.tag,
             )
 
         __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
 
-        def __eq__(self, other):
-            if self is other:
-                return True
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-            return (
-                self.ty == other.ty and
-                self.tag == other.tag
-            )
-
-        __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
-
         __dataclass___frozen_fields = {
-            'ty',
+            'rty',
             'tag',
         }
 
@@ -2454,30 +2441,19 @@ def _process_dataclass__e780a7b78a8d3e5c6ddd87c0bc5ae50bda8d0db2():
 
         __dataclass__set_cls_attr(__class__, '__delattr__', __delattr__, 'raise', set_qualname=True)
 
-        def __hash__(self):
-            try:
-                return self.__dataclass_hash__
-            except AttributeError:
-                pass
-            object.__setattr__(
-                self,
-                '__dataclass_hash__',
-                h := hash((
-                    self.ty,
-                    self.tag,
-                ))
-            )
-            return h
-
-        __dataclass__set_cls_attr(__class__, '__hash__', __hash__, 'replace', set_qualname=True)
-
         def __init__(
             self,
-            ty: __dataclass__init__fields__0__annotation,
+            rty: __dataclass__init__fields__0__annotation,
             *,
             tag: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
-            ty = __dataclass__init__fields__0__coerce(ty)
+            if not __dataclass__init__fields__0__validate(rty): 
+                raise __dataclass__FieldFnValidationError(
+                    obj=self,
+                    fn=__dataclass__init__fields__0__validate,
+                    field='rty',
+                    value=rty,
+                )
             if not __dataclass__init__fields__1__validate(tag): 
                 raise __dataclass__FieldFnValidationError(
                     obj=self,
@@ -2485,15 +2461,16 @@ def _process_dataclass__e780a7b78a8d3e5c6ddd87c0bc5ae50bda8d0db2():
                     field='tag',
                     value=tag,
                 )
-            __dataclass__object_setattr(self, 'ty', ty)
+            __dataclass__object_setattr(self, 'rty', rty)
             __dataclass__object_setattr(self, 'tag', tag)
+            self.__post_init__()
 
         __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"{self.ty!r}")
+            parts.append(f"{self.rty!r}")
             if (s := __dataclass__repr__fns__1__fn(self.tag)) is not None:
                 parts.append(f"tag={s}")
             return (

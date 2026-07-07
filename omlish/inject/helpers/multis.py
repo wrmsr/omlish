@@ -4,7 +4,7 @@ from ... import cached
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..binder import bind
 from ..elements import Elements
 from ..elements import as_elements
@@ -75,13 +75,13 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
 
     @cached.property
     def _item_rty(self) -> rfl.Type:
-        rty = check.isinstance(rfl.typeof(rfl.get_orig_class(self)), rfl.Generic)
-        check.is_(rty.cls, self.__class__)
+        rty = check.isinstance(rfl.reflect_type(rfl.get_orig_class(self)), rfl.Instance)
+        check.is_(rty.type.runtime_object, self.__class__)
         return check.single(rty.args)
 
     @cached.property
     def _set_binder(self) -> SetBinder[ItemT]:
-        return SetBinder[self._item_rty]()  # type: ignore
+        return SetBinder[rfl.to_runtime_annotation(self._item_rty)]()  # type: ignore
 
     @dc.dataclass(frozen=True, eq=False)
     class _ItemsBox:
@@ -89,10 +89,11 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
 
     @cached.property
     def _items_box(self) -> type[_ItemsBox]:
-        if isinstance(item_rty := self._item_rty, type):
-            sfx = item_rty.__qualname__
+        item_ann = rfl.to_runtime_annotation(self._item_rty)
+        if isinstance(item_ann, type):
+            sfx = item_ann.__qualname__
         else:
-            sfx = str(item_rty).replace("'", '')
+            sfx = str(item_ann).replace("'", '')
 
         return lang.new_type(  # noqa
             f'{ItemsBinderHelper._ItemsBox.__qualname__}${sfx}@{id(self):x}',
@@ -102,7 +103,7 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
 
     @cached.property
     def _set_key(self) -> Key:
-        return as_key(ta.AbstractSet[self._item_rty])  # type: ignore
+        return as_key(ta.AbstractSet[rfl.to_runtime_annotation(self._item_rty)])  # type: ignore
 
     def bind_item_consts(self, *items: ItemT) -> Elements:
         return as_elements(

@@ -69,6 +69,8 @@ class TypeKeyPolicy:
     discard_newtype_identity: bool = False
     discard_forward_ref_identity: bool = False
 
+    include_type_of_any: bool = False
+
 
 TYPE_KEY: ta.Final = TypeKeyPolicy()
 
@@ -211,7 +213,7 @@ class _TypeKeyWriter:
     def unpack_key(self, item_key: object) -> object:
         raise NotImplementedError
 
-    def any_key(self, type_of_any: TypeOfAny) -> object:
+    def any_key(self, type_of_any: TypeOfAny | None) -> object:
         raise NotImplementedError
 
     def uninhabited_key(self) -> object:
@@ -493,8 +495,11 @@ class _StringTypeKeyWriter(_TypeKeyWriter):
     def unpack_key(self, item_key: object) -> _TypeKeyFragment:
         return self._node('Unpack', item_key)
 
-    def any_key(self, type_of_any: TypeOfAny) -> _TypeKeyFragment:
-        return _TypeKeyFragment('Any' if type_of_any is TypeOfAny.EXPLICIT else f'Any[{type_of_any}]')
+    def any_key(self, type_of_any: TypeOfAny | None) -> _TypeKeyFragment:
+        if type_of_any is TypeOfAny.EXPLICIT or type_of_any is None:
+            return _TypeKeyFragment('Any')
+        else:
+            return _TypeKeyFragment(f'Any[{type_of_any}]')
 
     def uninhabited_key(self) -> _TypeKeyFragment:
         return _TypeKeyFragment('Never')
@@ -769,8 +774,8 @@ class _TupleTypeKeyWriter(_TypeKeyWriter):
     def unpack_key(self, item_key: object) -> TupleTypeKey:
         return ('unpack', item_key)
 
-    def any_key(self, type_of_any: TypeOfAny) -> TupleTypeKey:
-        return ('any', type_of_any)
+    def any_key(self, type_of_any: TypeOfAny | None) -> TupleTypeKey:
+        return ('any', type_of_any) if type_of_any is not None else ('any',)
 
     def uninhabited_key(self) -> TupleTypeKey:
         return ('uninhabited',)
@@ -1098,7 +1103,7 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
         return self.writer.unpack_key(item_key)
 
     def visit_any(self, typ: AnyType) -> object | None:
-        return self.writer.any_key(typ._type_of_any)
+        return self.writer.any_key(typ._type_of_any if self.policy.include_type_of_any else None)
 
     def visit_uninhabited_type(self, typ: UninhabitedType) -> object | None:
         return self.writer.uninhabited_key()

@@ -6,7 +6,7 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect as rfl
+from .. import reflect2 as rfl
 from .bindings import Binding
 from .eagers import Eager
 from .elements import Element
@@ -112,16 +112,16 @@ def bind(
         if not has_to:
             to_ctor = obj
         key = as_key(obj)
-    elif isinstance(obj, rfl.TYPES) or rfl.is_type(obj):
+    elif not isinstance(obj, str) and rfl.can_reflect_type(obj):
         key = as_key(obj)
     elif _is_fn(obj) and not has_to:
         sig = _inspect.signature(obj)
-        ty = rfl.typeof(sig.return_annotation)
+        rty = rfl.reflect_type(sig.return_annotation)
         if inspect.iscoroutinefunction(obj):
             to_async_fn = obj
         else:
             to_fn = obj
-        key = as_key(ty)
+        key = as_key(rty)
     else:
         if to_const is not None:
             raise TypeError('Cannot bind instance with to_const')

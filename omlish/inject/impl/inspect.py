@@ -4,7 +4,7 @@ import typing as ta
 import weakref
 
 from ... import check
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..errors import ConflictingKeyError
 from ..inspect import Kwarg
 from ..inspect import Kwargs
@@ -107,19 +107,21 @@ def build_kwargs_target(
         ann = p.annotation
         if (
                 not raw_optional and
-                isinstance(rf := rfl.typeof(ann), rfl.Union) and
-                rf.is_optional
+                isinstance(rf := rfl.reflect_type(ann), rfl.UnionType) and
+                rfl.is_optional(rf)
         ):
-            ann = rf.without_none()
+            ann = rfl.strip_optional(rf)
 
-        rty = rfl.typeof(ann)
+        rty = rfl.reflect_type(ann)
 
         tag = None
-        if isinstance(rty, rfl.Annotated):
-            if (tag_obj := check.opt_single(e for e in rty.md if isinstance(e, Tag))) is not None:
+        if isinstance(rty, rfl.AnnotatedType):
+            if (tag_obj := check.opt_single(e for e in rty.metadata if isinstance(e, Tag))) is not None:
                 tag = tag_obj.tag
+            # FIXME: used to strip deep annotations
+            rty = rty.item
 
-        k: Key = as_key(rfl.strip_rfl_annotations(rty), tag=tag)
+        k: Key = as_key(rty, tag=tag)
         if tags is not None and (pt := tags.get(p.name)) is not None:
             k = dc.replace(k, tag=pt)
 

@@ -7,8 +7,9 @@ import abc
 import functools
 import typing as ta
 
+from ... import check
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..binder import bind
 from ..elements import Elements
 from ..elements import as_elements
@@ -51,14 +52,15 @@ def _bind_late(
     outer_key: Key
     outer_fac: ta.Callable[[ta.Any], ta.Any]
     if outer is None:
-        inner_ann = rfl.to_annotation(inner_key.ty)
+        inner_ann = rfl.to_runtime_annotation(inner_key.rty)
         outer_ann = late_cls[inner_ann]
-        outer_key = Key(rfl.typeof(outer_ann), tag=inner_key.tag)
+        outer_key = Key(rfl.reflect_type(outer_ann), tag=inner_key.tag)
         outer_fac = lang.identity
     else:
         outer_key = as_key(outer)
-        outer_cls = rfl.get_concrete_type(outer_key.ty)
-        outer_fac = outer_cls  # type: ignore[assignment]
+        outer_pty = check.isinstance(rfl.get_proper_type(outer_key.rty), rfl.Instance).type.runtime_object
+        outer_cls = check.isinstance(outer_pty, type)
+        outer_fac = outer_cls
 
     return as_elements(
         bind(outer_key, to_fn=KwargsTarget.of(  # noqa

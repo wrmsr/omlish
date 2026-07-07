@@ -6,7 +6,7 @@ import dataclasses as dc
 import typing as ta
 
 from .. import check
-from .. import reflect as rfl
+from .. import reflect2 as rfl
 from ..lite import inject as lij
 from .bindings import Binding
 from .elements import Elements
@@ -60,7 +60,7 @@ def convert_from_lite(o):
     elif isinstance(o, lij.InjectorKey):
         check.not_equal(o.cls_, lij.InjectorKeyCls)
         check.arg(not o.array)
-        return as_key(rfl.typeof(o.cls_), tag=o.tag)
+        return as_key(rfl.reflect_type(o.cls_), tag=o.tag)
 
     elif isinstance(o, lij.InjectorBinding):
         blp = convert_from_lite(o.provider)
