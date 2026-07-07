@@ -143,7 +143,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/http/headers.py', sha1='aa2182505c9b09e2b658df8f8b3d927bc5fae13b'),
-            dict(path='../../omlish/http/parsing.py', sha1='4477d00145b207dd0397ecfbc8fef5ae8c641bb3'),
+            dict(path='../../omlish/http/parsing.py', sha1='f17fface99badc291b77c2b4e1aba93f9ae3fa28'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
             dict(path='../../omlish/http/urlrouting/types.py', sha1='197017272bd5353b59b71b66dc80e6b0707a14ed'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e54c78728659a0c15fec4b5647e5c8c349109e55'),
@@ -5859,6 +5859,7 @@ class SemanticHeaderHttpParseErrorCode(enum.Enum):
     INVALID_AUTHORIZATION = enum.auto()
     TE_WITHOUT_CHUNKED_LAST = enum.auto()
     TE_IN_HTTP10 = enum.auto()
+    INVALID_TE = enum.auto()
 
 
 class EncodingHttpParseErrorCode(enum.Enum):
@@ -6985,7 +6986,10 @@ class _HttpParseContext:
             for part in v.split(','):
                 stripped = part.strip()
 
-                if not stripped.isdigit():
+                # NOTE: must be ASCII digits only. str.isdigit() is True for non-ASCII numerics present in the
+                # latin-1-decoded value (e.g. superscripts U+00B2/B3/B9), but int() rejects those with a ValueError -
+                # which would escape as an uncaught exception rather than a clean parse error.
+                if not (stripped.isascii() and stripped.isdigit()):
                     raise SemanticHeaderHttpParseError(
                         code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
                         message=f'Content-Length value is not a valid non-negative integer: {stripped!r}',
@@ -7345,16 +7349,28 @@ class _HttpParseContext:
         if q_str is not None:
             q = float(q_str)  # caller wraps ValueError
 
+            # float() also accepts 'nan'/'inf'/overflowing exponents; reject those and any out-of-range value. The
+            # chained comparison is False for NaN and +/-inf, so this single check covers non-finite and range at once.
+            # (RFC 9110 qvalue is 0 <= q <= 1.)
+            if not (0.0 <= q <= 1.0):
+                raise ValueError(f'q-value out of range [0, 1]: {q_str!r}')
+
         return token, q, params
 
     def _prepare_te(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
         if 'te' not in headers:
             return
 
-        codings = [
-            self._split_header_element(p)[0]
-            for p in self._parse_comma_list(headers['te'])
-        ]
+        try:
+            codings = [
+                self._split_header_element(p)[0]
+                for p in self._parse_comma_list(headers['te'])
+            ]
+        except ValueError:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_TE,
+                message=f'Invalid q-value in TE header: {headers["te"]!r}',
+            ) from None
 
         prepared.te = [c for c in codings if c]
 

@@ -1,7 +1,6 @@
 # ruff: noqa: SLF001
 import annotationlib
 import collections.abc as cabc
-import contextlib
 import enum
 import sys
 import threading
@@ -127,6 +126,24 @@ def _contains_any_type_alias(
         seen: set[TypeAlias],
 ) -> bool:
     return typ.accept(_ContainsAnyTypeAlias(aliases, seen))
+
+
+def _get_runtime_bases(origin: type) -> tuple[object, ...]:
+    orig_bases = getattr(origin, '__orig_bases__', None)
+    if orig_bases is not None:
+        return tuple(
+            base
+            for base in orig_bases
+            if base is not ta.NamedTuple
+            and ta.get_origin(base) not in (ta.Generic, ta.Protocol)
+        )
+
+    bases = getattr(origin, '__bases__', ())
+    return tuple(
+        base
+        for base in bases
+        if base is not object
+    )
 
 
 ##
@@ -562,17 +579,19 @@ class _ReflectorRun:
 
         raise UnreflectableTypeError(f'Unsupported runtime type object: {obj!r}')
 
-    @contextlib.contextmanager
-    def _pushed_forward_ref_owner(self, owner: object) -> ta.Iterator[None]:
-        if owner is None:
-            yield
-            return
+    class _PushedForwardRefOwner:
+        def __init__(self, run: _ReflectorRun, owner: object) -> None:
+            self._run, self._owner = run, owner
 
-        self._forward_ref_owner_stack.append(owner)
-        try:
-            yield
-        finally:
-            self._forward_ref_owner_stack.pop()
+        def __enter__(self) -> None:
+            if self._owner is not None:
+                self._run._forward_ref_owner_stack.append(self._owner)
+
+        def __exit__(self, et, e, tb):
+            self._run._forward_ref_owner_stack.pop()
+
+    def _pushed_forward_ref_owner(self, owner: object) -> ta.ContextManager[None]:
+        return self._PushedForwardRefOwner(self, owner)
 
     def _forward_ref_module_owner(self, obj: object) -> object | None:
         module_name = getattr(obj, '__module__', None)
@@ -975,7 +994,7 @@ class _ReflectorRun:
             if info._bases:
                 return
 
-            runtime_bases = self._get_runtime_bases(origin)
+            runtime_bases = _get_runtime_bases(origin)
             info._bases = tuple(
                 self._reflect_runtime_base(base)
                 for base in runtime_bases
@@ -998,23 +1017,6 @@ class _ReflectorRun:
         if not isinstance(param_spec, ParamSpecType):
             raise UnreflectableTypeError(f'Unsupported ParamSpec parameter: {obj!r}')
         return param_spec
-
-    def _get_runtime_bases(self, origin: type) -> tuple[object, ...]:
-        orig_bases = getattr(origin, '__orig_bases__', None)
-        if orig_bases is not None:
-            return tuple(
-                base
-                for base in orig_bases
-                if base is not ta.NamedTuple
-                and ta.get_origin(base) not in (ta.Generic, ta.Protocol)
-            )
-
-        bases = getattr(origin, '__bases__', ())
-        return tuple(
-            base
-            for base in bases
-            if base is not object
-        )
 
     def _reflect_runtime_base(self, obj: object) -> Instance:
         base = self.reflect_type(obj)

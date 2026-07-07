@@ -94,7 +94,8 @@ class _ForkHookManager:
 
             cls._rebuild_hook_collections()
 
-    #
+    ##
+    # Note there is no uninstall path at all - just as there is no uninstall path for `os.register_at_fork` itself.
 
     _installed: ta.ClassVar[bool] = False
 
@@ -102,8 +103,6 @@ class _ForkHookManager:
     def _install(cls) -> bool:
         if cls._installed:
             return False
-
-        check.state(not cls._installed)
 
         os.register_at_fork(
             before=cls._before_fork,
@@ -119,7 +118,8 @@ class _ForkHookManager:
         with cls._lock:
             return cls._install()
 
-    #
+    ##
+    # Note that there is *no* exception handling when calling user hooks.
 
     @classmethod
     def _before_fork(cls) -> None:
@@ -234,7 +234,7 @@ class ProcessOriginTracker:
         return {
             **self.__dict__,
             **dict(
-                _cookie=None,
+                _process_cookie=None,
                 _fork_depth=None,
             ),
         }

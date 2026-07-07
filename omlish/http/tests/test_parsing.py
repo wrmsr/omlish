@@ -2290,5 +2290,92 @@ class TestRawHeaders(unittest.TestCase):
         self.assertEqual(len(result.raw_headers), 3)
 
 
+class TestParsingNumeric(unittest.TestCase):
+    def parse_req(self, raw: bytes, cfg: hp.HttpParser.Config = hp.HttpParser.Config()):
+        return hp.HttpParser(cfg).parse_message(raw, hp.HttpParser.Mode.REQUEST)
+
+    # U+00B2/B3/B9 are the superscripts that live in the latin-1 range: isdigit() True, int() raises.
+    def test_content_length_non_ascii_digit_is_clean_error(self):
+        for cl in [b'\xb2', b'\xb3', b'\xb9', b'5\xb3']:
+            raw = b'GET / HTTP/1.1\r\nHost: x\r\nContent-Length: ' + cl + b'\r\n\r\n'
+            with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+                self.parse_req(raw)
+            assert cm.exception.code == hp.SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH
+
+    def test_content_length_plain_ascii_still_parses(self):
+        msg = self.parse_req(b'POST / HTTP/1.1\r\nHost: x\r\nContent-Length: 42\r\n\r\n')
+        assert msg.prepared.content_length == 42
+
+    def test_content_length_other_junk_still_rejected_cleanly(self):
+        for bad in [b'abc', b'0x10', b'+5', b'1_0', b'-3']:
+            raw = b'GET / HTTP/1.1\r\nHost: x\r\nContent-Length: ' + bad + b'\r\n\r\n'
+            with self.assertRaises(hp.SemanticHeaderHttpParseError):
+                self.parse_req(raw)
+
+    def test_te_bad_qvalue_is_clean_error(self):
+        for te in [b'gzip;q=abc', b'trailers;q=', b'deflate;q=nope']:
+            raw = b'GET / HTTP/1.1\r\nHost: x\r\nTE: ' + te + b'\r\n\r\n'
+            with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+                self.parse_req(raw)
+            assert cm.exception.code == hp.SemanticHeaderHttpParseErrorCode.INVALID_TE
+
+    def test_te_valid_qvalue_still_parses(self):
+        msg = self.parse_req(b'GET / HTTP/1.1\r\nHost: x\r\nTE: trailers, gzip;q=0.5\r\n\r\n')
+        assert 'trailers' in msg.prepared.te
+
+    def test_status_code_superscript_is_clean_error_not_crash(self):
+        # bytes.isdigit() is ASCII-only, so this was already safe; assert it stays a clean error.
+        raw = b'HTTP/1.1 20\xb3 OK\r\n\r\n'
+        # A clean parse error (StartLineHttpParseError), NOT an uncaught ValueError.
+        with self.assertRaises(hp.HttpParseError):
+            hp.HttpParser().parse_message(raw, hp.HttpParser.Mode.RESPONSE)
+
+
+class TestParsingQValue(unittest.TestCase):
+    def parse_req(self, raw: bytes, cfg: hp.HttpParser.Config = hp.HttpParser.Config()):
+        return hp.HttpParser(cfg).parse_message(raw, hp.HttpParser.Mode.REQUEST)
+
+    # float() accepts 'nan'/'inf'/overflowing exponents and any magnitude; a qvalue must be a finite number in
+    # [0, 1] (RFC 9110). The chained comparison 0.0 <= q <= 1.0 is False for NaN and +/-inf, so one check covers
+    # both non-finite and out-of-range. Each of these should surface as a clean, header-specific parse error.
+
+    def test_te_bad_qvalue_range_is_clean_error(self):
+        for q in [b'nan', b'inf', b'1e999', b'2', b'-0.5']:
+            raw = b'GET / HTTP/1.1\r\nHost: x\r\nTE: gzip;q=' + q + b'\r\n\r\n'
+            with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+                self.parse_req(raw)
+            assert cm.exception.code == hp.SemanticHeaderHttpParseErrorCode.INVALID_TE
+
+    def test_accept_bad_qvalue_range_is_clean_error(self):
+        for q in [b'nan', b'inf', b'1e999', b'2', b'-0.5']:
+            raw = b'GET / HTTP/1.1\r\nHost: x\r\nAccept: text/html;q=' + q + b'\r\n\r\n'
+            with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+                self.parse_req(raw)
+            assert cm.exception.code == hp.SemanticHeaderHttpParseErrorCode.INVALID_ACCEPT
+
+    def test_accept_encoding_bad_qvalue_range_is_clean_error(self):
+        for q in [b'nan', b'inf', b'1e999', b'2', b'-0.5']:
+            raw = b'GET / HTTP/1.1\r\nHost: x\r\nAccept-Encoding: gzip;q=' + q + b'\r\n\r\n'
+            with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+                self.parse_req(raw)
+            assert cm.exception.code == hp.SemanticHeaderHttpParseErrorCode.INVALID_ACCEPT_ENCODING
+
+    def test_boundary_qvalues_still_parse(self):
+        # 0 and 1 (and 1.000 / 0.000) are the valid extremes and must be preserved, not rejected.
+        msg = self.parse_req(
+            b'GET / HTTP/1.1\r\nHost: x\r\n'
+            b'Accept: a/b;q=1.0, c/d;q=0, e/f;q=0.000, g/h;q=1.000\r\n\r\n',
+        )
+        assert [round(i.q, 3) for i in msg.prepared.accept] == [1.0, 0.0, 0.0, 1.0]
+
+    def test_absent_qvalue_defaults_to_one(self):
+        msg = self.parse_req(b'GET / HTTP/1.1\r\nHost: x\r\nAccept: text/html\r\n\r\n')
+        assert msg.prepared.accept[0].q == 1.0
+
+    def test_te_valid_qvalue_still_parses(self):
+        msg = self.parse_req(b'GET / HTTP/1.1\r\nHost: x\r\nTE: trailers, gzip;q=0.5\r\n\r\n')
+        assert 'trailers' in msg.prepared.te
+
+
 if __name__ == '__main__':
     unittest.main()

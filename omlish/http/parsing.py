@@ -65,6 +65,7 @@ class SemanticHeaderHttpParseErrorCode(enum.Enum):
     INVALID_AUTHORIZATION = enum.auto()
     TE_WITHOUT_CHUNKED_LAST = enum.auto()
     TE_IN_HTTP10 = enum.auto()
+    INVALID_TE = enum.auto()
 
 
 class EncodingHttpParseErrorCode(enum.Enum):
@@ -1191,7 +1192,10 @@ class _HttpParseContext:
             for part in v.split(','):
                 stripped = part.strip()
 
-                if not stripped.isdigit():
+                # NOTE: must be ASCII digits only. str.isdigit() is True for non-ASCII numerics present in the
+                # latin-1-decoded value (e.g. superscripts U+00B2/B3/B9), but int() rejects those with a ValueError -
+                # which would escape as an uncaught exception rather than a clean parse error.
+                if not (stripped.isascii() and stripped.isdigit()):
                     raise SemanticHeaderHttpParseError(
                         code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
                         message=f'Content-Length value is not a valid non-negative integer: {stripped!r}',
@@ -1551,16 +1555,28 @@ class _HttpParseContext:
         if q_str is not None:
             q = float(q_str)  # caller wraps ValueError
 
+            # float() also accepts 'nan'/'inf'/overflowing exponents; reject those and any out-of-range value. The
+            # chained comparison is False for NaN and +/-inf, so this single check covers non-finite and range at once.
+            # (RFC 9110 qvalue is 0 <= q <= 1.)
+            if not (0.0 <= q <= 1.0):
+                raise ValueError(f'q-value out of range [0, 1]: {q_str!r}')
+
         return token, q, params
 
     def _prepare_te(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
         if 'te' not in headers:
             return
 
-        codings = [
-            self._split_header_element(p)[0]
-            for p in self._parse_comma_list(headers['te'])
-        ]
+        try:
+            codings = [
+                self._split_header_element(p)[0]
+                for p in self._parse_comma_list(headers['te'])
+            ]
+        except ValueError:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_TE,
+                message=f'Invalid q-value in TE header: {headers["te"]!r}',
+            ) from None
 
         prepared.te = [c for c in codings if c]
 
