@@ -29,6 +29,172 @@ from .ops import StringLiteral
 ##
 
 
+##
+# A convertible subtree contains no RuleRefs (they return None in _regex_item_transform_op), so this analysis is
+# entirely local -- no grammar-wide FIRST/FOLLOW fixpoints needed.
+
+# Soundness argument: if the language matched by `op` from a fixed start position is prefix-free (no match is a proper
+# prefix of another), there is at most one valid match end per start. re.Pattern.match() finds a match iff one exists,
+# so its single greedy match IS the complete match set, and conversion preserves (start, end) semantics in every
+# context. `_is_prefix_free` returning False means "can't prove", not "unsafe".
+
+
+# Inclusive (lo, hi) char ranges. Small sets, so the quadratic intersect is fine.
+_CharIntervals: ta.TypeAlias = frozenset[tuple[str, str]]
+
+
+def _ci_chars(c: str) -> _CharIntervals:
+    return frozenset((x, x) for x in {c, c.lower(), c.upper(), c.casefold()} if len(x) == 1)
+
+
+def _intervals_intersect(a: _CharIntervals, b: _CharIntervals) -> bool:
+    return any(al <= bh and bl <= ah for (al, ah) in a for (bl, bh) in b)
+
+
+def _len_bounds(op: Op) -> tuple[int, int | None]:
+    """(min, max) possible match lengths; max=None means unbounded or unknown."""
+
+    if isinstance(op, (StringLiteral, CaseInsensitiveStringLiteral)):
+        return (n := len(op.value), n)
+
+    elif isinstance(op, RangeLiteral):
+        return (1, 1)
+
+    elif isinstance(op, Concat):
+        mns, mxs = zip(*[_len_bounds(c) for c in op.children])
+        return (sum(mns), None if any(m is None for m in mxs) else sum(mxs))
+
+    elif isinstance(op, Repeat):
+        cmn, cmx = _len_bounds(op.child)
+        t = op.times
+        return (
+            t.min * cmn,
+            t.max * cmx if (t.max is not None and cmx is not None) else None,
+        )
+
+    elif isinstance(op, Either):
+        mns, mxs = zip(*[_len_bounds(c) for c in op.children])
+        return (min(mns), None if any(m is None for m in mxs) else max(mxs))
+
+    else:  # RuleRef, Regex: not analyzable
+        return (0, None)
+
+
+def _char_set(op: Op) -> _CharIntervals | None:
+    """Over-approximation of all chars appearing in any match; None = unknown."""
+
+    if isinstance(op, StringLiteral):
+        return frozenset((c, c) for c in op.value)
+
+    elif isinstance(op, CaseInsensitiveStringLiteral):
+        return frozenset().union(*(_ci_chars(c) for c in op.value))
+
+    elif isinstance(op, RangeLiteral):
+        return frozenset(((op.value.lo, op.value.hi),))
+
+    elif isinstance(op, (Concat, Either)):
+        cs = [_char_set(c) for c in op.children]
+        return None if any(c is None for c in cs) else frozenset().union(*cs)  # type: ignore[arg-type]
+
+    elif isinstance(op, Repeat):
+        return _char_set(op.child)
+
+    else:
+        return None
+
+
+def _first_chars(op: Op) -> _CharIntervals | None:
+    """Over-approximation of chars that can begin a non-empty match; None = unknown."""
+
+    if isinstance(op, StringLiteral):
+        return frozenset(((op.value[0], op.value[0]),))
+
+    elif isinstance(op, CaseInsensitiveStringLiteral):
+        return _ci_chars(op.value[0])
+
+    elif isinstance(op, RangeLiteral):
+        return frozenset(((op.value.lo, op.value.hi),))
+
+    elif isinstance(op, Concat):
+        out: _CharIntervals = frozenset()
+        for c in op.children:
+            if (f := _first_chars(c)) is None:
+                return None
+            out |= f
+            if _len_bounds(c)[0] > 0:  # not nullable: later children can't start it
+                return out
+        return out
+
+    elif isinstance(op, Either):
+        cs = [_first_chars(c) for c in op.children]
+        return None if any(c is None for c in cs) else frozenset().union(*cs)  # type: ignore[arg-type]
+
+    elif isinstance(op, Repeat):
+        return _first_chars(op.child)
+
+    else:
+        return None
+
+
+def _is_prefix_free(op: Op) -> bool:
+    """True if no match of `op` from a fixed start is a proper prefix of another."""
+
+    mn, mx = _len_bounds(op)
+    if mx is not None and mn == mx:
+        return True  # fixed length: no proper-prefix relations possible
+
+    if isinstance(op, Concat):
+        cs = list(op.children)
+
+        # Peel fixed-length leading children: they can't shift the boundary.
+        while len(cs) > 1 and (b := _len_bounds(cs[0]))[1] is not None and b[0] == b[1]:
+            cs.pop(0)
+        if len(cs) == 1:
+            return _is_prefix_free(cs[0])
+
+        head, rest = cs[0], (cs[1] if len(cs) == 2 else Concat(*cs[1:]))
+
+        # Repeat(X) then rest, with FIRST(rest) disjoint from chars(X): the boundary is forced by the input, so no match
+        # can prefix another. (Proof sketch: if u1·r1 is a proper prefix of u2·r2 with u_i in X*, the char at the
+        # shorter boundary lies in FIRST(rest) in one string and in chars(X) in the other -- contradiction; equal
+        # boundaries reduce to rest's prefix-freeness.)
+        if (
+                isinstance(head, Repeat) and
+                (hcs := _char_set(head.child)) is not None and
+                (rfc := _first_chars(rest)) is not None and
+                not _intervals_intersect(hcs, rfc) and
+                _len_bounds(rest)[0] > 0 and  # rest must not be nullable
+                _is_prefix_free(rest)
+        ):
+            return True
+
+        return False
+
+    if isinstance(op, Either):
+        # Sound if no branch is nullable, each branch is prefix-free, and branches can't prefix each other
+        # (pairwise-disjoint first chars).
+        fcs = []
+        for c in op.children:
+            if _len_bounds(c)[0] == 0 or not _is_prefix_free(c):
+                return False
+            if (f := _first_chars(c)) is None:
+                return False
+            fcs.append(f)
+        return not any(
+            _intervals_intersect(fcs[i], fcs[j])
+            for i in range(len(fcs))
+            for j in range(i + 1, len(fcs))
+        )
+
+    if isinstance(op, Repeat):
+        return False  # variable-count repeats are extendable by construction
+
+    return False
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class _RegexItem(lang.Abstract):
     @property
@@ -176,6 +342,8 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
 
 
 def _regex_transform_op(op: Op) -> Op:
+    if not _is_prefix_free(op):
+        return op
     v = _regex_item_transform_op(op)
 
     if v is None:

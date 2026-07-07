@@ -163,7 +163,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/simple/types.py', sha1='8e31b8c442603b396523884ff554d3df6e7f4c1a'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
-            dict(path='../../omlish/io/pipelines/flow/types.py', sha1='bb7f198fa1c466c76bb0867121bd16c2e77437a9'),
+            dict(path='../../omlish/io/pipelines/flow/types.py', sha1='4353968e5bd490f4121eadf9e391076bd2673f28'),
             dict(path='../../omlish/io/pipelines/sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
             dict(path='../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
@@ -13544,10 +13544,6 @@ class IoPipelineFlowMessages(NamespaceClass):
 
     ##
     # TODO / WIP:
-
-    # Additions to omlish/io/pipelines/flow/types.py - replaces the commented-out TODO block inside
-    # IoPipelineFlowMessages. Semantics (~ Netty `fireChannelWritabilityChanged`):
-    #
     #  - Level-triggered writability, edge-notified: emitters send one message per *transition*, never repeats.
     #    ReadyForOutput means 'output may flow'; PauseOutput means 'stop producing output'.
     #  - They flow INBOUND (transport -> app), originated by the transport head (or a dedicated watermark handler

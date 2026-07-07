@@ -94,10 +94,25 @@ class _ParserImpl(_Parser):
         op: CaseInsensitiveStringLiteral
         op, start, _ = ctx  # type: ignore[assignment]
 
-        if start < len(self._source):  # noqa
-            source = self._source[start : start + len(op._value)].casefold()  # noqa
-            if source == op._value:  # noqa
-                yield Match(op, start, start + len(source), ())
+        # if start < len(self._source):  # noqa
+        #     source = self._source[start : start + len(op._value)].casefold()  # noqa
+        #     if source == op._value:  # noqa
+        #         yield Match(op, start, start + len(source), ())
+
+        # op._value is stored casefolded. casefold() can change length ('\xdf' -> 'ss'), so fold the source char by char
+        # and take end from the number of raw source chars consumed, not from len(op._value). (str.casefold is
+        # per-character, so this agrees with slicing-then-folding when lengths happen to be stable.)
+        value = op._value  # noqa
+        source = self._source
+        end = start
+        folded = ''
+        while len(folded) < len(value):
+            if end >= len(source):
+                return
+            folded += source[end].casefold()
+            end += 1
+        if folded == value:
+            yield Match(op, start, end, ())
 
     def _iter_parse_range_literal(self, ctx: _ParserContext) -> ta.Iterator[Match]:
         op: RangeLiteral
@@ -144,7 +159,7 @@ class _ParserImpl(_Parser):
 
         # Map from (repetition_count, end_position) to longest match tuple
         matches_by_count_pos: dict[tuple[int, int], tuple[Match, ...]] = {(0, start): ()}
-        max_end_by_count: dict[int, int] = {0: start}
+        seen_ends: set[int] = {start}
 
         i = 0
         while True:
@@ -156,7 +171,6 @@ class _ParserImpl(_Parser):
             self._cur_step += 1
 
             next_matches: dict[tuple[int, int], tuple[Match, ...]] = {}
-            next_max_end = max_end_by_count.get(i, -1)
 
             for (count, end_pos), mt in matches_by_count_pos.items():
                 if count != i:
@@ -166,22 +180,24 @@ class _ParserImpl(_Parser):
                     next_mt = (*mt, cm)
                     next_key = (i + 1, cm.end)
 
-                    # Keep only the longest match tuple for each (count, position)
-                    if next_key not in next_matches or len(next_mt) > len(next_matches[next_key]):
+                    # Keep only one match tuple for each (count, position)
+                    if next_key not in next_matches:
                         next_matches[next_key] = next_mt
-                        if cm.end > next_max_end:
-                            next_max_end = cm.end
 
             if not next_matches:
                 break
 
-            # Check if we made progress (reached new positions)
-            if next_max_end <= max_end_by_count.get(i, -1):
-                break
-
             i += 1
             matches_by_count_pos.update(next_matches)
-            max_end_by_count[i] = next_max_end
+
+            # Termination: successor ends depend only on position, and every recorded end is expanded on the iteration
+            # it first appears -- so once an iteration adds no new end position, no later iteration can either. Keep
+            # iterating past that point only while still short of times.min (repetitions that re-hit old positions,
+            # incl. empty matches from nullable children, still count toward the minimum).
+            new_ends = {e for (_, e) in next_matches} - seen_ends
+            seen_ends |= new_ends
+            if not new_ends and i >= op._times.min:  # noqa
+                break
 
         if i < op._times.min:  # noqa
             return

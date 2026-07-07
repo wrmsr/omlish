@@ -13,3 +13,4 @@ TODO:
 - peg / lalr engines?
 - must always keep true abnf mode
 - optionally separate lexing step
+- char classes / terminals (while still in abnf syntax)

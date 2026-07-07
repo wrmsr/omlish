@@ -50,10 +50,6 @@ class IoPipelineFlowMessages(NamespaceClass):
 
     ##
     # TODO / WIP:
-
-    # Additions to omlish/io/pipelines/flow/types.py - replaces the commented-out TODO block inside
-    # IoPipelineFlowMessages. Semantics (~ Netty `fireChannelWritabilityChanged`):
-    #
     #  - Level-triggered writability, edge-notified: emitters send one message per *transition*, never repeats.
     #    ReadyForOutput means 'output may flow'; PauseOutput means 'stop producing output'.
     #  - They flow INBOUND (transport -> app), originated by the transport head (or a dedicated watermark handler

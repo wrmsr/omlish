@@ -1,8 +1,10 @@
-# from .. import internal
-# from .. import ops
-# from .. import opto
-#
-#
+from .. import meta
+from .. import ops
+from .. import opto
+from ..grammars import Grammar
+from ..grammars import Rule
+
+
 # def test_optimize_literal():
 #     """Test that a simple literal is converted to Regex."""
 #
@@ -204,3 +206,53 @@
 #     assert match2 is not None
 #     assert match1.start == match2.start
 #     assert match1.end == match2.end
+
+
+##
+# Bug: greedy regex conversion breaks backtracking
+#   optimize_grammar converts Repeat-over-regexable subtrees (e.g. 1*%x30-39) into a single greedy re.Pattern.
+#   _iter_parse_regex yields exactly one match, so the shorter alternatives the interpreted Repeat would yield are gone
+#   and cross-rule backtracking fails. parse_grammar applies this by default.
+
+
+def test_optimize_preserves_repeat_backtracking() -> None:
+    # N = 1*%x30-39 ; root = N %x30-39
+    g = Grammar(
+        Rule('N', ops.repeat(1, ops.literal('0', '9'))),
+        Rule('root', ops.concat(ops.rule('N'), ops.literal('0', '9'))),
+        root='root',
+    )
+
+    assert g.parse('12') is not None  # interpreted: N='1', then '2'
+
+    og = opto.optimize_grammar(g)
+    # N is now Regex('[0-9]+'): eats '12' greedily, yields only that one match, and the trailing %x30-39 has nothing
+    # left.
+    assert og.parse('12') is not None
+
+
+def test_parse_grammar_default_optimize_backtracking() -> None:
+    # End-to-end: parse_grammar optimizes by default. Inline %x ranges (common in real RFC grammars) are exactly what
+    # triggers the Repeat->Regex conversion.
+    g = meta.parse_grammar(
+        """
+        root = num %x30-39
+        num  = 1*%x30-39
+        """,
+        root='root',
+    )
+
+    assert g.parse('12') is not None
+
+
+def test_optimized_matches_are_superset_of_raw() -> None:
+    # Invariant: optimization must not remove parses.
+    g = Grammar(
+        Rule('N', ops.repeat(1, ops.literal('0', '9'))),
+        root='N',
+    )
+
+    raw = {(m.start, m.end) for m in g.iter_parse('123')}          # {(0,1), (0,2), (0,3)}
+    opt = {(m.start, m.end) for m in opto.optimize_grammar(g).iter_parse('123')}  # {(0,3)}
+
+    assert raw <= opt
