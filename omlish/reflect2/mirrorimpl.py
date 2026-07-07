@@ -183,6 +183,7 @@ class _InternalMirror:
 
         self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
 
+        # FIXME: leaks / breaks on failed _TypeReflector run
         self._prepared_infos: set[type] = set()
 
         self._type_var_namespace = f'runtime:{id(self):x}'
