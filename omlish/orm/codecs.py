@@ -4,7 +4,8 @@ import typing as ta
 
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect as rfl
+from .. import reflect as old_rfl
+from .. import reflect2 as rfl
 from .. import typedvalues as tv
 from ..formats.json import all as json
 from .fields import Field
@@ -48,9 +49,9 @@ class Codec(lang.Abstract):
     #
 
     @staticmethod
-    def rty(cs: CodecSubject) -> rfl.Type:
+    def old_rty(cs: CodecSubject) -> old_rfl.Type:
         if cs.__class__ is Field:
-            return cs.unwrapped_rty
+            return old_rfl.typeof(rfl.get_runtime_type(cs.unwrapped_rty))
         else:
             return cs._cls  # type: ignore[union-attr]
 
@@ -120,7 +121,7 @@ class MarshalCodec(Codec):
         self._options = options
 
     def encode(self, obj: ta.Any, cs: CodecSubject) -> ta.Any:
-        return msh.marshal(obj, self.rty(cs), *self._options)
+        return msh.marshal(obj, self.old_rty(cs), *self._options)
 
     def decode(self, val: ta.Any, cs: CodecSubject) -> ta.Any:
-        return msh.unmarshal(val, self.rty(cs), *self._options)
+        return msh.unmarshal(val, self.old_rty(cs), *self._options)

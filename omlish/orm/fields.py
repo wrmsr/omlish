@@ -2,7 +2,7 @@ import typing as ta
 
 from .. import check
 from .. import lang
-from .. import reflect as rfl
+from .. import reflect2 as rfl
 from .. import typedvalues as tv
 from .keys import Key
 from .options import FieldOption
@@ -111,16 +111,21 @@ class KeyField(Field, lang.Final):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
-        gty = check.isinstance(self._rty, rfl.Generic)
-        check.is_(gty.cls, Key)
-        self._key_cls = check.isinstance(check.single(gty.args), type)
-
-    @property
-    def key_cls(self) -> type:
-        return self._key_cls
+        gty = check.isinstance(self._rty, rfl.Instance)
+        check.is_(gty.type.runtime_object, Key)
+        self._unwrapped_rty = check.isinstance(check.single(gty.args), rfl.Instance)
+        self._key_cls = rfl.get_runtime_type(self._unwrapped_rty)
 
     @property
     def unwrapped_rty(self) -> rfl.Type:
+        return self._unwrapped_rty
+
+    @property
+    def key_rty(self) -> rfl.Type:
+        return self._unwrapped_rty
+
+    @property
+    def key_cls(self) -> type:
         return self._key_cls
 
 
@@ -129,27 +134,40 @@ class RefField(Field, lang.Final):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
-        if isinstance(rty := self._rty, rfl.Union):
+        if isinstance(rty := self._rty, rfl.UnionType):
             check.state(rty.is_optional)
-            rty = rty.without_none()
+            rty = rty.strip_optional()
             self._optional = True
         else:
             self._optional = False
 
-        gty = check.isinstance(rty, rfl.Generic)
-        check.is_(gty.cls, Ref)
-        ort, krt = gty.args
-        self._ref_obj_cls = check.isinstance(ort, type)
-        self._ref_key_cls = check.isinstance(krt, type)
+        gty = check.isinstance(rty, rfl.Instance)
+        gty_cls = check.isinstance(gty.type.runtime_object, type)
+        check.is_(gty_cls, Ref)
+        self._ref_obj_rty, self._ref_key_rty = gty.args
+        self._ref_obj_cls = rfl.get_runtime_type(self._ref_obj_rty)
+        self._ref_key_cls = rfl.get_runtime_type(self._ref_key_rty)
 
-        uw_rty = krt
+        uw_rty = self._ref_key_rty
         if self._optional:
-            uw_rty = rfl.Union(frozenset([uw_rty, type(None)]))
+            uw_rty = rfl.make_union([uw_rty, rfl.reflect_type(None)])
         self._unwrapped_rty = uw_rty
+
+    @property
+    def unwrapped_rty(self) -> rfl.Type:
+        return self._unwrapped_rty
 
     @property
     def is_optional(self) -> bool:
         return self._optional
+
+    @property
+    def ref_obj_rty(self) -> rfl.Type:
+        return self._ref_obj_rty
+
+    @property
+    def ref_key_rty(self) -> rfl.Type:
+        return self._ref_key_rty
 
     @property
     def ref_obj_cls(self) -> type:
@@ -158,7 +176,3 @@ class RefField(Field, lang.Final):
     @property
     def ref_key_cls(self) -> type:
         return self._ref_key_cls
-
-    @property
-    def unwrapped_rty(self) -> rfl.Type:
-        return self._unwrapped_rty

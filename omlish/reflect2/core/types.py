@@ -1032,6 +1032,8 @@ class LiteralType(ProperType):
 class UnionType(ProperType):
     __slots__ = (
         '_items',
+        '_is_optional',
+        '_strip_optional',
     )
 
     def __init__(self, items: ta.Sequence[Type]) -> None:
@@ -1040,10 +1042,35 @@ class UnionType(ProperType):
         from .typeops import flatten_nested_unions
 
         self._items = tuple(flatten_nested_unions(items, handle_type_alias_type=False))
+        if len(self._items) < 1:
+            raise ReflectionValueError('Union requires at least one item')
+
+        self._is_optional = any(isinstance(item, NoneType) for item in self._items)
+        self._strip_optional: list[Type | None] = [None]  # freethreading hack
 
     @property
     def items(self) -> tuple[Type, ...]:
         return self._items
+
+    @property
+    def is_optional(self) -> bool:
+        return self._is_optional
+
+    def strip_optional(self) -> Type:
+        if not self._is_optional:
+            return self
+        if (ret := self._strip_optional[0]) is not None:
+            return ret
+
+        from .typeops import make_union
+
+        ret = make_union([
+            item
+            for item in self._items
+            if not isinstance(item, NoneType)
+        ])
+        self._strip_optional[0] = ret
+        return ret
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
         return visitor.visit_union_type(self)

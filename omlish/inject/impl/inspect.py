@@ -108,9 +108,9 @@ def build_kwargs_target(
         if (
                 not raw_optional and
                 isinstance(rf := rfl.reflect_type(ann), rfl.UnionType) and
-                rfl.is_optional(rf)
+                rf.is_optional
         ):
-            ann = rfl.strip_optional(rf)
+            ann = rf.strip_optional()
 
         rty = rfl.reflect_type(ann)
 

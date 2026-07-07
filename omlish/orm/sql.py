@@ -48,7 +48,7 @@ import uuid
 
 from .. import check
 from .. import lang
-from .. import reflect as rfl
+from .. import reflect2 as rfl
 from .. import sql
 from .. import typedvalues as tv
 from .fields import Field
@@ -127,13 +127,15 @@ class SqlStore(Store):
             for f in m.fields:
                 rty = f.unwrapped_rty
 
-                if isinstance(rty, rfl.Union) and rty.is_optional:
-                    rty = rty.without_none()
+                if isinstance(rty, rfl.UnionType) and rty.is_optional:
+                    rty = rty.strip_optional()
 
-                if rty is datetime.datetime:
+                pty = rfl.get_runtime_type(rty)
+
+                if pty is datetime.datetime:
                     self.field_decoders[f._store_name] = o._decode_datetime
 
-                elif rty is uuid.UUID:
+                elif pty is uuid.UUID:
                     self.field_encoders[f._store_name] = o._encode_uuid
                     self.field_decoders[f._store_name] = o._decode_uuid
 
@@ -178,7 +180,7 @@ class SqlStore(Store):
 
     def _field_table_def(self, field: Field) -> list[sql.td.Element]:
         if Timestamp in field.options:
-            check.is_(field.rty, datetime.datetime)
+            check.is_(rfl.get_runtime_type(field.rty), datetime.datetime)
 
             if CreatedAt in field.options:
                 check.equal(field.name, 'created_at')
@@ -197,17 +199,17 @@ class SqlStore(Store):
         nullable: bool | None = None
 
         if isinstance(field, KeyField):
-            rty = field.key_cls
+            rty = field.key_rty
 
         elif isinstance(field, RefField):
-            rty = field.ref_key_cls
+            rty = field.ref_key_rty
             nullable = field.is_optional
 
         else:
             rty = field.rty
 
-        if isinstance(rty, rfl.Union) and rty.is_optional:
-            rty = rty.without_none()
+        if isinstance(rty, rfl.UnionType) and rty.is_optional:
+            rty = rty.strip_optional()
             nullable = True
         else:
             if nullable is None:
@@ -218,17 +220,20 @@ class SqlStore(Store):
         if (dty_opt := field.options.get(FieldSqlType)) is not None:
             dty = dty_opt.v
 
-        elif rty is int:
-            dty = sql.td.Integer()
-
-        elif rty in (str, uuid.UUID):
-            dty = sql.td.String()
-
-        elif rty is datetime.datetime:
-            dty = sql.td.Datetime()
-
         else:
-            raise TypeError(f'unsupported sql field type: {rty!r}')
+            ty = rfl.get_runtime_type(rty)
+
+            if ty is int:
+                dty = sql.td.Integer()
+
+            elif ty in (str, uuid.UUID):
+                dty = sql.td.String()
+
+            elif ty is datetime.datetime:
+                dty = sql.td.Datetime()
+
+            else:
+                raise TypeError(f'unsupported sql field type: {ty!r}')
 
         els.append(sql.td.Column(
             field._store_name,

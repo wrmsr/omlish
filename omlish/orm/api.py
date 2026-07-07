@@ -6,7 +6,7 @@ from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect as rfl
+from .. import reflect2 as rfl
 from ..text import inflect
 from .backrefs import Backref
 from .fields import Field
@@ -64,21 +64,20 @@ def field(
 
     #
 
-    rty = rfl.typeof(ty)
+    rty = rfl.reflect_type(ty)
 
     #
 
     fld_cls: type[Field] = Field
-    if isinstance(rty, rfl.Generic):
-        if rty.cls is Key:
+    if isinstance(rty, rfl.Instance):
+        if rty.type.runtime_object is Key:
             fld_cls = KeyField
-        elif rty.cls is Ref:
+        elif rty.type.runtime_object is Ref:
             fld_cls = RefField
     elif (
-            isinstance(rty, rfl.Union) and
-            rty.is_optional and
-            isinstance(oa := rty.without_none(), rfl.Generic) and
-            oa.cls is Ref
+            isinstance(rty, rfl.UnionType) and
+            isinstance(oa := rty.strip_optional(), rfl.Instance) and
+            oa.type.runtime_object is Ref
     ):
         fld_cls = RefField
 
