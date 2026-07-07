@@ -35,17 +35,17 @@ class TAG_NOT_SET(lang.Marker):  # noqa
 
 
 @ta.overload
-def as_key(o: Key[T]) -> Key[T]:
+def as_key(o: Key[T], *, tag: type[TAG_NOT_SET] = TAG_NOT_SET) -> Key[T]:
     ...
 
 
 @ta.overload
-def as_key(o: type[T], *, tag: ta.Any | type[TAG_NOT_SET] = type[TAG_NOT_SET]) -> Key[T]:
+def as_key(o: type[T], *, tag: ta.Any | type[TAG_NOT_SET] = TAG_NOT_SET) -> Key[T]:
     ...
 
 
 @ta.overload
-def as_key(o: ta.Any, *, tag: ta.Any | type[TAG_NOT_SET] = type[TAG_NOT_SET]) -> Key:
+def as_key(o: ta.Any, *, tag: ta.Any | type[TAG_NOT_SET] = TAG_NOT_SET) -> Key:
     ...
 
 
