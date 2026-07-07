@@ -136,12 +136,13 @@ class _Universe:
     def __init__(self) -> None:
         super().__init__()
 
-        self.infos_by_fullname: dict[str, TypeInfo] = {}
         self.fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
         self._types_by_fullname: dict[str, object] = {
             fullname: obj
             for obj, fullname in self.fullnames_by_type.items()
         }
+
+        self.infos_by_fullname: dict[str, TypeInfo] = {}
 
     #
 
