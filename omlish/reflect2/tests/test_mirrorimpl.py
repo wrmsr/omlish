@@ -4,14 +4,13 @@ from ..mirrorimpl import MirrorImpl
 
 def test_mirrorimpl():
     mirror = MirrorImpl()
-
-    universe = mirror._universe
-    for ty, tn in universe._fullnames_by_type.items():
-        universe.get_type_info(ty)  # type: ignore[arg-type]
-        universe.get_type_info(tn)
-
     reflector = mirror._reflector
-    for ty in universe._fullnames_by_type:
+
+    for ty, tn in reflector._fullnames_by_type.items():
+        reflector.get_type_info(ty)  # type: ignore[arg-type]
+        reflector.get_type_info(tn)
+
+    for ty in reflector._fullnames_by_type:
         reflector.reflect_type(ty)
 
     # placeholder for runtime inspection

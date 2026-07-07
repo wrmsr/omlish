@@ -56,15 +56,10 @@ def or_global_mirror(mirror: Mirror | None) -> Mirror:
 
 
 ##
-# universe
 
 
 def get_type_info(obj: type | str | ta.NewType, *, mirror: Mirror | None = None) -> TypeInfo:
     return or_global_mirror(mirror).get_type_info(obj)
-
-
-##
-# reflector
 
 
 def can_reflect_type(obj: object, *, mirror: Mirror | None = None) -> bool:

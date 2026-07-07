@@ -34,16 +34,6 @@ class Mirror:
     simply query internal state for their presence - no mutation is done on their behalf.
     """
 
-    ##
-    # universe
-
-    @abc.abstractmethod
-    def get_type_info(self, obj: type | str | ta.NewType) -> TypeInfo:
-        raise NotImplementedError
-
-    ##
-    # reflector
-
     @property
     @abc.abstractmethod
     def forward_ref_resolver(self) -> ForwardRefResolver | None:
@@ -52,6 +42,10 @@ class Mirror:
     @property
     @abc.abstractmethod
     def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_type_info(self, obj: type | str | ta.NewType) -> TypeInfo:
         raise NotImplementedError
 
     @abc.abstractmethod
