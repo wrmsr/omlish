@@ -138,7 +138,6 @@ class _Universe:
 
         self.infos_by_fullname: dict[str, TypeInfo] = {}
         self.fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
-
         self._types_by_fullname: dict[str, object] = {
             fullname: obj
             for obj, fullname in self.fullnames_by_type.items()
@@ -355,14 +354,14 @@ class _Reflector:
         #
 
         self.type_cache: dict[object, Type] = {}
-        self.cached_types: set[Type] = set()
+        self._cached_types: set[Type] = set()
 
-        self.runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
+        self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
 
-        self.prepared_infos: set[type] = set()
+        self._prepared_infos: set[type] = set()
 
-        self.type_var_namespace = f'runtime:{id(self):x}'
-        self.next_type_var_id = 1
+        self._type_var_namespace = f'runtime:{id(self):x}'
+        self._next_type_var_id = 1
 
     #
 
@@ -413,7 +412,7 @@ class _ReflectorRun:
         except TypeError:
             pass
         else:
-            self._reflector.cached_types.add(typ)
+            self._reflector._cached_types.add(typ)
 
         return typ
 
@@ -766,7 +765,7 @@ class _ReflectorRun:
 
     def _get_type_alias_symbol(self, obj: ta.TypeAliasType) -> TypeAlias:
         try:
-            return self._reflector.runtime_aliases[obj]
+            return self._reflector._runtime_aliases[obj]
         except KeyError:
             pass
 
@@ -781,14 +780,14 @@ class _ReflectorRun:
             ],
             runtime_object=obj,
         )
-        self._reflector.runtime_aliases[obj] = alias
+        self._reflector._runtime_aliases[obj] = alias
         return alias
 
     def _contains_resolving_type_alias(self, typ: Type) -> bool:
         active_aliases = {
-            self._reflector.runtime_aliases[obj]
+            self._reflector._runtime_aliases[obj]
             for obj in self._resolving_type_aliases
-            if obj in self._reflector.runtime_aliases
+            if obj in self._reflector._runtime_aliases
         }
         if not active_aliases:
             return False
@@ -922,9 +921,9 @@ class _ReflectorRun:
         )
 
     def _prepare_runtime_type_info(self, origin: type, info: TypeInfo) -> None:
-        if origin in self._reflector.prepared_infos:
+        if origin in self._reflector._prepared_infos:
             return
-        self._reflector.prepared_infos.add(origin)
+        self._reflector._prepared_infos.add(origin)
 
         # Forward references in a class's parameters' bounds or in its runtime bases resolve in that class's module
         # scope. (A parameter type var carrying its own module overrides this while its bound is reflected.)
@@ -1126,14 +1125,14 @@ class _ReflectorRun:
         type_var = TypeVarType(
             obj.__name__,
             obj.__name__,
-            TypeVarId(self._reflector.next_type_var_id, namespace=self._reflector.type_var_namespace),
+            TypeVarId(self._reflector._next_type_var_id, namespace=self._reflector._type_var_namespace),
             values,
             upper_bound,
             default,
             variance,
             runtime_object=obj,
         )
-        self._reflector.next_type_var_id += 1
+        self._reflector._next_type_var_id += 1
         return type_var
 
     def _reflect_param_spec(self, obj: ta.ParamSpec) -> ParamSpecType:
@@ -1149,12 +1148,12 @@ class _ReflectorRun:
         param_spec = ParamSpecType(
             obj.__name__,
             obj.__name__,
-            TypeVarId(self._reflector.next_type_var_id, namespace=self._reflector.type_var_namespace),
+            TypeVarId(self._reflector._next_type_var_id, namespace=self._reflector._type_var_namespace),
             upper_bound,
             default,
             runtime_object=obj,
         )
-        self._reflector.next_type_var_id += 1
+        self._reflector._next_type_var_id += 1
         return param_spec
 
     def _reflect_type_var_tuple(self, obj: ta.TypeVarTuple) -> TypeVarTupleType:
@@ -1171,13 +1170,13 @@ class _ReflectorRun:
         type_var_tuple = TypeVarTupleType(
             obj.__name__,
             obj.__name__,
-            TypeVarId(self._reflector.next_type_var_id, namespace=self._reflector.type_var_namespace),
+            TypeVarId(self._reflector._next_type_var_id, namespace=self._reflector._type_var_namespace),
             upper_bound,
             default,
             tuple_fallback,
             runtime_object=obj,
         )
-        self._reflector.next_type_var_id += 1
+        self._reflector._next_type_var_id += 1
         return type_var_tuple
 
 
