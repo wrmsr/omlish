@@ -121,30 +121,24 @@ def test_reflection_cache_skips_unhashable_runtime_forms() -> None:
     assert left.metadata == right.metadata == ([],)
 
 
-def test_make_runtime_mirror_accepts_dynamic_name_suffix() -> None:
+def test_make_runtime_mirror_uses_known_dynamic_name_suffix() -> None:
     class Local:
         pass
 
-    mirror = make_mirror(
-        dynamic_type_name_suffix='counter',
-    )
+    mirror = make_mirror()
 
     typ = mirror.reflect_type(Local)
 
     assert isinstance(typ, types.Instance)
-    assert typ.type.fullname.endswith('.Local@1')
+    assert typ.type.fullname.endswith(f'.Local@{id(Local):x}')
 
 
 def test_separate_mirrors_assign_distinct_dynamic_type_infos() -> None:
     class Local:
         pass
 
-    left_mirror = make_mirror(
-        dynamic_type_name_suffix='counter',
-    )
-    right_mirror = make_mirror(
-        dynamic_type_name_suffix='counter',
-    )
+    left_mirror = make_mirror()
+    right_mirror = make_mirror()
 
     left = left_mirror.reflect_type(Local)
     right = right_mirror.reflect_type(Local)
@@ -257,12 +251,8 @@ def test_type_var_reflection_cache_uses_runtime_object_identity() -> None:
 
 def test_separate_mirrors_assign_distinct_runtime_type_vars() -> None:
     rt_type_var = ta.TypeVar('T')  # type: ignore
-    left_mirror = make_mirror(
-        dynamic_type_name_suffix='id',
-    )
-    right_mirror = make_mirror(
-        dynamic_type_name_suffix='id',
-    )
+    left_mirror = make_mirror()
+    right_mirror = make_mirror()
 
     left = left_mirror.reflect_type(rt_type_var)
     right = right_mirror.reflect_type(rt_type_var)
@@ -275,12 +265,8 @@ def test_separate_mirrors_assign_distinct_runtime_type_vars() -> None:
 
 def test_cross_mirror_type_var_substitution_does_not_match_by_runtime_object() -> None:
     rt_type_var = ta.TypeVar('T')  # type: ignore
-    key_mirror = make_mirror(
-        dynamic_type_name_suffix='id',
-    )
-    type_mirror = make_mirror(
-        dynamic_type_name_suffix='id',
-    )
+    key_mirror = make_mirror()
+    type_mirror = make_mirror()
 
     key = key_mirror.reflect_type(rt_type_var)
     typ = type_mirror.reflect_type(list[rt_type_var])  # type: ignore
@@ -901,7 +887,6 @@ def test_resolves_raw_string_forward_reference_with_resolver() -> None:
 def test_make_runtime_mirror_accepts_forward_ref_resolver() -> None:
     resolver = lambda frr: {'User': int}[frr.name]
     mirror = make_mirror(
-        dynamic_type_name_suffix='id',
         forward_ref_resolver=resolver,
     )
 
@@ -1328,7 +1313,7 @@ def test_reflected_class_indirect_generic_base_args_participate_in_subtyping() -
 
 
 def test_reflected_class_generic_mro_remaps_type_vars_at_each_layer() -> None:
-    mirror = make_mirror(dynamic_type_name_suffix='counter')
+    mirror = make_mirror()
     a_var = ta.TypeVar('A')  # type: ignore
     b_var = ta.TypeVar('B')  # type: ignore
     x_var = ta.TypeVar('X')  # type: ignore
@@ -1349,10 +1334,10 @@ def test_reflected_class_generic_mro_remaps_type_vars_at_each_layer() -> None:
     mapped_mro = get_mro_instances(typ)
 
     assert [type_str(item) for item in mapped_mro] == [
-        f'{Child.__module__}.{Child.__qualname__}@1[builtins.int]',
-        f'{Middle.__module__}.{Middle.__qualname__}@2[builtins.dict[builtins.str, builtins.int]]',
+        f'{Child.__module__}.{Child.__qualname__}@{id(Child):x}[builtins.int]',
+        f'{Middle.__module__}.{Middle.__qualname__}@{id(Middle):x}[builtins.dict[builtins.str, builtins.int]]',
         (
-            f'{Base.__module__}.{Base.__qualname__}@3'
+            f'{Base.__module__}.{Base.__qualname__}@{id(Base):x}'
             '[builtins.list[builtins.dict[builtins.str, builtins.int]], builtins.str]'
         ),
         'typing.Generic',

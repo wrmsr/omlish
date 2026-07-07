@@ -1,4 +1,5 @@
 - ta.TypeForm - `type CanType = Type | ta.TypeForm`, reflect_type -> ...
+- refactor mirror to use internals.py
 - protocols ?
 - overloads
 - infer_variance??

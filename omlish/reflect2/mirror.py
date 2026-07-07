@@ -6,8 +6,6 @@ from .core.symbols import TypeInfo
 from .core.types import Type
 
 
-DynamicTypeNameSuffix: ta.TypeAlias = ta.Literal['id', 'counter']
-
 UnresolvedForwardRefPolicy: ta.TypeAlias = ta.Literal['unbound', 'raise']
 
 
@@ -27,8 +25,6 @@ class ForwardRefResolver(ta.Protocol):
 ##
 
 
-DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX: ta.Final[DynamicTypeNameSuffix] = 'id'
-
 DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'unbound'
 
 
@@ -40,11 +36,6 @@ class Mirror:
 
     ##
     # universe
-
-    @property
-    @abc.abstractmethod
-    def dynamic_type_name_suffix(self) -> DynamicTypeNameSuffix:
-        raise NotImplementedError
 
     @abc.abstractmethod
     def get_type_info(self, obj: type | str) -> TypeInfo:

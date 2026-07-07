@@ -50,9 +50,7 @@ from .known import _KNOWN_GENERIC_ARITIES
 from .known import _KNOWN_GENERIC_VARIANCES
 from .known import _KNOWN_MRO_TAILS
 from .known import _KnownBaseArg
-from .mirror import DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX
 from .mirror import DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
-from .mirror import DynamicTypeNameSuffix
 from .mirror import ForwardRefResolution
 from .mirror import ForwardRefResolver
 from .mirror import Mirror
@@ -134,27 +132,9 @@ def _contains_any_type_alias(
 ##
 
 
-_DYNAMIC_TYPE_NAME_SEPARATOR: ta.Final = '@'
-
-
 class _Universe:
-    def __init__(
-            self,
-            *,
-            dynamic_type_name_suffix: DynamicTypeNameSuffix | None = None,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__()
-
-        if dynamic_type_name_suffix is None:
-            dynamic_type_name_suffix = DEFAULT_DYNAMIC_TYPE_NAME_SUFFIX
-        elif dynamic_type_name_suffix not in ('id', 'counter'):
-            raise ReflectionValueError(f'Unsupported dynamic type name suffix mode: {dynamic_type_name_suffix!r}')
-
-        self._dynamic_type_name_suffix = dynamic_type_name_suffix
-
-        #
-
-        self._next_dynamic_type_index = 1
 
         self._infos_by_fullname: dict[str, TypeInfo] = {}
         self._fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
@@ -164,10 +144,6 @@ class _Universe:
         }
 
     #
-
-    # NOTE: phased out - now should go through Symbol.runtime_object, but these should effectively be in sync
-    # def get_runtime_type(self, info: TypeInfo) -> object | None:
-    #     return self._types_by_fullname.get(info._fullname)
 
     def _make_dynamic_type_name_hint(self, obj: type) -> str:
         module = getattr(obj, '__module__', None)
@@ -182,13 +158,7 @@ class _Universe:
         return 'type'
 
     def _make_dynamic_type_fullname(self, obj: type) -> str:
-        hint = self._make_dynamic_type_name_hint(obj)
-        if self._dynamic_type_name_suffix == 'counter':
-            suffix = str(self._next_dynamic_type_index)
-            self._next_dynamic_type_index += 1
-        else:
-            suffix = f'{id(obj):x}'
-        return f'{hint}{_DYNAMIC_TYPE_NAME_SEPARATOR}{suffix}'
+        return f'{self._make_dynamic_type_name_hint(obj)}@{id(obj):x}'
 
     def _make_newtype_fullname(self, obj: object) -> str:
         module = getattr(obj, '__module__', None)
@@ -1220,7 +1190,6 @@ class MirrorImpl(Mirror):
     def __init__(
             self,
             *,
-            dynamic_type_name_suffix: DynamicTypeNameSuffix | None = None,
             forward_ref_resolver: ForwardRefResolver | None = None,
             unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
     ) -> None:
@@ -1228,9 +1197,7 @@ class MirrorImpl(Mirror):
 
         self._lock = threading.RLock()
 
-        self._universe = _Universe(
-            dynamic_type_name_suffix=dynamic_type_name_suffix,
-        )
+        self._universe = _Universe()
 
         self._reflector = _Reflector(
             self._universe,
@@ -1240,10 +1207,6 @@ class MirrorImpl(Mirror):
 
     ##
     # universe
-
-    @property
-    def dynamic_type_name_suffix(self) -> DynamicTypeNameSuffix:
-        return self._universe._dynamic_type_name_suffix
 
     def get_type_info(self, obj: type | str) -> TypeInfo:
         if isinstance(obj, str):

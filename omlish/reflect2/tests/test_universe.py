@@ -128,10 +128,8 @@ def test_runtime_universe_assigns_id_qualified_fullname_for_dynamic_classes() ->
     assert universe.get_type_info(LocalThing) is info
 
 
-def test_runtime_universe_can_assign_deterministic_counter_dynamic_names() -> None:
-    universe = make_mirror(
-        dynamic_type_name_suffix='counter',
-    )
+def test_runtime_universe_can_assign_deterministic_dynamic_names() -> None:
+    universe = make_mirror()
 
     class LocalOne:
         pass
@@ -142,15 +140,13 @@ def test_runtime_universe_can_assign_deterministic_counter_dynamic_names() -> No
     one_info = universe.get_type_info(LocalOne)
     two_info = universe.get_type_info(LocalTwo)
 
-    assert one_info.fullname.endswith('.LocalOne@1')
-    assert two_info.fullname.endswith('.LocalTwo@2')
+    assert one_info.fullname.endswith(f'.LocalOne@{id(LocalOne):x}')
+    assert two_info.fullname.endswith(f'.LocalTwo@{id(LocalTwo):x}')
     assert universe.get_type_info(LocalOne) is one_info
 
 
 def test_runtime_universe_keeps_same_name_dynamic_classes_distinct() -> None:
-    universe = make_mirror(
-        dynamic_type_name_suffix='counter',
-    )
+    universe = make_mirror()
 
     left = type('Repeated', (), {'__module__': __name__})
     right = type('Repeated', (), {'__module__': __name__})
@@ -159,8 +155,8 @@ def test_runtime_universe_keeps_same_name_dynamic_classes_distinct() -> None:
     right_info = universe.get_type_info(right)
 
     assert left_info is not right_info
-    assert left_info.fullname == f'{__name__}.Repeated@1'
-    assert right_info.fullname == f'{__name__}.Repeated@2'
+    assert left_info.fullname == f'{__name__}.Repeated@{id(left):x}'
+    assert right_info.fullname == f'{__name__}.Repeated@{id(right):x}'
 
 
 def test_runtime_universe_keeps_newtype_runtime_object() -> None:
