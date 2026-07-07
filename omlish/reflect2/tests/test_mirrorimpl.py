@@ -4,7 +4,7 @@ from ..mirrorimpl import MirrorImpl
 
 def test_mirrorimpl():
     mirror = MirrorImpl()
-    reflector = mirror._reflector
+    reflector = mirror._internal
 
     for ty, tn in reflector._fullnames_by_type.items():
         reflector.get_type_info(ty)  # type: ignore[arg-type]

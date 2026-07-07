@@ -149,7 +149,7 @@ def _get_runtime_bases(origin: type) -> tuple[object, ...]:
 ##
 
 
-class _Reflector:
+class _InternalMirror:
     def __init__(
             self,
             *,
@@ -188,7 +188,8 @@ class _Reflector:
         self._type_var_namespace = f'runtime:{id(self):x}'
         self._next_type_var_id = 1
 
-    #
+    ##
+    # symbols
 
     def _make_dynamic_type_name_hint(self, obj: type) -> str:
         module = getattr(obj, '__module__', None)
@@ -389,7 +390,8 @@ class _Reflector:
 
         return info
 
-    #
+    ##
+    # types
 
     def is_uncacheable_reflect_type(self, obj: object) -> bool:
         # Forward-ref resolution is context-dependent (see _reflect_forward_ref): the same ForwardRef / str resolves
@@ -409,14 +411,14 @@ class _Reflector:
             return None
 
     def reflect_type(self, obj: object) -> Type:
-        return _ReflectorRun(self).reflect_type(obj)
+        return _TypeReflector(self).reflect_type(obj)
 
 
-class _ReflectorRun:
-    def __init__(self, reflector: _Reflector) -> None:
+class _TypeReflector:
+    def __init__(self, mirror: _InternalMirror) -> None:
         super().__init__()
 
-        self._reflector = reflector
+        self._mirror = mirror
 
         #
 
@@ -429,11 +431,11 @@ class _ReflectorRun:
     #
 
     def reflect_type(self, obj: object) -> Type:
-        if self._reflector.is_uncacheable_reflect_type(obj):
+        if self._mirror.is_uncacheable_reflect_type(obj):
             return self._reflect_type_uncached(obj)
 
         try:
-            return self._reflector._type_cache[obj]
+            return self._mirror._type_cache[obj]
         except KeyError:
             pass
         except TypeError:
@@ -442,11 +444,11 @@ class _ReflectorRun:
         typ = self._reflect_type_uncached(obj)
 
         try:
-            self._reflector._type_cache[obj] = typ
+            self._mirror._type_cache[obj] = typ
         except TypeError:
             pass
         else:
-            self._reflector._cached_types.add(typ)
+            self._mirror._cached_types.add(typ)
 
         return typ
 
@@ -572,7 +574,7 @@ class _ReflectorRun:
         raise UnreflectableTypeError(f'Unsupported runtime type object: {obj!r}')
 
     class _PushedForwardRefOwner:
-        def __init__(self, run: _ReflectorRun, owner: object) -> None:
+        def __init__(self, run: _TypeReflector, owner: object) -> None:
             self._run, self._owner = run, owner
 
         def __enter__(self) -> None:
@@ -617,7 +619,7 @@ class _ReflectorRun:
                 # 'unbound' policy we degrade to a first-class UnboundType leaf (retaining the original ForwardRef for
                 # identity) rather than failing. A recursion-guard violation is a distinct pathology and is *not* caught
                 # here (it is raised before we reach this point).
-                if self._reflector.unresolved_forward_ref_policy == 'unbound':
+                if self._mirror.unresolved_forward_ref_policy == 'unbound':
                     return self._unbound_forward_ref(obj, name)
                 raise
             return self.reflect_type(resolved)
@@ -638,8 +640,8 @@ class _ReflectorRun:
         # When a resolver is supplied it owns the resolution policy: it is handed the full context - including the
         # `resolve` closure that performs the default owner-scope resolution - and decides how to combine them. When no
         # resolver is supplied the default owner-scope resolution runs directly.
-        if self._reflector.forward_ref_resolver is not None:
-            return self._reflector.forward_ref_resolver(ForwardRefResolution(obj, name, resolve))
+        if self._mirror.forward_ref_resolver is not None:
+            return self._mirror.forward_ref_resolver(ForwardRefResolution(obj, name, resolve))
 
         return resolve()
 
@@ -684,7 +686,7 @@ class _ReflectorRun:
         return TypeAliasType(self._get_type_alias_symbol(obj), args)
 
     def _make_tuple_fallback(self) -> Instance:
-        return Instance(self._reflector.get_type_info(tuple), [_make_any()])
+        return Instance(self._mirror.get_type_info(tuple), [_make_any()])
 
     def _reflect_type_alias_forward_ref_arg(
             self,
@@ -801,7 +803,7 @@ class _ReflectorRun:
 
     def _get_type_alias_symbol(self, obj: ta.TypeAliasType) -> TypeAlias:
         try:
-            return self._reflector._runtime_aliases[obj]
+            return self._mirror._runtime_aliases[obj]
         except KeyError:
             pass
 
@@ -816,21 +818,21 @@ class _ReflectorRun:
             ],
             runtime_object=obj,
         )
-        self._reflector._runtime_aliases[obj] = alias
+        self._mirror._runtime_aliases[obj] = alias
         return alias
 
     def _contains_resolving_type_alias(self, typ: Type) -> bool:
         active_aliases = {
-            self._reflector._runtime_aliases[obj]
+            self._mirror._runtime_aliases[obj]
             for obj in self._resolving_type_aliases
-            if obj in self._reflector._runtime_aliases
+            if obj in self._mirror._runtime_aliases
         }
         if not active_aliases:
             return False
         return _contains_any_type_alias(typ, active_aliases, set())
 
     def _reflect_newtype(self, obj: object) -> Instance:
-        info = self._reflector.get_newtype_info(obj)
+        info = self._mirror.get_newtype_info(obj)
         info._newtype_supertype = self.reflect_type(obj.__supertype__)  # type: ignore[attr-defined]
         return Instance(info, ())
 
@@ -915,7 +917,7 @@ class _ReflectorRun:
         return typ
 
     def _reflect_instance(self, origin: type, args: tuple[object, ...]) -> Instance:
-        info = self._reflector.get_type_info(origin)
+        info = self._mirror.get_type_info(origin)
         self._prepare_runtime_type_info(origin, info)
         reflected_args = self._reflect_instance_args(origin, info, args)
 
@@ -957,9 +959,9 @@ class _ReflectorRun:
         )
 
     def _prepare_runtime_type_info(self, origin: type, info: TypeInfo) -> None:
-        if origin in self._reflector._prepared_infos:
+        if origin in self._mirror._prepared_infos:
             return
-        self._reflector._prepared_infos.add(origin)
+        self._mirror._prepared_infos.add(origin)
 
         # Forward references in a class's parameters' bounds or in its runtime bases resolve in that class's module
         # scope. (A parameter type var carrying its own module overrides this while its bound is reflected.)
@@ -978,7 +980,7 @@ class _ReflectorRun:
             mro = getattr(origin, '__mro__', None)
             if mro is not None and info._mro == (info,):
                 info._mro = tuple(
-                    self._reflector.get_type_info(cls)
+                    self._mirror.get_type_info(cls)
                     for cls in mro
                     if isinstance(cls, type)
                 )
@@ -1017,7 +1019,7 @@ class _ReflectorRun:
         return base
 
     def _reflect_tuple(self, args: tuple[object, ...]) -> Type:
-        info = self._reflector.get_type_info(tuple)
+        info = self._mirror.get_type_info(tuple)
 
         if len(args) == 2 and args[1] is Ellipsis:
             return Instance(info, [self.reflect_type(args[0])])
@@ -1042,7 +1044,7 @@ class _ReflectorRun:
 
     def _reflect_callable(self, args: tuple[object, ...]) -> CallableType:
         fallback = Instance(
-            self._reflector.get_type_info(cabc.Callable),  # type: ignore[arg-type]
+            self._mirror.get_type_info(cabc.Callable),  # type: ignore[arg-type]
             [_make_any()],
         )
 
@@ -1107,13 +1109,13 @@ class _ReflectorRun:
 
     def _reflect_literal_value(self, obj: object) -> LiteralType:
         if isinstance(obj, enum.Enum):
-            fallback = Instance(self._reflector.get_type_info(obj.__class__), ())
+            fallback = Instance(self._mirror.get_type_info(obj.__class__), ())
             return LiteralType(obj.name, fallback)
 
         if not _is_literal_value(obj):
             raise UnreflectableTypeError(f'Unsupported literal value: {obj!r}')
 
-        fallback = Instance(self._reflector.get_type_info(type(obj)), ())
+        fallback = Instance(self._mirror.get_type_info(type(obj)), ())
         return LiteralType(ta.cast(LiteralValue, obj), fallback)
 
     def _reflect_type_var(self, obj: ta.TypeVar) -> TypeVarType:
@@ -1129,7 +1131,7 @@ class _ReflectorRun:
         with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
             bound = obj.__bound__
             if bound is None:
-                upper_bound: Type = Instance(self._reflector.get_type_info(object), ())
+                upper_bound: Type = Instance(self._mirror.get_type_info(object), ())
             else:
                 upper_bound = self.reflect_type(bound)
 
@@ -1144,18 +1146,18 @@ class _ReflectorRun:
         type_var = TypeVarType(
             obj.__name__,
             obj.__name__,
-            TypeVarId(self._reflector._next_type_var_id, namespace=self._reflector._type_var_namespace),
+            TypeVarId(self._mirror._next_type_var_id, namespace=self._mirror._type_var_namespace),
             values,
             upper_bound,
             default,
             variance,
             runtime_object=obj,
         )
-        self._reflector._next_type_var_id += 1
+        self._mirror._next_type_var_id += 1
         return type_var
 
     def _reflect_param_spec(self, obj: ta.ParamSpec) -> ParamSpecType:
-        upper_bound = Instance(self._reflector.get_type_info(object), ())
+        upper_bound = Instance(self._mirror.get_type_info(object), ())
 
         with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
             default_obj = getattr(obj, '__default__', ta.NoDefault)
@@ -1167,16 +1169,16 @@ class _ReflectorRun:
         param_spec = ParamSpecType(
             obj.__name__,
             obj.__name__,
-            TypeVarId(self._reflector._next_type_var_id, namespace=self._reflector._type_var_namespace),
+            TypeVarId(self._mirror._next_type_var_id, namespace=self._mirror._type_var_namespace),
             upper_bound,
             default,
             runtime_object=obj,
         )
-        self._reflector._next_type_var_id += 1
+        self._mirror._next_type_var_id += 1
         return param_spec
 
     def _reflect_type_var_tuple(self, obj: ta.TypeVarTuple) -> TypeVarTupleType:
-        upper_bound = Instance(self._reflector.get_type_info(object), ())
+        upper_bound = Instance(self._mirror.get_type_info(object), ())
 
         with self._pushed_forward_ref_owner(self._forward_ref_module_owner(obj)):
             default_obj = getattr(obj, '__default__', ta.NoDefault)
@@ -1185,17 +1187,17 @@ class _ReflectorRun:
             else:
                 default = self.reflect_type(default_obj)
 
-        tuple_fallback = Instance(self._reflector.get_type_info(tuple), [_make_any()])
+        tuple_fallback = Instance(self._mirror.get_type_info(tuple), [_make_any()])
         type_var_tuple = TypeVarTupleType(
             obj.__name__,
             obj.__name__,
-            TypeVarId(self._reflector._next_type_var_id, namespace=self._reflector._type_var_namespace),
+            TypeVarId(self._mirror._next_type_var_id, namespace=self._mirror._type_var_namespace),
             upper_bound,
             default,
             tuple_fallback,
             runtime_object=obj,
         )
-        self._reflector._next_type_var_id += 1
+        self._mirror._next_type_var_id += 1
         return type_var_tuple
 
 
@@ -1213,42 +1215,42 @@ class MirrorImpl(Mirror):
 
         self._lock = threading.RLock()
 
-        self._reflector = _Reflector(
+        self._internal = _InternalMirror(
             forward_ref_resolver=forward_ref_resolver,
             unresolved_forward_ref_policy=unresolved_forward_ref_policy,
         )
 
     @property
     def forward_ref_resolver(self) -> ForwardRefResolver | None:
-        return self._reflector.forward_ref_resolver
+        return self._internal.forward_ref_resolver
 
     @property
     def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
-        return self._reflector.unresolved_forward_ref_policy
+        return self._internal.unresolved_forward_ref_policy
 
     def get_type_info(self, obj: type | str | ta.NewType) -> TypeInfo:
-        if (cached := self._reflector.get_cached_type_info(obj)) is not None:
+        if (cached := self._internal.get_cached_type_info(obj)) is not None:
             return cached
 
         with self._lock:
-            if (cached := self._reflector.get_cached_type_info(obj)) is not None:
+            if (cached := self._internal.get_cached_type_info(obj)) is not None:
                 return cached
 
             if isinstance(obj, ta.NewType):
-                return self._reflector.get_newtype_info(obj)
+                return self._internal.get_newtype_info(obj)
             else:
-                return self._reflector.get_type_info(obj)
+                return self._internal.get_type_info(obj)
 
     def can_reflect_type(self, obj: object) -> bool:
-        return isinstance(obj, (Type, type)) or _ReflectorRun.can_reflect_type(obj)
+        return isinstance(obj, (Type, type)) or _TypeReflector.can_reflect_type(obj)
 
     def reflect_type(self, obj: object) -> Type:
         if isinstance(obj, Type):
             return obj
 
-        if not self._reflector.is_uncacheable_reflect_type(obj):
-            if (cached := self._reflector.get_cached_reflected_type(obj)) is not None:
+        if not self._internal.is_uncacheable_reflect_type(obj):
+            if (cached := self._internal.get_cached_reflected_type(obj)) is not None:
                 return cached
 
         with self._lock:
-            return self._reflector.reflect_type(obj)
+            return self._internal.reflect_type(obj)
