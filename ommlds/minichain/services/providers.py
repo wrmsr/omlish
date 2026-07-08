@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from ..resources import UseResources
 from ..types import Option
@@ -51,8 +51,9 @@ class GenericServiceProvider(ServiceProvider[ServiceT]):
         self._service_of_provider = service_of_provider
 
     def provide_service(self) -> ta.AsyncContextManager[ServiceT]:
-        rty = rfl.typeof(rfl.get_orig_class(self))
-        [service_cls] = check.isinstance(rty, rfl.Generic).args
+        rty = rfl.reflect_type(rfl.get_orig_class(self))
+        [service_rty] = check.isinstance(rty, rfl.Instance).args
+        service_cls = rfl.get_runtime_type(service_rty)
         return self._service_of_provider.provide_service_of(service_cls)  # type: ignore[return-value]
 
 

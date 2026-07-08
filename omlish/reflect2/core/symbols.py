@@ -48,6 +48,9 @@ class Symbol:
     def runtime_object(self) -> object | None:
         raise NotImplementedError
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}<{self.name}>'
+
 
 @ta.final
 class TypeInfo(Symbol):

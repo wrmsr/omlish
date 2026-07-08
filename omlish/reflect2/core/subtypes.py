@@ -100,6 +100,88 @@ class MroEntry:
         return substitute_type(raw_type, subst_map)
 
 
+class Mro(ta.Sequence[MroEntry]):
+    __slots__ = (
+        '_seq',
+        '_by_info',
+    )
+
+    def __init__(self, entries: ta.Iterable[MroEntry]) -> None:
+        super().__init__()
+
+        self._seq = tuple(entries)
+
+        self._by_info = {entry._info: entry for entry in self._seq}
+
+    #
+
+    def __len__(self) -> int:
+        return len(self._seq)
+
+    def __iter__(self) -> ta.Iterator[MroEntry]:
+        return iter(self._seq)
+
+    def __contains__(self, entry: object) -> bool:
+        return entry in self._seq
+
+    @ta.overload
+    def __getitem__(self, index: int, /) -> MroEntry: ...
+
+    @ta.overload
+    def __getitem__(self, index: slice, /) -> ta.Sequence[MroEntry]: ...
+
+    def __getitem__(self, index, /):
+        return self._seq[index]
+
+    #
+
+    @property
+    def by_info(self) -> ta.Mapping[TypeInfo, MroEntry]:
+        return self._by_info
+
+
+def get_mro_instances(left: Instance) -> list[Instance]:
+    instances: list[Instance] = []
+
+    for info in left._type._mro:
+        instance = get_base_instance(left, info)
+        if instance is None:
+            raise UnsupportedTypeOperationError(f'MRO entry is not mappable: {left!r} -> {info._fullname}')
+        instances.append(instance)
+
+    return instances
+
+
+def get_mro_instances_or_none(left: Instance) -> list[Instance] | None:
+    try:
+        return get_mro_instances(left)
+    except UnsupportedTypeOperationError:
+        return None
+
+
+def get_mro_entries(left: Instance) -> list[MroEntry]:
+    return [
+        MroEntry(instance)
+        for instance in get_mro_instances(left)
+    ]
+
+
+def get_mro_entries_or_none(left: Instance) -> list[MroEntry] | None:
+    instances = get_mro_instances_or_none(left)
+    if instances is None:
+        return None
+    return [
+        MroEntry(instance)
+        for instance in instances
+    ]
+
+
+def get_mro(left: Type) -> Mro:
+    if not isinstance(left, Instance):
+        raise ReflectionTypeError(f'Unsupported MRO source: {left!r}')
+    return Mro(get_mro_entries(left))
+
+
 ##
 
 
@@ -937,42 +1019,6 @@ def get_base_instance_or_none(left: Instance, right_info: TypeInfo) -> Instance 
         return get_base_instance(left, right_info)
     except UnsupportedTypeOperationError:
         return None
-
-
-def get_mro_instances(left: Instance) -> list[Instance]:
-    instances: list[Instance] = []
-
-    for info in left._type._mro:
-        instance = get_base_instance(left, info)
-        if instance is None:
-            raise UnsupportedTypeOperationError(f'MRO entry is not mappable: {left!r} -> {info._fullname}')
-        instances.append(instance)
-
-    return instances
-
-
-def get_mro_instances_or_none(left: Instance) -> list[Instance] | None:
-    try:
-        return get_mro_instances(left)
-    except UnsupportedTypeOperationError:
-        return None
-
-
-def get_mro_entries(left: Instance) -> list[MroEntry]:
-    return [
-        MroEntry(instance)
-        for instance in get_mro_instances(left)
-    ]
-
-
-def get_mro_entries_or_none(left: Instance) -> list[MroEntry] | None:
-    instances = get_mro_instances_or_none(left)
-    if instances is None:
-        return None
-    return [
-        MroEntry(instance)
-        for instance in instances
-    ]
 
 
 def get_base_args(left: Instance, right_info: TypeInfo) -> ta.Sequence[Type] | None:

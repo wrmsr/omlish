@@ -7,6 +7,7 @@ import typing as ta
 
 from .core.substitute import SubstitutionMap
 from .core.substitute import substitute_type
+from .core.subtypes import get_mro
 from .core.types import _ANY_TYPES
 from .core.types import AnyType
 from .core.types import Type
@@ -15,7 +16,6 @@ from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
 from .globals import or_global_mirror
 from .mirror import Mirror
-from .ops import get_mro
 
 
 ##

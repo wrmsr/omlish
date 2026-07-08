@@ -15,6 +15,7 @@ from .symbols import VarianceKind
 
 
 if ta.TYPE_CHECKING:
+    from .subtypes import Mro
     from .typekeys import StandardTypeKeyPolicy
     from .typekeys import TypeKey
     from .typevisitor import TypeVisitor
@@ -734,6 +735,7 @@ class Instance(ProperType):
         '_args',
         '_last_known_value',
         '_extra_attrs',
+        '_mro',
     )
 
     def __init__(
@@ -750,6 +752,8 @@ class Instance(ProperType):
         self._args = tuple(args)
         self._last_known_value = last_known_value
         self._extra_attrs = extra_attrs
+
+        self._mro: list[Mro | None] = [None]  # freethreading hack
 
     @property
     def type(self) -> TypeInfo:
@@ -770,6 +774,17 @@ class Instance(ProperType):
     @property
     def runtime_object(self) -> object | None:
         return self._type.runtime_object
+
+    def mro(self) -> Mro:
+        if (ret := self._mro[0]) is not None:
+            return ret
+
+        from .subtypes import get_mro
+
+        ret = get_mro(self)
+
+        self._mro[0] = ret
+        return ret
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
         return visitor.visit_instance(self)
@@ -1107,6 +1122,7 @@ class UnionType(ProperType):
     def strip_optional(self) -> Type:
         if not self._is_optional:
             return self
+
         if (ret := self._strip_optional[0]) is not None:
             return ret
 
@@ -1117,6 +1133,7 @@ class UnionType(ProperType):
             for item in self._items
             if not isinstance(item, NoneType)
         ])
+
         self._strip_optional[0] = ret
         return ret
 

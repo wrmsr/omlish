@@ -22,6 +22,8 @@ with _lang.auto_proxy_init(globals()):
     from .core.subtypes import (  # noqa
         MroEntry,
         get_mro_entries,
+        get_mro_entries_or_none,
+        get_mro,
     )
 
     from .core.symbols import (  # noqa
@@ -206,7 +208,4 @@ with _lang.auto_proxy_init(globals()):
 
         is_optional,
         strip_optional,
-
-        Mro,
-        get_mro,
     )

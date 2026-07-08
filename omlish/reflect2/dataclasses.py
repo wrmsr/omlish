@@ -2,12 +2,12 @@
 import dataclasses as dc
 import typing as ta
 
+from .core.subtypes import get_mro
 from .core.types import Type
 from .errors import ReflectionTypeError
 from .errors import UnsupportedTypeOperationError
 from .globals import or_global_mirror
 from .mirror import Mirror
-from .ops import get_mro
 
 
 ##
