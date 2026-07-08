@@ -3,7 +3,7 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import marshal as msh
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from .. import jsonschema as jsch
 from .openapi import Reference
 from .openapi import Schema
@@ -13,8 +13,12 @@ from .openapi import Schema
 
 
 def _reference_union_arg(rty: rfl.Type) -> rfl.Type | None:
-    if isinstance(rty, rfl.Union) and len(rty.args) == 2 and Reference in rty.args:
-        return check.single(a for a in rty.args if a is not Reference)
+    if (
+            isinstance(rty, rfl.UnionType) and
+            len(rty.items) == 2 and
+            any(rfl.get_runtime_type_or_none(it) is Reference for it in rty.items)
+    ):
+        return check.single(it for it in rty.items if rfl.get_runtime_type_or_none(it) is not Reference)
     else:
         return None
 
@@ -94,11 +98,11 @@ class _SchemaMarshaler(msh.Marshaler):
 
 class _SchemaMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if rty is not Schema:
+        if rfl.get_runtime_type_or_none(rty) is not Schema:
             return None
         return lambda: _SchemaMarshaler(
             {
-                f: (msh.translate_name(f, msh.Naming.LOW_CAMEL), ctx.make_marshaler(rfl.typeof(a)))
+                f: (msh.translate_name(f, msh.Naming.LOW_CAMEL), ctx.make_marshaler(a))
                 for f, a in dc.reflect(Schema).field_annotations.items()
                 if f != 'keywords'
             },
@@ -130,11 +134,11 @@ class _SchemaUnmarshaler(msh.Unmarshaler):
 
 class _SchemaUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if rty is not Schema:
+        if rfl.get_runtime_type_or_none(rty) is not Schema:
             return None
         return lambda: _SchemaUnmarshaler(
             {
-                msh.translate_name(f, msh.Naming.LOW_CAMEL): (f, ctx.make_unmarshaler(rfl.typeof(a)))
+                msh.translate_name(f, msh.Naming.LOW_CAMEL): (f, ctx.make_unmarshaler(a))
                 for f, a in dc.reflect(Schema).field_annotations.items()
                 if f != 'keywords'
             },

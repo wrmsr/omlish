@@ -3,7 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import dataclasses as dc
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.types import Marshaler
@@ -102,13 +102,11 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
     specials: ObjectSpecials = ObjectSpecials()
 
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not (isinstance(rty, type) and rty in self.dct):
+        if (ty := rfl.get_runtime_type_or_none(rty)) is None or ty not in self.dct:
             return None
 
         def inner() -> Marshaler:
-            ty = check.isinstance(rty, type)
-
-            fis = FieldInfos(self.dct[ty])
+            fis = FieldInfos(self.dct[check.not_none(ty)])
 
             return ObjectMarshaler.make(
                 ctx,

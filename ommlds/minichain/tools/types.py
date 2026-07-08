@@ -8,7 +8,7 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from ..content.content import Content
 from ..metadata import MetadataContainerDataclass
@@ -54,27 +54,29 @@ class PrimitiveToolDtype(ToolDtype):
         if isinstance(obj, PrimitiveToolDtype):
             return obj
 
-        rty = rfl.typeof(obj)
+        rty = rfl.reflect_type(obj)
 
-        if isinstance(rty, (type, rfl.Any)):
-            return PRIMITIVE_TOOL_DTYPE_MAP.get(rty, OBJECT_PRIMITIVE_TOOL_DTYPE)
+        if isinstance(rty, rfl.AnyType):
+            return PRIMITIVE_TOOL_DTYPE_MAP[ta.Any]
 
-        else:
-            raise TypeError(rty)
+        if (pty := rfl.get_runtime_type_or_none(rty)) is not None:
+            return PRIMITIVE_TOOL_DTYPE_MAP.get(pty, OBJECT_PRIMITIVE_TOOL_DTYPE)
+
+        raise TypeError(rty)
 
 
 OBJECT_PRIMITIVE_TOOL_DTYPE = PrimitiveToolDtype('object')
 
 NULL_PRIMITIVE_TOOL_DTYPE = PrimitiveToolDtype('null')
 
-PRIMITIVE_TOOL_DTYPE_MAP: ta.Mapping[rfl.Type, PrimitiveToolDtype] = {
+PRIMITIVE_TOOL_DTYPE_MAP: ta.Mapping[ta.Any, PrimitiveToolDtype] = {
     int: PrimitiveToolDtype('integer'),
     float: PrimitiveToolDtype('number'),
     str: PrimitiveToolDtype('string'),
     bool: PrimitiveToolDtype('boolean'),
     types.NoneType: NULL_PRIMITIVE_TOOL_DTYPE,
 
-    rfl.typeof(ta.Any): PrimitiveToolDtype('any'),
+    ta.Any: PrimitiveToolDtype('any'),
 }
 
 

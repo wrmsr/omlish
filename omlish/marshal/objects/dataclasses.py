@@ -9,7 +9,7 @@ from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
 from ... import metadata as md
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ...lite import marshal as lm
 from ..api.configs import Configs
 from ..api.contexts import MarshalFactoryContext
@@ -149,7 +149,7 @@ class _FieldInfoBuilder:
         # Determine field type (with generic replacement if needed)
 
         if self.dc_rfl.spec.generic_init or merged_opts.generic_replace:
-            f_ty = rfl.to_annotation(self.dc_rfl.fields_inspection.generic_replaced_field_annotations[field.name])
+            f_ty = self.dc_rfl.fields_inspection.generic_replaced_field_annotations[field.name]
         else:
             f_ty = self.dc_rfl.type_hints[field.name]
 
@@ -225,12 +225,9 @@ def get_dataclass_field_infos(
 
 
 def _type_or_generic_base(rty: rfl.Type) -> type | None:
-    if isinstance(rty, rfl.Generic):
-        return rty.cls
-    elif isinstance(rty, type):
-        return rty
-    else:
+    if not isinstance(rty, rfl.Instance):
         return None
+    return rfl.get_runtime_type_or_none(rty)
 
 
 ##

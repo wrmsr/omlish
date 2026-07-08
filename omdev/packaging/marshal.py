@@ -7,7 +7,7 @@ import typing as ta
 
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from .requires import ParsedRequirement
 from .requires import RequiresMarkerItem
@@ -45,7 +45,7 @@ class RequiresMarkerListMarshaler(msh.Marshaler):
 
 class RequiresMarkerListMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if rty is not MarshalRequiresMarkerList:
+        if rty.runtime_object is not MarshalRequiresMarkerList:
             return None
         return lambda: RequiresMarkerListMarshaler(
             ctx.make_marshaler(RequiresMarkerItem),

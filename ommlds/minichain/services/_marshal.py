@@ -10,7 +10,7 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 from omlish import typedvalues as tv
 
 from ..metadata import CommonMetadata
@@ -26,11 +26,13 @@ from .responses import ResponseMetadatas
 ##
 
 
-def _is_rr_rty(rty: rfl.Type) -> bool:
-    return (
-        isinstance(rty, (type, rfl.Generic)) and
-        issubclass(check.not_none(rfl.get_concrete_type(rty)), (Request, Response))
-    )
+def _get_rr_cls(rty: rfl.Type) -> type | None:
+    if (
+            (cls := rfl.get_runtime_type_or_none(rty)) is not None and
+            issubclass(cls, (Request, Response))
+    ):
+        return cls
+    return None
 
 
 class _RrFlds(ta.NamedTuple):
@@ -40,7 +42,7 @@ class _RrFlds(ta.NamedTuple):
 
 
 def _get_rr_flds(rty: rfl.Type) -> _RrFlds:
-    flds = col.make_map_by(lambda f: f.name, dc.fields(check.not_none(rfl.get_concrete_type(rty))), strict=True)
+    flds = col.make_map_by(lambda f: f.name, dc.fields(check.not_none(_get_rr_cls(rty))), strict=True)
     v_fld = flds.pop('v')
     md_fld = flds.pop('_metadata')
     return _RrFlds(
@@ -66,8 +68,8 @@ class _RequestResponseMarshaler(msh.Marshaler):
         tv_v = check.isinstance(tv_m.marshal(ctx, o._typed_values), ta.Sequence)  # noqa
 
         if self.v_m is None:
-            orty: rfl.Generic = check.isinstance(rfl.typeof(rfl.get_orig_class(o)), rfl.Generic)
-            check.state(orty.cls in (Request, Response))
+            orty = check.isinstance(ctx.mirror.reflect_type(rfl.get_orig_class(o)), rfl.Instance)
+            check.state(orty.type.runtime_object in (Request, Response))
             v_rty, tv_rty = orty.args
             v_v = ctx.marshal_factory_context.make_marshaler(v_rty).marshal(ctx, o.v)  # FIXME
         else:
@@ -75,7 +77,7 @@ class _RequestResponseMarshaler(msh.Marshaler):
 
         md_fmd = self.rr_flds.md.metadata[msh.FieldOptions]
         md_mf = check.isinstance(check.not_none(md_fmd.marshal_via).o, msh.MarshalerFactory)
-        md_m = md_mf.make_marshaler(ctx.marshal_factory_context, self.rr_flds.md.type)()  # FIXME
+        md_m = md_mf.make_marshaler(ctx.marshal_factory_context, ctx.mirror.reflect_type(self.rr_flds.md.type))()  # FIXME  # noqa
         md_v = md_m.marshal(ctx, o._metadata)  # noqa
 
         return {
@@ -87,20 +89,14 @@ class _RequestResponseMarshaler(msh.Marshaler):
 
 class _RequestResponseMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if not _is_rr_rty(rty):
+        if _get_rr_cls(rty) is None:
             return None
 
-        if isinstance(rty, type):
-            rty = rfl.typeof(rfl.get_orig_class(rty))
-
         def inner() -> msh.Marshaler:
-            if isinstance(rty, rfl.Generic):
-                v_rty, tv_rty = rty.args
-            else:
-                # FIXME: ...
-                raise TypeError(rty)
+            inst = check.isinstance(rty, rfl.Instance)
+            v_rty, tv_rty = inst.args
             v_m: msh.Marshaler | None = None
-            if not isinstance(v_rty, ta.TypeVar):
+            if not isinstance(v_rty, (rfl.TypeVarType, rfl.AnyType)):
                 v_m = ctx.make_marshaler(v_rty)
             return _RequestResponseMarshaler(
                 rty,
@@ -142,33 +138,30 @@ class _RequestResponseUnmarshaler(msh.Unmarshaler):
 
         check.empty(dct)
 
-        cty = rfl.get_concrete_type(self.rty)
-        return cty(v, tvs, _metadata=md)  # type: ignore
+        cty = check.not_none(_get_rr_cls(self.rty))
+        return cty(v, tvs, _metadata=md)
 
 
 class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if not _is_rr_rty(rty):
+        if _get_rr_cls(rty) is None:
             return None
 
         def inner() -> msh.Unmarshaler:
-            if isinstance(rty, rfl.Generic):
-                v_rty, tv_rty = rty.args
-            else:
-                # FIXME: ...
-                raise TypeError(rty)
+            inst = check.isinstance(rty, rfl.Instance)
+            v_rty, tv_rty = inst.args
 
             rr_flds = _get_rr_flds(rty)
 
-            tv_types_set = check.isinstance(tv_rty, rfl.Union).args
-            tv_ta = tv.TypedValues[ta.Union[*tv_types_set]]  # type: ignore
+            tv_union = check.isinstance(tv_rty, rfl.UnionType)
+            tv_ta = tv.TypedValues[rfl.to_runtime_annotation(tv_union)]  # type: ignore
             tv_u = ctx.make_unmarshaler(tv_ta)
 
             v_u = ctx.make_unmarshaler(v_rty)
 
             md_fmd = rr_flds.md.metadata[msh.FieldOptions]
             md_uf = check.isinstance(check.not_none(md_fmd.unmarshal_via).o, msh.UnmarshalerFactory)
-            md_u = md_uf.make_unmarshaler(ctx, rr_flds.md.type)()  # FIXME
+            md_u = md_uf.make_unmarshaler(ctx, ctx.mirror.reflect_type(rr_flds.md.type))()  # FIXME
 
             return _RequestResponseUnmarshaler(
                 rty,
@@ -186,7 +179,23 @@ class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
 
 class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.UnmarshalerFactory, lang.Abstract):
     _md_cls: ta.ClassVar[type]
-    _mdu_rty: ta.ClassVar[rfl.Type]
+    _mdu_obj: ta.ClassVar[ta.Any]
+
+    @classmethod
+    def _mdu_rty_key(cls) -> ta.Any:
+        try:
+            return cls.__dict__['_mdu_rty_key_cache']
+        except KeyError:
+            pass
+        key = rfl.reflect_type(cls._mdu_obj).type_key()
+        setattr(cls, '_mdu_rty_key_cache', key)
+        return key
+
+    def _is_mdu_rty(self, rty: rfl.Type) -> bool:
+        return rty.type_key() == self._mdu_rty_key()
+
+    def _matches(self, rty: rfl.Type) -> bool:
+        return rfl.get_runtime_type_or_none(rty) is self._md_cls or self._is_mdu_rty(rty)
 
     def _build_impls(self, rty: rfl.Type) -> list[msh.Impl]:
         impls: list[msh.Impl] = []
@@ -201,7 +210,7 @@ class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.Unmarshaler
                 ),
             ))
 
-        if rty == self._mdu_rty:
+        if self._is_mdu_rty(rty):
             impls.extend(msh.polymorphism_from_subclasses(
                 CommonMetadata,
                 naming=msh.Naming.SNAKE,
@@ -210,7 +219,7 @@ class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.Unmarshaler
         return impls
 
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if rty not in (self._md_cls, self._mdu_rty):
+        if not self._matches(rty):
             return None
 
         return lambda: msh.make_polymorphism_marshaler(
@@ -220,7 +229,7 @@ class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.Unmarshaler
         )
 
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if rty not in (self._md_cls, self._mdu_rty):
+        if not self._matches(rty):
             return None
 
         return lambda: msh.make_polymorphism_unmarshaler(
@@ -232,12 +241,12 @@ class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.Unmarshaler
 
 class _RequestMetadataMarshalerUnmarshalerFactory(_MetadataMarshalerUnmarshalerFactory):
     _md_cls = RequestMetadata
-    _mdu_rty = rfl.typeof(RequestMetadatas)
+    _mdu_obj = RequestMetadatas
 
 
 class _ResponseMetadataMarshalerUnmarshalerFactory(_MetadataMarshalerUnmarshalerFactory):
     _md_cls = ResponseMetadata
-    _mdu_rty = rfl.typeof(ResponseMetadatas)
+    _mdu_obj = ResponseMetadatas
 
 
 ##

@@ -12,7 +12,7 @@ import threading
 import typing as ta
 
 from ... import metadata as md
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
 from ..api.types import Marshaler
@@ -35,10 +35,10 @@ FactoryContextT = ta.TypeVar('FactoryContextT', bound=MarshalFactoryContext | Un
 
 
 def _get_polymorphism_metadata(rty: rfl.Type) -> _PolymorphismMetadata | None:
-    if not isinstance(rty, type):
+    if (cls := rfl.get_runtime_type_or_none(rty)) is None:
         return None
 
-    if not (mds := md.get_object_metadata(rty, type=_PolymorphismMetadata)):
+    if not (mds := md.get_object_metadata(cls, type=_PolymorphismMetadata)):
         return None
 
     return mds[-1]
@@ -103,16 +103,18 @@ class PolymorphismMetadataCache:
 
         return self.Lookup(poly, pmd.opts)
 
-    def _lookup_union(self, rty: rfl.Union) -> Lookup | None:
-        if not all(isinstance(a, type) for a in rty.args):
+    def _lookup_union(self, rty: rfl.UnionType) -> Lookup | None:
+        tys = [rfl.get_runtime_type_or_none(it) for it in rty.items]
+        if any(t is None for t in tys):
             return None
+        args = ta.cast('list[type]', tys)
 
-        if not (has_mds := [a for a in rty.args if md.has_object_metadata(a)]):  # noqa
+        if not (has_mds := [a for a in args if md.has_object_metadata(a)]):  # noqa
             return None
 
         if not (pmd_tups := [  # noqa
             (a, pmd)
-            for a in rty.args
+            for a in args
             if (pmd := md.get_single_object_metadata(a, type=_PolymorphismMetadata)) is not None
         ]):
             return None
@@ -121,16 +123,16 @@ class PolymorphismMetadataCache:
             return None
 
         [(pty, pmd)] = pmd_tups
-        if not all(issubclass(a, pty) for a in rty.args):  # type: ignore
+        if not all(issubclass(a, pty) for a in args):
             return None
 
         raise NotImplementedError
 
     def lookup(self, rty: rfl.Type) -> Lookup | None:
-        if isinstance(rty, type):
-            return self._lookup_type(rty)
-        elif isinstance(rty, rfl.Union):
+        if isinstance(rty, rfl.UnionType):
             return self._lookup_union(rty)
+        elif (cls := rfl.get_runtime_type_or_none(rty)) is not None:
+            return self._lookup_type(cls)
         else:
             return None
 

@@ -5,7 +5,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 from omlish import typedvalues as tv
 
 
@@ -54,20 +54,20 @@ def _tv_field_metadata(
         *,
         marshal_name: str | None = None,
 ) -> ta.Mapping:
-    tvc_rty = rfl.typeof(tvc)
+    tvc_rty = rfl.reflect_type(tvc)
 
     ct: ta.Any
-    if isinstance(tvc_rty, type):
-        ct = check.issubclass(tvc, tv.TypedValue)
-    elif isinstance(tvc_rty, rfl.Union):
+    if isinstance(tvc_rty, rfl.Instance):
+        ct = check.issubclass(check.not_none(rfl.get_runtime_type_or_none(tvc_rty)), tv.TypedValue)
+    elif isinstance(tvc_rty, rfl.UnionType):
         ct = tuple(
-            check.issubclass(check.not_none(rfl.get_concrete_type(a)), tv.TypedValue)  # noqa
-            for a in tvc_rty.args
+            check.issubclass(check.not_none(rfl.get_runtime_type_or_none(a)), tv.TypedValue)  # noqa
+            for a in tvc_rty.items
         )
     else:
         raise TypeError(tvc_rty)
 
-    tvs_rty = rfl.typeof(tv.TypedValues[tvc])  # noqa
+    tvs_rty = tv.TypedValues[tvc]  # noqa
 
     return {
         **dc.extra_field_params(

@@ -1,7 +1,6 @@
 import typing as ta
 
-from ... import dataclasses as dc
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
@@ -29,12 +28,18 @@ class ForbiddenMarshalerUnmarshaler(Marshaler, Unmarshaler):
 #
 
 
-@dc.dataclass(frozen=True)
 class ForbiddenTypeMarshalerFactoryUnmarshalerFactory(MarshalerFactory, UnmarshalerFactory):
-    rtys: ta.AbstractSet[rfl.Type]
+    def __init__(self, tys: ta.AbstractSet[ta.Any]) -> None:
+        super().__init__()
+
+        self._tks = frozenset([
+            # FIXME: This does *not* use a marshal context mirror because it doesn't have one.
+            rfl.reflect_type(t).type_key()
+            for t in tys
+        ])
 
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if rty not in self.rtys:
+        if rty.type_key() not in self._tks:
             return None
 
         def inner():
@@ -43,7 +48,7 @@ class ForbiddenTypeMarshalerFactoryUnmarshalerFactory(MarshalerFactory, Unmarsha
         return inner
 
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if rty not in self.rtys:
+        if rty.type_key() not in self._tks:
             return None
 
         def inner():

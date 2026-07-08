@@ -204,6 +204,9 @@ with _lang.auto_proxy_init(globals()):
         get_runtime_type_or_none,
         get_runtime_type,
 
+        is_optional,
+        strip_optional,
+
         Mro,
         get_mro,
     )

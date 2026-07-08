@@ -1,8 +1,7 @@
 import typing as ta
 
-from ... import check
 from ... import dataclasses as dc
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
@@ -29,9 +28,9 @@ class OptionalMarshaler(Marshaler):
 
 class OptionalMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not (isinstance(rty, rfl.Union) and rty.is_optional):
+        if not rfl.is_optional(rty):
             return None
-        return lambda: OptionalMarshaler(ctx.make_marshaler(check.isinstance(rty, rfl.Union).without_none()))
+        return lambda: OptionalMarshaler(ctx.make_marshaler(rfl.strip_optional(rty)))
 
 
 @dc.dataclass(frozen=True)
@@ -46,6 +45,6 @@ class OptionalUnmarshaler(Unmarshaler):
 
 class OptionalUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not (isinstance(rty, rfl.Union) and rty.is_optional):
+        if not rfl.is_optional(rty):
             return None
-        return lambda: OptionalUnmarshaler(ctx.make_unmarshaler(check.isinstance(rty, rfl.Union).without_none()))
+        return lambda: OptionalUnmarshaler(ctx.make_unmarshaler(rfl.strip_optional(rty)))

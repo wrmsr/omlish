@@ -11,14 +11,14 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from .configs import ConfigRegistry
 from .configs import Configs
 from .errors import UnhandledTypeError
 from .internalstate import InternalState
 from .options import _EMPTY_OPTIONS
 from .options import Options
-from .reflect import ReflectOverride
+from .reflect import ContextMirrorState
 
 
 if ta.TYPE_CHECKING:
@@ -35,19 +35,6 @@ T = ta.TypeVar('T')
 type Context = BoundContext | FactoryContext
 type BoundContext = MarshalContext | UnmarshalContext
 type FactoryContext = MarshalFactoryContext | UnmarshalFactoryContext
-
-
-##
-
-
-# @lang.cached_function
-# def _reflect2_smoke_api() -> ta.Any:
-#     # A dedicated, process-wide reflect2 Api for the migration smoke test (see BaseContext._reflect). It runs in the
-#     # 'unbound' policy so genuinely-unresolvable forward references (e.g. lite recursive aliases like packaging's
-#     # RequiresMarkerList) degrade to UnboundType leaves rather than raising - the global reflect2 Api stays strict.
-#     from ... import reflect2 as rfl2
-#
-#     return rfl2.Api(unresolved_forward_ref_policy='unbound')
 
 
 ##
@@ -75,23 +62,12 @@ class BaseContext(lang.Abstract, lang.Sealed):
         object.__setattr__(self, '_internal_state_by_config', ret)
         return ret
 
+    @property
+    def mirror(self) -> rfl.Mirror:
+        return self.internal_state_by_config.get(ContextMirrorState).get_mirror(self.configs)
+
     def _reflect(self, o: ta.Any) -> rfl.Type:
-        def override(o):
-            if (ovr := self.configs.get(o).get(ReflectOverride)) is not None:
-                return ovr.rty
-            return None
-
-        # # Smoke-test reflect2 against the raw runtime types marshal is handed. Skip inputs marshal itself won't
-        # # reflect raw: already-reflected old-system types (`make_marshaler` is re-entered with these, relying on the
-        # # old Reflector's idempotency over its own TypeInfos), and types short-circuited by a ReflectOverride (which
-        # # the old Reflector replaces wholesale, never recursing into their - possibly unreflectable - structure).
-        # if not isinstance(o, rfl.TypeInfo) and override(o) is None:
-        #     _reflect2_smoke_api().reflect_type(o)
-
-        try:
-            return rfl.Reflector(override=override).typeof(o)
-        except Exception as e:  # noqa
-            raise
+        return self.mirror.reflect_type(o)
 
 
 # Regrettable, but we want to forbid non-factory contexts from having different configs than their factory context.

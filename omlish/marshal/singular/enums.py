@@ -7,7 +7,7 @@ import typing as ta
 
 from ... import check
 from ... import dataclasses as dc
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
@@ -69,13 +69,13 @@ class EnumMarshalerFactory(MarshalerFactory):
     mode: EnumMode = EnumMode.NAME
 
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not (isinstance(rty, type) and issubclass(rty, enum.Enum)):
+        if (ety := rfl.get_runtime_type_or_none(rty)) is None or not issubclass(ety, enum.Enum):
             return None
         cls: ta.Any = {
             EnumMode.NAME: EnumNameMarshaler,
             EnumMode.VALUE: EnumValueMarshaler,
         }[self.mode]
-        return lambda: cls(rty)
+        return lambda: cls(ety)
 
 
 @dc.dataclass(frozen=True)
@@ -83,10 +83,10 @@ class EnumUnmarshalerFactory(UnmarshalerFactory):
     mode: EnumMode = EnumMode.NAME
 
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not (isinstance(rty, type) and issubclass(rty, enum.Enum)):
+        if (ety := rfl.get_runtime_type_or_none(rty)) is None or not issubclass(ety, enum.Enum):
             return None
         cls: ta.Any = {
             EnumMode.NAME: EnumNameUnmarshaler,
             EnumMode.VALUE: EnumValueUnmarshaler,
         }[self.mode]
-        return lambda: cls(rty)
+        return lambda: cls(ety)

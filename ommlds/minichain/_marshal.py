@@ -3,7 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from .json import JsonValue
 
@@ -13,7 +13,7 @@ from .json import JsonValue
 
 @dc.dataclass()
 class _TypedValuesFieldMarshalerFactory(msh.MarshalerFactory):
-    tvs_rty: rfl.Type
+    tvs_rty: ta.Any
 
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         return lambda: msh.build_typed_values_marshaler(ctx, self.tvs_rty)
@@ -21,7 +21,7 @@ class _TypedValuesFieldMarshalerFactory(msh.MarshalerFactory):
 
 @dc.dataclass()
 class _TypedValuesFieldUnmarshalerFactory(msh.UnmarshalerFactory):
-    tvs_rty: rfl.Type
+    tvs_rty: ta.Any
 
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         return lambda: msh.build_typed_values_unmarshaler(ctx, self.tvs_rty)
@@ -36,14 +36,14 @@ class MarshalJsonValue(lang.NotInstantiable, lang.Final):
 
 class _JsonValueMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if rty is not MarshalJsonValue:
+        if rfl.get_runtime_type_or_none(rty) is not MarshalJsonValue:
             return None
         return lambda: msh.NopMarshalerUnmarshaler()
 
 
 class _JsonValueUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if rty is not MarshalJsonValue:
+        if rfl.get_runtime_type_or_none(rty) is not MarshalJsonValue:
             return None
         return lambda: msh.NopMarshalerUnmarshaler()
 

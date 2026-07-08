@@ -1,3 +1,4 @@
+from .... import reflect2 as rfl
 from ...api.configs import ConfigRegistry
 from ...api.contexts import MarshalFactoryContext
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
@@ -16,5 +17,5 @@ def test_lazyinit():
     for _ in range(2):
         mf = LazyInitRunningMarshalerFactory(PRIMITIVE_MARSHALER_FACTORY)
         mfc = MarshalFactoryContext(configs=cfgs)
-        mr = mf.make_marshaler(mfc, int)
+        mr = mf.make_marshaler(mfc, rfl.reflect_type(int))
         print(mr)

@@ -3,7 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import dataclasses as dc
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import UnmarshalContext
 from ..api.contexts import UnmarshalFactoryContext
 from ..api.types import Unmarshaler
@@ -144,17 +144,15 @@ class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
     specials: ObjectSpecials = ObjectSpecials()
 
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not (isinstance(rty, type) and rty in self.dct):
+        if (ty := rfl.get_runtime_type_or_none(rty)) is None or ty not in self.dct:
             return None
 
         def inner() -> Unmarshaler:
-            ty = check.isinstance(rty, type)
-
-            fis = FieldInfos(self.dct[ty])
+            fis = FieldInfos(self.dct[check.not_none(ty)])
 
             return ObjectUnmarshaler.make(
                 ctx,
-                ty,
+                check.not_none(ty),
                 fis,
                 specials=self.specials,
             )

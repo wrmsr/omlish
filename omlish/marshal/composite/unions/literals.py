@@ -4,7 +4,7 @@ from .... import check
 from .... import collections as col
 from .... import dataclasses as dc
 from .... import lang
-from .... import reflect as rfl
+from .... import reflect2 as rfl
 from ...api.contexts import MarshalContext
 from ...api.contexts import MarshalFactoryContext
 from ...api.contexts import UnmarshalContext
@@ -27,24 +27,27 @@ LITERAL_UNION_TYPES: tuple[type, ...] = (
 
 class DestructuredLiteralUnionType(ta.NamedTuple):
     v_ty: type
-    lit: rfl.Literal
+    lit: rfl.Type
     non_lit: rfl.Type
 
 
 def _destructure_literal_union_type(rty: rfl.Type) -> DestructuredLiteralUnionType | None:
-    if not isinstance(rty, rfl.Union):
+    if not isinstance(rty, rfl.UnionType):
         return None
-    lits, non_lits = col.partition(rty.args, lang.isinstance_of(rfl.Literal))  # noqa
-    if len(lits) != 1 or len(non_lits) != 1:
+    lits, non_lits = col.partition(rty.items, lang.isinstance_of(rfl.LiteralType))  # noqa
+    if not lits or len(non_lits) != 1:
         return None
-    lit = check.isinstance(check.single(lits), rfl.Literal)
-    v_tys = set(map(type, lit.args))
+    lit_tys = [check.isinstance(lit, rfl.LiteralType) for lit in lits]
+    if any(lit.fallback.type.is_enum for lit in lit_tys):
+        return None
+    v_tys = {type(lit.value) for lit in lit_tys}
     if len(v_tys) != 1:
         return None
     [v_ty] = v_tys
-    if v_ty in rty.args or v_ty not in LITERAL_UNION_TYPES:
+    non_lit = check.single(non_lits)
+    if rfl.get_runtime_type_or_none(non_lit) is v_ty or v_ty not in LITERAL_UNION_TYPES:
         return None
-    return DestructuredLiteralUnionType(v_ty, lit, check.single(non_lits))
+    return DestructuredLiteralUnionType(v_ty, rfl.make_union(list(lits)), non_lit)
 
 
 #

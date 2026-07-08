@@ -8,7 +8,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from ..content.content import Content
 from ..content.json import JsonContent

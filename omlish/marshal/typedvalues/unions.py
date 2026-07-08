@@ -1,7 +1,7 @@
 import typing as ta
 
 from ... import check
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ... import typedvalues as tv
 from ..api.contexts import BaseContext
 from ..api.contexts import MarshalFactoryContext
@@ -26,11 +26,10 @@ from ..polymorphism.unmarshal import make_polymorphism_unmarshaler
 
 def _is_typed_values_union(rty: rfl.Type) -> bool:
     return (
-        isinstance(rty, rfl.Union) and
+        isinstance(rty, rfl.UnionType) and
         all(
-            (isinstance(a, type) and issubclass(a, tv.TypedValue)) or
-            (isinstance(a, rfl.Generic) and issubclass(a.cls, tv.TypedValue))
-            for a in rty.args
+            (cls := rfl.get_runtime_type_or_none(a)) is not None and issubclass(cls, tv.TypedValue)
+            for a in rty.items
         )
     )
 
@@ -50,10 +49,11 @@ def _build_typed_value_union_poly(ctx: BaseContext, rty: rfl.Type) -> Impls:
 
         return [i.ty for i in impls]
 
-    tv_cls_set = tv.reflect_typed_values_impls(
+    tv_cls_set = tv.reflect2_typed_values_impls(
         rty,
         find_abstract_subclasses=True,
         get_unsealed_subclasses=gus,
+        mirror=ctx.mirror,
     )
 
     return Impls([

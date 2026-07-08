@@ -1,7 +1,7 @@
 import typing as ta
 
 from ... import metadata as md
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
 from ..api.types import Marshaler
@@ -24,7 +24,10 @@ T = ta.TypeVar('T')
 
 class ViaConfigMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if (via := ctx.configs.get(rty).get(MarshalVia)) is None:
+        if (key := rty.runtime_object) is None:
+            return None
+
+        if (via := ctx.configs.get(key).get(MarshalVia)) is None:
             return None
 
         return lambda: make_marshaler_via(ctx, rty, via)
@@ -32,7 +35,10 @@ class ViaConfigMarshalerFactory(MarshalerFactory):
 
 class ViaConfigUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if (via := ctx.configs.get(rty).get(UnmarshalVia)) is None:
+        if (key := rty.runtime_object) is None:
+            return None
+
+        if (via := ctx.configs.get(key).get(UnmarshalVia)) is None:
             return None
 
         return lambda: make_unmarshaler_via(ctx, rty, via)
@@ -42,10 +48,10 @@ class ViaConfigUnmarshalerFactory(UnmarshalerFactory):
 
 
 def _get_via_metadata(rty: rfl.Type, md_cls: type[T]) -> T | None:
-    if not isinstance(rty, type):
+    if (cls := rfl.get_runtime_type_or_none(rty)) is None:
         return None
 
-    return md.get_single_object_metadata(rty, type=md_cls)
+    return md.get_single_object_metadata(cls, type=md_cls)
 
 
 class ViaMetadataMarshalerFactory(MarshalerFactory):

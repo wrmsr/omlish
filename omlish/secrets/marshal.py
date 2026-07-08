@@ -9,7 +9,6 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import marshal as msh
-from .. import reflect as rfl
 from .secrets import Secret
 from .secrets import SecretRef
 from .secrets import SecretRefOrStr
@@ -61,9 +60,9 @@ def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
         msh.ForbiddenTypeUnmarshalerFactory({Secret}),
 
         msh.TypeMapMarshalerFactory({
-            rfl.typeof(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
+            SecretRefOrStr: StrOrSecretRefMarshalerUnmarshaler(),
         }),
         msh.TypeMapUnmarshalerFactory({
-            rfl.typeof(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
+            SecretRefOrStr: StrOrSecretRefMarshalerUnmarshaler(),
         }),
     )

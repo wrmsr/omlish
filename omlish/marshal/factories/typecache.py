@@ -5,7 +5,7 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
 from ..api.internalstate import InternalState
@@ -16,13 +16,13 @@ from ..api.types import UnmarshalerFactory
 
 
 FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
-ImplT = ta.TypeVar('ImplT', bound=Marshaler | Unmarshaler)
+HandlerT = ta.TypeVar('HandlerT', bound=Marshaler | Unmarshaler)
 
 
 ##
 
 
-class _TypeCacheFactory(ta.Generic[FactoryT, ImplT]):
+class _TypeCacheFactory(ta.Generic[FactoryT, HandlerT]):
     def __init__(self, fac: FactoryT) -> None:
         super().__init__()
 
@@ -32,7 +32,7 @@ class _TypeCacheFactory(ta.Generic[FactoryT, ImplT]):
 
     @dc.dataclass(frozen=True, eq=False)
     class _State(InternalState.ByConfig.ByHandler.Entry, lang.Final):
-        dct: dict[rfl.Type, ta.Any | None] = dc.field(default_factory=dict)
+        dct: dict[rfl.TypeKey, ta.Any | None] = dc.field(default_factory=dict)
 
         lock: threading.RLock = dc.field(default_factory=threading.RLock)
 
@@ -40,23 +40,25 @@ class _TypeCacheFactory(ta.Generic[FactoryT, ImplT]):
             self,
             st: _State,
             rty: rfl.Type,
-            dfl: ta.Callable[[], ta.Callable[[], ImplT] | None],
-    ) -> ta.Callable[[], ImplT] | None:
-        check.isinstance(rty, rfl.TYPES)
+            dfl: ta.Callable[[], ta.Callable[[], HandlerT] | None],
+    ) -> ta.Callable[[], HandlerT] | None:
+        check.isinstance(rty, rfl.Type)
+
+        key = rty.type_key()
 
         try:
-            return st.dct[rty]
+            return st.dct[key]
         except KeyError:
             pass
 
         with st.lock:
             try:
-                return st.dct[rty]
+                return st.dct[key]
             except KeyError:
                 pass
 
             if (m := dfl()) is None:
-                st.dct[rty] = None
+                st.dct[key] = None
                 return None
 
             x = None
@@ -67,7 +69,7 @@ class _TypeCacheFactory(ta.Generic[FactoryT, ImplT]):
                     x = m()
                 return x
 
-            st.dct[rty] = inner
+            st.dct[key] = inner
             return inner
 
 

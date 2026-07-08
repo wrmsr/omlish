@@ -3,7 +3,7 @@ import typing as ta
 from .... import check
 from .... import collections as col
 from .... import dataclasses as dc
-from .... import reflect as rfl
+from .... import reflect2 as rfl
 from ...api.contexts import MarshalContext
 from ...api.contexts import MarshalFactoryContext
 from ...api.contexts import UnmarshalContext
@@ -35,14 +35,17 @@ def _destructure_primitive_union_type(
         rty: rfl.Type,
         prim_tys: ta.Container[type] = PRIMITIVE_UNION_TYPES,
 ) -> DestructuredPrimitiveUnionType | None:
-    if not isinstance(rty, rfl.Union):
+    if not isinstance(rty, rfl.UnionType):
         return None
 
-    pr = col.partition(rty.args, lambda a: isinstance(a, type) and a in prim_tys)
+    pr = col.partition(rty.items, lambda a: rfl.get_runtime_type_or_none(a) in prim_tys)
     if not pr.t or len(pr.f) > 1:
         return None
 
-    return DestructuredPrimitiveUnionType(*pr)  # type: ignore[arg-type]
+    return DestructuredPrimitiveUnionType(
+        [check.not_none(rfl.get_runtime_type_or_none(a)) for a in pr.t],
+        pr.f,
+    )
 
 
 #

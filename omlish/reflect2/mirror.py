@@ -40,10 +40,7 @@ DEFAULT_UNRESOLVED_FORWARD_REF_POLICY: ta.Final[UnresolvedForwardRefPolicy] = 'u
 
 
 class Mirror:
-    """
-    TypeInfo and Type objects strictly flow *out of* a mirror, never into. The only methods that take them as parameters
-    simply query internal state for their presence - no mutation is done on their behalf.
-    """
+    """TypeInfo and Type objects strictly flow *out of* a mirror, never into."""
 
     @property
     @abc.abstractmethod
@@ -54,6 +51,13 @@ class Mirror:
     @abc.abstractmethod
     def unresolved_forward_ref_policy(self) -> UnresolvedForwardRefPolicy | None:
         raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def reflect_substitutor(self) -> ReflectSubstitutor | None:
+        raise NotImplementedError
+
+    #
 
     @abc.abstractmethod
     def get_type_info(self, obj: type | str | ta.NewType) -> TypeInfo:

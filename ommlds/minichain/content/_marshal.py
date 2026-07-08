@@ -5,7 +5,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from .blank import BlankContent
 from .code import BlockCodeContent
@@ -53,7 +53,7 @@ MarshalContentUnion: ta.TypeAlias = ta.Union[  # noqa
 ]
 
 
-_MARSHAL_CONTENT_UNION_RTY = rfl.typeof(MarshalContentUnion)
+_MARSHAL_CONTENT_UNION_RTY_KEY = rfl.reflect_type(MarshalContentUnion).type_key()
 
 
 @dc.dataclass(frozen=True)
@@ -73,7 +73,10 @@ class _ContentMarshaler(msh.Marshaler):
 
 class _ContentMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
+        if not (
+                rfl.get_runtime_type_or_none(rty) is MarshalContent or
+                rty.type_key() == _MARSHAL_CONTENT_UNION_RTY_KEY
+        ):
             return None
         return lambda: _ContentMarshaler(ctx.make_marshaler(ContentBase))
 
@@ -95,7 +98,10 @@ class _ContentUnmarshaler(msh.Unmarshaler):
 
 class _ContentUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
+        if not (
+                rfl.get_runtime_type_or_none(rty) is MarshalContent or
+                rty.type_key() == _MARSHAL_CONTENT_UNION_RTY_KEY
+        ):
             return None
         return lambda: _ContentUnmarshaler(ctx.make_unmarshaler(ContentBase))
 
@@ -107,7 +113,7 @@ class MarshalSingleRawContent(lang.NotInstantiable, lang.Final):
     pass
 
 
-_SINGLE_RAW_CONTENT_UNION_RTY = rfl.typeof(SingleRawContent)
+_SINGLE_RAW_CONTENT_UNION_RTY_KEY = rfl.reflect_type(SingleRawContent).type_key()
 
 
 @dc.dataclass(frozen=True)
@@ -125,7 +131,10 @@ class _SingleRawContentMarshaler(msh.Marshaler):
 
 class _SingleRawContentMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if not (rty is MarshalSingleRawContent or rty == _SINGLE_RAW_CONTENT_UNION_RTY):
+        if not (
+                rfl.get_runtime_type_or_none(rty) is MarshalSingleRawContent or
+                rty.type_key() == _SINGLE_RAW_CONTENT_UNION_RTY_KEY
+        ):
             return None
         return lambda: _SingleRawContentMarshaler(ctx.make_marshaler(NonStrSingleRawContent))
 
@@ -145,7 +154,10 @@ class _SingleRawContentUnmarshaler(msh.Unmarshaler):
 
 class _SingleRawContentUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if not (rty is MarshalSingleRawContent or rty == _SINGLE_RAW_CONTENT_UNION_RTY):
+        if not (
+                rfl.get_runtime_type_or_none(rty) is MarshalSingleRawContent or
+                rty.type_key() == _SINGLE_RAW_CONTENT_UNION_RTY_KEY
+        ):
             return None
         return lambda: _SingleRawContentUnmarshaler(ctx.make_unmarshaler(NonStrSingleRawContent))
 
@@ -163,7 +175,7 @@ MarshalRawContentUnion: ta.TypeAlias = ta.Union[  # noqa
 ]
 
 
-_MARSHAL_RAW_CONTENT_UNION_RTY = rfl.typeof(MarshalRawContentUnion)
+_MARSHAL_RAW_CONTENT_UNION_RTY_KEY = rfl.reflect_type(MarshalRawContentUnion).type_key()
 
 
 @dc.dataclass(frozen=True)
@@ -183,7 +195,10 @@ class _RawContentMarshaler(msh.Marshaler):
 
 class _RawContentMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if not (rty is MarshalRawContent or rty == _MARSHAL_RAW_CONTENT_UNION_RTY):
+        if not (
+                rfl.get_runtime_type_or_none(rty) is MarshalRawContent or
+                rty.type_key() == _MARSHAL_RAW_CONTENT_UNION_RTY_KEY
+        ):
             return None
         return lambda: _RawContentMarshaler(ctx.make_marshaler(NonStrSingleRawContent))
 
@@ -205,7 +220,10 @@ class _RawContentUnmarshaler(msh.Unmarshaler):
 
 class _RawContentUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if not (rty is MarshalRawContent or rty == _MARSHAL_RAW_CONTENT_UNION_RTY):
+        if not (
+                rfl.get_runtime_type_or_none(rty) is MarshalRawContent or
+                rty.type_key() == _MARSHAL_RAW_CONTENT_UNION_RTY_KEY
+        ):
             return None
         return lambda: _RawContentUnmarshaler(ctx.make_unmarshaler(NonStrSingleRawContent))
 

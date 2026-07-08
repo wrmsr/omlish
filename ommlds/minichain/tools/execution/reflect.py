@@ -8,7 +8,7 @@ import typing as ta
 from omlish import contextual as cxl
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from ..fns import ToolFn
 from ..reflect import reflect_tool_spec
@@ -45,7 +45,7 @@ def reflect_tool_catalog_entry(
             # FIXME: dedupe vs ToolReflector
             if not include_contextual_params and cxl.is_unbound_param(p.default):
                 continue
-            p_rty = rfl.typeof(p.annotation)
+            p_rty = rfl.reflect_type(p.annotation)
             if not no_marshal_check:
                 msh.global_marshaling().new_unmarshal_factory_context().make_unmarshaler(p_rty)
             in_rtys[p.name] = p_rty
@@ -57,7 +57,7 @@ def reflect_tool_catalog_entry(
 
     tf_output: ToolFn.Output
     if marshal_output:
-        out_rty = rfl.typeof(sig.return_annotation)
+        out_rty = rfl.reflect_type(sig.return_annotation)
         if not no_marshal_check:
             msh.global_marshaling().new_marshal_factory_context().make_marshaler(out_rty)
         tf_output = ToolFn.MarshalOutput(out_rty)

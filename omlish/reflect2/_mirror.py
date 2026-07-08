@@ -1402,6 +1402,7 @@ class MirrorImpl(Mirror):
             reflect_substitutor=reflect_substitutor,
         )
 
+        # FIXME: seed in root
         for known in _KNOWNS:
             self.reflect_type(known.type)
 

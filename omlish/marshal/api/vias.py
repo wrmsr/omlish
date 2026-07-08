@@ -1,10 +1,10 @@
+# ruff: noqa: SLF001
 import dataclasses as dc
 import typing as ta
 
 from ... import check
 from ... import lang
 from ... import metadata as md
-from ... import reflect as rfl
 from ... import typedvalues as tv
 from .configs import Config
 from .contexts import MarshalFactoryContext
@@ -58,13 +58,14 @@ def kw_marshal_unmarshal_via(o: ta.Any) -> ta.Any:
 ##
 
 
-def make_marshaler_via(ctx: MarshalFactoryContext, rty: rfl.Type, via: MarshalVia) -> Marshaler:
+def make_marshaler_via(ctx: MarshalFactoryContext, ty: ta.Any, via: MarshalVia) -> Marshaler:
     o = via.o
 
     if isinstance(o, Marshaler):
         return o
 
     if isinstance(o, MarshalerFactory):
+        rty = ctx._reflect(ty)
         if (m := o.make_marshaler(ctx, rty)) is None:
             raise UnhandledTypeError(rty)
         return m()
@@ -72,13 +73,14 @@ def make_marshaler_via(ctx: MarshalFactoryContext, rty: rfl.Type, via: MarshalVi
     return ctx.make_marshaler(o)
 
 
-def make_unmarshaler_via(ctx: UnmarshalFactoryContext, rty: rfl.Type, via: UnmarshalVia) -> Unmarshaler:
+def make_unmarshaler_via(ctx: UnmarshalFactoryContext, ty: ta.Any, via: UnmarshalVia) -> Unmarshaler:
     o = via.o
 
     if isinstance(o, Unmarshaler):
         return o
 
     if isinstance(o, UnmarshalerFactory):
+        rty = ctx._reflect(ty)
         if (m := o.make_unmarshaler(ctx, rty)) is None:
             raise UnhandledTypeError(rty)
         return m()

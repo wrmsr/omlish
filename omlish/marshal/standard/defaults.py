@@ -3,6 +3,8 @@ import typing as ta
 
 from ..api.types import MarshalerFactory
 from ..api.types import UnmarshalerFactory
+from ..composite.aliases import TypeAliasMarshalerFactory
+from ..composite.aliases import TypeAliasUnmarshalerFactory
 from ..composite.iterables import IterableMarshalerFactory
 from ..composite.iterables import IterableUnmarshalerFactory
 from ..composite.literals import LiteralMarshalerFactory
@@ -81,6 +83,7 @@ class DefaultStandardFactories(ta.NamedTuple):
 DEFAULT_STANDARD_FACTORIES: ta.Final = DefaultStandardFactories.of_pairs([
     (ViaConfigMarshalerFactory(),            ViaConfigUnmarshalerFactory()),
     (ViaMetadataMarshalerFactory(),          ViaMetadataUnmarshalerFactory()),
+    (TypeAliasMarshalerFactory(),            TypeAliasUnmarshalerFactory()),
     (OPAQUE_REPR_MARSHALER_FACTORY,          OPAQUE_REPR_UNMARSHALER_FACTORY),
     (PRIMITIVE_MARSHALER_FACTORY,            PRIMITIVE_UNMARSHALER_FACTORY),
     (NewtypeMarshalerFactory(),              NewtypeUnmarshalerFactory()),

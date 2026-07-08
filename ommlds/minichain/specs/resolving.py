@@ -12,7 +12,7 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 from omlish.formats import json5
 from omlish.manifests.globals import GlobalManifestLoader
 
@@ -162,7 +162,7 @@ class ConfigBackendSpecTypeResolver(BackendSpecTypeResolver[ConfigBackendSpec]):
         check.state(cfgs_arg.kind == inspect.Parameter.VAR_POSITIONAL)
         check.is_not(cfgs_arg.annotation, inspect.Parameter.empty)
         check.is_not(cfgs_arg.annotation, Config)
-        return rfl.typeof(cfgs_arg.annotation)
+        return rfl.reflect_type(cfgs_arg.annotation)
 
 
 #

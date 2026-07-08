@@ -1,7 +1,7 @@
 import typing as ta
 
 from ... import check
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.configs import ConfigRegistry
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
@@ -20,9 +20,9 @@ def test_literal():
     mf = StandardMarshalerFactory()
     mfc = MarshalFactoryContext(configs=r, marshaler_factory=mf)
     mc = MarshalContext(marshal_factory_context=mfc)
-    assert check.not_none(mf.make_marshaler(mfc, rfl.typeof(Foo)))().marshal(mc, 'a') == 'a'
+    assert check.not_none(mf.make_marshaler(mfc, rfl.reflect_type(Foo)))().marshal(mc, 'a') == 'a'
 
     uf = StandardUnmarshalerFactory()
     ufc = UnmarshalFactoryContext(configs=r, unmarshaler_factory=uf)
     uc = UnmarshalContext(unmarshal_factory_context=ufc)
-    assert check.not_none(uf.make_unmarshaler(ufc, rfl.typeof(Foo)))().unmarshal(uc, 'a') == 'a'
+    assert check.not_none(uf.make_unmarshaler(ufc, rfl.reflect_type(Foo)))().unmarshal(uc, 'a') == 'a'

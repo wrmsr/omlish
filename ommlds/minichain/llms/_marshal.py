@@ -7,7 +7,7 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from .tokens import Tokens
 
@@ -17,13 +17,12 @@ from .tokens import Tokens
 
 class TokensMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if rty is not Tokens:
+        if rfl.get_runtime_type_or_none(rty) is not Tokens:
             return None
 
         dc_rfl = dc.reflect(Tokens)
         dc_f = check.single(dc_rfl.fields.values())
-        v_rty = rfl.typeof(dc_f.type)
-        v_m = ctx.make_marshaler(v_rty)
+        v_m = ctx.make_marshaler(dc_f.type)
         f_n = dc_f.name
 
         def inner() -> msh.Marshaler:
@@ -34,13 +33,12 @@ class TokensMarshalerFactory(msh.MarshalerFactory):
 
 class TokensUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if rty is not Tokens:
+        if rfl.get_runtime_type_or_none(rty) is not Tokens:
             return None
 
         dc_rfl = dc.reflect(Tokens)
         dc_f = check.single(dc_rfl.fields.values())
-        v_rty = rfl.typeof(dc_f.type)
-        v_u = ctx.make_unmarshaler(v_rty)
+        v_u = ctx.make_unmarshaler(dc_f.type)
 
         def inner() -> msh.Unmarshaler:
             return msh.WrappedUnmarshaler(lambda _, v: Tokens(v), v_u)

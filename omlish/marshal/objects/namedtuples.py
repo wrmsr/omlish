@@ -3,7 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
 from ..api.types import Marshaler
@@ -19,16 +19,23 @@ from .unmarshal import ObjectUnmarshaler
 ##
 
 
-def _is_namedtuple(rty: rfl.Type) -> bool:
-    return (
-        isinstance(rty, type) and
-        issubclass(rty, tuple) and
-        ta.NamedTuple in rfl.get_orig_bases(rty)
-    )
+def _get_namedtuple_cls(rty: rfl.Type) -> type | None:
+    if (
+            isinstance(rty, rfl.Instance) and
+            (cls := rfl.get_runtime_type_or_none(rty)) is not None and
+            issubclass(cls, tuple) and
+            ta.NamedTuple in rfl.get_orig_bases(cls)
+    ):
+        return cls
+    return None
+
+
+def _is_namedtuple_cls(ty: type) -> bool:
+    return issubclass(ty, tuple) and ta.NamedTuple in rfl.get_orig_bases(ty)
 
 
 def get_namedtuple_field_infos(ty: type) -> FieldInfos:
-    check.arg(_is_namedtuple(ty), ty)
+    check.arg(_is_namedtuple_cls(ty), ty)
 
     sig = inspect.signature(ty)
 
@@ -50,12 +57,11 @@ def get_namedtuple_field_infos(ty: type) -> FieldInfos:
 
 class NamedtupleMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not _is_namedtuple(rty):
+        if (cls := _get_namedtuple_cls(rty)) is None:
             return None
 
         def inner() -> Marshaler:
-            check.state(_is_namedtuple(rty))
-            ty = check.isinstance(rty, type)
+            ty = check.not_none(cls)
             check.state(not lang.is_abstract_class(ty))
 
             fis = get_namedtuple_field_infos(ty)
@@ -78,12 +84,11 @@ class NamedtupleMarshalerFactory(MarshalerFactory):
 
 class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not _is_namedtuple(rty):
+        if (cls := _get_namedtuple_cls(rty)) is None:
             return None
 
         def inner() -> Unmarshaler:
-            check.state(_is_namedtuple(rty))
-            ty = check.isinstance(rty, type)
+            ty = check.not_none(cls)
             check.state(not lang.is_abstract_class(ty))
 
             fis = get_namedtuple_field_infos(ty)

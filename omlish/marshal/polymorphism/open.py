@@ -12,7 +12,7 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.configs import ConfigRegistry
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
@@ -138,7 +138,7 @@ class OpenPolymorphismMarshalerFactory(MarshalerFactory):
     opts: PolymorphismOptions = PolymorphismOptions()
 
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if rty != self.ty:
+        if rfl.get_runtime_type_or_none(rty) is not self.ty:
             return None
         return lambda: OpenPolymorphismMarshaler(self.ty, self.opts)
 
@@ -149,6 +149,6 @@ class OpenPolymorphismUnmarshalerFactory(UnmarshalerFactory):
     opts: PolymorphismOptions = PolymorphismOptions()
 
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if rty != self.ty:
+        if rfl.get_runtime_type_or_none(rty) is not self.ty:
             return None
         return lambda: OpenPolymorphismUnmarshaler(self.ty, self.opts)

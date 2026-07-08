@@ -2,7 +2,7 @@ import dataclasses as dc
 import typing as ta
 
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from .contexts import MarshalContext
 from .contexts import MarshalFactoryContext
 from .contexts import UnmarshalContext

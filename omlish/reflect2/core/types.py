@@ -6,6 +6,7 @@ code it is hidden behind properties.
 import enum
 import typing as ta
 
+from ..errors import ReflectionTypeError
 from ..errors import ReflectionValueError
 from .symbols import ArgKind
 from .symbols import TypeAlias
@@ -83,6 +84,22 @@ class Type:
     def runtime_object(self) -> object | None:
         return None
 
+    def runtime_object_or_raise(self) -> object:
+        if (rto := self.runtime_object) is None:
+            raise ReflectionTypeError(f'No runtime object available for {self!r}')
+        return rto
+
+    @property
+    def runtime_type(self) -> type | None:
+        if not isinstance(rto := self.runtime_object, type):
+            return None
+        return rto
+
+    def runtime_type_or_raise(self) -> type:
+        if (rto := self.runtime_type) is None:
+            raise ReflectionTypeError(f'No runtime type available for {self!r}')
+        return rto
+
     #
 
     def type_key_or_none(self, policy: StandardTypeKeyPolicy = 'default') -> TypeKey | None:
@@ -144,6 +161,12 @@ class TypeAliasType(Type):
             self._alias._is_recursive = is_recursive_alias(self._alias)
 
         return self._alias._is_recursive  # noqa
+
+    @property
+    def runtime_object(self) -> object | None:
+        if (alias := self._alias) is None:
+            return None
+        return alias._runtime_object
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
         return visitor.visit_type_alias_type(self)

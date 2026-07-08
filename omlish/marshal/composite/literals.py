@@ -1,12 +1,8 @@
-"""
-TODO:
- - squash literal unions - typing machinery doesn't
-"""
 import typing as ta
 
 from ... import check
 from ... import dataclasses as dc
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
@@ -16,6 +12,40 @@ from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
 from ..api.values import Value
+
+
+##
+
+
+def get_literal_types(rty: rfl.Type) -> ta.Sequence[rfl.LiteralType] | None:
+    """
+    The literal members of a reflected literal type - a single LiteralType or a union of nothing but LiteralTypes
+    (`Literal['a', 'b']` reflects as the latter). Enum-backed literals are excluded - their reflected values are member
+    *names*, not the runtime literal values these marshalers traffic in.
+    """
+
+    lits: ta.Sequence[rfl.Type]
+    if isinstance(rty, rfl.LiteralType):
+        lits = [rty]
+    elif isinstance(rty, rfl.UnionType) and all(isinstance(it, rfl.LiteralType) for it in rty.items):
+        lits = rty.items
+    else:
+        return None
+
+    ret: list[rfl.LiteralType] = []
+    for lit in lits:
+        lit = check.isinstance(lit, rfl.LiteralType)
+        if lit.fallback.type.is_enum:
+            return None
+        ret.append(lit)
+    return ret
+
+
+def _single_literal_value_type(lits: ta.Sequence[rfl.LiteralType]) -> type | None:
+    v_tys = {type(lit.value) for lit in lits}
+    if len(v_tys) != 1:
+        return None
+    return check.single(v_tys)
 
 
 ##
@@ -32,10 +62,9 @@ class LiteralMarshaler(Marshaler):
 
 class LiteralMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not (isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1):
+        if (lits := get_literal_types(rty)) is None or (ety := _single_literal_value_type(lits)) is None:
             return None
-        ety = check.single(set(map(type, rty.args)))
-        return lambda: LiteralMarshaler(ctx.make_marshaler(ety), frozenset(rty.args))
+        return lambda: LiteralMarshaler(ctx.make_marshaler(ety), frozenset(lit.value for lit in lits))
 
 
 @dc.dataclass(frozen=True)
@@ -49,7 +78,6 @@ class LiteralUnmarshaler(Unmarshaler):
 
 class LiteralUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not (isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1):
+        if (lits := get_literal_types(rty)) is None or (ety := _single_literal_value_type(lits)) is None:
             return None
-        ety = check.single(set(map(type, rty.args)))
-        return lambda: LiteralUnmarshaler(ctx.make_unmarshaler(ety), frozenset(rty.args))
+        return lambda: LiteralUnmarshaler(ctx.make_unmarshaler(ety), frozenset(lit.value for lit in lits))

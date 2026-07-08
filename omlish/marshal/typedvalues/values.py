@@ -3,7 +3,7 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ... import typedvalues as tv
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
@@ -25,17 +25,29 @@ from ..polymorphism.unmarshal import make_polymorphism_unmarshaler
 ##
 
 
-def _is_valid_abstract_typed_value(rty: rfl.Type) -> bool:
-    return (
-        isinstance(rty, type) and
-        issubclass(rty, tv.TypedValue) and
-        lang.is_abstract_class(rty) and
-        issubclass(rty, lang.Sealed)
-    )
+def _get_scalar_typed_value_cls(rty: rfl.Type) -> type | None:
+    if (
+            (cls := rfl.get_runtime_type_or_none(rty)) is not None and
+            issubclass(cls, tv.ScalarTypedValue) and
+            not lang.is_abstract_class(cls)
+    ):
+        return cls
+    return None
 
 
-def _build_typed_value_poly(rty: rfl.Type) -> Polymorphism:
-    ty: type[tv.TypedValue] = check.issubclass(check.isinstance(rty, type), tv.TypedValue)  # noqa
+def _get_abstract_typed_value_cls(rty: rfl.Type) -> type | None:
+    if (
+            (cls := rfl.get_runtime_type_or_none(rty)) is not None and
+            issubclass(cls, tv.TypedValue) and
+            lang.is_abstract_class(cls) and
+            issubclass(cls, lang.Sealed)
+    ):
+        return cls
+    return None
+
+
+def _build_typed_value_poly(cls: type) -> Polymorphism:
+    ty: type[tv.TypedValue] = check.issubclass(cls, tv.TypedValue)  # noqa
     check.state(lang.is_abstract_class(ty))
 
     return polymorphism_from_subclasses(
@@ -48,15 +60,11 @@ def _build_typed_value_poly(rty: rfl.Type) -> Polymorphism:
 class TypedValueMarshalerFactory(MarshalerFactoryMethodClass):
     @MarshalerFactoryMethodClass.make_marshaler.register
     def _make_scalar(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not (
-            isinstance(rty, type) and
-            issubclass(rty, tv.ScalarTypedValue) and
-            not lang.is_abstract_class(rty)
-        ):
+        if (cls := _get_scalar_typed_value_cls(rty)) is None:
             return None
 
         def inner() -> Marshaler:
-            dc_rfl = dc.reflect(check.isinstance(rty, type))
+            dc_rfl = dc.reflect(check.not_none(cls))
             v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
             v_m = ctx.make_marshaler(v_rty)
             return WrappedMarshaler(lambda _, o: o.v, v_m)
@@ -65,11 +73,11 @@ class TypedValueMarshalerFactory(MarshalerFactoryMethodClass):
 
     @MarshalerFactoryMethodClass.make_marshaler.register
     def _make_abstract(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not _is_valid_abstract_typed_value(rty):
+        if (cls := _get_abstract_typed_value_cls(rty)) is None:
             return None
 
         return lambda: make_polymorphism_marshaler(
-            _build_typed_value_poly(rty).impls,
+            _build_typed_value_poly(check.not_none(cls)).impls,
             WrapperTypeTagging(),
             ctx,
         )
@@ -78,28 +86,25 @@ class TypedValueMarshalerFactory(MarshalerFactoryMethodClass):
 class TypedValueUnmarshalerFactory(UnmarshalerFactoryMethodClass):
     @UnmarshalerFactoryMethodClass.make_unmarshaler.register
     def _make_scalar(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not (
-            isinstance(rty, type) and
-            issubclass(rty, tv.ScalarTypedValue) and
-            not lang.is_abstract_class(rty)
-        ):
+        if (cls := _get_scalar_typed_value_cls(rty)) is None:
             return None
 
         def inner() -> Unmarshaler:
-            dc_rfl = dc.reflect(rty)
+            ty = check.not_none(cls)
+            dc_rfl = dc.reflect(ty)
             v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
             v_u = ctx.make_unmarshaler(v_rty)
-            return WrappedUnmarshaler(lambda _, v: rty(v), v_u)
+            return WrappedUnmarshaler(lambda _, v: ty(v), v_u)
 
         return inner
 
     @UnmarshalerFactoryMethodClass.make_unmarshaler.register
     def _make_abstract(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:  # noqa
-        if not _is_valid_abstract_typed_value(rty):
+        if (cls := _get_abstract_typed_value_cls(rty)) is None:
             return None
 
         return lambda: make_polymorphism_unmarshaler(
-            _build_typed_value_poly(rty).impls,
+            _build_typed_value_poly(check.not_none(cls)).impls,
             WrapperTypeTagging(),
             ctx,
         )

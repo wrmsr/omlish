@@ -34,7 +34,6 @@ def typeof(obj: object, *, mirror: Mirror | None = None) -> Type:
 def get_runtime_object_or_none(robj: Type | TypeInfo) -> object | None:
     if not isinstance(robj, (Type, TypeInfo)):
         raise TypeError(f'Expected TypeInfo or Type, got {type(robj).__name__}')
-
     return robj.runtime_object
 
 

@@ -7,7 +7,7 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import marshal as msh
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from .types import Vector
 
@@ -25,7 +25,7 @@ class _VectorMarshaler(msh.Marshaler):
 
 class _VectorMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if rty is not Vector:
+        if rfl.get_runtime_type_or_none(rty) is not Vector:
             return None
         return lambda: _VectorMarshaler(ctx.make_marshaler(ta.Sequence[float]))
 
@@ -40,7 +40,7 @@ class _VectorUnmarshaler(msh.Unmarshaler):
 
 class _VectorUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if rty is not Vector:
+        if rfl.get_runtime_type_or_none(rty) is not Vector:
             return None
         return lambda: _VectorUnmarshaler(ctx.make_unmarshaler(ta.Sequence[float]))
 

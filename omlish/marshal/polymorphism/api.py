@@ -4,7 +4,6 @@ import typing as ta
 from ... import check
 from ... import lang
 from ... import metadata as md
-from ... import reflect as rfl
 from ..api.configs import Config
 from ..api.errors import MarshalError
 from ..api.naming import Naming
@@ -156,18 +155,19 @@ class ImplBases(ta.Sequence[ImplBase], lang.Final):
 class Polymorphism:
     def __init__(
             self,
-            rty: rfl.Type,
+            root: ta.Any,
             impls: Impls | ta.Iterable[Impl],
             *,
             bases: ImplBases | ta.Iterable[ImplBase] | None = None,
     ) -> None:
         super().__init__()
 
-        self._rty = rty
+        # `root` is a runtime object (usually the polymorphic base class), or a reflected `rfl.Type` of one.
+        self._root = root
         self._impls = impls if isinstance(impls, Impls) else Impls(impls)
         self._bases = bases if isinstance(bases, ImplBases) else ImplBases(bases) if bases is not None else None
 
-        if isinstance(ty := rty, type):
+        if isinstance(ty := root, type):
             for i in self._impls:
                 check.issubclass(i.ty, ty)  # noqa
 
@@ -176,8 +176,8 @@ class Polymorphism:
                     check.issubclass(b.ty, ty)
 
     @property
-    def rty(self) -> rfl.Type:
-        return self._rty
+    def root(self) -> ta.Any:
+        return self._root
 
     @property
     def impls(self) -> Impls:

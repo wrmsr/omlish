@@ -3,7 +3,7 @@ import typing as ta
 from ... import dataclasses as dc
 from ... import lang
 from ... import marshal as msh
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 
 
 JsonValue: ta.TypeAlias = ta.Union[  # noqa
@@ -28,14 +28,14 @@ class MarshalJsonValue(lang.NotInstantiable, lang.Final):
 
 class _JsonValueMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if rty is not MarshalJsonValue:
+        if rfl.get_runtime_type_or_none(rty) is not MarshalJsonValue:
             return None
         return lambda: msh.NopMarshalerUnmarshaler()
 
 
 class _JsonValueUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if rty is not MarshalJsonValue:
+        if rfl.get_runtime_type_or_none(rty) is not MarshalJsonValue:
             return None
         return lambda: msh.NopMarshalerUnmarshaler()
 

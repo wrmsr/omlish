@@ -8,7 +8,7 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect as rfl
+from ... import reflect2 as rfl
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
@@ -64,7 +64,11 @@ def _get_ipaddress_types() -> set[type] | None:
 
 class IpaddressMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not (isinstance(rty, type) and (ts := _get_ipaddress_types()) is not None and rty in ts):
+        if not (
+                (cls := rfl.get_runtime_type_or_none(rty)) is not None and
+                (ts := _get_ipaddress_types()) is not None and
+                cls in ts
+        ):
             return None
 
         return lambda: IpaddressMarshaler()
@@ -72,10 +76,14 @@ class IpaddressMarshalerFactory(MarshalerFactory):
 
 class IpaddressUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not (isinstance(rty, type) and (ts := _get_ipaddress_types()) is not None and rty in ts):
+        if not (
+                (cls := rfl.get_runtime_type_or_none(rty)) is not None and
+                (ts := _get_ipaddress_types()) is not None and
+                cls in ts
+        ):
             return None
 
-        return lambda: IpaddressUnmarshaler(rty)
+        return lambda: IpaddressUnmarshaler(cls)
 
 
 IPADDRESS_MARSHALER_FACTORY = IpaddressMarshalerFactory()
