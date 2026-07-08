@@ -7,7 +7,7 @@ from ... import pdcmark as m
 
 def test_options_kw_only():
     with pytest.raises(TypeError):
-        m.Options(True)  # type: ignore[misc]
+        m.Options(True)  # type: ignore
 
 
 def test_commonmark_preset_defaults():

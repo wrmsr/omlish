@@ -65,7 +65,7 @@ class UnittestTestRunner:
         verbosity: int = 1
         failfast: bool = False
         buffer: bool = False
-        warnings: ta.Optional[str] = None
+        warnings: ta.Literal['default', 'error', 'ignore', 'always', 'module', 'once', None] = None
         tb_locals: bool = False
         catchbreak: bool = False
 

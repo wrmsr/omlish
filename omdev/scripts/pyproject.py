@@ -90,7 +90,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../magic/prepare.py', sha1='a9b6bd7408d86a52fab7aae2c522032fb251cb8e'),
             dict(path='../magic/styles.py', sha1='60fc56d089669eaad72c5c134b91bc69d4bc107e'),
             dict(path='../packaging/versions.py', sha1='d515a54dd7fa27a9fd4d8c8617e5a21a3c12ea1e'),
-            dict(path='../packaging/wheelfile.py', sha1='2e1113819aa85ed00e1fe25c71a2b3dbc0a383f5'),
+            dict(path='../packaging/wheelfile.py', sha1='59294a1111983eed63b0bd64c2330b712d1919db'),
             dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
@@ -875,7 +875,7 @@ class WheelFile(zipfile.ZipFile):
     def open(  # type: ignore  # noqa
             self,
             name_or_info: ta.Union[str, zipfile.ZipInfo],
-            mode: str = 'r',  # ta.Literal["r", "w"]
+            mode: ta.Literal['r', 'w'] = 'r',
             pwd: ta.Optional[bytes] = None,
     ) -> ta.IO[bytes]:
         def _update_crc(newdata: bytes) -> None:

@@ -4,7 +4,7 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.47.0
 
-uv>=0.11.27
+uv>=0.11.28
 
 pytest==9.1.1
 pytest-benchmark==5.2.3
@@ -32,7 +32,7 @@ types-setuptools==83.0.0.20260706
 types-ujson==5.10.0.20250822
 
 black==26.5.1
-mypy==2.1.0
+mypy==2.2.0
 pipdeptree==3.1.1
 
 astpretty==3.0.0

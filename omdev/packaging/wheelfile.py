@@ -129,7 +129,7 @@ class WheelFile(zipfile.ZipFile):
     def open(  # type: ignore  # noqa
             self,
             name_or_info: ta.Union[str, zipfile.ZipInfo],
-            mode: str = 'r',  # ta.Literal["r", "w"]
+            mode: ta.Literal['r', 'w'] = 'r',
             pwd: ta.Optional[bytes] = None,
     ) -> ta.IO[bytes]:
         def _update_crc(newdata: bytes) -> None:

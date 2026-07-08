@@ -41,7 +41,7 @@ class Project(ProjectBase):
         ],
 
         'mypy': [
-            'mypy ~= 2.1',
+            'mypy ~= 2.2',
         ],
 
         'prof': [

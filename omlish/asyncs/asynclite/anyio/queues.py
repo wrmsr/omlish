@@ -83,5 +83,7 @@ class AnyioAsyncliteQueues(AsyncliteQueues, AnyioAsyncliteApi):
         # anyio interprets 0 as "no buffer" (synchronous handoff), but stdlib queue uses 0 for unbounded. Convert 0 to
         # math.inf for anyio to get unbounded behavior.
         anyio_maxsize = math.inf if maxsize == 0 else maxsize
+        send: ta.Any
+        recv: ta.Any
         send, recv = anyio.create_memory_object_stream(anyio_maxsize)
         return AnyioAsyncliteQueue(send, recv, maxsize)
