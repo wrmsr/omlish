@@ -137,14 +137,19 @@ with _lang.auto_proxy_init(globals()):
 
     from .errors import (  # noqa
         ReflectionError,
+
         ReflectionTypeError,
-        ReflectionValueError,
-        ReflectionRuntimeError,
-        ReflectionInternalError,
         UnsupportedTypeOperationError,
         UnreflectableTypeError,
         ProtocolReflectionError,
         RecursiveTypeReflectionError,
+
+        ReflectionValueError,
+
+        ReflectionRuntimeError,
+        FrozenMirrorReflectionError,
+
+        ReflectionInternalError,
     )
 
     from .globals import (  # noqa

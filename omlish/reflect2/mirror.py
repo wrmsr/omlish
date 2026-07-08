@@ -22,6 +22,17 @@ class ForwardRefResolver(ta.Protocol):
     def __call__(self, frr: ForwardRefResolution, /) -> object: ...
 
 
+class ReflectSubstitutor(ta.Protocol):
+    """
+    Consulted with each runtime object about to be reflected - at every level of descent, before cache consultation. A
+    non-None result is reflected in the object's stead. The result itself is not re-substituted (so self-mapping cannot
+    loop), but its constituents are as they are descended into. Must be pure and stable for the lifetime of its mirror
+    - reflections incorporating its results are cached.
+    """
+
+    def __call__(self, obj: object, /) -> object | None: ...
+
+
 ##
 
 

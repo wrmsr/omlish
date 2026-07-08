@@ -2,19 +2,10 @@ class ReflectionError(Exception):
     pass
 
 
+#
+
+
 class ReflectionTypeError(ReflectionError):
-    pass
-
-
-class ReflectionValueError(ReflectionError):
-    pass
-
-
-class ReflectionRuntimeError(ReflectionError):
-    pass
-
-
-class ReflectionInternalError(ReflectionError):
     pass
 
 
@@ -31,4 +22,29 @@ class ProtocolReflectionError(ReflectionTypeError):
 
 
 class RecursiveTypeReflectionError(ReflectionTypeError):
+    pass
+
+
+#
+
+
+class ReflectionValueError(ReflectionError):
+    pass
+
+
+#
+
+
+class ReflectionRuntimeError(ReflectionError):
+    pass
+
+
+class FrozenMirrorReflectionError(ReflectionRuntimeError):
+    pass
+
+
+#
+
+
+class ReflectionInternalError(ReflectionError):
     pass
