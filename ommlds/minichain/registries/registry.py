@@ -9,7 +9,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from .manifests import RegistryManifest
 from .manifests import RegistryTypeManifest
@@ -42,7 +42,7 @@ class Registry:
 
         self._types_by_name: dict[str, Registry.Type] = {}
         self._types_by_cls: dict[ta.Any, Registry.Type] = {}
-        self._types_by_rty: dict[rfl.Type, Registry.Type] = {}
+        self._types_by_rtk: dict[rfl.TypeKey, Registry.Type] = {}
 
         for rtm in self._registry_type_manifests:
             check.not_in(rtm.attr, self._types_by_name)
@@ -148,29 +148,29 @@ class Registry:
             if self.__cls.present:
                 return
 
-            rty = rfl.typeof(cls)
+            rty = rfl.reflect_type(cls)
 
             named_cls = cls
             named_rty = rty
             if (name := self._name) is not None:
                 name_obj = RegistryTypeName(name)
                 named_cls = ta.Annotated[cls, name_obj]
-                named_rty = rfl.add_rfl_annotations(rty, name_obj)
-                check.equal(named_rty, rfl.typeof(named_cls))
+                named_rty = rfl.reflect_type(named_cls)
 
             check.not_in(cls, self._o._types_by_cls)
             check.not_in(named_cls, self._o._types_by_cls)
-            check.not_in(rty, self._o._types_by_rty)
-            check.not_in(named_rty, self._o._types_by_rty)
+            check.not_in(rty.type_key(), self._o._types_by_rtk)
+            check.not_in(named_rty.type_key(), self._o._types_by_rtk)
 
             self._o._types_by_cls[cls] = self
             self._o._types_by_cls[named_cls] = self
-            self._o._types_by_rty[rty] = self
-            self._o._types_by_rty[named_rty] = self
+            self._o._types_by_rtk[rty.type_key()] = self
+            self._o._types_by_rtk[named_rty.type_key()] = self
 
             self.__cls = lang.just(cls)
             self.__named_cls = named_cls
             self.__rty = rty
+            self.__rtk = rty.type_key()
             self.__named_rty = named_rty
 
         def cls(self) -> ta.Any:
@@ -269,7 +269,7 @@ class Registry:
     def get_type(self, selector: ta.Any) -> Type:
         if isinstance(selector, str):
             return self._types_by_name[selector]
-        elif isinstance(selector, rfl.TypeInfo):
-            return self._types_by_rty[selector]
+        elif isinstance(selector, rfl.Type):
+            return self._types_by_rtk[selector.type_key()]
         else:
             return self._types_by_cls[selector]

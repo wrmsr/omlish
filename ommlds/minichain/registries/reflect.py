@@ -3,7 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 
 RflTypeT = ta.TypeVar('RflTypeT', bound=rfl.Type)
@@ -21,15 +21,15 @@ class RegistryTypeName(dc.Box[str], lang.Final):
 
 
 def get_annotated_registry_type_name(obj: ta.Any) -> str | None:
-    if isinstance(obj, rfl.Annotated):
-        if (rtn := check.opt_single(a for a in obj.md if isinstance(a, RegistryTypeName))) is not None:
-            return rtn.v
+    rty = rfl.reflect_type(obj)
 
-    elif rfl.is_annotated_type(obj):
-        if (rtn := check.opt_single(a for a in rfl.get_annotated_type_metadata(obj) if isinstance(a, RegistryTypeName))) is not None:  # noqa
-            return rtn.v
+    if not isinstance(rty, rfl.AnnotatedType):
+        return None
 
-    return None
+    if (rtn := check.opt_single(a for a in rty.metadata if isinstance(a, RegistryTypeName))) is None:
+        return None
+
+    return rtn.v
 
 
 def registry_type_repr(obj: ta.Any) -> str:
@@ -51,15 +51,21 @@ def strip_registry_annotations(obj: ta.Any) -> ta.Any: ...
 
 
 def strip_registry_annotations(obj):
-    if isinstance(obj, rfl.Annotated):
-        return rfl.strip_rfl_annotations_shallow(obj, lambda a: isinstance(a, RegistryTypeName))
+    rty = rfl.reflect_type(obj)
 
-    elif rfl.is_annotated_type(obj):
-        cls = ta.get_args(obj)[0]
-        new_md = [a for a in rfl.get_annotated_type_metadata(obj) if not isinstance(a, RegistryTypeName)]
-        if not new_md:
-            return cls
-        else:
-            return ta.Annotated[cls, *new_md]
+    if not isinstance(rty, rfl.AnnotatedType):
+        return obj
 
-    return obj
+    if not any(a for a in rty.metadata if isinstance(a, RegistryTypeName)):
+        return obj
+
+    new_md = [a for a in rty.metadata if not isinstance(a, RegistryTypeName)]
+    if not new_md:
+        out_rty = rty.item
+    else:
+        out_rty = rfl.AnnotatedType(rty.item, tuple(new_md))
+
+    if isinstance(obj, rfl.Type):
+        return out_rty
+    else:
+        return rfl.to_runtime_annotation(out_rty)

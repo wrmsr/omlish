@@ -208,6 +208,7 @@ class AnnotatedType(Type):
         if not metadata:
             raise ReflectionValueError('AnnotatedType metadata must be non-empty')
 
+        # FIXME: reject nested AnnotatedTypes?
         self._item = item
         self._metadata = metadata
 
