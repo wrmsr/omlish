@@ -79,6 +79,12 @@ class Type:
 
     #
 
+    @property
+    def runtime_object(self) -> object | None:
+        return None
+
+    #
+
     def type_key_or_none(self, policy: StandardTypeKeyPolicy = 'default') -> TypeKey | None:
         try:
             return self._type_key_cache[policy]
@@ -575,6 +581,9 @@ class TypeOfAny(enum.Enum):
     SUGGESTION_ENGINE = 9
 
 
+_ANY_RUNTIME_TYPE: ta.Any = ta.Any
+
+
 @ta.final
 class AnyType(ProperType):
     __slots__ = (
@@ -589,6 +598,10 @@ class AnyType(ProperType):
     @property
     def type_of_any(self) -> TypeOfAny:
         return self._type_of_any
+
+    @property
+    def runtime_object(self) -> object | None:
+        return _ANY_RUNTIME_TYPE
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
         return visitor.visit_any(self)
@@ -619,9 +632,16 @@ def uninhabited_type() -> UninhabitedType:
     return _UNINHABITED_TYPE
 
 
+_NONE_RUNTIME_TYPE: ta.Final = type(None)
+
+
 @ta.final
 class NoneType(ProperType):
     __slots__ = ()
+
+    @property
+    def runtime_object(self) -> object | None:
+        return _NONE_RUNTIME_TYPE
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
         return visitor.visit_none_type(self)
@@ -722,6 +742,10 @@ class Instance(ProperType):
     @property
     def extra_attrs(self) -> ExtraAttrs | None:
         return self._extra_attrs
+
+    @property
+    def runtime_object(self) -> object | None:
+        return self._type.runtime_object
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
         return visitor.visit_instance(self)
