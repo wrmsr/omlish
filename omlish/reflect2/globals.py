@@ -1,10 +1,10 @@
 import threading
 import typing as ta
 
+from ._mirror import MirrorImpl
 from .core.symbols import TypeInfo
 from .core.typekeys import Type
 from .mirror import Mirror
-from .mirrorimpl import MirrorImpl
 
 
 ##

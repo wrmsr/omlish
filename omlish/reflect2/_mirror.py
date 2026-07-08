@@ -152,159 +152,155 @@ def _get_runtime_bases(origin: type) -> tuple[object, ...]:
 ##
 
 
-class _InternalMirror:
+class _MirrorState:
     def __init__(
             self,
             *,
-            parent: _InternalMirror | None = None,
-            forward_ref_resolver: ForwardRefResolver | None = None,
-            unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
-            reflect_substitutor: ReflectSubstitutor | None = None,
+            parent: _MirrorState | None = None,
     ) -> None:
         super().__init__()
 
-        # A frozen parent is immutable, so chain reads through it need no locking of any kind. An unfrozen parent
-        # would require cross-mirror lock acquisition - forbidden outright.
-        if parent is not None and not parent._is_frozen:
+        # A frozen parent is immutable, so chain reads through it need no locking of any kind. An unfrozen parent would
+        # require cross-mirror lock acquisition - forbidden outright.
+        if parent is not None and not parent.is_frozen:
             raise ReflectionValueError('Mirror parent must be frozen')
 
-        if unresolved_forward_ref_policy is None:
-            unresolved_forward_ref_policy = DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
-        elif unresolved_forward_ref_policy not in ('raise', 'unbound'):
-            raise ReflectionValueError(f'Unsupported unresolved forward ref policy: {unresolved_forward_ref_policy!r}')
-
-        self._parent = parent
-        self._is_frozen: bool = False
-
-        self.forward_ref_resolver = forward_ref_resolver
-        self.unresolved_forward_ref_policy = unresolved_forward_ref_policy
-        self.reflect_substitutor = reflect_substitutor
+        self.__parent = parent
 
         #
+
+        self.__is_frozen: bool = False
 
         # A parentless mirror is self-sufficient and seeds the knowns itself; a child finds them through its chain.
         if parent is None:
-            self._fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
-            self._types_by_fullname: dict[str, object] = {
+            self.__fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
+            self.__types_by_fullname: dict[str, object] = {
                 fullname: obj
-                for obj, fullname in self._fullnames_by_type.items()
+                for obj, fullname in self.__fullnames_by_type.items()
             }
         else:
-            self._fullnames_by_type = {}
-            self._types_by_fullname = {}
+            self.__fullnames_by_type = {}
+            self.__types_by_fullname = {}
 
-        self._infos_by_fullname: dict[str, TypeInfo] = {}
+        self.__infos_by_fullname: dict[str, TypeInfo] = {}
 
         #
 
-        self._type_cache: dict[object, Type] = {}
-        self._cached_types: set[Type] = set()
+        self.__type_cache: dict[object, Type] = {}
+        self.__cached_types: set[Type] = set()
 
         # This is 'two-step' (create TypeInfo -> 'prepare' TypeInfo) to support recursive types.
-        self._prepared_infos: set[type] = set()
+        self.__prepared_infos: set[type] = set()
 
-        self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
+        self.__runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
 
-        # Aliases whose symbols have been created but whose targets have not (yet) been successfully resolved - a
-        # failed resolution leaves the alias here so a later reflection retries (and heals) it.
-        self._unresolved_aliases: set[ta.TypeAliasType] = set()
+        # Aliases whose symbols have been created but whose targets have not (yet) been successfully resolved - a failed
+        # resolution leaves the alias here so a later reflection retries (and heals) it.
+        self.__unresolved_aliases: set[ta.TypeAliasType] = set()
 
-        self._type_var_namespace = f'runtime:{id(self):x}'
-        self._next_type_var_id = 1
+        self.__type_var_namespace = f'runtime:{id(self):x}'
+        self.__next_type_var_id = 1
 
     ##
     # freezing
 
-    def _check_mutable(self) -> None:
-        if self._is_frozen:
-            raise FrozenMirrorReflectionError('Mirror is frozen')
+    @property
+    def is_frozen(self) -> bool:
+        return self.__is_frozen
 
-    def freeze(self) -> None:
-        if self._is_frozen:
-            return
+    def check_not_frozen(self) -> None:
+        if self.__is_frozen:
+            raise FrozenMirrorReflectionError
 
-        reflector = _TypeReflector(self)
+    def freeze(self, reflector: _TypeReflector) -> None:
+        if self.__is_frozen:
+            raise FrozenMirrorReflectionError
 
         # Heal any aliases left unresolved by failed reflection runs - a frozen symbol must never need mutation, so
         # anything unhealable fails the freeze.
-        for alias_obj in list(self._unresolved_aliases):
+        for alias_obj in list(self.__unresolved_aliases):
             reflector._get_type_alias_symbol(alias_obj)  # noqa
 
-        # Materialize and prepare every runtime class interned in this layer (including seeded knowns) so no
-        # reflection through a child ever needs to mutate a frozen TypeInfo. Preparation can intern further classes
-        # (generic parameters, runtime bases, mro entries) - iterate to a fixpoint.
+        # Materialize and prepare every runtime class interned in this layer (including seeded knowns) so no reflection
+        # through a child ever needs to mutate a frozen TypeInfo. Preparation can intern further classes (generic
+        # parameters, runtime bases, mro entries) - iterate to a fixpoint.
         while True:
             pending = [
                 obj
-                for obj in self._fullnames_by_type
+                for obj in self.__fullnames_by_type
                 if isinstance(obj, type) and not self.is_info_prepared(obj)
             ]
             if not pending:
                 break
             for obj in pending:
-                reflector._prepare_runtime_type_info(obj, self.get_type_info(obj))  # noqa
+                reflector._prepare_runtime_type_info(obj, reflector._mirror.get_type_info(obj))  # noqa
 
-        self._is_frozen = True
+        self.__is_frozen = True
 
     ##
-    # state
-
-    # All access to the lookup tables above - both from _TypeReflector and from this class's own symbol machinery -
-    # funnels through these accessors: reads walk the parent chain, writes are guarded and land in this layer only.
+    # accessors
 
     def get_fullname_for_type(self, obj: object) -> str | None:
-        if (fullname := self._fullnames_by_type.get(obj)) is not None:
+        if (fullname := self.__fullnames_by_type.get(obj)) is not None:
             return fullname
-        if self._parent is not None:
-            return self._parent.get_fullname_for_type(obj)
+
+        if self.__parent is not None:
+            return self.__parent.get_fullname_for_type(obj)
+
         return None
 
     def get_type_for_fullname(self, fullname: str) -> object | None:
-        if (obj := self._types_by_fullname.get(fullname)) is not None:
+        if (obj := self.__types_by_fullname.get(fullname)) is not None:
             return obj
-        if self._parent is not None:
-            return self._parent.get_type_for_fullname(fullname)
+
+        if self.__parent is not None:
+            return self.__parent.get_type_for_fullname(fullname)
+
         return None
 
     def intern_type_fullname(self, obj: object, fullname: str) -> None:
-        self._check_mutable()
+        self.check_not_frozen()
 
-        self._fullnames_by_type[obj] = fullname
-        self._types_by_fullname[fullname] = obj
+        self.__fullnames_by_type[obj] = fullname
+        self.__types_by_fullname[fullname] = obj
 
     #
 
     def get_info(self, fullname: str) -> TypeInfo | None:
-        if (info := self._infos_by_fullname.get(fullname)) is not None:
+        if (info := self.__infos_by_fullname.get(fullname)) is not None:
             return info
-        if self._parent is not None:
-            return self._parent.get_info(fullname)
+
+        if self.__parent is not None:
+            return self.__parent.get_info(fullname)
+
         return None
 
     def put_info(self, fullname: str, info: TypeInfo) -> None:
-        self._check_mutable()
+        self.check_not_frozen()
 
-        self._infos_by_fullname[fullname] = info
+        self.__infos_by_fullname[fullname] = info
 
     #
 
     def is_info_prepared(self, origin: type) -> bool:
-        if origin in self._prepared_infos:
+        if origin in self.__prepared_infos:
             return True
-        if self._parent is not None:
-            return self._parent.is_info_prepared(origin)
+
+        if self.__parent is not None:
+            return self.__parent.is_info_prepared(origin)
+
         return False
 
     def mark_info_prepared(self, origin: type) -> None:
-        self._check_mutable()
+        self.check_not_frozen()
 
-        self._prepared_infos.add(origin)
+        self.__prepared_infos.add(origin)
 
     #
 
     def get_cached_reflected_type(self, obj: object) -> Type | None:
         try:
-            typ = self._type_cache[obj]
+            typ = self.__type_cache[obj]
         except KeyError:
             pass
         except TypeError:
@@ -312,51 +308,78 @@ class _InternalMirror:
         else:
             return typ
 
-        if self._parent is not None:
-            return self._parent.get_cached_reflected_type(obj)
+        if self.__parent is not None:
+            return self.__parent.get_cached_reflected_type(obj)
+
         return None
 
     def cache_reflected_type(self, obj: object, typ: Type) -> None:
-        self._check_mutable()
+        self.check_not_frozen()
 
         try:
-            self._type_cache[obj] = typ
+            self.__type_cache[obj] = typ
         except TypeError:
             return
-        self._cached_types.add(typ)
+        self.__cached_types.add(typ)
 
     #
 
     def get_runtime_alias(self, obj: ta.TypeAliasType) -> TypeAlias | None:
-        if (alias := self._runtime_aliases.get(obj)) is not None:
+        if (alias := self.__runtime_aliases.get(obj)) is not None:
             return alias
-        if self._parent is not None:
-            return self._parent.get_runtime_alias(obj)
+
+        if self.__parent is not None:
+            return self.__parent.get_runtime_alias(obj)
+
         return None
 
     def put_runtime_alias(self, obj: ta.TypeAliasType, alias: TypeAlias) -> None:
-        self._check_mutable()
+        self.check_not_frozen()
 
-        self._runtime_aliases[obj] = alias
-        self._unresolved_aliases.add(obj)
+        self.__runtime_aliases[obj] = alias
+        self.__unresolved_aliases.add(obj)
 
     def is_alias_unresolved(self, obj: ta.TypeAliasType) -> bool:
         # No chain walk: a frozen parent can hold no unresolved aliases - freeze() heals or fails.
-        return obj in self._unresolved_aliases
+        return obj in self.__unresolved_aliases
 
     def mark_alias_resolved(self, obj: ta.TypeAliasType) -> None:
-        self._check_mutable()
+        self.check_not_frozen()
 
-        self._unresolved_aliases.discard(obj)
+        self.__unresolved_aliases.discard(obj)
 
     #
 
     def new_type_var_id(self) -> TypeVarId:
-        self._check_mutable()
+        self.check_not_frozen()
 
-        type_var_id = TypeVarId(self._next_type_var_id, namespace=self._type_var_namespace)
-        self._next_type_var_id += 1
+        type_var_id = TypeVarId(self.__next_type_var_id, namespace=self.__type_var_namespace)
+        self.__next_type_var_id += 1
         return type_var_id
+
+
+class _InternalMirror:
+    def __init__(
+            self,
+            *,
+            forward_ref_resolver: ForwardRefResolver | None = None,
+            unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
+            reflect_substitutor: ReflectSubstitutor | None = None,
+    ) -> None:
+        super().__init__()
+
+        if unresolved_forward_ref_policy is None:
+            unresolved_forward_ref_policy = DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
+        elif unresolved_forward_ref_policy not in ('raise', 'unbound'):
+            raise ReflectionValueError(f'Unsupported unresolved forward ref policy: {unresolved_forward_ref_policy!r}')
+
+        self.forward_ref_resolver = forward_ref_resolver
+        self.unresolved_forward_ref_policy = unresolved_forward_ref_policy
+        self.reflect_substitutor = reflect_substitutor
+
+        #
+
+        self._state = _MirrorState()
 
     ##
     # symbols
@@ -457,14 +480,14 @@ class _InternalMirror:
 
     def get_cached_type_info(self, obj: type | str | ta.NewType) -> TypeInfo | None:
         if isinstance(obj, str):
-            return self.get_info(obj)
+            return self._state.get_info(obj)
 
-        if (fullname := self.get_fullname_for_type(obj)) is None:
+        if (fullname := self._state.get_fullname_for_type(obj)) is None:
             return None
 
         # NOTE: This is racy with `get_type_info` below - this runs without any lock, and `_fullnames_by_type` will be
         # populated before `_infos_by_fullname` - if this does happen it'll just be retried under the lock.
-        return self.get_info(fullname)
+        return self._state.get_info(fullname)
 
     #
 
@@ -475,27 +498,27 @@ class _InternalMirror:
             runtime_object = None
         else:
             runtime_object = obj
-            if (ex_fullname := self.get_fullname_for_type(obj)) is not None:
+            if (ex_fullname := self._state.get_fullname_for_type(obj)) is not None:
                 fullname = ex_fullname
             else:
                 fullname = self._make_dynamic_type_fullname(obj)
-                if (ex_ty := self.get_type_for_fullname(fullname)) is not None:
+                if (ex_ty := self._state.get_type_for_fullname(fullname)) is not None:
                     raise ReflectionValueError(
                         f'Dynamic fullname {fullname!r} for type {obj!r} already used by type {ex_ty!r}',
                     )
-                self.intern_type_fullname(obj, fullname)
+                self._state.intern_type_fullname(obj, fullname)
 
-        if (ex_info := self.get_info(fullname)) is not None:
+        if (ex_info := self._state.get_info(fullname)) is not None:
             return ex_info
 
         if runtime_object is None:
-            runtime_object = self.get_type_for_fullname(fullname)
+            runtime_object = self._state.get_type_for_fullname(fullname)
 
         info = self._make_type_info(
             fullname,
             runtime_object=runtime_object,
         )
-        self.put_info(fullname, info)
+        self._state.put_info(fullname, info)
         info._bases = tuple(self._make_known_bases(info))
         if (mro := self._make_known_mro(info)) is not None:
             info._mro = tuple(mro)
@@ -517,15 +540,15 @@ class _InternalMirror:
         if not isinstance(obj, ta.NewType):  # noqa
             raise TypeError('get_newtype_info only accepts `typing.NewType` objects')
 
-        if (ex_fullname := self.get_fullname_for_type(obj)) is not None:
+        if (ex_fullname := self._state.get_fullname_for_type(obj)) is not None:
             fullname = ex_fullname
         else:
             fullname = self._make_newtype_fullname(obj)
-            if self.get_type_for_fullname(fullname) is not None:
+            if self._state.get_type_for_fullname(fullname) is not None:
                 fullname = f'{fullname}@{id(obj):x}'
-            self.intern_type_fullname(obj, fullname)
+            self._state.intern_type_fullname(obj, fullname)
 
-        if (ex_info := self.get_info(fullname)) is not None:
+        if (ex_info := self._state.get_info(fullname)) is not None:
             return ex_info
 
         name = fullname.rsplit('.', 1)[-1]
@@ -536,7 +559,7 @@ class _InternalMirror:
         )
 
         # Cached before supertype reflection so self-referential supertypes (via forward refs) resolve to this info.
-        self.put_info(fullname, info)
+        self._state.put_info(fullname, info)
 
         if reflector is None:
             reflector = _TypeReflector(self)
@@ -595,15 +618,15 @@ class _TypeReflector:
         if self._mirror.is_uncacheable_reflect_type(obj):
             return self._reflect_type_uncached(obj)
 
-        if (cached := self._mirror.get_cached_reflected_type(obj)) is not None:
+        if (cached := self._mirror._state.get_cached_reflected_type(obj)) is not None:
             return cached
 
         typ = self._reflect_type_uncached(obj)
 
         # A frozen mirror can still statelessly reflect compositions of the symbols it already holds - the memo write
         # is the only mutation such a reflection would perform, so it is simply skipped.
-        if not self._mirror._is_frozen:
-            self._mirror.cache_reflected_type(obj, typ)
+        if not self._mirror._state.is_frozen:
+            self._mirror._state.cache_reflected_type(obj, typ)
 
         return typ
 
@@ -941,7 +964,7 @@ class _TypeReflector:
         )
 
     def _get_type_alias_symbol(self, obj: ta.TypeAliasType) -> TypeAlias:
-        if (alias := self._mirror.get_runtime_alias(obj)) is None:
+        if (alias := self._mirror._state.get_runtime_alias(obj)) is None:
             type_params = obj.__type_params__
             alias = TypeAlias(
                 obj.__name__,
@@ -953,11 +976,11 @@ class _TypeReflector:
                 ],
                 runtime_object=obj,
             )
-            self._mirror.put_runtime_alias(obj, alias)
+            self._mirror._state.put_runtime_alias(obj, alias)
 
         # Target resolution happens exactly once per symbol (on success) - not per reflection. A symbol whose runtime
         # alias is currently mid-resolution is returned as-is: its occurrences are recursive references.
-        if self._mirror.is_alias_unresolved(obj) and obj not in self._resolving_type_aliases:
+        if self._mirror._state.is_alias_unresolved(obj) and obj not in self._resolving_type_aliases:
             self._resolve_type_alias_target(obj, alias)
 
         return alias
@@ -972,7 +995,7 @@ class _TypeReflector:
             self._resolving_type_aliases.remove(obj)
 
         alias._target = target
-        self._mirror.mark_alias_resolved(obj)
+        self._mirror._state.mark_alias_resolved(obj)
 
         # Concretize recursiveness eagerly - the lazy `TypeAliasType.is_recursive` computation would otherwise mutate
         # the symbol on first read, arbitrarily later. Direct self-reference is caught by the computed check, mutual
@@ -984,7 +1007,7 @@ class _TypeReflector:
         active_aliases = {
             alias
             for obj in self._resolving_type_aliases
-            if (alias := self._mirror.get_runtime_alias(obj)) is not None
+            if (alias := self._mirror._state.get_runtime_alias(obj)) is not None
         }
         if not active_aliases:
             return False
@@ -1122,9 +1145,9 @@ class _TypeReflector:
         )
 
     def _prepare_runtime_type_info(self, origin: type, info: TypeInfo) -> None:
-        if self._mirror.is_info_prepared(origin):
+        if self._mirror._state.is_info_prepared(origin):
             return
-        self._mirror.mark_info_prepared(origin)
+        self._mirror._state.mark_info_prepared(origin)
 
         # Forward references in a class's parameters' bounds or in its runtime bases resolve in that class's module
         # scope. (A parameter type var carrying its own module overrides this while its bound is reflected.)
@@ -1309,7 +1332,7 @@ class _TypeReflector:
         return TypeVarType(
             obj.__name__,
             obj.__name__,
-            self._mirror.new_type_var_id(),
+            self._mirror._state.new_type_var_id(),
             values,
             upper_bound,
             default,
@@ -1330,7 +1353,7 @@ class _TypeReflector:
         return ParamSpecType(
             obj.__name__,
             obj.__name__,
-            self._mirror.new_type_var_id(),
+            self._mirror._state.new_type_var_id(),
             upper_bound,
             default,
             runtime_object=obj,
@@ -1350,7 +1373,7 @@ class _TypeReflector:
         return TypeVarTupleType(
             obj.__name__,
             obj.__name__,
-            self._mirror.new_type_var_id(),
+            self._mirror._state.new_type_var_id(),
             upper_bound,
             default,
             tuple_fallback,
@@ -1396,13 +1419,13 @@ class MirrorImpl(Mirror):
 
     #
 
-    @property
-    def is_frozen(self) -> bool:
-        return self._internal._is_frozen
+    # @property
+    # def is_frozen(self) -> bool:
+    #     return self._internal._is_frozen
 
-    def freeze(self) -> None:
-        with self._lock:
-            self._internal.freeze()
+    # def freeze(self) -> None:
+    #     with self._lock:
+    #         self._internal.freeze()
 
     #
 
@@ -1410,7 +1433,7 @@ class MirrorImpl(Mirror):
         if (cached := self._internal.get_cached_type_info(obj)) is not None:
             return cached
 
-        if self._internal._is_frozen:
+        if self._internal._state.is_frozen:
             # Immutable - nothing to lock. Anything requiring new state raises FrozenMirrorReflectionError below.
             return self._get_type_info_uncached(obj)
 
@@ -1433,13 +1456,18 @@ class MirrorImpl(Mirror):
         if isinstance(obj, Type):
             return obj
 
-        # The raw-key fast path is unsound under substitution: an ancestor may legitimately hold a cache entry for a
-        # raw object this mirror's substitutor remaps. Substituted mirrors always take the full (substituting) path.
-        if self._internal.reflect_substitutor is None and not self._internal.is_uncacheable_reflect_type(obj):
-            if (cached := self._internal.get_cached_reflected_type(obj)) is not None:
+        if (
+                # The raw-key fast path is unsound under substitution: an ancestor may legitimately hold a cache entry
+                # for a raw object this mirror's substitutor remaps. Substituted mirrors always take the full
+                # (substituting) path.
+                self._internal.reflect_substitutor is None and
+
+                not self._internal.is_uncacheable_reflect_type(obj)
+        ):
+            if (cached := self._internal._state.get_cached_reflected_type(obj)) is not None:
                 return cached
 
-        if self._internal._is_frozen:
+        if self._internal._state.is_frozen:
             # Immutable - nothing to lock. Anything requiring new state raises FrozenMirrorReflectionError below.
             return self._internal.reflect_type(obj)
 

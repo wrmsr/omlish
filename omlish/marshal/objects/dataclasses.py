@@ -149,7 +149,7 @@ class _FieldInfoBuilder:
         # Determine field type (with generic replacement if needed)
 
         if self.dc_rfl.spec.generic_init or merged_opts.generic_replace:
-            f_ty = rfl.to_annotation(self.dc_rfl.fields_inspection.generic_replaced_field_type(field.name))
+            f_ty = rfl.to_annotation(self.dc_rfl.fields_inspection.generic_replaced_field_annotations[field.name])
         else:
             f_ty = self.dc_rfl.type_hints[field.name]
 

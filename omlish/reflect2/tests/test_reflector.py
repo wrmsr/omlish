@@ -563,7 +563,7 @@ def test_new_type_reflection_is_cached_by_newtype_object() -> None:
     typ = mirror.reflect_type(user_id)
 
     assert mirror.reflect_type(user_id) is typ
-    assert mirror._internal._type_cache[user_id] is typ  # type: ignore[attr-defined]
+    assert mirror._internal._state.get_cached_reflected_type(user_id) is typ  # type: ignore[attr-defined]
 
 
 def test_reflects_type_alias_type_by_preserving_alias_identity() -> None:
