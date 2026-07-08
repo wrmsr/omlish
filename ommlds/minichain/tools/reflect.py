@@ -12,7 +12,6 @@ TODO:
 import collections.abc
 import inspect
 import textwrap
-import types
 import typing as ta
 
 from omlish import check
@@ -21,7 +20,7 @@ from omlish import contextual as cxl
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import metadata as md
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 from omlish.lite.cached import cached_nullary
 
 from ..content.content import Content
@@ -83,9 +82,9 @@ class ToolReflector:
     def reflect_union_type(self, *args: rfl.Type) -> ToolDtype:
         check.unique(args)
 
-        if types.NoneType in args:
+        if any(isinstance(a, rfl.NoneType) for a in args):
             is_nullable = True
-            args = tuple(a for a in args if a is not types.NoneType)
+            args = tuple(a for a in args if not isinstance(a, rfl.NoneType))
         else:
             is_nullable = False
 
@@ -117,20 +116,34 @@ class ToolReflector:
     ])
 
     def reflect_type(self, rty: rfl.Type) -> ToolDtype:
-        if isinstance(rty, type) and dc.is_dataclass(rty):
+        ty = rty.runtime_type
+
+        if isinstance(rty, rfl.Instance) and ty is not None and dc.is_dataclass(ty):
             return ObjectToolDtype({
                 f.name: self.reflect_type(rfl.typeof(f.type))
-                for f in dc.fields(rty)
+                for f in dc.fields(ty)
             })
 
-        if isinstance(rty, (type, rfl.Any)):
+        if isinstance(rty, rfl.AnyType):
             return PrimitiveToolDtype.of(rty)
 
-        if isinstance(rty, rfl.Union):
-            return self.reflect_union_type(*rty.args)
+        if (lvs := rfl.get_literal_values_or_none(rty)) is not None:
+            return EnumToolDtype(
+                self.reflect_union_type(*col.unique(
+                    rfl.typeof(lv)
+                    for lv in lvs
+                )),
+                lvs,
+            )
 
-        if isinstance(rty, rfl.Generic):
-            g_cls = rty.cls
+        if isinstance(rty, rfl.UnionType):
+            return self.reflect_union_type(*rty.items)
+
+        if isinstance(rty, rfl.Instance):
+            if not rty.args:
+                return PrimitiveToolDtype.of(rty)
+
+            g_cls = check.isinstance(rty.type.runtime_object, type)
 
             if g_cls in self.SEQUENCE_TYPES:
                 a_rty = check.single(rty.args)
@@ -148,15 +161,6 @@ class ToolReflector:
                     self.reflect_type(a_rty)
                     for a_rty in rty.args
                 ))
-
-        if isinstance(rty, rfl.Literal):
-            return EnumToolDtype(
-                self.reflect_union_type(*col.unique(
-                    rfl.typeof(type(a))
-                    for a in rty.args
-                )),
-                rty.args,
-            )
 
         raise TypeError(rty)
 
@@ -219,7 +223,7 @@ class ToolReflector:
             return ta.get_type_hints(fn)
 
         if 'returns_type' not in ts_kw and 'return' in th():
-            ts_kw.update(returns_type=self.reflect_type(rfl.typeof(th()['return'])))
+            ts_kw.update(returns_type=self.reflect_type(rfl.reflect_type(th()['return'])))
 
         #
 
@@ -264,7 +268,7 @@ class ToolReflector:
                 p_type: ToolDtype | None
                 if (p_type := ovr_p.get('type')) is None:
                     if sig_p is not None and sig_p.name in th():
-                        p_type = self.reflect_type(rfl.typeof(th()[sig_p.name]))
+                        p_type = self.reflect_type(rfl.reflect_type(th()[sig_p.name]))
 
                 p_required: bool | None
                 if (p_required := ovr_p.get('required')) is None:
