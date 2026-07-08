@@ -367,18 +367,18 @@ def make_it_a_tuple(t: T) -> tuple[T]:
   integers should probably return a `ta.AbstractSet[int]` rather than a `set[int]`.
 - Don't avoid `ta.Generic` and type parameters where it makes sense, but usually annotating something as a superclass
   will suffice. When present in a class definition, `ta.Generic` should be the last class in the base class list.
-- Do **NOT** use PEP-695 style type statement or type parameter syntax yet:
-  - Continue to declare `ta.TypeVar`'s `ta.TypeAlias`'s explicitly at the top of the module.
-  - Continue to declare type aliases as global variables (whose own type is annotated as `ta.TypeAlias`). For example,
-    do `IntList: ta.TypeAlias = list[int]`, not `type IntList = list[int]`.
-    - Note that in \[**lite**\] code, there is no `ta.TypeAlias` yet (as it was added in 3.10). In lite code, suffix the
-      line with `# ta.TypeAlias`. Additionally, type aliases in lite code **must be kept on a single line**. This
-      restriction does not apply to standard code.
+- PEP-695 `type` statements are permitted in standard code, and are the **required** form for *recursive* type aliases
+  - The runtime reflection system and the marshal system built on it handle them natively, including recursion.
+  - Non-recursive module-level aliases may continue to be declared as global variables annotated `ta.TypeAlias` (e.g.
+    `IntList: ta.TypeAlias = list[int]`) - there is no need to update existing legacy-style declarations.
+  - Note that in \[**lite**\] code, there is no `type` statement (3.12+) and no `ta.TypeAlias` (3.10+). In lite code,
+    declare aliases as plain global assignments suffixed with `# ta.TypeAlias`. Additionally, type aliases in lite code
+    **must be kept on a single line**. This restriction does not apply to standard code.
     - Rationale: lite code is written to be 'amalgamated' - stitched together into a single python file - in which case
       type aliases are relocated to the top of the file **and globally deduplicated**. As such each line of type alias
       must be self-contained.
-  - Rationale: the `type` statement produces radically different and incompatible reflective behavior at runtime, and in
-    general tools still struggle with the new syntax.
+- PEP-695 type *parameter* syntax (`class Foo[T]:`, `def foo[T](...)`) is permitted, but declaring `ta.TypeVar`'s
+  explicitly at the top of the module is still the default style.
 
 
 ### Comments
