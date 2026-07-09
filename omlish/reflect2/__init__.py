@@ -20,10 +20,30 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .core.subtypes import (  # noqa
+        TypeVarEnvFilter,
+
+        get_base_instance,
+        get_base_instance_or_none,
+        get_base_args,
+        get_base_args_or_none,
+
         MroEntry,
+        Mro,
+        get_mro_instances,
+        get_mro_instances_or_none,
         get_mro_entries,
         get_mro_entries_or_none,
         get_mro,
+
+        is_equivalent,
+        is_structurally_equivalent,
+        is_same_type,
+        is_alpha_equivalent,
+        is_alpha_structurally_equivalent,
+
+        is_subtype,
+        is_structural_subtype,
+        is_subtype_or_false,
     )
 
     from .core.symbols import (  # noqa

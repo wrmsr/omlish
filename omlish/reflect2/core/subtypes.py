@@ -50,6 +50,107 @@ if ta.TYPE_CHECKING:
 ##
 
 
+class TypeVarEnvFilter(ta.Protocol):
+    def __call__(self, owner: Type, param: TypeVarLikeType, arg: Type) -> Type: ...
+
+
+def get_base_instance(
+        left: Instance,
+        right_info: TypeInfo,
+        *,
+        env_filter: TypeVarEnvFilter | None = None,
+) -> Instance | None:
+    if left._type is right_info:
+        return left
+
+    if right_info not in left._type._mro:
+        return None
+
+    mapped = _map_instance_to_base(
+        left,
+        right_info,
+        set(),
+        env_filter=env_filter,
+    )
+    if mapped is not None:
+        return mapped
+
+    if right_info._type_vars:
+        raise UnsupportedTypeOperationError(
+            f'Generic base instance mapping is not implemented: {left!r} -> {right_info._fullname}',
+        )
+
+    return Instance(right_info, [])
+
+
+def get_base_instance_or_none(left: Instance, right_info: TypeInfo) -> Instance | None:
+    try:
+        return get_base_instance(left, right_info)
+    except UnsupportedTypeOperationError:
+        return None
+
+
+def get_base_args(left: Instance, right_info: TypeInfo) -> ta.Sequence[Type] | None:
+    base = get_base_instance(left, right_info)
+    if base is None:
+        return None
+    return base._args
+
+
+def get_base_args_or_none(left: Instance, right_info: TypeInfo) -> ta.Sequence[Type] | None:
+    base = get_base_instance_or_none(left, right_info)
+    if base is None:
+        return None
+    return base._args
+
+
+def _map_instance_to_base(
+        left: Instance,
+        right_info: TypeInfo,
+        seen: set[TypeInfo],
+        *,
+        env_filter: TypeVarEnvFilter | None = None,
+) -> Instance | None:
+    if not left._type._bases:
+        return None
+
+    if left._type in seen:
+        return None
+    seen.add(left._type)
+
+    if len(left._args) != len(left._type._type_vars):
+        raise UnsupportedTypeOperationError(f'Cannot map generic base with mismatched args: {left!r}')
+
+    from .substitute import substitute_type
+
+    env: dict[TypeVarId | TypeVarLikeType, Type] = {}
+    for type_var, arg in zip(left._type._type_vars, left._args):
+        if env_filter is not None:
+            arg = env_filter(left, type_var, arg)
+        env[type_var] = arg
+        env[type_var._id] = arg
+
+    for base in left._type._bases:
+        expanded = substitute_type(base, env)
+        if not isinstance(expanded, Instance):
+            raise UnsupportedTypeOperationError(f'Non-instance base is not implemented: {base!r}')
+        if expanded._type is right_info:
+            return expanded
+        mapped = _map_instance_to_base(
+            expanded,
+            right_info,
+            seen,
+            env_filter=env_filter,
+        )
+        if mapped is not None:
+            return mapped
+
+    return None
+
+
+##
+
+
 class MroEntry:
     __slots__ = (
         '_info',
@@ -140,11 +241,15 @@ class Mro(ta.Sequence[MroEntry]):
         return self._by_info
 
 
-def get_mro_instances(left: Instance) -> list[Instance]:
+def get_mro_instances(
+        left: Instance,
+        *,
+        env_filter: TypeVarEnvFilter | None = None,
+) -> list[Instance]:
     instances: list[Instance] = []
 
     for info in left._type._mro:
-        instance = get_base_instance(left, info)
+        instance = get_base_instance(left, info, env_filter=env_filter)
         if instance is None:
             raise UnsupportedTypeOperationError(f'MRO entry is not mappable: {left!r} -> {info._fullname}')
         instances.append(instance)
@@ -993,81 +1098,6 @@ def _is_instance_subtype(left: Instance, right: Instance) -> bool:
         raise UnsupportedTypeOperationError(f'Generic base instance mapping is not implemented: {left!r} <: {right!r}')
 
     return True
-
-
-def get_base_instance(left: Instance, right_info: TypeInfo) -> Instance | None:
-    if left._type is right_info:
-        return left
-
-    if right_info not in left._type._mro:
-        return None
-
-    mapped = _map_instance_to_base(left, right_info, set())
-    if mapped is not None:
-        return mapped
-
-    if right_info._type_vars:
-        raise UnsupportedTypeOperationError(
-            f'Generic base instance mapping is not implemented: {left!r} -> {right_info._fullname}',
-        )
-
-    return Instance(right_info, [])
-
-
-def get_base_instance_or_none(left: Instance, right_info: TypeInfo) -> Instance | None:
-    try:
-        return get_base_instance(left, right_info)
-    except UnsupportedTypeOperationError:
-        return None
-
-
-def get_base_args(left: Instance, right_info: TypeInfo) -> ta.Sequence[Type] | None:
-    base = get_base_instance(left, right_info)
-    if base is None:
-        return None
-    return base._args
-
-
-def get_base_args_or_none(left: Instance, right_info: TypeInfo) -> ta.Sequence[Type] | None:
-    base = get_base_instance_or_none(left, right_info)
-    if base is None:
-        return None
-    return base._args
-
-
-def _map_instance_to_base(
-        left: Instance,
-        right_info: TypeInfo,
-        seen: set[TypeInfo],
-) -> Instance | None:
-    if not left._type._bases:
-        return None
-
-    if left._type in seen:
-        return None
-    seen.add(left._type)
-
-    if len(left._args) != len(left._type._type_vars):
-        raise UnsupportedTypeOperationError(f'Cannot map generic base with mismatched args: {left!r}')
-
-    from .substitute import substitute_type
-
-    env: dict[TypeVarId | TypeVarLikeType, Type] = {}
-    for type_var, arg in zip(left._type._type_vars, left._args):
-        env[type_var] = arg
-        env[type_var._id] = arg
-
-    for base in left._type._bases:
-        expanded = substitute_type(base, env)
-        if not isinstance(expanded, Instance):
-            raise UnsupportedTypeOperationError(f'Non-instance base is not implemented: {base!r}')
-        if expanded._type is right_info:
-            return expanded
-        mapped = _map_instance_to_base(expanded, right_info, seen)
-        if mapped is not None:
-            return mapped
-
-    return None
 
 
 def _is_same_instance_type_subtype(left: Instance, right: Instance) -> bool:

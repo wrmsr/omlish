@@ -309,6 +309,15 @@ class TypeVarId:
     def namespace(self) -> str:
         return self._namespace
 
+    def __repr__(self) -> str:
+        return (
+            f'{self.__class__.__name__}('
+            f'{self.raw_id}'
+            f'{f", meta_level={self.meta_level}" if self.meta_level else ""}'
+            f'{f", namespace={self.namespace!r}" if self.namespace else ""}'
+            f')'
+        )
+
 
 class TypeVarLikeType(ProperType):
     __slots__ = (

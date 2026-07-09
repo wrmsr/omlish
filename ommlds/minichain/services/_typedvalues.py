@@ -5,7 +5,7 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 from omlish import typedvalues as tv
 
 from ._origclasses import _OrigClassCapture
@@ -29,10 +29,22 @@ class _TypedValuesInfo:
 _TYPED_VALUES_INFO_CACHE: ta.MutableMapping[ta.Any, _TypedValuesInfo] = col.IdentityWeakKeyDictionary()
 
 
-def _get_typed_values_type_arg(cls: ta.Any) -> rfl.Type:
-    g_mro = rfl.ALIAS_UPDATING_GENERIC_SUBSTITUTION.generic_mro(cls)
-    g_tvg = check.single(gb for gb in g_mro if isinstance(gb, rfl.Generic) and gb.cls is _TypedValues)
-    return check.single(g_tvg.args)
+def _get_typed_values_type_arg(rty: rfl.Type) -> rfl.Type:
+    def env_filter(owner: rfl.Type, param: rfl.TypeVarLikeType, arg: rfl.Type) -> rfl.Type:
+        if isinstance(arg, rfl.AnyType) and arg.type_of_any is rfl.TypeOfAny.FROM_OMITTED_GENERICS:
+            return param
+        return arg
+
+    mro = rfl.Mro([
+        rfl.MroEntry(mi)
+        for mi in rfl.get_mro_instances(
+            check.isinstance(rty, rfl.Instance),
+            env_filter=env_filter,
+        )
+    ])
+
+    tve = check.single(e for e in mro if e.info.runtime_object is _TypedValues)
+    return check.single(tve.args)
 
 
 @dc.dataclass()
@@ -55,8 +67,11 @@ class _TypedValues(
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        tvt = _get_typed_values_type_arg(cls)
-        tvct = rfl.get_concrete_type(tvt, use_type_var_bound=True)
+        rty = rfl.reflect_type(cls)
+        tvt = _get_typed_values_type_arg(rty)
+        if isinstance(tvt, rfl.TypeVarLikeType):
+            tvt = tvt.upper_bound
+        tvct = tvt.runtime_type_or_raise()
         cls.__typed_values_base__ = check.issubclass(check.isinstance(tvct, type), tv.TypedValue)
 
     #
@@ -77,10 +92,10 @@ class _TypedValues(
         except KeyError:
             pass
 
-        rty = rfl.typeof(orig_class)
+        rty = rfl.reflect_type(orig_class)
         tvt = _get_typed_values_type_arg(rty)
 
-        tv_types_set = frozenset(tv.reflect_typed_values_impls(tvt))
+        tv_types_set = frozenset(tv.reflect2_typed_values_impls(tvt))
         tv_types = tuple(sorted(
             [check.issubclass(c, self.__typed_values_base__) for c in tv_types_set],
             key=lambda c: c.__qualname__,
