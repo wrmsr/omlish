@@ -18,10 +18,6 @@ with _lang.auto_proxy_init(globals()):
         BaseSubprocesses,
     )
 
-    from .maysync import (  # noqa
-        MaysyncSubprocesses,
-    )
-
     from .run import (  # noqa
         SubprocessRunOutput,
         SubprocessRun,

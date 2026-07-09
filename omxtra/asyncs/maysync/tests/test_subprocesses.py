@@ -3,13 +3,14 @@
 import typing as ta
 import unittest
 
-from ...lite.check import check
-from ...lite.maysync import run_maysync
-from ..asyncs import AbstractAsyncSubprocesses
-from ..maysync import MaysyncSubprocesses
-from ..run import SubprocessRun
-from ..run import SubprocessRunOutput
-from ..sync import subprocesses
+from omlish.lite.check import check
+from omlish.subprocesses.asyncs import AbstractAsyncSubprocesses
+from omlish.subprocesses.run import SubprocessRun
+from omlish.subprocesses.run import SubprocessRunOutput
+from omlish.subprocesses.sync import subprocesses
+
+from ..lite.maysync import run_maysync
+from ..subprocesses import MaysyncSubprocesses
 
 
 class BadError(Exception):

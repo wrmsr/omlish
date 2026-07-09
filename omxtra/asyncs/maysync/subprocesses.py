@@ -3,11 +3,12 @@
 import sys
 import typing as ta
 
-from ..lite.maysync import make_maysync
-from .asyncs import AbstractAsyncSubprocesses
-from .run import SubprocessRun
-from .run import SubprocessRunOutput
-from .sync import AbstractSubprocesses
+from omlish.subprocesses.asyncs import AbstractAsyncSubprocesses
+from omlish.subprocesses.run import SubprocessRun
+from omlish.subprocesses.run import SubprocessRunOutput
+from omlish.subprocesses.sync import AbstractSubprocesses
+
+from .lite.maysync import make_maysync
 
 
 ##

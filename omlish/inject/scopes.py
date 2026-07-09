@@ -16,11 +16,9 @@ from .types import Scope
 
 if ta.TYPE_CHECKING:
     from . import injector as _injector
-    from . import maysync as _maysync
     from . import sync as _sync
 else:
     _injector = lang.proxy_import('.injector', __package__)
-    _maysync = lang.proxy_import('.maysync', __package__)
     _sync = lang.proxy_import('.sync', __package__)
 
 
@@ -106,20 +104,17 @@ def enter_seeded_scope(
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
 ) -> ta.ContextManager[None]:
-    return lang.run_maysync_context_manager(async_enter_seeded_scope(
-        i[AsyncInjector],
-        ss,
-        keys,
-    ))
-
-
-def maysync_enter_seeded_scope(
-        i: _maysync.MaysyncInjector,
-        ss: SeededScope,
-        keys: ta.Mapping[Key, ta.Any],
-) -> ta.ContextManager[None]:
-    return lang.sync_async_with(async_enter_seeded_scope(
-        i[AsyncInjector],
-        ss,
-        keys,
-    ))
+    @contextlib.contextmanager
+    def inner():
+        # FIXME: helper lol
+        ag = async_enter_seeded_scope(
+            i[AsyncInjector],
+            ss,
+            keys,
+        )
+        v = lang.sync_await(ag.__aenter__())
+        try:
+            yield v
+        finally:
+            lang.sync_await(ag.__aexit__(None, None, None))
+    return inner()

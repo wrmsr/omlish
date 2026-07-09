@@ -36,10 +36,6 @@ class ToolFn(lang.Final):
             if self.s is None and self.a is None:
                 raise TypeError('one of s or a must be specified')
 
-    @dc.dataclass(frozen=True)
-    class MaysyncImpl(Impl):
-        m: ta.Callable[..., ta.Awaitable[ta.Any]]
-
     impl: Impl
 
     #
@@ -123,17 +119,15 @@ async def invoke_tool_fn(
         *,
         forbid_sync_as_async: bool = False,
 ) -> Content:
-    m_fn: ta.Callable[..., ta.Awaitable[ta.Any]]
+    a_fn: ta.Callable[..., ta.Awaitable[ta.Any]]
     if isinstance(tfn.impl, ToolFn.FnImpl):
         s_fn = tfn.impl.s
-        if (a_fn := tfn.impl.a) is None and not forbid_sync_as_async and s_fn is not None:
-            a_fn = lang.as_async(s_fn, wrap=True)
-        m_fn = lang.make_maysync(
-            s_fn if s_fn is not None else _no_sync_tool_impl,
-            a_fn if a_fn is not None else _no_async_tool_impl,
-        )
-    elif isinstance(tfn.impl, ToolFn.MaysyncImpl):
-        m_fn = tfn.impl.m
+        if tfn.impl.a is not None:
+            a_fn = tfn.impl.a
+        elif not forbid_sync_as_async and s_fn is not None:  # noqa
+            a_fn = lang.as_async(s_fn, wrap=True)  # noqa
+        else:
+            raise ValueError(f'No async tool implementation for {tfn.impl!r}')
     else:
         raise TypeError(tfn.impl)
 
@@ -157,7 +151,7 @@ async def invoke_tool_fn(
 
     #
 
-    fn_out = await m_fn(**fn_kw)
+    fn_out = await a_fn(**fn_kw)
 
     #
 

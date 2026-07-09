@@ -41,7 +41,7 @@ import sys
 import threading
 import typing as ta
 
-from .abstract import Abstract
+from omlish.lite.abstract import Abstract
 
 
 T = ta.TypeVar('T')

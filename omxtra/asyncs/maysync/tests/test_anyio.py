@@ -1,7 +1,8 @@
 import anyio
 import pytest
 
-from .... import lang
+from ..maysync import make_maysync
+from ..maysync import run_maysync
 
 
 def s_inc(i: int) -> int:
@@ -14,7 +15,7 @@ async def a_inc(i: int) -> int:
 
 
 async def m_frob(i: int) -> int:
-    return await lang.make_maysync(s_inc, a_inc)(i)
+    return await make_maysync(s_inc, a_inc)(i)
 
 
 async def m_grob(i: int) -> int:
@@ -22,8 +23,8 @@ async def m_grob(i: int) -> int:
 
 
 def test_maysync():
-    assert lang.run_maysync(m_frob(3)) == 4
-    assert lang.run_maysync(m_grob(3)) == 114
+    assert run_maysync(m_frob(3)) == 4
+    assert run_maysync(m_grob(3)) == 114
 
 
 @pytest.mark.asyncs

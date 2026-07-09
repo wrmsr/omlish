@@ -39,9 +39,6 @@ with _lang.auto_proxy_init(globals()):
 
         create_managed_injector,
         make_managed_provider,
-
-        create_maysync_managed_injector,
-        make_maysync_managed_provider,
     )
 
     from .helpers.multis import (  # noqa
@@ -118,11 +115,6 @@ with _lang.auto_proxy_init(globals()):
         bind_provision_listener,
     )
 
-    from .maysync import (  # noqa
-        MaysyncInjector,
-        create_maysync_injector,
-    )
-
     from .multis import (  # noqa
         is_set_multi_key,
         SetBinding,
@@ -182,7 +174,6 @@ with _lang.auto_proxy_init(globals()):
 
         async_enter_seeded_scope,
         enter_seeded_scope,
-        maysync_enter_seeded_scope,
     )
 
     from .sync import (  # noqa

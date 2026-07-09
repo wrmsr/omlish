@@ -72,7 +72,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../argparse/cli.py', sha1='aef500dd2d8f5a65c4c04ede11355ac8eb513f2e'),
             dict(path='../../lite/args.py', sha1='ae96b0baeb376617a63c0e64632ab2c5ff4171a8'),
-            dict(path='../../subprocesses/run.py', sha1='1d2a78b18bcc601c8b28269d792cc38bbf25a078'),
+            dict(path='../../subprocesses/run.py', sha1='9b7e1265cd59c58d30d8915f96ba84f80797ef42'),
             dict(path='../../subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../../diag/cmds/lslocks.py', sha1='b1e09c9374f9007cb19c2c5009937e7d2f4c0a7b'),
             dict(path='../../diag/cmds/lsof.py', sha1='0a58d3c05ce0038690ce8c5b64dd96e7b21b5853'),
@@ -3700,17 +3700,6 @@ class SubprocessRun:
             async_subprocesses = self._DEFAULT_ASYNC_SUBPROCESSES
         return await check.not_none(async_subprocesses).run_(self.replace(**kwargs))
 
-    _DEFAULT_MAYSYNC_SUBPROCESSES: ta.ClassVar[ta.Optional[ta.Any]] = None  # AbstractMaysyncSubprocesses
-
-    async def maysync_run(
-            self,
-            maysync_subprocesses: ta.Optional[ta.Any] = None,  # AbstractMaysyncSubprocesses
-            **kwargs: ta.Any,
-    ) -> SubprocessRunOutput:
-        if maysync_subprocesses is None:
-            maysync_subprocesses = self._DEFAULT_MAYSYNC_SUBPROCESSES
-        return await check.not_none(maysync_subprocesses).run_(self.replace(**kwargs))
-
 
 SubprocessRun._FIELD_NAMES = frozenset(fld.name for fld in dc.fields(SubprocessRun))  # noqa
 
@@ -3742,13 +3731,6 @@ class SubprocessRunnable(Abstract, ta.Generic[T]):
             **kwargs: ta.Any,
     ) -> T:
         return self.handle_run_output(await self.make_run().async_run(async_subprocesses, **kwargs))
-
-    async def maysync_run(
-            self,
-            maysync_subprocesses: ta.Optional[ta.Any] = None,  # AbstractMaysyncSubprocesses
-            **kwargs: ta.Any,
-    ) -> T:
-        return self.handle_run_output(await self.make_run().maysync_run(maysync_subprocesses, **kwargs))
 
 
 ########################################

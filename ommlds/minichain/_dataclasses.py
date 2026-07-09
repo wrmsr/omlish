@@ -4205,7 +4205,6 @@ def _process_dataclass__fbf0f0bb81f40b541937070a9db860c6ce9ebd3e():
     plan_repr_sha1='00a32d02ca8d7c055f05a95a2073d8d5198c6d97',
     cls_names=(
         ('ommlds.minichain.chat.templating', 'ChatTemplater._MessageStep'),
-        ('ommlds.minichain.tools.fns', 'ToolFn.MaysyncImpl'),
     ),
 )
 def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():

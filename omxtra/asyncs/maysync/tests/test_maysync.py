@@ -5,15 +5,16 @@ import typing as ta
 import pytest
 import sniffio
 
-from ...lite.maysync import run_maysync
-from ..imports.proxy import proxy_import
+from omlish import lang
+
+from ..lite.maysync import run_maysync
 from ..maysync import make_maysync
 
 
 if ta.TYPE_CHECKING:
     import trio
 else:
-    trio = proxy_import('trio')
+    trio = lang.proxy_import('trio')
 
 
 ##

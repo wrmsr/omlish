@@ -448,15 +448,6 @@ The system provides clear error types for common issues:
 
 ## Advanced Topics
 
-### MaysyncInjector
-
-For code that supports both sync and async execution:
-
-```python
-maysync_injector = inj.create_maysync_injector(...)
-# Can be used in both sync and async contexts
-```
-
 ### Custom Scopes
 
 Define application-specific scopes by implementing the `Scope` interface and registering with `bind_scope()`.

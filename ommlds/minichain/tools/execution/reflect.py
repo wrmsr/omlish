@@ -27,9 +27,7 @@ def reflect_tool_catalog_entry(
         include_contextual_params: bool = False,
 ) -> ToolCatalogEntry:
     impl: ToolFn.Impl
-    if lang.is_maysync(fn):
-        impl = ToolFn.MaysyncImpl(fn)
-    elif inspect.iscoroutinefunction(lang.unwrap_callable(fn)):
+    if inspect.iscoroutinefunction(lang.unwrap_callable(fn)):
         impl = ToolFn.FnImpl(a=fn)
     else:
         impl = ToolFn.FnImpl(s=fn, a=lang.as_async(fn, wrap=True))

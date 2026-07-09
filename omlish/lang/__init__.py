@@ -414,14 +414,6 @@ with _auto_proxy_init(globals(), update_exports=True):
         just,
     )
 
-    from .maysync import (  # noqa
-        make_maysync_fn,
-        make_maysync_generator_fn,
-        make_maysync,
-
-        make_maysync_from_sync,
-    )
-
     from .objects import (  # noqa
         arg_repr,
         opt_repr,
@@ -684,29 +676,6 @@ with _auto_proxy_init(globals(), update_exports=True):
 
     from ..lite.maybes import (  # noqa
         Maybe,
-    )
-
-    from ..lite.maysync import (  # noqa
-        AnyMaysyncFn,
-
-        MaywaitableAlreadyConsumedError,
-        AnyMaywaitable,
-
-        MaysyncFn,
-        Maywaitable,
-
-        MaysyncGeneratorFn,
-        MaysyncGenerator,
-
-        is_running_maysync,
-
-        run_maysync,
-
-        RunMaysyncContextManager,
-        run_maysync_context_manager,
-
-        mark_maysync,
-        is_maysync,
     )
 
     from ..lite.objects import (  # noqa

@@ -240,13 +240,13 @@ lives in the bones, not in dead code.
 
 ## 14. Async without forking the world
 
-The codebase refuses, where it can, to maintain parallel sync and async universes. `maysync` lets one
-implementation serve both colors; `SyncAsync` adapters wrap clients; sync DBs are lifted into async via dedicated
-executors; the async backend itself is abstracted (anyio-preferred, asyncio where hosts demand it — textual — with
-an in-house pytest plugin so all backends test through one fixture). And async code is written with unusual care at
-the *cancellation* seams: `shielded_finally` for must-run finalizers, explicit state machines on stream lifecycles,
-a `BaseException`-derived cancellation sentinel threaded through the stream trampoline. 'Everything that does IO
-needs a timeout' is policy, with defaults sized to intent (minutes interactive, an hour background).
+The codebase refuses, where it can, to maintain parallel sync and async universes. `SyncAsync` adapters wrap clients;
+sync DBs are lifted into async via dedicated executors; the async backend itself is abstracted (anyio-preferred, asyncio
+where hosts demand it — textual — with an in-house pytest plugin so all backends test through one fixture). And async
+code is written with unusual care at the *cancellation* seams: `shielded_finally` for must-run finalizers, explicit
+state machines on stream lifecycles, a `BaseException`-derived cancellation sentinel threaded through the stream
+trampoline. 'Everything that does IO needs a timeout' is policy, with defaults sized to intent (minutes interactive, an
+hour background).
 
 The contributor instinct to unlearn: writing `foo()` and `afoo()` twins, or assuming asyncio. Write to the
 abstraction; let adapters and the injector pick the color and the loop.
