@@ -1,0 +1,480 @@
+"""
+TODO:
+ - !!! lighter weight bound methods
+  - keymaker overhead less important than not rebuilding a whole dc every __get__ on a new instance
+ - !! specialize nullary, explicit kwarg
+ - !! use c-backed functools.cache if possible
+  - also just riic
+ - !! reconcile A().f() with A.f(A())
+  - unbound descriptor *should* still hit instance cache
+ - significant_kwargs_order=False - stdlib has significant kwarg order
+ - integrate / expose with collections.cache
+ - weakrefs (selectable by arg)
+ - more rigorous descriptor pickling
+  - must support free functions (which have no instance nor owner)
+  - 'staticmethod' or effective equiv - which must resolve to the shared instance
+   - and must be transient?
+ - use __transient_dict__ to support common state nuking
+ - use __set_name__ ?
+ - on_compute
+ - max_recursion?
+"""
+import dataclasses as dc
+import functools
+import inspect
+import types
+import typing as ta
+
+from omlish.lang.classes.abstract import Abstract
+from omlish.lang.contextmanagers import DefaultLockable
+from omlish.lang.contextmanagers import default_lock
+from omlish.lang.descriptors import unwrap_func
+from omlish.lang.descriptors import unwrap_func_with_partials
+from omlish.lang.params import KwargsParam
+from omlish.lang.params import Param
+from omlish.lang.params import ParamSeparator
+from omlish.lang.params import ParamSpec
+from omlish.lang.params import ValParam
+from omlish.lang.params import param_render
+
+
+P = ta.ParamSpec('P')
+T = ta.TypeVar('T')
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+CacheKeyMaker: ta.TypeAlias = ta.Callable[..., tuple]
+
+
+##
+
+
+def _nullary_cache_key_maker():
+    return ()
+
+
+def _self_cache_key_maker(self):
+    return (self,)
+
+
+_PRE_MADE_CACHE_KEY_MAKERS = [
+    _nullary_cache_key_maker,
+    _self_cache_key_maker,
+]
+
+
+_PRE_MADE_CACHE_KEY_MAKERS_BY_PARAM_SPEC: ta.Mapping[ParamSpec, CacheKeyMaker] = {
+    ParamSpec.inspect(fn): fn  # type: ignore
+    for fn in _PRE_MADE_CACHE_KEY_MAKERS
+}
+
+
+##
+
+
+def _make_unwrapped_cache_key_maker(
+        fn: ta.Callable,
+        *,
+        bound: bool = False,
+) -> CacheKeyMaker:
+    if inspect.isgeneratorfunction(fn) or inspect.iscoroutinefunction(fn):
+        raise TypeError(fn)
+
+    ps = ParamSpec.inspect(
+        fn,
+        offset=1 if bound else 0,
+        strip_annotations=True,
+    )
+
+    if not len(ps):
+        return _nullary_cache_key_maker
+
+    if not ps.has_defaults:
+        try:
+            return _PRE_MADE_CACHE_KEY_MAKERS_BY_PARAM_SPEC[ps]
+        except KeyError:
+            pass
+
+    builtin_pfx = '__cache_key_maker__'
+    ns = {
+        (builtin_tuple := builtin_pfx + 'tuple'): tuple,
+        (builtin_sorted := builtin_pfx + 'sorted'): sorted,
+    }
+
+    src_params = []
+    src_vals = []
+    kwargs_name = None
+    for p in ps.with_seps:
+        if isinstance(p, ParamSeparator):
+            # Reproduce '/' and '*' so the generated key maker enforces positional-only / keyword-only calling
+            # conventions exactly, raising early on invalid calls rather than passing them through to the value fn (or,
+            # worse, silently hitting a warm cache entry).
+            src_params.append(p.value)
+            continue
+
+        if not isinstance(p, Param):
+            raise TypeError(p)
+
+        if isinstance(p, ValParam) and p.default.present:
+            ns[p.name] = p.default
+
+        src_params.append(param_render(
+            p,
+            render_default=lambda _: p.name,  # noqa
+        ))
+
+        if isinstance(p, KwargsParam):
+            kwargs_name = p.name
+        else:
+            src_vals.append(p.name)
+
+    if kwargs_name is not None:
+        src_vals.append(f'{builtin_tuple}({builtin_sorted}({kwargs_name}.items()))')
+
+    rendered = (
+        f'def __func__({", ".join(src_params)}):\n'
+        f'    return ({", ".join(src_vals)}{"," if len(src_vals) == 1 else ""})\n'
+    )
+    exec(rendered, ns)
+
+    kfn: CacheKeyMaker = ns['__func__']  # type: ignore[assignment]
+    return kfn
+
+
+def _make_cache_key_maker(
+        fn: ta.Any,
+        *,
+        bound: bool = False,
+):
+    fn, partials = unwrap_func_with_partials(fn)
+
+    kfn = _make_unwrapped_cache_key_maker(fn, bound=bound)
+
+    for part in partials[::-1]:
+        kfn = functools.partial(kfn, *part.args, **part.keywords)
+
+    return kfn
+
+
+##
+
+
+class _CachedException(ta.NamedTuple):
+    ex: BaseException
+
+
+class _CachedFunction(Abstract, ta.Generic[T]):
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Opts:
+        map_maker: ta.Callable[[], ta.MutableMapping] = dict
+        lock: DefaultLockable = None
+        transient: bool = False
+        no_wrapper_update: bool = False
+        cache_exceptions: type[BaseException] | tuple[type[BaseException], ...] | None = None
+
+        def __post_init__(self) -> None:
+            if (ce := self.cache_exceptions) is not None:
+                if isinstance(ce, type):
+                    if not issubclass(ce, BaseException):
+                        raise TypeError(ce)
+                elif isinstance(ce, tuple):
+                    for e in ce:
+                        if not issubclass(e, BaseException):
+                            raise TypeError(e)
+                else:
+                    raise TypeError(ce)
+
+    def __init__(
+            self,
+            fn: ta.Callable[P, T],
+            *,
+            opts: Opts = Opts(),
+            key_maker: ta.Callable[..., tuple] | None = None,
+            values: ta.MutableMapping | None = None,
+            value_fn: ta.Callable[P, T] | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._fn = (fn,)
+        self._opts = opts
+        self._key_maker = key_maker if key_maker is not None else _make_cache_key_maker(fn)
+
+        self._lock = default_lock(opts.lock, False)() if opts.lock is not None else None
+        self._values = values if values is not None else opts.map_maker()
+        self._value_fn = value_fn if value_fn is not None else fn
+        if not self._opts.no_wrapper_update:
+            functools.update_wrapper(self, fn)
+
+    @property
+    def _fn(self):
+        return self.__fn
+
+    @_fn.setter
+    def _fn(self, x):
+        self.__fn = x
+
+    def reset(self) -> None:
+        self._values = self._opts.map_maker()
+
+    def __bool__(self) -> bool:
+        raise TypeError
+
+    def __call__(self, *args, **kwargs) -> T:
+        k = self._key_maker(*args, **kwargs)
+
+        if (ce := self._opts.cache_exceptions) is None:
+            try:
+                return self._values[k]
+            except KeyError:
+                pass
+
+        else:
+            try:
+                hit = self._values[k]
+            except KeyError:
+                pass
+            else:
+                if isinstance(hit, _CachedException):
+                    raise hit.ex
+                else:
+                    return hit
+
+        if ce is None:
+            def call_value_fn():
+                return self._value_fn(*args, **kwargs)
+
+        else:
+            def call_value_fn():
+                try:
+                    return self._value_fn(*args, **kwargs)
+                except ce as ex:
+                    return _CachedException(ex)
+
+        if self._lock is not None:
+            with self._lock:
+                # NOTE: the in-lock recheck must funnel through the same _CachedException unwrapping below as the
+                # uncontended path - returning self._values[k] directly here would leak the wrapper object when another
+                # thread stored a cached exception while we waited for the lock.
+                try:
+                    value = self._values[k]
+                except KeyError:
+                    self._values[k] = value = call_value_fn()
+
+        else:
+            self._values[k] = value = call_value_fn()
+
+        if isinstance(value, _CachedException):
+            raise value.ex
+        else:
+            return value
+
+
+#
+
+
+class _FreeCachedFunction(_CachedFunction[T]):
+    @classmethod
+    def _unpickle(
+            cls,
+            fn,
+            opts,
+            values,
+    ):
+        # Reconstruct the same way cached_function() builds free cached functions, so the key maker (bound vs unbound)
+        # and value fn match the original.
+        if isinstance(fn, types.MethodType):
+            return cls(
+                fn,
+                opts=opts,
+                key_maker=_make_cache_key_maker(fn, bound=True),
+                values=values,
+            )
+
+        elif isinstance(fn, staticmethod):
+            return cls(
+                fn,
+                opts=opts,
+                value_fn=unwrap_func(fn),
+                values=values,
+            )
+
+        else:
+            return cls(
+                fn,
+                opts=opts,
+                values=values,
+            )
+
+    def __reduce__(self):
+        fn, = self._fn
+        return (
+            _FreeCachedFunction._unpickle,
+            (
+                fn,
+                self._opts,
+                self._values if not self._opts.transient else None,
+            ),
+        )
+
+
+#
+
+
+class _DescriptorCachedFunction(_CachedFunction[T]):
+    def __init__(
+            self,
+            fn: ta.Callable[P, T],
+            scope: ta.Any,  # classmethod | None
+            *,
+            instance: ta.Any = None,
+            owner: ta.Any = None,
+            name: str | None = None,
+            **kwargs,
+    ) -> None:
+        super().__init__(fn, **kwargs)
+
+        self._scope = scope
+        self._instance = instance
+        self._owner = owner
+        self._name = name if name is not None else unwrap_func(fn).__name__
+        self._bound_key_maker = None
+
+    @classmethod
+    def _unpickle(
+            cls,
+            scope,
+            instance,
+            owner,
+            name,
+            values,
+    ):
+        if scope is not None:
+            raise NotImplementedError
+
+        if instance is None:
+            raise RuntimeError
+        obj = type(instance)
+
+        desc: _DescriptorCachedFunction
+        for bc in obj.__mro__[:-1]:
+            try:
+                desc = bc.__dict__[name]
+            except KeyError:
+                continue
+            break
+        else:
+            raise AttributeError(name)
+
+        if not isinstance(desc, cls):
+            raise TypeError(desc)
+
+        if (desc._instance is not None or desc._owner is not None):  # noqa
+            raise RuntimeError
+
+        return desc._bind(  # noqa
+            instance,
+            owner,
+            values=values,
+        )
+
+    def __reduce__(self):
+        if self._scope is not None:
+            raise NotImplementedError
+
+        if not (self._instance is not None or self._owner is not None):
+            raise RuntimeError
+
+        return (
+            _DescriptorCachedFunction._unpickle,
+            (
+                self._scope,
+                self._instance,
+                self._owner,
+                self._name,
+                self._values if not self._opts.transient else None,
+            ),
+        )
+
+    def _bind(
+            self,
+            instance,
+            owner=None,
+            *,
+            values: ta.MutableMapping | None = None,
+    ):
+        scope = self._scope
+        if owner is self._owner and (instance is self._instance or scope is classmethod):
+            return self
+
+        fn, = self._fn
+        name = self._name
+        bound_fn = fn.__get__(instance, owner)
+        if self._bound_key_maker is None:
+            self._bound_key_maker = _make_cache_key_maker(fn, bound=True)
+
+        bound = self.__class__(
+            fn,
+            scope,
+            opts=self._opts,
+            instance=instance,
+            owner=owner,
+            name=name,
+            key_maker=self._bound_key_maker,
+            # values=None if scope is classmethod else self._values,  # FIXME: ?
+            values=values,
+            value_fn=bound_fn,
+        )
+
+        if scope is classmethod and owner is not None:
+            setattr(owner, name, bound)
+        elif instance is not None:
+            instance.__dict__[name] = bound
+
+        return bound
+
+    def __get__(self, instance, owner=None):
+        return self._bind(instance, owner)
+
+
+#
+
+
+@ta.overload
+def cached_function(fn: None = None, **kwargs: ta.Any) -> ta.Callable[[CallableT], CallableT]: ...
+
+
+@ta.overload
+def cached_function(fn: CallableT, **kwargs: ta.Any) -> CallableT: ...
+
+
+def cached_function(fn=None, **kwargs):  # noqa
+    if fn is None:
+        return functools.partial(cached_function, **kwargs)
+
+    opts = _CachedFunction.Opts(**kwargs)
+
+    if isinstance(fn, types.MethodType):
+        return _FreeCachedFunction(
+            fn,
+            opts=opts,
+            key_maker=_make_cache_key_maker(fn, bound=True),
+        )
+
+    if isinstance(fn, staticmethod):
+        return _FreeCachedFunction(
+            fn,
+            opts=opts,
+            value_fn=unwrap_func(fn),
+        )
+
+    scope = classmethod if isinstance(fn, classmethod) else None
+
+    return _DescriptorCachedFunction(
+        fn,
+        scope,
+        opts=opts,
+    )
+
+
+def static_init(fn: CallableT) -> CallableT:
+    fn = cached_function(fn)
+    fn()
+    return fn
