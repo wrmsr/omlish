@@ -372,6 +372,10 @@ def _check_knowns() -> None:
 _check_knowns()
 
 
+_KNOWNS_BY_TYPE: ta.Final[ta.Mapping[object, _Known]] = {k.type: k for k in _KNOWNS}
+_KNOWNS_BY_FULLNAME: ta.Final[ta.Mapping[str, _Known]] = {k.fullname: k for k in _KNOWNS}
+
+
 ##
 
 
@@ -383,28 +387,4 @@ _KNOWN_FULLNAMES_BY_TYPE: ta.Final[ta.Mapping[object, str]] = {
 _KNOWN_TYPES_BY_FULLNAME: ta.Final[ta.Mapping[str, object]] = {
     k.fullname: k.type
     for k in _KNOWNS
-}
-
-_KNOWN_GENERIC_ARITIES: ta.Final[ta.Mapping[str, int]] = {
-    k.fullname: k.arity
-    for k in _KNOWNS
-    if k.arity is not None
-}
-
-_KNOWN_GENERIC_VARIANCES: ta.Final[ta.Mapping[str, tuple[VarianceKind, ...]]] = {
-    k.fullname: k.variances
-    for k in _KNOWNS
-    if k.variances is not None
-}
-
-_KNOWN_BASE_SPECS: ta.Final[ta.Mapping[str, tuple[_KnownBaseSpec, ...]]] = {
-    k.fullname: k.specs
-    for k in _KNOWNS
-    if k.specs is not None
-}
-
-_KNOWN_MRO_TAILS: ta.Final[ta.Mapping[str, tuple[str, ...]]] = {
-    k.fullname: k.mro_tail
-    for k in _KNOWNS
-    if k.mro_tail is not None
 }

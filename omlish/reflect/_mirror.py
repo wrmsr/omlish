@@ -44,13 +44,10 @@ from .core.typevisitor import BoolTypeQueryMode
 from .errors import FrozenMirrorReflectionError
 from .errors import ReflectionValueError
 from .errors import UnreflectableTypeError
-from .known import _KNOWN_BASE_SPECS
 from .known import _KNOWN_FULLNAMES_BY_TYPE
-from .known import _KNOWN_GENERIC_ARITIES
-from .known import _KNOWN_GENERIC_VARIANCES
-from .known import _KNOWN_MRO_TAILS
 from .known import _KNOWN_TYPES_BY_FULLNAME
 from .known import _KNOWNS
+from .known import _KNOWNS_BY_FULLNAME
 from .known import _KnownBaseArg
 from .mirror import DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
 from .mirror import ForwardRefResolution
@@ -531,8 +528,12 @@ class _InternalMirror:
             runtime_object: object | None = None,
     ) -> TypeInfo:
         name = fullname.rsplit('.', 1)[-1]
-        arity = _KNOWN_GENERIC_ARITIES.get(fullname, 0)
-        variances = list(_KNOWN_GENERIC_VARIANCES.get(fullname, (VarianceKind.IN,) * arity))
+        known = _KNOWNS_BY_FULLNAME.get(fullname)
+        arity = known.arity if known is not None and known.arity is not None else 0
+        if known is not None and known.variances is not None:
+            variances = list(known.variances)
+        else:
+            variances = [VarianceKind.IN] * arity
         type_vars: list[TypeVarLikeType] = [
             self._make_type_var(fullname, index, variance)
             for index, variance in enumerate(variances)
@@ -546,7 +547,10 @@ class _InternalMirror:
         )
 
     def _make_known_bases(self, info: TypeInfo) -> ta.Sequence[Type]:
-        specs = _KNOWN_BASE_SPECS.get(info._fullname, ())
+        if (known := _KNOWNS_BY_FULLNAME.get(info._fullname)) is not None:
+            specs = known.specs or ()
+        else:
+            specs = ()
         bases: list[Type] = []
         for target_fullname, arg_specs in specs:
             bases.append(Instance(
@@ -564,8 +568,7 @@ class _InternalMirror:
         return Instance(self.get_type_info(arg_spec), ())
 
     def _make_known_mro(self, info: TypeInfo) -> ta.Sequence[TypeInfo] | None:
-        tail = _KNOWN_MRO_TAILS.get(info._fullname)
-        if tail is None:
+        if (known := _KNOWNS_BY_FULLNAME.get(info._fullname)) is None or (tail := known.mro_tail) is None:
             return None
         return [info, *[self.get_type_info(fullname) for fullname in tail]]
 
