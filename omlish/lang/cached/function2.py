@@ -44,7 +44,6 @@ import enum
 import functools
 import inspect
 import itertools
-import linecache
 import types
 import typing as ta
 
@@ -75,15 +74,22 @@ CacheKeyMaker: ta.TypeAlias = ta.Callable[..., tuple]
 
 _GEN_SRC_COUNT = itertools.count()
 
+_PUT_IN_LINECACHE = True
+
 
 def _register_gen_src(name: str, src: str) -> str:
     """
-    Registers generated source with linecache under a unique virtual filename (returned, for compile()) so debuggers can
+    Registers generated source with inecache under a unique virtual filename (returned, for compile()) so debuggers can
     step it and tracebacks render it.
     """
 
     filename = f'<generated:{__name__}:{next(_GEN_SRC_COUNT)}:{name}>'
-    linecache.cache[filename] = (len(src), None, src.splitlines(keepends=True), filename)
+
+    if _PUT_IN_LINECACHE:
+        import linecache
+
+        linecache.cache[filename] = (len(src), None, src.splitlines(keepends=True), filename)
+
     return filename
 
 
@@ -488,8 +494,7 @@ class _DescriptorCachedFunction(_FullCachedFunction[T], Abstract):
         if (species := self._bound_species) is None:
             species = self._ensure_bound()
 
-        fn, = self._fn
-        bound = species(self, instance, owner, fn.__get__(instance, owner), values)
+        bound = species(self, instance, owner, self._fn[0].__get__(instance, owner), values)
 
         if self._scope is classmethod:
             if owner is not None:
@@ -606,8 +611,7 @@ class _UnboundCachedMethod:
                     break
 
         # Correct-but-uncached escape hatch: call the descriptor's fn bound to the instance, python semantics exactly.
-        fn, = desc._fn  # noqa
-        return fn.__get__(instance, type(instance))(*args, **kwargs)
+        return desc._fn[0].__get__(instance, type(instance))(*args, **kwargs)  # noqa
 
 
 ##
