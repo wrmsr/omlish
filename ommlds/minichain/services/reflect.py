@@ -11,7 +11,7 @@ import weakref
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import reflect as rfl
+from omlish import reflect2 as rfl
 
 from ..resources import ResourceManaged
 from .requests import Request
@@ -42,19 +42,19 @@ class ReflectedStreamService(ReflectedService):
 
 
 def reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedService:
-    req_rty = check.isinstance(req_rty, rfl.Generic)
-    resp_rty = check.isinstance(resp_rty, rfl.Generic)
+    req_rty = check.isinstance(req_rty, rfl.Instance)
+    resp_rty = check.isinstance(resp_rty, rfl.Instance)
 
-    check.is_(req_rty.cls, Request)
-    check.is_(resp_rty.cls, Response)
+    check.is_(req_rty.runtime_type, Request)
+    check.is_(resp_rty.runtime_type, Response)
 
     req_v_rty, req_opt_rty = req_rty.args
     resp_v_rty, resp_out_rty = resp_rty.args
 
-    if isinstance(resp_v_rty, rfl.Generic) and resp_v_rty.cls is ResourceManaged:
+    if isinstance(resp_v_rty, rfl.Instance) and resp_v_rty.runtime_type is ResourceManaged:
         [resp_v_rmg] = resp_v_rty.args
 
-        if isinstance(resp_v_rmg, rfl.Generic) and resp_v_rmg.cls is StreamResponseIterator:
+        if isinstance(resp_v_rmg, rfl.Instance) and resp_v_rmg.runtime_type is StreamResponseIterator:
             stream_resp_v_rty, stream_resp_out_rty = resp_v_rmg.args
 
             return ReflectedStreamService(
@@ -81,11 +81,11 @@ def reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedServ
 
 
 def reflect_service_cls_(service_cls: ta.Any) -> ReflectedService:
-    rty = rfl.typeof(service_cls)
-    rty = rfl.strip_rfl_annotations(rty)
-    rty = check.isinstance(rty, rfl.Protocol)
+    rty = rfl.reflect_type(service_cls)
+    rty = rfl.get_proper_type(rty)
+    rty = check.isinstance(rty, rfl.Instance)
 
-    check.is_(rty.cls, Service)
+    check.is_(rty.type.runtime_object, Service)
 
     req_rty, resp_rty = rty.args
 
