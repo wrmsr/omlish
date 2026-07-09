@@ -586,8 +586,8 @@ class _InternalMirror:
 
         return False
 
-    def reflect_type(self, obj: object) -> Type:
-        return _TypeReflector(self).reflect_type(obj)
+    def reflect_type(self, obj: object, *, skip_substitution: bool = False) -> Type:
+        return _TypeReflector(self).reflect_type(obj, skip_substitution=skip_substitution)
 
 
 class _TypeReflector:
@@ -606,10 +606,10 @@ class _TypeReflector:
 
     #
 
-    def reflect_type(self, obj: object) -> Type:
+    def reflect_type(self, obj: object, *, skip_substitution: bool = False) -> Type:
         # Substitution applies at every level of descent. The substituted result is deliberately not re-substituted
         # (see ReflectSubstitutor), and reflection proceeds - including caching - under the substituted object.
-        if (substitutor := self._mirror.type_reflect_substitutor) is not None:
+        if not skip_substitution and (substitutor := self._mirror.type_reflect_substitutor) is not None:
             if (substituted := substitutor(obj)) is not None and substituted is not obj:
                 obj = substituted
 
@@ -1455,20 +1455,17 @@ class MirrorImpl(Mirror):
         if isinstance(obj, Type):
             return obj
 
-        if (
-                # The raw-key fast path is unsound under substitution: an ancestor may legitimately hold a cache entry
-                # for a raw object this mirror's substitutor remaps. Substituted mirrors always take the full
-                # (substituting) path.
-                self._internal.type_reflect_substitutor is None and
+        if (substitutor := self._internal.type_reflect_substitutor) is not None:
+            if (substituted := substitutor(obj)) is not None and substituted is not obj:
+                obj = substituted
 
-                not self._internal.is_uncacheable_reflect_type(obj)
-        ):
+        if not self._internal.is_uncacheable_reflect_type(obj):
             if (cached := self._internal._state.get_cached_reflected_type(obj)) is not None:
                 return cached
 
         if self._internal._state.is_frozen:
             # Immutable - nothing to lock. Anything requiring new state raises FrozenMirrorReflectionError below.
-            return self._internal.reflect_type(obj)
+            return self._internal.reflect_type(obj, skip_substitution=True)
 
         with self._lock:
-            return self._internal.reflect_type(obj)
+            return self._internal.reflect_type(obj, skip_substitution=True)
