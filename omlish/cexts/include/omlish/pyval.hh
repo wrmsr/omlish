@@ -1,6 +1,5 @@
 /*
 FIXME:
- - oh just drop the stupid magic vals lol
  - unify interface with pyref
 */
 #pragma once
@@ -38,18 +37,10 @@ class PyVal {
     static constexpr std::int64_t kMax =  (INT64_C(1) << 62) - 1;
 
 public:
-    static constexpr std::int64_t kSentinelBase = static_cast<std::int64_t>(0xf879a1f939bfd1a2ull);  // 17904519885375918498
-    static constexpr std::int64_t kNoneInt  = kSentinelBase;
-    static constexpr std::int64_t kFalseInt = kSentinelBase + 1;
-    static constexpr std::int64_t kTrueInt  = kSentinelBase + 2;
-    static constexpr std::int64_t kImmMin   = kMin;
-    static constexpr std::int64_t kImmMax   = kMax;
+    static constexpr std::int64_t kImmMin = kMin;
+    static constexpr std::int64_t kImmMax = kMax;
 
 private:
-    static constexpr std::uintptr_t kNone  = pyval_detail::encode(kNoneInt);
-    static constexpr std::uintptr_t kFalse = pyval_detail::encode(kFalseInt);
-    static constexpr std::uintptr_t kTrue  = pyval_detail::encode(kTrueInt);
-
     static bool      is_ptr_(std::uintptr_t w) noexcept { return (w & kTag) == 0; }
     static PyObject* as_ptr_(std::uintptr_t w) noexcept { return reinterpret_cast<PyObject*>(w); }
     bool             holds_pointer_() const noexcept { return is_ptr_(w_); }
@@ -81,8 +72,6 @@ private:
     static_assert(pyval_detail::decode(pyval_detail::encode(-1))      == -1,      "roundtrip");
     static_assert(pyval_detail::decode(pyval_detail::encode(kImmMin)) == kImmMin, "roundtrip");
     static_assert(pyval_detail::decode(pyval_detail::encode(kImmMax)) == kImmMax, "roundtrip");
-
-    static_assert(kNone != kFalse && kFalse != kTrue && kNone != kTrue, "sentinels must be distinct");
 
     std::uintptr_t w_ = 0;  // 0 == empty (NULL PyObject*)
 
@@ -141,19 +130,13 @@ public:
 
     // queries
 
-    bool is_empty()     const noexcept { return w_ == 0; }
-    bool is_object()    const noexcept { return holds_pointer_() && w_ != 0; }
-    bool is_immediate() const noexcept { return (w_ & kTag) != 0; }
-    bool is_none()      const noexcept { return w_ == kNone; }
-    bool is_false()     const noexcept { return w_ == kFalse; }
-    bool is_true()      const noexcept { return w_ == kTrue; }
-    bool is_bool()      const noexcept { return is_true() || is_false(); }
+    bool is_empty()  const noexcept { return w_ == 0; }
+    bool is_object() const noexcept { return holds_pointer_() && w_ != 0; }
 
-    // True only for an inline integer (excludes the three sentinels). NOTE: a large int or a reserved value stored as a
-    // heap PyLong reports is_object(), not is_inline_int().
-    bool is_inline_int() const noexcept {
-        return is_immediate() && w_ != kNone && w_ != kFalse && w_ != kTrue;
-    }
+    // True only for an inline integer. NOTE: a large int stored as a heap PyLong reports is_object(), not
+    // is_inline_int(). Likewise Py_None/Py_True/Py_False are just objects here - an empty val (NULL) is NOT a ref to
+    // None.
+    bool is_inline_int() const noexcept { return (w_ & kTag) != 0; }
 
     // accessors
 
@@ -168,7 +151,6 @@ public:
 
     // Materialize a NEW strong reference equivalent to the contents:
     //   object     -> incref & return
-    //   None/bool  -> the singleton (new ref)
     //   inline int -> a fresh PyLong (may be NULL + MemoryError on failure)
     // Calling this on an empty val is a logic error: returns NULL + SystemError
     [[nodiscard]] PyObject* to_object() const {
@@ -179,27 +161,17 @@ public:
         if (auto* p = object()) {
             return Py_NewRef(p);
         }
-        switch (w_) {
-            case kNone:  return Py_NewRef(Py_None);
-            case kFalse: return Py_NewRef(Py_False);
-            case kTrue:  return Py_NewRef(Py_True);
-            default:     return PyLong_FromLongLong(static_cast<long long>(pyval_detail::decode(w_)));
-        }
+        return PyLong_FromLongLong(static_cast<long long>(pyval_detail::decode(w_)));
     }
 
     // setters (each drops the previous contents, Py_XSETREF ordering)
 
-    void clear()          noexcept { set_word_(0); }   // also the tp_clear helper
-    void set_none()       noexcept { set_word_(kNone);  }
-    void set_false()      noexcept { set_word_(kFalse); }
-    void set_true()       noexcept { set_word_(kTrue);  }
-    void set_bool(bool b) noexcept { set_word_(b ? kTrue : kFalse); }
+    void clear() noexcept { set_word_(0); }  // also the tp_clear helper
 
-    // Store a C integer. In-range values go inline; anything outside [kImmMin, kImmMax] (including the three reserved
-    // sentinels) gracefully falls back to a heap PyLong. Returns false ONLY if that allocation fails (MemoryError is
-    // set); the inline path cannot fail.
+    // Store a C integer. In-range values go inline; anything outside [kImmMin, kImmMax] gracefully falls back to a
+    // heap PyLong. Returns false ONLY if that allocation fails (MemoryError is set); the inline path cannot fail.
     [[nodiscard]] bool set_int(std::int64_t v) {
-        if (v >= kImmMin && v <= kImmMax && (v < kNoneInt || v > kTrueInt)) {
+        if (v >= kImmMin && v <= kImmMax) {
             set_word_(pyval_detail::encode(v));
             return true;
         }
@@ -212,7 +184,7 @@ public:
     }
 
     // Store a strong reference to an arbitrary object (INCREFs `o`; NULL ok, in which case this is equivalent to
-    // clear()).
+    // clear()). Note that a stored Py_None is a real reference, distinct from empty/NULL.
     void set_object(PyObject* o) noexcept {
         adopt_(Py_XNewRef(o));
     }
@@ -220,30 +192,14 @@ public:
     // Same, but steals the caller's reference (no INCREF). Use for fresh refs.
     void set_object_steal(PyObject* o) noexcept { adopt_(o); }
 
-    // Convenience setter. Always collapses None/True/False into immediates (safe - they are singletons, so identity is
-    // preserved). If absorb_ints is set, also collapses exact, in-range PyLongs into immediates - this does NOT
-    // preserve object identity (`x is y` will differ later), hence opt-in.
+    // Convenience setter. If absorb_ints is set, collapses exact, in-range PyLongs into immediates - this does NOT
+    // preserve object identity (`x is y` will differ later), hence opt-in. Everything else (including None and bools)
+    // is stored as a plain strong reference.
     void assign(PyObject* o, bool absorb_ints = false) noexcept {
-        if (o == Py_None) {
-            set_none();
-            return;
-        }
-        if (o == Py_True) {
-            set_true();
-            return;
-        }
-        if (o == Py_False) {
-            set_false();
-            return;
-        }
         if (absorb_ints && o && PyLong_CheckExact(o)) {
             int ovf = 0;
             long long v = PyLong_AsLongLongAndOverflow(o, &ovf);
-            if (
-                !ovf &&
-                v >= kImmMin && v <= kImmMax &&
-                (v < kNoneInt || v > kTrueInt)
-            ) {
+            if (!ovf && v >= kImmMin && v <= kImmMax) {
                 set_word_(pyval_detail::encode(static_cast<std::int64_t>(v)));
                 return;
             }
