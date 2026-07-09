@@ -1449,6 +1449,10 @@ class MirrorImpl(Mirror):
             return self._internal.get_type_info(obj)
 
     def can_reflect_type(self, obj: object) -> bool:
+        if (substitutor := self._internal.type_reflect_substitutor) is not None:
+            if (substituted := substitutor(obj)) is not None and substituted is not obj:
+                obj = substituted
+
         return isinstance(obj, (Type, type)) or _TypeReflector.can_reflect_type(obj)
 
     def reflect_type(self, obj: object) -> Type:
