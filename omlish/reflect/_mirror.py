@@ -471,6 +471,12 @@ class _InternalMirror:
         )
 
     ##
+    # freezing
+
+    def freeze(self) -> None:
+        self._state.freeze(_TypeReflector(self))
+
+    ##
     # symbols
 
     def _make_dynamic_type_name_hint(self, obj: type) -> str:
@@ -1482,7 +1488,6 @@ class MirrorImpl(Mirror):
             type_reflect_substitutor: TypeReflectSubstitutor | None = None,
 
             _parent_state: _MirrorState | None = None,
-            _disable_known_seeding: bool = False,
     ) -> None:
         super().__init__()
 
@@ -1496,7 +1501,7 @@ class MirrorImpl(Mirror):
             parent_state=_parent_state,
         )
 
-        if not _disable_known_seeding:
+        if _parent_state is None:
             for known in _KNOWNS:
                 self.reflect_type(known.type)
 
