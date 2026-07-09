@@ -22,7 +22,7 @@ class ForwardRefResolver(ta.Protocol):
     def __call__(self, frr: ForwardRefResolution, /) -> object: ...
 
 
-class ReflectSubstitutor(ta.Protocol):
+class TypeReflectSubstitutor(ta.Protocol):
     """
     Consulted with each runtime object about to be reflected - at every level of descent, before cache consultation. A
     non-None result is reflected in the object's stead. The result itself is not re-substituted (so self-mapping cannot
@@ -54,7 +54,7 @@ class Mirror:
 
     @property
     @abc.abstractmethod
-    def reflect_substitutor(self) -> ReflectSubstitutor | None:
+    def type_reflect_substitutor(self) -> TypeReflectSubstitutor | None:
         raise NotImplementedError
 
     #

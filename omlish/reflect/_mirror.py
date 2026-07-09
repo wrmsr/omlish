@@ -55,7 +55,7 @@ from .mirror import DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
 from .mirror import ForwardRefResolution
 from .mirror import ForwardRefResolver
 from .mirror import Mirror
-from .mirror import ReflectSubstitutor
+from .mirror import TypeReflectSubstitutor
 from .mirror import UnresolvedForwardRefPolicy
 
 
@@ -300,13 +300,11 @@ class _MirrorState:
 
     def get_cached_reflected_type(self, obj: object) -> Type | None:
         try:
-            typ = self.__type_cache[obj]
+            return self.__type_cache[obj]
         except KeyError:
             pass
         except TypeError:
             return None
-        else:
-            return typ
 
         if self.__parent is not None:
             return self.__parent.get_cached_reflected_type(obj)
@@ -364,7 +362,7 @@ class _InternalMirror:
             *,
             forward_ref_resolver: ForwardRefResolver | None = None,
             unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
-            reflect_substitutor: ReflectSubstitutor | None = None,
+            type_reflect_substitutor: TypeReflectSubstitutor | None = None,
     ) -> None:
         super().__init__()
 
@@ -375,7 +373,7 @@ class _InternalMirror:
 
         self.forward_ref_resolver = forward_ref_resolver
         self.unresolved_forward_ref_policy = unresolved_forward_ref_policy
-        self.reflect_substitutor = reflect_substitutor
+        self.type_reflect_substitutor = type_reflect_substitutor
 
         #
 
@@ -611,7 +609,7 @@ class _TypeReflector:
     def reflect_type(self, obj: object) -> Type:
         # Substitution applies at every level of descent. The substituted result is deliberately not re-substituted
         # (see ReflectSubstitutor), and reflection proceeds - including caching - under the substituted object.
-        if (substitutor := self._mirror.reflect_substitutor) is not None:
+        if (substitutor := self._mirror.type_reflect_substitutor) is not None:
             if (substituted := substitutor(obj)) is not None and substituted is not obj:
                 obj = substituted
 
@@ -1390,7 +1388,7 @@ class MirrorImpl(Mirror):
             *,
             forward_ref_resolver: ForwardRefResolver | None = None,
             unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
-            reflect_substitutor: ReflectSubstitutor | None = None,
+            type_reflect_substitutor: TypeReflectSubstitutor | None = None,
     ) -> None:
         super().__init__()
 
@@ -1399,7 +1397,7 @@ class MirrorImpl(Mirror):
         self._internal = _InternalMirror(
             forward_ref_resolver=forward_ref_resolver,
             unresolved_forward_ref_policy=unresolved_forward_ref_policy,
-            reflect_substitutor=reflect_substitutor,
+            type_reflect_substitutor=type_reflect_substitutor,
         )
 
         # FIXME: seed in root
@@ -1415,8 +1413,8 @@ class MirrorImpl(Mirror):
         return self._internal.unresolved_forward_ref_policy
 
     @property
-    def reflect_substitutor(self) -> ReflectSubstitutor | None:
-        return self._internal.reflect_substitutor
+    def type_reflect_substitutor(self) -> TypeReflectSubstitutor | None:
+        return self._internal.type_reflect_substitutor
 
     #
 
@@ -1461,7 +1459,7 @@ class MirrorImpl(Mirror):
                 # The raw-key fast path is unsound under substitution: an ancestor may legitimately hold a cache entry
                 # for a raw object this mirror's substitutor remaps. Substituted mirrors always take the full
                 # (substituting) path.
-                self._internal.reflect_substitutor is None and
+                self._internal.type_reflect_substitutor is None and
 
                 not self._internal.is_uncacheable_reflect_type(obj)
         ):

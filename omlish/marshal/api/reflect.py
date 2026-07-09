@@ -67,7 +67,7 @@ def _make_context_mirror(configs: Configs) -> rfl.Mirror:
 
     return MirrorImpl(
         # parent=rfl.global_root_mirror(),
-        reflect_substitutor=substitutor,
+        type_reflect_substitutor=substitutor,
     )
 
 
