@@ -120,7 +120,7 @@ class ToolReflector:
 
         if isinstance(rty, rfl.Instance) and ty is not None and dc.is_dataclass(ty):
             return ObjectToolDtype({
-                f.name: self.reflect_type(rfl.typeof(f.type))
+                f.name: self.reflect_type(rfl.reflect_type(f.type))
                 for f in dc.fields(ty)
             })
 
