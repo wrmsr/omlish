@@ -450,6 +450,8 @@ class _InternalMirror:
             forward_ref_resolver: ForwardRefResolver | None = None,
             unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
             type_reflect_substitutor: TypeReflectSubstitutor | None = None,
+
+            parent_state: _MirrorState | None = None,
     ) -> None:
         super().__init__()
 
@@ -464,7 +466,9 @@ class _InternalMirror:
 
         #
 
-        self._state = _MirrorState()
+        self._state = _MirrorState(
+            parent=parent_state,
+        )
 
     ##
     # symbols
@@ -1476,6 +1480,9 @@ class MirrorImpl(Mirror):
             forward_ref_resolver: ForwardRefResolver | None = None,
             unresolved_forward_ref_policy: UnresolvedForwardRefPolicy | None = None,
             type_reflect_substitutor: TypeReflectSubstitutor | None = None,
+
+            _parent_state: _MirrorState | None = None,
+            _disable_known_seeding: bool = False,
     ) -> None:
         super().__init__()
 
@@ -1485,11 +1492,13 @@ class MirrorImpl(Mirror):
             forward_ref_resolver=forward_ref_resolver,
             unresolved_forward_ref_policy=unresolved_forward_ref_policy,
             type_reflect_substitutor=type_reflect_substitutor,
+
+            parent_state=_parent_state,
         )
 
-        # FIXME: seed in root
-        for known in _KNOWNS:
-            self.reflect_type(known.type)
+        if not _disable_known_seeding:
+            for known in _KNOWNS:
+                self.reflect_type(known.type)
 
     @property
     def forward_ref_resolver(self) -> ForwardRefResolver | None:
@@ -1502,16 +1511,6 @@ class MirrorImpl(Mirror):
     @property
     def type_reflect_substitutor(self) -> TypeReflectSubstitutor | None:
         return self._internal.type_reflect_substitutor
-
-    #
-
-    # @property
-    # def is_frozen(self) -> bool:
-    #     return self._internal._is_frozen
-
-    # def freeze(self) -> None:
-    #     with self._lock:
-    #         self._internal.freeze()
 
     #
 
