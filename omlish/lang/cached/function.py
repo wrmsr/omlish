@@ -14,9 +14,9 @@ Keys come in three tiers:
 - NULLARY: zero effective params (and a plain dict map) - single-slot storage, no key maker, no backing map.
 - INLINE: the generated `__call__` carries the wrapped function's own (bound-clipped) signature directly, so the
   *interpreter* performs kwarg canonicalization and positional-only / keyword-only enforcement natively. Keys are built
-  inline (a bare un-tupled key when there is exactly one contribution), omitted defaulted args are keyed by per-shape
-  sentinel singletons (distinct from explicitly passing a value equal to the default, matching functools.lru_cache),
-  and the miss path reconstructs the original call, omitting args whose value is the omission sentinel.
+  inline (a bare un-tupled key when there is exactly one contribution), omitted defaulted args are keyed by the
+  pickle-stable _OMITTED_ARG sentinel (distinct from explicitly passing a value equal to the default, matching
+  functools.lru_cache), and the miss path reconstructs the original call, omitting args whose value is that sentinel.
 - GENERAL: the fallback for anything the inline tier can't express (functools.partial-wrapped functions, defaulted
   positional-only params, hostile param names) - a code-generated per-signature key maker canonicalizes
   (*args, **kwargs) into a key tuple exactly reproducing the calling convention. This facility remains the
@@ -234,6 +234,25 @@ class _CachedException(ta.NamedTuple):
 
 
 _MISSING = object()
+
+
+class _OmittedArgSentinel:
+    """
+    The INLINE tier's omitted-defaulted-arg key component: cache keys for calls omitting a defaulted arg contain this
+    singleton where the arg would be (key tuple position disambiguates params, so one global sentinel suffices). It
+    pickles by reference back to the singleton itself, so cache entries keyed by omitted args survive pickling with
+    identity (and thus key equality) intact - as the GENERAL tier's value-equal Maybe-default sentinels already do -
+    rather than orphaning into never-again-hit entries.
+    """
+
+    def __repr__(self) -> str:
+        return '<omitted>'
+
+    def __reduce__(self):
+        return '_OMITTED_ARG'
+
+
+_OMITTED_ARG = _OmittedArgSentinel()
 
 
 #
@@ -816,6 +835,7 @@ class _SpeciesCodeGen(Final):
 
         self._ns: dict[str, ta.Any] = {
             '__missing': _MISSING,
+            '__omitted': _OMITTED_ARG,
             '__cexc': _CachedException,
             '__tuple': tuple,
             '__sorted': sorted,
@@ -852,7 +872,6 @@ class _SpeciesCodeGen(Final):
         out = ['__self']
         if '/' not in shape:
             out.append('/')
-        di = 0
         for e in shape:
             if isinstance(e, str):
                 out.append(e)
@@ -863,9 +882,7 @@ class _SpeciesCodeGen(Final):
             elif kind == 'vk':
                 out.append(f'**{name}')
             elif dflt:
-                self._ns[f'__dflt{di}'] = object()  # the per-shape omitted-arg sentinel
-                out.append(f'{name}=__dflt{di}')
-                di += 1
+                out.append(f'{name}=__omitted')  # the omitted-arg key sentinel - see _OmittedArgSentinel
             else:
                 out.append(name)
         return f'({", ".join(out)})'
@@ -911,9 +928,8 @@ class _SpeciesCodeGen(Final):
         else:
             pos: list[str] = []
             kw_direct: list[str] = []
-            kw_cond: list[tuple[str, str]] = []
+            kw_cond: list[str] = []
             va = vk = None
-            di = 0
             for e in ta.cast(tuple, self._shape):
                 if isinstance(e, str):
                     continue
@@ -923,8 +939,7 @@ class _SpeciesCodeGen(Final):
                 elif kind == 'vk':
                     vk = name
                 elif dflt:
-                    kw_cond.append((name, f'__dflt{di}'))
-                    di += 1
+                    kw_cond.append(name)
                 elif kind == 'ko':
                     kw_direct.append(name)
                 else:  # po / pk without defaults - always a positional prefix
@@ -937,8 +952,8 @@ class _SpeciesCodeGen(Final):
             pre = []
             if kw_cond:
                 pre.append('__kw = {}')
-                for n, d in kw_cond:
-                    pre.append(f'if {n} is not {d}:')
+                for n in kw_cond:
+                    pre.append(f'if {n} is not __omitted:')
                     pre.append(f'    __kw[{n!r}] = {n}')
                 parts.append('**__kw')
             if vk is not None:

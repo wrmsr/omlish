@@ -1763,6 +1763,31 @@ def test_cached_exception_pickling():
     assert _ExcPickleClass.n_computes == 1  # re-raised from the pickled cache, not recomputed
 
 
+class _OmittedDefaultPickleClass:
+    n_computes = 0
+
+    @cached_function
+    def m(self, x, y=10):
+        type(self).n_computes += 1
+        return (x, y)
+
+
+def test_omitted_default_keys_survive_pickling():
+    # Regression: omitted-defaulted-arg cache entries are keyed by the _OMITTED_ARG sentinel, which must pickle by
+    # reference back to the singleton - otherwise the migrated entry orphans (correct but never hit again). Explicit
+    # values equal to the default remain distinct keys throughout.
+    c = _OmittedDefaultPickleClass()
+    assert c.m(1) == (1, 10)  # omitted -> sentinel-keyed entry
+    assert c.m(1, 10) == (1, 10)  # explicit -> distinct value-keyed entry
+    assert _OmittedDefaultPickleClass.n_computes == 2
+
+    c2 = pickle.loads(pickle.dumps(c))  # noqa
+    assert c2.m(1) == (1, 10)  # omitted-key entry survived - no recompute
+    assert c2.m(1, 10) == (1, 10)
+    assert _OmittedDefaultPickleClass.n_computes == 2
+    assert len(c2.m._values) == 2  # noqa  # no orphaned duplicates
+
+
 def _renamed_pickle_impl(self):
     return 7
 
