@@ -17,6 +17,7 @@ from .... import testing as tu
 from ...contextmanagers import context_wrapped
 from ...descriptors import unwrap_func
 from ..function2 import _MISSING
+from ..function2 import _POPULATE_LINECACHE
 from ..function2 import _BoundCachedFunction
 from ..function2 import _CachedException
 from ..function2 import _DescriptorCachedFunction
@@ -101,7 +102,7 @@ def test_per_instance_cache_isolation_general():
         assert c2.m(5) == (2, 5)
     assert n == 2
     assert c1.m._values is not c2.m._values  # type: ignore  # noqa
-    assert c1.m._values == {(5,): (1, 5)}  # type: ignore  # noqa  # self is clipped - never a key component
+    assert c1.m._values == {5: (1, 5)}  # type: ignore  # noqa  # self is clipped - never a key component
 
 
 def test_descriptor_and_bound_have_distinct_storage():
@@ -876,6 +877,148 @@ def test_rejects_async_function():
 
 
 ##
+# Inline tier & call reconstruction
+
+
+def test_omitted_defaults_reconstructed_on_compute():
+    # The value fn must be invoked with omitted args truly omitted (so its own default - identity and all - applies),
+    # while explicitly-passed values pass through, even when equal to the default.
+    marker = object()
+    n = 0
+
+    @cached_function
+    def f(x, y=marker):
+        nonlocal n
+        n += 1
+        return (x, y is marker)
+
+    assert f(1) == (1, True)  # omitted -> fn's own default object, by identity
+    assert f(1) == (1, True)
+    assert n == 1
+    assert f(1, 2) == (1, False)
+    assert f(1, y=2) == (1, False)  # same key as the positional form
+    assert n == 2
+
+
+def test_omitted_kw_only_defaults_reconstructed():
+    marker = object()
+
+    @cached_function
+    def f(a, *, k1=marker, k2=marker):
+        return (a, k1 is marker, k2 is marker)
+
+    assert f(1) == (1, True, True)
+    assert f(1, k2=5) == (1, True, False)  # mid-omission: k1 omitted, k2 passed
+    assert f(1, k1=5) == (1, False, True)
+    assert f(1, k1=5, k2=6) == (1, False, False)
+
+
+def test_inline_varargs_kwonly_kwargs():
+    n = 0
+
+    @cached_function
+    def f(a, *args, k, **kw):
+        nonlocal n
+        n += 1
+        return (a, args, k, kw)
+
+    assert f(1, 2, 3, k=4, z=5) == (1, (2, 3), 4, {'z': 5})
+    assert f(1, 2, 3, z=5, k=4) == (1, (2, 3), 4, {'z': 5})  # kwargs order-insensitive
+    assert n == 1
+    assert f(a=1, k=4) == (1, (), 4, {})
+    assert n == 2
+
+
+def test_param_named_self():
+    # The wrapper's own self slot is __-prefixed, so a param literally named `self` works.
+    n = 0
+
+    @cached_function
+    def f(self, x):
+        nonlocal n
+        n += 1
+        return (self, x)
+
+    assert f(1, 2) == (1, 2)
+    assert f(self=1, x=2) == (1, 2)
+    assert n == 1
+
+
+def test_hostile_param_names_fall_back():
+    # __-prefixed / reserved param names are ineligible for the inline tier; the key-maker fallback still canonicalizes
+    # fully.
+    n = 0
+
+    @cached_function
+    def f(__x, KeyError):  # noqa
+        nonlocal n
+        n += 1
+        return (__x, KeyError)
+
+    assert f(1, 2) == (1, 2)
+    assert f(1, KeyError=2) == (1, 2)  # noqa
+    assert n == 1
+    assert f._key_maker is not None  # type: ignore  # noqa  # GENERAL tier
+
+
+def test_defaulted_pos_only_falls_back():
+    n = 0
+
+    @cached_function
+    def f(x, y=10, /):
+        nonlocal n
+        n += 1
+        return x + y
+
+    assert f(1) == 11
+    assert f(1) == 11
+    assert n == 1
+    assert f(1, 10) == 11  # explicit default still a distinct key
+    assert n == 2
+    with pytest.raises(TypeError):
+        f(1, y=10)  # type: ignore  # positional-only
+    assert f._key_maker is not None  # type: ignore  # noqa  # GENERAL tier
+
+
+def test_fn_dict_metadata_on_wrappers():
+    # Attributes on the wrapped fn - including function-valued ones, which must not re-bind through the bound class -
+    # are visible on the descriptor and its bound wrappers.
+    def helper():
+        return 'h'
+
+    def _m(self):
+        return 1
+
+    _m.tag = 'tagged'  # type: ignore
+    _m.helper = helper  # type: ignore
+
+    class C:
+        m = cached_function(_m)
+
+    c = C()
+    assert c.m() == 1
+    assert C.__dict__['m'].tag == 'tagged'
+    assert c.m.tag == 'tagged'  # type: ignore
+    assert c.m.helper is helper  # type: ignore  # staticmethod-neutralized, not rebound
+    assert c.m.helper() == 'h'  # type: ignore
+
+
+def test_bound_wrapped_is_exact_fn():
+    # __wrapped__ lives on the bound class and must resolve to exactly the decorated fn (not a rebound method).
+    def _m(self):
+        return 1
+
+    class C:
+        m = cached_function(_m)
+
+    c = C()
+    assert c.m() == 1
+    assert c.m.__wrapped__ is _m  # type: ignore
+    assert C.m.__wrapped__ is _m  # type: ignore
+    assert C.__dict__['m'].__wrapped__ is _m
+
+
+##
 # Exception caching
 
 
@@ -1340,7 +1483,7 @@ def test_general_storage_contract():
 
     assert type(f._values) is dict  # type: ignore  # noqa
     assert f(1) == 1
-    assert f._values == {(1,): 1}  # type: ignore  # noqa
+    assert f._values == {1: 1}  # type: ignore  # noqa
 
 
 def test_custom_map_maker():
@@ -1350,7 +1493,7 @@ def test_custom_map_maker():
 
     assert f(1) == 1
     assert isinstance(f._values, collections.OrderedDict)  # type: ignore  # noqa
-    assert dict(f._values) == {(1,): 1}  # type: ignore  # noqa
+    assert dict(f._values) == {1: 1}  # type: ignore  # noqa
 
 
 def test_custom_map_maker_forces_map_for_nullary_signature():
@@ -1406,7 +1549,7 @@ def test_reset_preserves_map_type():
     f.reset()  # type: ignore
     assert isinstance(f._values, collections.OrderedDict)  # type: ignore  # noqa
     assert f(2) == 2
-    assert dict(f._values) == {(2,): 2}  # type: ignore  # noqa
+    assert dict(f._values) == {2: 2}  # type: ignore  # noqa
 
 
 def test_bound_reset():
@@ -1535,7 +1678,7 @@ def test_free_bound_method_pickling():
     assert h.calls == 1
 
     cf2 = pickle.loads(pickle.dumps(cf))  # noqa
-    assert dict(cf2._values) == {(5,): 6}  # noqa  # non-transient cache survived the round trip
+    assert dict(cf2._values) == {5: 6}  # noqa  # non-transient cache survived the round trip
     assert cf2(5) == 6
     assert cf2(6) == 7
 
@@ -1544,7 +1687,7 @@ def test_free_bound_method_transient_pickling():
     h = _FreeHolder()
     cf = cached_function(h.m, transient=True)
     assert cf(5) == 6
-    assert dict(cf._values) == {(5,): 6}  # type: ignore  # noqa
+    assert dict(cf._values) == {5: 6}  # type: ignore  # noqa
 
     cf2 = pickle.loads(pickle.dumps(cf))  # noqa
     assert dict(cf2._values) == {}  # noqa  # transient cache dropped on pickle
@@ -1778,8 +1921,8 @@ def test_double_wrap_state_not_clobbered():
     assert outer._values is not inner._values  # type: ignore  # noqa
     assert outer._value_fn is inner  # type: ignore  # noqa
     assert outer(1) == 2
-    assert dict(outer._values) == {(1,): 2}  # type: ignore  # noqa
-    assert dict(inner._values) == {(1,): 2}  # noqa
+    assert dict(outer._values) == {1: 2}  # type: ignore  # noqa
+    assert dict(inner._values) == {1: 2}  # noqa
 
 
 def test_no_wrapper_update_skips_metadata():
@@ -1865,24 +2008,57 @@ def test_context_wrapped():
 
 def test_species_classes_are_shared():
     f1 = cached_function(lambda x: x)
-    f2 = cached_function(lambda y: y)
-    assert type(f1) is type(f2)  # same spec -> same generated species class
+    f2 = cached_function(lambda x: x + 1)
+    assert type(f1) is type(f2)  # same spec + same signature shape -> same generated species class
 
-    f3 = cached_function(lock=True)(lambda x: x)
-    f4 = cached_function(cache_exceptions=(ValueError,))(lambda x: x)
-    f5 = cached_function(lambda: 1)
-    assert len({type(f) for f in [f1, f3, f4, f5]}) == 4  # distinct axes -> distinct species
+    f3 = cached_function(lambda y: y)  # inline signatures include param names (kwarg calling) -> distinct species
+    f4 = cached_function(lock=True)(lambda x: x)
+    f5 = cached_function(cache_exceptions=(ValueError,))(lambda x: x)
+    f6 = cached_function(lambda: 1)
+    assert len({type(f) for f in [f1, f3, f4, f5, f6]}) == 5  # distinct axes/shapes -> distinct species
+
+
+def test_per_descriptor_bound_classes():
+    class C:
+        @cached_function
+        def a(self):
+            return 1
+
+        @cached_function
+        def b(self):
+            return 2
+
+    c1 = C()
+    c2 = C()
+    assert type(c1.a) is type(c2.a)  # one generated bound class per descriptor, shared across instances
+    assert type(c1.a) is not type(c1.b)  # distinct descriptors -> distinct bound classes (distinct shared bags)
+    assert issubclass(type(c1.a), _BoundCachedFunction)
 
 
 def test_generated_source_is_registered():
-    # All generated source (species __call__s and key makers) is registered with linecache so debuggers can step it.
+    if not _POPULATE_LINECACHE:
+        pytest.skip('disabled')
+
+    # All generated source (species __call__s/__get__s and key makers) is registered with linecache so debuggers can
+    # step it.
     f = cached_function(lambda a, b=3: (a, b))
 
     call_file = type(f).__call__.__code__.co_filename
     assert call_file.startswith('<generated:')
     assert 'def _cached_call__' in ''.join(linecache.getlines(call_file))
 
-    km_file = f._key_maker.__code__.co_filename  # type: ignore  # noqa
+    class C:
+        @cached_function
+        def m(self, x):
+            return x
+
+    get_file = type(C.__dict__['m']).__get__.__code__.co_filename
+    assert get_file.startswith('<generated:')
+    assert 'def _cached_get__' in ''.join(linecache.getlines(get_file))
+
+    # GENERAL-tier (here: partial-wrapped) fns still get a linecache-registered key maker.
+    g = cached_function(functools.partial(lambda q, r: (q, r), 1))
+    km_file = g._key_maker.func.__code__.co_filename  # type: ignore  # noqa
     assert km_file.startswith('<generated:')
     assert 'def __func__' in ''.join(linecache.getlines(km_file))
 
