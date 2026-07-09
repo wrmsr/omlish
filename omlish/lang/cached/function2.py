@@ -357,16 +357,22 @@ def _lock_factory(lock: DefaultLockable) -> ta.Callable[[], ta.Any] | None:
     """
     Normalizes an Opts.lock value into a per-wrapper lock factory (or None when unlocked), computed once per
     descriptor/wrapper rather than per bind. `lock=True` deliberately yields a fresh lock per bound instance.
+
+    TODO: promote to contextmanagers.py as default_lock_factory, or at least dedupe with it
     """
 
     if lock is None or lock is False:
         return None
+
     if lock is True:
         return threading.RLock
+
     if callable(lock):
         return lock
+
     if isinstance(lock, ta.ContextManager):
         return lambda: lock
+
     raise TypeError(lock)
 
 
@@ -1025,8 +1031,7 @@ class _SpeciesCodeGen(Final):
             '    return __self._get_unbound()',
             'if (__bcls := __self._bound_cls) is None:',
             '    return __self._bind(instance, owner)',
-            '__b = __new(__bcls)',
-            f'__b.__dict__ = {{{", ".join(entries)}}}',
+            f'(__b := __new(__bcls)).__dict__ = {{{", ".join(entries)}}}',
             'instance.__dict__[__self._name] = __b',
             'return __b',
         ]
