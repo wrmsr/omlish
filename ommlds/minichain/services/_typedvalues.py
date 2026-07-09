@@ -95,7 +95,7 @@ class _TypedValues(
         rty = rfl.reflect_type(orig_class)
         tvt = _get_typed_values_type_arg(rty)
 
-        tv_types_set = frozenset(tv.reflect2_typed_values_impls(tvt))
+        tv_types_set = frozenset(tv.reflect_typed_values_impls(tvt))
         tv_types = tuple(sorted(
             [check.issubclass(c, self.__typed_values_base__) for c in tv_types_set],
             key=lambda c: c.__qualname__,

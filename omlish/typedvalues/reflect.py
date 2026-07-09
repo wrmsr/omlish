@@ -2,7 +2,7 @@ import typing as ta
 
 from .. import check
 from .. import lang
-from .. import reflect as rfl
+from .. import reflect2 as rfl
 from .values import TypedValue
 
 
@@ -10,41 +10,61 @@ from .values import TypedValue
 
 
 def reflect_typed_values_impls(
-        *rtys: rfl.Type,
+        *in_tys: object,
         find_abstract_subclasses: bool = False,
         get_unsealed_subclasses: ta.Callable[[type], ta.Sequence[type]] | None = None,
+        mirror: rfl.Mirror | None = None,
 ) -> set[type[TypedValue]]:
+    def get_mirror() -> rfl.Mirror:
+        nonlocal mirror
+        if mirror is None:
+            mirror = rfl.or_global_mirror(None)
+        return mirror
+
     tv_cls_set: set[type[TypedValue]] = set()
 
-    todo = list(rtys)
-    seen = set()
+    todo: list[rfl.Type] = [
+        in_ty if isinstance(in_ty, rfl.Type) else get_mirror().reflect_type(in_ty)
+        for in_ty in in_tys
+    ]
+
+    seen: set[rfl.Type] = set()
     while todo:
         cur = todo.pop()
         if cur in seen:
             continue
         seen.add(cur)
 
-        if isinstance(cur, rfl.Union):
-            todo.extend(cur.args)
+        if isinstance(cur, rfl.UnionType):
+            todo.extend(cur.items)
 
-        elif isinstance(cur, ta.TypeVar):
-            todo.append(rfl.typeof(rfl.get_type_var_bound(cur)))
+        elif isinstance(cur, rfl.TypeVarType):
+            todo.append(cur.upper_bound)
 
-        elif isinstance(cur, type):
-            cur = check.issubclass(check.isinstance(cur, type), TypedValue)
+        elif isinstance(cur, rfl.Instance):
+            tv_ty: type[TypedValue] = check.issubclass(
+                check.isinstance(cur.type.runtime_object, type),  # noqa
+                TypedValue,
+            )
 
-            if find_abstract_subclasses and lang.is_abstract_class(cur):
-                if issubclass(cur, lang.Sealed):
-                    todo.extend(lang.deep_subclasses(cur, concrete_only=True))
+            if find_abstract_subclasses and lang.is_abstract_class(tv_ty):
+                if issubclass(tv_ty, lang.Sealed):
+                    todo.extend([
+                        get_mirror().reflect_type(nxt_ty)
+                        for nxt_ty in lang.deep_subclasses(tv_ty, concrete_only=True)
+                    ])
 
-                elif get_unsealed_subclasses is not None:  # type: ignore[unreachable]
-                    todo.extend(get_unsealed_subclasses(cur))
+                elif get_unsealed_subclasses is not None:
+                    todo.extend([
+                        get_mirror().reflect_type(nxt_ty)
+                        for nxt_ty in get_unsealed_subclasses(tv_ty)
+                    ])
 
                 else:
-                    raise TypeError(f'{cur} is not sealed - cannot safely know all subtypes')
+                    raise TypeError(f'{tv_ty} is not sealed - cannot safely know all subtypes')
 
             else:
-                tv_cls_set.add(cur)
+                tv_cls_set.add(tv_ty)
 
         else:
             raise TypeError(cur)

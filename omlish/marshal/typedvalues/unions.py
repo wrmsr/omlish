@@ -49,7 +49,7 @@ def _build_typed_value_union_poly(ctx: BaseContext, rty: rfl.Type) -> Impls:
 
         return [i.ty for i in impls]
 
-    tv_cls_set = tv.reflect2_typed_values_impls(
+    tv_cls_set = tv.reflect_typed_values_impls(
         rty,
         find_abstract_subclasses=True,
         get_unsealed_subclasses=gus,

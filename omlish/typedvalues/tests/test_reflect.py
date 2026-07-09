@@ -1,7 +1,7 @@
 import typing as ta
 
 from ... import lang
-from ..reflect2 import reflect2_typed_values_impls
+from ..reflect import reflect_typed_values_impls
 from ..values import TypedValue
 
 
@@ -43,7 +43,7 @@ def test_reflect2():
         print()
         print(obj)
 
-        lst = reflect2_typed_values_impls(
+        lst = reflect_typed_values_impls(
             obj,
             find_abstract_subclasses=True,
         )
