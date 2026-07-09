@@ -152,6 +152,20 @@ def _get_runtime_bases(origin: type) -> tuple[object, ...]:
 ##
 
 
+@ta.final
+class _RuntimeNamespace:
+    def __init__(self) -> None:
+        self.__name = f'runtime:{id(self):x}'
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}'
+
+    @property
+    def name(self) -> str:
+        return self.__name
+
+
+@ta.final
 class _MirrorState:
     def __init__(
             self,
@@ -171,20 +185,11 @@ class _MirrorState:
 
         self.__is_frozen: bool = False
 
-        # A parentless mirror is self-sufficient and seeds the knowns itself; a child finds them through its chain.
-        if parent is None:
-            self.__fullnames_by_type: dict[object, str] = dict(_KNOWN_FULLNAMES_BY_TYPE)
-            self.__types_by_fullname: dict[str, object] = {
-                fullname: obj
-                for obj, fullname in self.__fullnames_by_type.items()
-            }
-        else:
-            self.__fullnames_by_type = {}
-            self.__types_by_fullname = {}
-
-        self.__infos_by_fullname: dict[str, TypeInfo] = {}
-
         #
+
+        self.__fullnames_by_type: dict[object, str] = {}
+        self.__types_by_fullname: dict[str, object] = {}
+        self.__infos_by_fullname: dict[str, TypeInfo] = {}
 
         self.__type_cache: dict[object, Type] = {}
         self.__cached_types: set[Type] = set()
@@ -198,8 +203,20 @@ class _MirrorState:
         # resolution leaves the alias here so a later reflection retries (and heals) it.
         self.__unresolved_aliases: set[ta.TypeAliasType] = set()
 
-        self.__type_var_namespace = f'runtime:{id(self):x}'
+        self.__type_var_namespace = _RuntimeNamespace()
         self.__next_type_var_id = 1
+
+        self.__relevant_namespaces = {self.__type_var_namespace}
+
+        #
+
+        # A parentless mirror is self-sufficient and seeds the knowns itself; a child finds them through its chain.
+        if parent is None:
+            self.__fullnames_by_type.update(_KNOWN_FULLNAMES_BY_TYPE)
+            self.__types_by_fullname.update({
+                fullname: obj
+                for obj, fullname in self.__fullnames_by_type.items()
+            })
 
     ##
     # freezing
@@ -221,6 +238,9 @@ class _MirrorState:
         for alias_obj in list(self.__unresolved_aliases):
             reflector._get_type_alias_symbol(alias_obj)  # noqa
 
+        if self.__unresolved_aliases:
+            raise ReflectionValueError(f'Failed to resolve all type aliases: {self.__unresolved_aliases!r}')
+
         # Materialize and prepare every runtime class interned in this layer (including seeded knowns) so no reflection
         # through a child ever needs to mutate a frozen TypeInfo. Preparation can intern further classes (generic
         # parameters, runtime bases, mro entries) - iterate to a fixpoint.
@@ -236,6 +256,73 @@ class _MirrorState:
                 reflector._prepare_runtime_type_info(obj, reflector._mirror.get_type_info(obj))  # noqa
 
         self.__is_frozen = True
+
+    ##
+    # hierarchy
+
+    def has_parent(self) -> bool:
+        return self.__parent is not None
+
+    def compact(self) -> bool:
+        if self.__parent is not None:
+            return False
+
+        self.check_not_frozen()
+
+        #
+
+        fullnames_by_type: dict[object, str] = {}
+        types_by_fullname: dict[str, object] = {}
+        infos_by_fullname: dict[str, TypeInfo] = {}
+
+        type_cache: dict[object, Type] = {}
+        cached_types: set[Type] = set()
+
+        prepared_infos: set[type] = set()
+
+        runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
+
+        relevant_namespaces = set[_RuntimeNamespace]()
+
+        #
+
+        def rec(cur: _MirrorState) -> None:
+            if cur.__parent is not None:
+                rec(cur.__parent)
+
+            fullnames_by_type.update(cur.__fullnames_by_type)
+            types_by_fullname.update(cur.__types_by_fullname)
+            infos_by_fullname.update(cur.__infos_by_fullname)
+
+            type_cache.update(cur.__type_cache)
+            cached_types.update(cur.__cached_types)
+
+            prepared_infos.update(cur.__prepared_infos)
+
+            runtime_aliases.update(cur.__runtime_aliases)
+
+            relevant_namespaces.update(cur.__relevant_namespaces)
+
+        rec(self)
+
+        #
+
+        self.__parent = None
+
+        self.__fullnames_by_type = fullnames_by_type
+        self.__types_by_fullname = types_by_fullname
+        self.__infos_by_fullname = infos_by_fullname
+
+        self.__type_cache = type_cache
+        self.__cached_types = cached_types
+
+        self.__prepared_infos = prepared_infos
+
+        self.__runtime_aliases = runtime_aliases
+
+        self.__relevant_namespaces = relevant_namespaces
+
+        return True
 
     ##
     # accessors
@@ -351,7 +438,7 @@ class _MirrorState:
     def new_type_var_id(self) -> TypeVarId:
         self.check_not_frozen()
 
-        type_var_id = TypeVarId(self.__next_type_var_id, namespace=self.__type_var_namespace)
+        type_var_id = TypeVarId(self.__next_type_var_id, namespace=self.__type_var_namespace.name)
         self.__next_type_var_id += 1
         return type_var_id
 
