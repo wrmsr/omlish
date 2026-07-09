@@ -49,6 +49,7 @@ from .known import _KNOWN_FULLNAMES_BY_TYPE
 from .known import _KNOWN_GENERIC_ARITIES
 from .known import _KNOWN_GENERIC_VARIANCES
 from .known import _KNOWN_MRO_TAILS
+from .known import _KNOWN_TYPES_BY_FULLNAME
 from .known import _KNOWNS
 from .known import _KnownBaseArg
 from .mirror import DEFAULT_UNRESOLVED_FORWARD_REF_POLICY
@@ -213,10 +214,7 @@ class _MirrorState:
         # A parentless mirror is self-sufficient and seeds the knowns itself; a child finds them through its chain.
         if parent is None:
             self.__fullnames_by_type.update(_KNOWN_FULLNAMES_BY_TYPE)
-            self.__types_by_fullname.update({
-                fullname: obj
-                for obj, fullname in self.__fullnames_by_type.items()
-            })
+            self.__types_by_fullname.update(_KNOWN_TYPES_BY_FULLNAME)
 
     ##
     # freezing
@@ -264,7 +262,7 @@ class _MirrorState:
         return self.__parent is not None
 
     def compact(self) -> bool:
-        if self.__parent is not None:
+        if self.__parent is None:
             return False
 
         self.check_not_frozen()
@@ -695,11 +693,14 @@ class _TypeReflector:
 
         #
 
-        self._resolving_type_aliases: set[ta.TypeAliasType] = set()
-        self._type_alias_stack: list[ta.TypeAliasType] = []
+        self._resolving_type_aliases, self._type_alias_stack = set(), []
+        self._resolving_forward_refs, self._forward_ref_owner_stack = set(), []
 
-        self._resolving_forward_refs: set[str] = set()
-        self._forward_ref_owner_stack: list[object] = []
+    _resolving_type_aliases: set[ta.TypeAliasType]
+    _type_alias_stack: list[ta.TypeAliasType]
+
+    _resolving_forward_refs: set[str]
+    _forward_ref_owner_stack: list[object]
 
     #
 
@@ -788,9 +789,10 @@ class _TypeReflector:
             return self._reflect_newtype(obj)
 
         origin = ta.get_origin(obj)
-        args = ta.get_args(obj)
 
         if origin is not None:
+            args = ta.get_args(obj)
+
             if origin is ta.Annotated:
                 return self._reflect_annotated(args)
 

@@ -200,11 +200,35 @@ def test_freeze_heals_unresolved_aliases() -> None:
     assert type_str(get_proper_type(typ)) == 'builtins.int'
 
 
-# def test_global_mirror_is_child_of_global_root() -> None:
-#     root = global_root_mirror()
-#     mirror = global_mirror()
-#
-#     assert isinstance(root, MirrorImpl)
-#     assert root.is_frozen
-#     assert mirror is not root
-#     assert mirror.get_type_info(int) is root.get_type_info(int)
+def test_compact() -> None:
+    root_mirror = make_root_mirror()
+    root_mirror.reflect_type(int)
+
+    class A:
+        pass
+
+    a_mirror = MirrorImpl(_parent_state=root_mirror._internal._state)
+    a_mirror.reflect_type(int)
+    a_mirror.reflect_type(A)
+
+    a_mirror._internal.freeze()
+
+    class B:
+        pass
+
+    b_mirror = MirrorImpl(_parent_state=a_mirror._internal._state)
+    b_mirror.reflect_type(int)
+    b_mirror.reflect_type(A)
+    b_mirror.reflect_type(B)
+
+    b_mirror._internal._state.compact()
+    b_mirror._internal.freeze()
+    b_mirror.reflect_type(int)
+    b_mirror.reflect_type(A)
+    b_mirror.reflect_type(B)
+
+    class C:
+        pass
+
+    with pytest.raises(FrozenMirrorReflectionError):
+        b_mirror.reflect_type(C)

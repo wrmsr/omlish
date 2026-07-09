@@ -1,3 +1,7 @@
+"""
+TODO:
+ - class _Knowns - collection/sequence, builds maps, validates, single import
+"""
 import collections.abc as cabc
 import contextlib
 import dataclasses as dc
@@ -352,8 +356,32 @@ _KNOWNS: ta.Final[ta.Sequence[_Known]] = [
 ##
 
 
+def _check_knowns() -> None:
+    seen_types: set[object] = set()
+    seen_fullnames: set[object] = set()
+
+    for k in _KNOWNS:
+        if k.type in seen_types:
+            raise RuntimeError(f'Type already in use: {k.type!r}')
+        if k.fullname in seen_fullnames:
+            raise RuntimeError(f'Fullname already in use: {k.fullname!r}')
+        seen_types.add(k.type)
+        seen_fullnames.add(k.fullname)
+
+
+_check_knowns()
+
+
+##
+
+
 _KNOWN_FULLNAMES_BY_TYPE: ta.Final[ta.Mapping[object, str]] = {
     k.type: k.fullname
+    for k in _KNOWNS
+}
+
+_KNOWN_TYPES_BY_FULLNAME: ta.Final[ta.Mapping[str, object]] = {
+    k.fullname: k.type
     for k in _KNOWNS
 }
 
