@@ -4,7 +4,7 @@ from ... import cached
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect2 as rfl
+from ... import reflect as rfl
 from ..binder import bind
 from ..elements import Elements
 from ..elements import as_elements

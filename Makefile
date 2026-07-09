@@ -283,14 +283,14 @@ build-cext: venv
 	done
 
 # FIXME: ... also pyproject lol
-.PHONY: build-reflect2
-build-reflect2: venv
-	${PYTHON} -mmypyc omlish/reflect2/core/*.py
+.PHONY: build-reflect
+build-reflect: venv
+	${PYTHON} -mmypyc omlish/reflect/core/*.py
 
 # FIXME: ... ... also also pyproject lol
-.PHONY: clean-reflect2
-clean-reflect2:
-	rm omlish/reflect2/core/*.so || true
+.PHONY: clean-reflect
+clean-reflect:
+	rm omlish/reflect/core/*.so || true
 
 
 ## pre-commit

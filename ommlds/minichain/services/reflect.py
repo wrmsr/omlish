@@ -11,7 +11,7 @@ import weakref
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import reflect2 as rfl
+from omlish import reflect as rfl
 
 from ..resources import ResourceManaged
 from .requests import Request

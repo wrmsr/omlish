@@ -9,7 +9,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import reflect2 as rfl
+from omlish import reflect as rfl
 
 from .manifests import RegistryManifest
 from .manifests import RegistryTypeManifest

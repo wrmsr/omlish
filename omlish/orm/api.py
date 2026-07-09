@@ -6,7 +6,7 @@ from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect2 as rfl
+from .. import reflect as rfl
 from ..text import inflect
 from .backrefs import Backref
 from .fields import Field

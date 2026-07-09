@@ -11,7 +11,7 @@ from ._internals import std_is_kw_only
 
 
 with lang.auto_proxy_import(globals()):
-    from .. import reflect2 as rfl
+    from .. import reflect as rfl
 
 
 ClassAnnotations: ta.TypeAlias = ta.Mapping[str, ta.Any]

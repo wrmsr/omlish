@@ -5,7 +5,7 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish import reflect2 as rfl
+from omlish import reflect as rfl
 from omlish import typedvalues as tv
 
 from ._origclasses import _OrigClassCapture

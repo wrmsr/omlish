@@ -1,7 +1,7 @@
 import typing as ta
 
 from ... import check
-from ... import reflect2 as rfl
+from ... import reflect as rfl
 from ... import typedvalues as tv
 from ..api.contexts import BaseContext
 from ..api.contexts import MarshalFactoryContext

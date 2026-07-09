@@ -2,7 +2,7 @@ import typing as ta
 
 from .. import check
 from .. import lang
-from .. import reflect2 as rfl
+from .. import reflect as rfl
 from .. import typedvalues as tv
 from .keys import Key
 from .options import FieldOption

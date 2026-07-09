@@ -6,7 +6,7 @@ cache, whose in-progress entry is knot-tied by the recursive proxy factory.
 
 import typing as ta
 
-from ... import reflect2 as rfl
+from ... import reflect as rfl
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
 from ..api.types import Marshaler

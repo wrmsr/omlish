@@ -9,7 +9,7 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect2 as rfl
+from ... import reflect as rfl
 from ... import typedvalues as tv
 from ..api.configs import Config
 from ..api.configs import ConfigRegistry

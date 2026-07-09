@@ -3,7 +3,7 @@ import typing as ta
 from ... import dataclasses as dc
 from ... import lang
 from ... import marshal as msh
-from ... import reflect2 as rfl
+from ... import reflect as rfl
 
 
 JsonValue: ta.TypeAlias = ta.Union[  # noqa

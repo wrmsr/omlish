@@ -48,7 +48,7 @@ import uuid
 
 from .. import check
 from .. import lang
-from .. import reflect2 as rfl
+from .. import reflect as rfl
 from .. import sql
 from .. import typedvalues as tv
 from .fields import Field

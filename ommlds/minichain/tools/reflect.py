@@ -20,7 +20,7 @@ from omlish import contextual as cxl
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import metadata as md
-from omlish import reflect2 as rfl
+from omlish import reflect as rfl
 from omlish.lite.cached import cached_nullary
 
 from ..content.content import Content

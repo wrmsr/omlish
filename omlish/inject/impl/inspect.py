@@ -4,7 +4,7 @@ import typing as ta
 import weakref
 
 from ... import check
-from ... import reflect2 as rfl
+from ... import reflect as rfl
 from ..errors import ConflictingKeyError
 from ..inspect import Kwarg
 from ..inspect import Kwargs

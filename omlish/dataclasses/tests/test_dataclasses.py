@@ -10,7 +10,7 @@ import pytest
 from ... import cached
 from ... import dataclasses as dc
 from ... import lang
-from ... import reflect2 as rfl  # noqa
+from ... import reflect as rfl  # noqa
 from ..inspect import inspect_fields  # noqa
 
 

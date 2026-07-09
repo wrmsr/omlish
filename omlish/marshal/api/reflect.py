@@ -4,7 +4,7 @@ import typing as ta
 import weakref
 
 from ... import lang
-from ... import reflect2 as rfl
+from ... import reflect as rfl
 from ... import typedvalues as tv
 from .configs import Config
 from .configs import Configs
@@ -63,7 +63,7 @@ def _make_context_mirror(configs: Configs) -> rfl.Mirror:
 
         return None
 
-    from ...reflect2._mirror import MirrorImpl
+    from ...reflect._mirror import MirrorImpl
 
     return MirrorImpl(
         # parent=rfl.global_root_mirror(),

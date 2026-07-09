@@ -33,7 +33,7 @@ class TvG(TvE):
     pass
 
 
-def test_reflect2():
+def test_reflect():
     obj: ta.Any
     for obj in [
         TvA,

@@ -7,7 +7,7 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import marshal as msh
-from omlish import reflect2 as rfl
+from omlish import reflect as rfl
 
 from .tokens import Tokens
 

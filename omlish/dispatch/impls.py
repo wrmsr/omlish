@@ -10,7 +10,7 @@ import typing as ta
 
 from .. import c3
 from .. import lang
-from .. import reflect2 as rfl
+from .. import reflect as rfl
 
 
 T = ta.TypeVar('T')

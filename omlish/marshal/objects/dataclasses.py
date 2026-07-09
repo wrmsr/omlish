@@ -9,7 +9,7 @@ from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
 from ... import metadata as md
-from ... import reflect2 as rfl
+from ... import reflect as rfl
 from ...lite import marshal as lm
 from ..api.configs import Configs
 from ..api.contexts import MarshalFactoryContext

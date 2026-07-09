@@ -4,7 +4,7 @@ import typing as ta
 
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect2 as rfl
+from .. import reflect as rfl
 from .. import typedvalues as tv
 from ..formats.json import all as json
 from .fields import Field

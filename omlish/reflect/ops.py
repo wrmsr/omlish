@@ -1,151 +1,78 @@
-"""
-TODO:
- - visitor / transformer
-  - gson had an ObjectNavigator:
-   - https://github.com/google/gson/blob/f291c4d33ea5fcc52afcfa5713e519e663378bda/gson/src/main/java/com/google/gson/ObjectNavigator.java
-   - removed in 25c6ae177b1ca56db7f3c29eb574bdd032a06165
- - uniform collection isinstance - items() for mappings, iter() for other
- - also check instance type in isinstance not just items lol
-"""  # noqa
-import dataclasses as dc
+# ruff: noqa: SLF001
 import typing as ta
 
-from .types import Annotated
-from .types import Any
-from .types import ForwardRef
-from .types import Generic
-from .types import GenericLike
-from .types import NewType
-from .types import Protocol
-from .types import Type
-from .types import Union
-from .types import get_type_var_bound
-from .types import typeof
+from .core.symbols import TypeInfo
+from .core.typeops import make_union
+from .core.types import NoneType
+from .core.types import Type
+from .core.types import UnionType
+from .errors import ReflectionTypeError
+from .globals import or_global_mirror
+
+
+if ta.TYPE_CHECKING:
+    from .mirror import Mirror
 
 
 ##
 
 
-def strip_objs(ty: Type) -> Type:
-    if isinstance(ty, (type, ta.TypeVar, NewType, Any, ForwardRef)):
-        return ty
-
-    if isinstance(ty, Union):
-        return Union(frozenset(map(strip_objs, ty.args)))
-
-    if isinstance(ty, GenericLike):
-        return dc.replace(ty, args=tuple(map(strip_objs, ty.args)), obj=None)
-
-    if isinstance(ty, Annotated):
-        return dc.replace(ty, ty=strip_objs(ty.ty), obj=None)
-
-    raise TypeError(ty)
-
-
-#
-
-
-def strip_rfl_annotations(ty: Type) -> Type:
-    if isinstance(ty, (type, ta.TypeVar, NewType, ForwardRef, Any)):
-        return ty
-
-    if isinstance(ty, Union):
-        return Union(frozenset(map(strip_rfl_annotations, ty.args)))
-
-    if isinstance(ty, GenericLike):
-        return dc.replace(ty, args=tuple(map(strip_rfl_annotations, ty.args)))
-
-    if isinstance(ty, Annotated):
-        return strip_rfl_annotations(ty.ty)
-
-    raise TypeError(ty)
-
-
-def strip_rfl_annotations_shallow(ty: Type, if_: ta.Callable[[ta.Any], bool] | None = None) -> Type:
-    if not isinstance(ty, Annotated):
-        return ty
-
-    if if_ is None:
-        return ty.ty
-
-    new_md = [md for md in ty.md if not if_(md)]
-
-    if not new_md:
-        return ty.ty
-
-    return dc.replace(ty, md=tuple(new_md))
-
-
-def add_rfl_annotations(ty: Type, *md: ta.Any) -> Annotated:
-    if isinstance(ty, Annotated):
-        return dc.replace(ty, md=(*ty.md, *md))
-
-    return Annotated(ty, md, None)
+def typeof(obj: object, *, mirror: Mirror | None = None) -> Type:
+    try:
+        cls = getattr(obj, '__orig_class__')
+    except AttributeError:
+        cls = type(obj)
+    return or_global_mirror(mirror).reflect_type(cls)
 
 
 ##
 
 
-def types_equivalent(l: Type, r: Type) -> bool:
-    if isinstance(l, Generic) and isinstance(r, Generic):
-        return l.cls == r.cls and l.args == r.args
-
-    return l == r
-
-
-##
+def get_runtime_object_or_none(robj: Type | TypeInfo) -> object | None:
+    if not isinstance(robj, (Type, TypeInfo)):
+        raise TypeError(f'Expected TypeInfo or Type, got {type(robj).__name__}')
+    return robj.runtime_object
 
 
-def get_underlying(nt: NewType) -> Type:
-    return typeof(nt.obj.__supertype__)  # noqa
+def get_runtime_object(robj: Type | TypeInfo) -> object:
+    ty = get_runtime_object_or_none(robj)
+    if ty is None:
+        raise ReflectionTypeError(f'No runtime object available for {robj!r}')
+    return ty
 
 
-def get_concrete_type(
-        ty: Type,
-        *,
-        use_type_var_bound: bool = False,
-) -> type | None:
-    def rec(cur: Type) -> type | None:
-        if isinstance(cur, type):
-            return cur
+def get_runtime_type_or_none(robj: Type | TypeInfo) -> type | None:
+    obj = get_runtime_object_or_none(robj)
+    return obj if isinstance(obj, type) else None
 
-        if isinstance(cur, Generic):
-            return cur.cls
 
-        if isinstance(cur, NewType):
-            return rec(get_underlying(cur))
-
-        if isinstance(cur, ta.TypeVar):
-            if use_type_var_bound is not None and (tvb := get_type_var_bound(cur)) is not None:
-                return rec(typeof(tvb))
-
-            return None
-
-        if isinstance(cur, (Union, Any, Protocol)):
-            return None
-
-        raise TypeError(cur)
-
-    return rec(ty)
+def get_runtime_type(robj: Type | TypeInfo) -> type:
+    ty = get_runtime_type_or_none(robj)
+    if ty is None:
+        raise ReflectionTypeError(f'No runtime type available for {robj!r}')
+    return ty
 
 
 ##
 
 
-def to_annotation(ty: Type) -> ta.Any:
-    if isinstance(ty, Generic):
-        return ty.obj if ty.obj is not None else ty.cls
+def _is_optional(rty: UnionType) -> bool:
+    return any(isinstance(item, NoneType) for item in rty._items)
 
-    if isinstance(ty, Union):
-        return ta.Union[*tuple(to_annotation(e) for e in ty.args)]  # noqa
 
-    if isinstance(ty, Protocol):
-        return ta.Protocol[*ty.params]  # noqa
+def is_optional(rty: Type) -> bool:
+    return isinstance(rty, UnionType) and _is_optional(rty)
 
-    if isinstance(ty, (type, ta.TypeVar, NewType)):
-        return ty
 
-    if isinstance(ty, Any):
-        return ta.Any
+def strip_optional(rty: Type) -> Type:
+    if not isinstance(rty, UnionType) or not _is_optional(rty):
+        return rty
 
-    raise TypeError(ty)
+    items = [
+        item
+        for item in rty._items
+        if not isinstance(item, NoneType)
+    ]
+    if len(items) == 1:
+        return items[0]
+    return make_union(items)

@@ -12,7 +12,7 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish import reflect2 as rfl
+from omlish import reflect as rfl
 from omlish.formats import json5
 from omlish.manifests.globals import GlobalManifestLoader
 

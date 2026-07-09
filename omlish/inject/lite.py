@@ -6,7 +6,7 @@ import dataclasses as dc
 import typing as ta
 
 from .. import check
-from .. import reflect2 as rfl
+from .. import reflect as rfl
 from ..lite import inject as lij
 from .bindings import Binding
 from .elements import Elements

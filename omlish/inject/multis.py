@@ -4,7 +4,7 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .. import reflect2 as rfl
+from .. import reflect as rfl
 from .bindings import Binding
 from .elements import Element
 from .elements import ElementGenerator

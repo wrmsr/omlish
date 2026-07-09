@@ -1,4 +1,4 @@
-from .... import reflect2 as rfl
+from .... import reflect as rfl
 from ...api.configs import ConfigRegistry
 from ...api.contexts import MarshalFactoryContext
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
