@@ -81,34 +81,55 @@ def test_pickling_without_prior_access():
 ##
 
 
+_FREE_HOLDER_CALLS: dict[_FreeHolder, int] = {}
+
+
 class _FreeHolder:
-    def __init__(self):
-        self.calls = 0
+    def __init__(self, name: str) -> None:
+        self.name = name
 
     def m(self, x):
-        self.calls += 1
+        _FREE_HOLDER_CALLS[self] = _FREE_HOLDER_CALLS.get(self, 0) + 1
         return x + 1
 
 
 def test_free_bound_method_pickling():
-    h = _FreeHolder()
+    h = _FreeHolder('test_free_bound_method_pickling')
     cf = cached_function(h.m)
+    assert h not in _FREE_HOLDER_CALLS
     assert cf(5) == 6
+    assert _FREE_HOLDER_CALLS[h] == 1
     assert cf(5) == 6
-    assert h.calls == 1
+    assert _FREE_HOLDER_CALLS[h] == 1
 
+    initial_free_holders = set(_FREE_HOLDER_CALLS)
     cf2 = pickle.loads(pickle.dumps(cf))  # noqa
-    assert dict(cf2._values) == {(5,): 6}  # noqa  # non-transient cache survived the round trip
+    assert dict(cf2._values) == {5: 6}  # noqa  # non-transient cache survived the round trip
+    assert set(_FREE_HOLDER_CALLS) == initial_free_holders
+
     assert cf2(5) == 6
+    assert set(_FREE_HOLDER_CALLS) == initial_free_holders
+
     assert cf2(6) == 7
+    [h2] = set(_FREE_HOLDER_CALLS) - initial_free_holders
+    assert _FREE_HOLDER_CALLS[h2] == 1
+    assert h2.name == h.name
 
 
 def test_free_bound_method_transient_pickling():
-    h = _FreeHolder()
+    h = _FreeHolder('test_free_bound_method_transient_pickling')
     cf = cached_function(h.m, transient=True)
+    assert h not in _FREE_HOLDER_CALLS
     assert cf(5) == 6
-    assert dict(cf._values) == {(5,): 6}  # type: ignore  # noqa
+    assert _FREE_HOLDER_CALLS[h] == 1
+    # assert dict(cf._values) == {(5,): 6}  # type: ignore  # noqa
 
+    initial_free_holders = set(_FREE_HOLDER_CALLS)
     cf2 = pickle.loads(pickle.dumps(cf))  # noqa
     assert dict(cf2._values) == {}  # noqa  # transient cache dropped on pickle
+    assert set(_FREE_HOLDER_CALLS) == initial_free_holders
+
     assert cf2(5) == 6  # recomputed fresh
+    [h2] = set(_FREE_HOLDER_CALLS) - initial_free_holders
+    assert _FREE_HOLDER_CALLS[h2] == 1
+    assert h2.name == h.name

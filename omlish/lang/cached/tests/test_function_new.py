@@ -16,18 +16,18 @@ import pytest
 from .... import testing as tu
 from ...contextmanagers import context_wrapped
 from ...descriptors import unwrap_func
-from ..function2 import _MISSING
-from ..function2 import _POPULATE_LINECACHE
-from ..function2 import _BoundCachedFunction
-from ..function2 import _CachedException
-from ..function2 import _DescriptorCachedFunction
-from ..function2 import _FreeCachedFunction
-from ..function2 import _make_cache_key_maker
-from ..function2 import _nullary_cache_key_maker
-from ..function2 import _self_cache_key_maker
-from ..function2 import _UnboundCachedMethod
-from ..function2 import cached_function
-from ..function2 import static_init
+from ..function import _MISSING
+from ..function import _POPULATE_LINECACHE
+from ..function import _BoundCachedFunction
+from ..function import _CachedException
+from ..function import _DescriptorCachedFunction
+from ..function import _FreeCachedFunction
+from ..function import _make_cache_key_maker
+from ..function import _nullary_cache_key_maker
+from ..function import _self_cache_key_maker
+from ..function import _UnboundCachedMethod
+from ..function import cached_function
+from ..function import static_init
 
 
 ##

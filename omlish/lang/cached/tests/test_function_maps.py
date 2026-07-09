@@ -8,11 +8,21 @@ from ..function import cached_function
 ##
 
 
-def test_default_map_is_dict():
+def test_nullary_map_is_none():
     @cached_function
     def f():
         return 1
 
+    assert f() == 1
+    assert f._values is None  # type: ignore  # noqa
+
+
+def test_default_map_is_dict():
+    @cached_function
+    def f(x):
+        return x + 1
+
+    assert f(1) == 2
     assert type(f._values) is dict  # type: ignore  # noqa
 
 
@@ -23,7 +33,7 @@ def test_custom_map_maker():
 
     assert f(1) == 1
     assert isinstance(f._values, collections.OrderedDict)  # type: ignore  # noqa
-    assert dict(f._values) == {(1,): 1}  # type: ignore  # noqa
+    assert dict(f._values) == {1: 1}  # type: ignore  # noqa
 
 
 def test_none_is_cached():
@@ -67,7 +77,7 @@ def test_reset_preserves_map_type():
     f.reset()  # type: ignore
     assert isinstance(f._values, collections.OrderedDict)  # type: ignore  # noqa
     assert f(2) == 2
-    assert dict(f._values) == {(2,): 2}  # type: ignore  # noqa
+    assert dict(f._values) == {2: 2}  # type: ignore  # noqa
 
 
 def test_collections_cache_eviction():

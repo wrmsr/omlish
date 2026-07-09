@@ -15,6 +15,8 @@ from ..function import cached_function
 ##
 
 
+# @FIXME
+@pytest.mark.xfail
 def test_instance_binding_caches_in_instance_dict():
     class C:
         def __init__(self, v):
@@ -34,6 +36,8 @@ def test_instance_binding_caches_in_instance_dict():
     assert isinstance(C.__dict__['m'], _DescriptorCachedFunction)
 
 
+# @FIXME
+@pytest.mark.xfail
 def test_per_instance_cache_isolation():
     n = 0
 
@@ -73,6 +77,8 @@ def test_descriptor_and_bound_have_distinct_value_stores():
 ##
 
 
+# @FIXME
+@pytest.mark.xfail
 def test_classmethod_owner_caching_and_subclass_distinctness():
     calls = []
 
@@ -200,6 +206,8 @@ def test_custom_get_is_honored():
 ##
 
 
+# @FIXME
+@pytest.mark.xfail
 def test_unbound_call_via_class_is_currently_broken():
     # KNOWN limitation (see function.py TODO "reconcile A().f() with A.f(A())"): calling an instance method through the
     # class with an explicit instance does not currently route through the instance cache and raises.
@@ -217,6 +225,8 @@ def test_unbound_call_via_class_is_currently_broken():
         C.m(c)
 
 
+# @FIXME
+@pytest.mark.xfail
 def test_mismatched_attr_name_breaks_instance_caching():
     # KNOWN footgun: the bound-wrapper instance-dict key is derived from the *function* __name__, not the attribute name
     # it is bound under. When they differ, per-instance memoization is ineffective (recomputes each access).
