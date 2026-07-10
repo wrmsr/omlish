@@ -7,6 +7,7 @@ from .grammars import Grammar
 from .matches import Match
 from .matches import filter_matches
 from .ops import RuleRef
+from .positions import get_ofs_line_column  # noqa
 
 
 ##
@@ -65,14 +66,3 @@ def fix_ws(s: str) -> str:
         .replace('\r', '')
         .replace('\n', '\r\n')
     ) + '\r\n'
-
-
-##
-
-
-def get_ofs_line_column(s: str, p: int) -> tuple[int, int]:
-    for i, l in enumerate(s.splitlines(keepends=True)):
-        if p < (ll := len(l)):
-            return i, p
-        p -= ll
-    raise ValueError(f'offset {p} out of range')

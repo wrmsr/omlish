@@ -3,15 +3,27 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from .base import CompositeOp
 from .errors import AbnfError
-from .errors import AbnfIncompleteParseError
+from .errors import AbnfUnknownRuleError
 from .matches import Match
-from .matches import longest_match
 from .ops import Op
+from .ops import RuleRef
 
 
 with lang.auto_proxy_import(globals()):
     from . import parsing
+
+
+##
+
+
+def iter_op_rule_refs(op: Op) -> ta.Iterator[RuleRef]:
+    if isinstance(op, RuleRef):
+        yield op
+    elif isinstance(op, CompositeOp):
+        for c in op.children:
+            yield from iter_op_rule_refs(c)
 
 
 ##
@@ -31,23 +43,31 @@ class Rule(lang.Final):
             op: Op,
             *,
             channel: Channel = Channel.STRUCTURE,
+            is_token: bool = False,
     ) -> None:
         super().__init__()
 
         self._name = check.non_empty_str(name)
         self._op = check.isinstance(op, Op)
         self._channel = channel
+        self._is_token = is_token
 
         self._name_f = name.casefold()
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._name!r}, channel={self._channel.name})'
+        return (
+            f'{self.__class__.__name__}('
+            f'{self._name!r}, '
+            f'channel={self._channel.name}'
+            f'{", is_token=True" if self._is_token else ""})'
+        )
 
     def replace_op(self, op: Op) -> Rule:
         return Rule(
             self._name,
             op,
             channel=self._channel,
+            is_token=self._is_token,
         )
 
     @property
@@ -65,6 +85,10 @@ class Rule(lang.Final):
     @property
     def channel(self) -> Channel:
         return self._channel
+
+    @property
+    def is_token(self) -> bool:
+        return self._is_token
 
 
 #
@@ -145,6 +169,7 @@ class Grammar(lang.Final):
             self,
             *rules: Rule | RulesCollection,
             root: Rule | str | None = None,
+            no_validate: bool = False,
     ) -> None:
         super().__init__()
 
@@ -153,9 +178,26 @@ class Grammar(lang.Final):
         else:
             self._rules = RulesCollection(*rules)
 
+        if not no_validate:
+            self._validate_rule_refs()
+
         if isinstance(root, str):
-            root = self._rules.rules_by_name_f[root.casefold()]
+            rn = root
+            try:
+                root = self._rules.rules_by_name_f[rn.casefold()]
+            except KeyError:
+                raise AbnfUnknownRuleError(rn) from None
         self._root = root
+
+    def _validate_rule_refs(self) -> None:
+        missing: dict[str, list[str]] = {}
+        for r in self._rules.rules_by_name.values():
+            for rr in iter_op_rule_refs(r.op):
+                if rr.name_f not in self._rules.rules_by_name_f:
+                    if r.name not in (l := missing.setdefault(rr.name, [])):
+                        l.append(r.name)
+        if missing:
+            raise AbnfUnknownRuleError(missing)
 
     @property
     def rules(self) -> RulesCollection:
@@ -182,6 +224,20 @@ class Grammar(lang.Final):
 
     #
 
+    def resolve_root(self, root: Rule | str | None) -> Rule:
+        if root is None:
+            if (root := self._root) is None:
+                raise AbnfError('No root or default root specified')
+        elif isinstance(root, str):
+            rn = root
+            try:
+                root = self._rules.rules_by_name_f[rn.casefold()]
+            except KeyError:
+                raise AbnfUnknownRuleError(rn) from None
+        else:
+            root = check.in_(check.isinstance(root, Rule), self._rules)
+        return root
+
     def iter_parse(
             self,
             source: str,
@@ -191,50 +247,29 @@ class Grammar(lang.Final):
             debug: int = 0,
             **kwargs: ta.Any,
     ) -> ta.Iterator[Match]:
-        if root is None:
-            if (root := self._root) is None:
-                raise AbnfError('No root or default root specified')
-        else:
-            if isinstance(root, str):
-                root = self._rules.rules_by_name_f[root.casefold()]
-            else:
-                root = check.in_(check.isinstance(root, Rule), self._rules)
-
-        parser = parsing._make_parser(  # noqa
-            self,
+        return parsing._default_compiled(self).iter_parse(  # noqa
             source,
+            root,
+            start=start,
             debug=debug,
             **kwargs,
         )
 
-        try:
-            yield from parser.iter_parse(
-                root._op,  # noqa
-                start,
-            )
-        finally:
-            pass  # Debugging aid to inspect parser state after parse
-
     def parse(
             self,
             source: str,
-            root: str | None = None,
+            root: Rule | str | None = None,
             *,
             start: int = 0,
             complete: bool = False,
             debug: int = 0,
             **kwargs: ta.Any,
     ) -> Match | None:
-        if (match := longest_match(self.iter_parse(
-                source,
-                root,
-                start=start,
-                debug=debug,
-                **kwargs,
-        ))) is None:
-            return None
-
-        if complete and (match.start, match.end) != (start, len(source)):
-            raise AbnfIncompleteParseError
-
-        return match
+        return parsing._default_compiled(self).parse(  # noqa
+            source,
+            root,
+            start=start,
+            complete=complete,
+            debug=debug,
+            **kwargs,
+        )

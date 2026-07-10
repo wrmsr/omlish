@@ -20,20 +20,8 @@ sound.
 All three rule-level maps are least fixpoints, solved by naive round-robin iteration -- grammars are tiny and CharSet
 equality is structural, so this terminates fast (the lattice has finite height per grammar alphabet).
 
-Integration into opto.py:
-
-    def optimize_grammar(grammar, *, inline_channels=frozenset([Channel.SPACE])):
-        g2 = <inline pass as today>
-        anl = GrammarAnalysis(g2)
-        return Grammar(
-            *[
-                r.replace_op(_regex_transform_op(r.op)) if anl.safe_to_convert(r) else r
-                for r in g2.rules
-            ],
-            root=...,
-        )
-
-Rules the analysis can't prove safe keep interpreted semantics (or, later, get the endpos-enumerating Regex variant).
+Consumed by `opto.optimize_grammar(gram, parse_only=True)`: rules the analysis proves safe get ungated regex
+conversion; rules it can't prove safe keep the default prefix-free-gated treatment.
 """
 import typing as ta
 
@@ -68,6 +56,8 @@ class GrammarAnalysis:
         self._first: dict[str, CharSet] = {n: CharSet.EMPTY for n in self._rules}
         self._char_set: dict[str, CharSet] = {n: CharSet.EMPTY for n in self._rules}
         self._follow: dict[str, CharSet] = {n: CharSet.EMPTY for n in self._rules}
+
+        self._extend_visiting: set[str] = set()
 
         self._solve()
 
@@ -212,7 +202,14 @@ class GrammarAnalysis:
             return out
 
         if isinstance(op, RuleRef):
-            return self.op_extend(self._rules[op.name_f].op)
+            # Recursive rules: a cycle means the extension set is not structurally boundable here - over-approximate.
+            if (n := op.name_f) in self._extend_visiting:
+                return CharSet.ANY
+            self._extend_visiting.add(n)
+            try:
+                return self.op_extend(self._rules[n].op)
+            finally:
+                self._extend_visiting.discard(n)
 
         return CharSet.ANY  # unknown op kind
 

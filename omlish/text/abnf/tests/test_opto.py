@@ -1,3 +1,5 @@
+from .... import check
+from .. import internal
 from .. import meta
 from .. import ops
 from .. import opto
@@ -256,3 +258,100 @@ def test_optimized_matches_are_superset_of_raw() -> None:
     opt = {(m.start, m.end) for m in opto.optimize_grammar(g).iter_parse('123')}  # {(0,3)}
 
     assert raw <= opt
+
+
+##
+# parse_only optimization level: FIRST/FOLLOW-analysis-gated greedy conversion. Contract: preserves Grammar.parse()
+# (longest match from root), not the full iter_parse() multiset.
+
+
+def test_parse_only_converts_delimited_repeat():
+    # N's follow set is {';'}, disjoint from its extension chars {0-9} - safe to convert greedily.
+    g = Grammar(
+        Rule('root', ops.concat(ops.rule('N'), ops.literal(';'))),
+        Rule('N', ops.repeat(1, ops.literal('0', '9'))),
+        root='root',
+    )
+
+    og = opto.optimize_grammar(g, parse_only=True)
+
+    assert isinstance(check.not_none(og.rule('N')).op, internal.Regex)
+
+    m = og.parse('123;')
+    assert m is not None
+    assert (m.start, m.end) == (0, 4)
+
+
+def test_parse_only_refuses_overlapping_follow():
+    # N followed by another digit: FOLLOW(N) intersects EXTEND(N), so greedy conversion would break the parse.
+    g = Grammar(
+        Rule('root', ops.concat(ops.rule('N'), ops.literal('0', '9'))),
+        Rule('N', ops.repeat(1, ops.literal('0', '9'))),
+        root='root',
+    )
+
+    og = opto.optimize_grammar(g, parse_only=True)
+
+    assert not isinstance(check.not_none(og.rule('N')).op, internal.Regex)
+    assert og.parse('12') is not None
+
+
+def test_parse_only_root_conversion_loses_short_matches():
+    # A bare 1*DIGIT root has empty FOLLOW, so it converts - parse() is preserved but iter_parse loses the shorter
+    # alternatives. This is the documented parse_only contract.
+    g = Grammar(
+        Rule('N', ops.repeat(1, ops.literal('0', '9'))),
+        root='N',
+    )
+
+    raw = {(m.start, m.end) for m in g.iter_parse('123')}
+    assert raw == {(0, 1), (0, 2), (0, 3)}
+
+    og = opto.optimize_grammar(g, parse_only=True)
+    opt = {(m.start, m.end) for m in og.iter_parse('123')}
+    assert opt == {(0, 3)}
+
+    m = og.parse('123')
+    assert m is not None
+    assert (m.start, m.end) == (0, 3)
+
+
+def test_parse_only_recursive_grammar_terminates():
+    # op_extend must not infinitely recurse through rule cycles.
+    g = meta.parse_grammar(
+        """
+        value = "[" value "]" / "x"
+        """,
+        root='value',
+        no_optimize=True,
+    )
+
+    og = opto.optimize_grammar(g, parse_only=True)
+
+    assert og.parse('[[x]]', complete=True) is not None
+
+
+def test_first_match_either_converts_to_atomic_group():
+    # Committed choice must stay committed through regex conversion: interpreted first_match commits to branch "a",
+    # then fails on "c" vs "b". A plain regex alternation would backtrack into "ab" and wrongly succeed.
+    g = Grammar(
+        Rule('root', ops.concat(
+            ops.either(
+                ops.literal('a', case_sensitive=True),
+                ops.literal('ab', case_sensitive=True),
+                first_match=True,
+            ),
+            ops.literal('c', case_sensitive=True),
+        )),
+        root='root',
+    )
+
+    assert g.parse('abc', complete=False) is None
+
+    og = opto.optimize_grammar(g, parse_only=True)
+    root_op = check.not_none(og.rule('root')).op
+    assert isinstance(root_op, internal.Regex)
+    assert '(?>' in root_op.pat.pattern
+
+    assert og.parse('abc', complete=False) is None
+    assert og.parse('ac', complete=False) is not None

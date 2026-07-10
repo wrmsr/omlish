@@ -1,194 +1,195 @@
-# ruff: noqa: SLF001
-"""Tests for LR table-driven parser."""
+# @omlish-precheck-allow-any-unicode
+"""Tests for the LALR(1) engine: table construction, conflict rejection, the driver, and rule-level trees."""
 import pytest
 
-from .. import ops
-from ..grammars import Grammar
-from ..grammars import Rule
-from .lr import OpToCfgConverter
-from .lr import _LrParser
+from .... import check
+from ..engines.lr import LrEngine
+from ..errors import AbnfEngineCapabilityError
+from ..errors import AbnfLrConflictError
+from ..errors import AbnfUnexpectedTokenError
+from ..meta import parse_grammar
+from ..ops import RuleRef
 
 
-def test_cfg_conversion_literal():
-    """Test converting a simple literal to CFG."""
-
-    op = ops.StringLiteral('hello')
-
-    converter = OpToCfgConverter()
-    grammar = Grammar(Rule('test', op), root='test')
-    cfg = converter.convert_grammar(grammar, 'test')
-
-    assert cfg.start.name == 'test'
-    assert len(cfg.productions) == 1
-    assert cfg.productions[0].lhs == cfg.start
+##
 
 
-def test_cfg_conversion_concat():
-    """Test converting concatenation to CFG."""
+def _compile(src: str, root: str):
+    g = parse_grammar(src, root=root, no_optimize=True)
+    return LrEngine().compile(g)
 
-    op = ops.concat(
-        ops.StringLiteral('foo'),
-        ops.StringLiteral('bar'),
+
+_SKIP_RULES = """
+        S = *WS
+        R = 1*WS
+        %token %channel(space) WS = 1*(SP / HTAB / CR / LF)
+"""
+
+
+##
+# classic grammars
+
+
+def test_left_recursive_expression_grammar():
+    # The canonical LR strength: left recursion, impossible for the recursive-descent interpreter.
+    cg = _compile(
+        """
+        expr   = expr S "+" S term | term
+        term   = term S "*" S factor | factor
+        factor = "(" S expr S ")" | num
+        %token num = 1*DIGIT
+        """ + _SKIP_RULES,
+        'expr',
     )
 
-    converter = OpToCfgConverter()
-    grammar = Grammar(Rule('test', op), root='test')
-    cfg = converter.convert_grammar(grammar, 'test')
+    m = check.not_none(cg.parse('1 + 2 * (3 + 4)', complete=True))
+    assert (m.start, m.end) == (0, 15)
 
-    # Should have productions for concat and each literal
-    assert len(cfg.productions) >= 3
+    def shape(x):
+        return (check.isinstance(x.op, RuleRef).name, [shape(c) for c in x.children])
 
-
-def test_cfg_conversion_either():
-    """Test converting alternation to CFG."""
-
-    op = ops.either(
-        ops.StringLiteral('cat'),
-        ops.StringLiteral('dog'),
+    assert shape(m) == (
+        'expr', [
+            ('expr', [('term', [('factor', [('num', [])])])]),
+            ('term', [
+                ('term', [('factor', [('num', [])])]),
+                ('factor', [
+                    ('expr', [
+                        ('expr', [('term', [('factor', [('num', [])])])]),
+                        ('term', [('factor', [('num', [])])]),
+                    ]),
+                ]),
+            ]),
+        ],
     )
 
-    converter = OpToCfgConverter()
-    grammar = Grammar(Rule('test', op), root='test')
-    cfg = converter.convert_grammar(grammar, 'test')
 
-    # Should have multiple productions for either
-    assert len(cfg.productions) >= 3
+def test_ambiguous_grammar_rejected_with_report():
+    src = """
+        e = e S "+" S e | num
+        %token num = 1*DIGIT
+    """ + _SKIP_RULES
 
+    with pytest.raises(AbnfLrConflictError) as ei:
+        _compile(src, 'e')
 
-def test_cfg_conversion_repeat():
-    """Test converting repetition to CFG."""
-
-    op = ops.repeat(ops.StringLiteral('a'))
-
-    converter = OpToCfgConverter()
-    grammar = Grammar(Rule('test', op), root='test')
-    cfg = converter.convert_grammar(grammar, 'test')
-
-    # Should have recursive productions for repeat
-    assert len(cfg.productions) >= 2
+    msg = str(ei.value)
+    assert 'not LALR(1)' in msg
+    assert 'shift' in msg
+    assert 'reduce' in msg
+    assert '•' in msg  # the state's item set is rendered
 
 
-def test_lr_parser_simple_literal():
-    """Test LR parser with a simple literal."""
-
-    grammar = Grammar(
-        Rule('test', ops.StringLiteral('hello')),
-        root='test',
+def test_deep_left_recursion_constant_stack():
+    cg = _compile(
+        """
+        list = list S "," S num | num
+        %token num = 1*DIGIT
+        """ + _SKIP_RULES,
+        'list',
     )
 
-    parser = _LrParser(grammar, 'hello', root_rule_name='test')
-
-    # Parser should initialize without errors
-    assert parser is not None
-    assert parser._cfg is not None
-    assert parser._parse_table is not None
+    src = ', '.join(str(i) for i in range(2000))
+    m = check.not_none(cg.parse(src, complete=True))
+    assert m.end == len(src)
 
 
-def test_lr_parser_concat():
-    """Test LR parser with concatenation."""
+##
+# driver behavior
 
-    op = ops.concat(
-        ops.StringLiteral('foo'),
-        ops.StringLiteral('bar'),
+
+def test_parse_error_expected_tokens():
+    cg = _compile(
+        """
+        stmt = "set" R name S "=" S num
+        %token name = 1*ALPHA
+        %token num = 1*DIGIT
+        """ + _SKIP_RULES,
+        'stmt',
     )
-    grammar = Grammar(Rule('test', op), root='test')
 
-    parser = _LrParser(grammar, 'foobar', root_rule_name='test')
+    with pytest.raises(AbnfUnexpectedTokenError) as ei:
+        cg.parse('set x = y', complete=True)
 
-    # Test that we can call iter_parse
-    matches = list(parser.iter_parse(op, 0))
+    e = ei.value
+    assert e.offset == 8
+    assert e.expected is not None
+    assert 'num' in e.expected
+    assert 'line 1' in str(e)
 
-    # Note: may not produce matches yet due to complexity of LR parsing
-    # This test just verifies it doesn't crash
-    print(f'Matches: {matches}')
 
-
-def test_lr_parser_either():
-    """Test LR parser with alternation."""
-
-    op = ops.either(
-        ops.StringLiteral('cat'),
-        ops.StringLiteral('dog'),
+def test_parse_error_unexpected_eof():
+    cg = _compile(
+        """
+        stmt = "set" R name
+        %token name = 1*ALPHA
+        """ + _SKIP_RULES,
+        'stmt',
     )
-    grammar = Grammar(Rule('test', op), root='test')
 
-    parser = _LrParser(grammar, 'cat', root_rule_name='test')
+    with pytest.raises(AbnfUnexpectedTokenError) as ei:
+        cg.parse('set ', complete=True)
 
-    matches = list(parser.iter_parse(op, 0))
-    print(f'Matches: {matches}')
-
-
-def test_lr_parser_case_insensitive():
-    """Test LR parser with case-insensitive literal."""
-
-    op = ops.CaseInsensitiveStringLiteral('hello')
-    grammar = Grammar(Rule('test', op), root='test')
-
-    parser = _LrParser(grammar, 'HELLO', root_rule_name='test')
-
-    matches = list(parser.iter_parse(op, 0))
-    print(f'Matches: {matches}')
+    assert 'end of input' in str(ei.value)
 
 
-def test_lr_parser_range():
-    """Test LR parser with range literal."""
-
-    op = ops.literal('a', 'z')
-    grammar = Grammar(Rule('test', op), root='test')
-
-    parser = _LrParser(grammar, 'x', root_rule_name='test')
-
-    matches = list(parser.iter_parse(op, 0))
-    print(f'Matches: {matches}')
-
-
-def test_lr_automaton_construction():
-    """Test that LR automaton is constructed correctly."""
-
-    op = ops.concat(
-        ops.StringLiteral('a'),
-        ops.StringLiteral('b'),
+def test_capability_gating():
+    cg = _compile(
+        """
+        stmt = 1*("a" S)
+        """ + _SKIP_RULES,
+        'stmt',
     )
-    grammar = Grammar(Rule('test', op), root='test')
 
-    parser = _LrParser(grammar, 'ab', root_rule_name='test')
+    assert not cg.capabilities.all_matches
 
-    # Check automaton was built
-    assert len(parser._automaton.item_sets) > 0
-    assert len(parser._automaton.goto_table) > 0
+    with pytest.raises(AbnfEngineCapabilityError):
+        list(cg.iter_parse('a'))
 
-    print(f'Item sets: {len(parser._automaton.item_sets)}')
-    print(f'Goto entries: {len(parser._automaton.goto_table)}')
+    with pytest.raises(AbnfEngineCapabilityError):
+        cg.parse('a')  # complete=False unsupported
 
-
-def test_lr_parse_table_construction():
-    """Test that parse tables are constructed."""
-
-    op = ops.StringLiteral('test')
-    grammar = Grammar(Rule('test', op), root='test')
-
-    parser = _LrParser(grammar, 'test', root_rule_name='test')
-
-    # Check tables were built
-    assert len(parser._parse_table.action) > 0
-
-    print(f'Action entries: {len(parser._parse_table.action)}')
-    print(f'Goto entries: {len(parser._parse_table.goto)}')
+    with pytest.raises(AbnfEngineCapabilityError):
+        cg.parse('a', 'other', complete=True)  # non-compiled root
 
 
-@pytest.mark.skip(reason='LR parser needs debugging for complex grammars')
-def test_lr_parser_repeat():
-    """Test LR parser with repetition."""
+def test_comment_pickup_via_lex():
+    cg = _compile(
+        """
+        conf = S 1*(stmt S)
+        stmt = name S "=" S num
+        %token name = 1*ALPHA
+        %token num = 1*DIGIT
+        SKIP = WS / comment
+        S = *SKIP
+        %token %channel(comment) comment = "#" *not-eol
+        not-eol = %x20-7E
+        %token %channel(space) WS = 1*(SP / HTAB / CR / LF)
+        """,
+        'conf',
+    )
 
-    op = ops.repeat(1, ops.StringLiteral('a'))
-    grammar = Grammar(Rule('test', op), root='test')
+    src = 'a = 1 # first\nb = 2 # second\n'
+    assert cg.parse(src, complete=True) is not None
 
-    parser = _LrParser(grammar, 'aaa', root_rule_name='test')
+    comments = [t.text(src) for t in cg.lex(src) if t.spec.name == 'comment']
+    assert comments == ['# first', '# second']
 
-    matches = list(parser.iter_parse(op, 0))
 
-    # Should parse successfully
-    assert len(matches) > 0
-    match = matches[0]
-    assert match.start == 0
-    assert match.end == 3
+def test_epsilon_reductions():
+    cg = _compile(
+        """
+        stmt = "f" S "(" S [args S] ")"
+        args = num *(S "," S num)
+        %token num = 1*DIGIT
+        """ + _SKIP_RULES,
+        'stmt',
+    )
+
+    assert cg.parse('f()', complete=True) is not None
+    assert cg.parse('f(1)', complete=True) is not None
+    m = check.not_none(cg.parse('f( 1 , 2 , 3 )', complete=True))
+
+    [args] = m.children
+    assert check.isinstance(args.op, RuleRef).name == 'args'
+    assert len(args.children) == 3  # the repeat spine splices flat

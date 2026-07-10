@@ -11,6 +11,7 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
+from .analysis import GrammarAnalysis
 from .base import CompositeOp
 from .base import Op
 from .grammars import Channel
@@ -317,16 +318,26 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
         return _RegexRegexItem(child_pat + quantifier)
 
     elif isinstance(op, Either):
-        # Only convert Either if first_match is True, as regex alternation uses first-match semantics. ABNF Either with
-        # first_match=False uses longest-match semantics, which differs from regex.
+        # Regex alternation is ordered-first-match, so a first_match=False (all-matches) Either is only convertible
+        # when branch order provably can't matter: all branches having the same fixed length means at most one span per
+        # start, and acceptance is the plain union of branches. (This covers the ubiquitous char-class alternations
+        # like ALPHA = %x41-5A / %x61-7A.)
         if not op.first_match:
-            return None
+            lbs = [_len_bounds(c) for c in op.children]
+            if not all(mx is not None and mn == mx == lbs[0][0] for mn, mx in lbs):
+                return None
 
         children = [_regex_item_transform_op(child) or _RegexItem.of(child) for child in op.children]
         if all(ca is not None for ca in children):
-            # Build regex alternation. Use a capturing group for the alternation
+            if op.first_match:
+                # An atomic group: plain regex alternation backtracks into later branches when the rest of the pattern
+                # fails, but interpreted first_match COMMITS to the first matching branch. (?>...) reproduces that
+                # commit.
+                grp = '(?>'
+            else:
+                grp = '(?:'
             return _RegexRegexItem(''.join([
-                '(',
+                grp,
                 '|'.join(check.not_none(ca).pat for ca in children),
                 ')',
             ]))
@@ -341,8 +352,8 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
         raise TypeError(op)
 
 
-def _regex_transform_op(op: Op) -> Op:
-    if not _is_prefix_free(op):
+def _regex_transform_op(op: Op, *, no_gate: bool = False) -> Op:
+    if not no_gate and not _is_prefix_free(op):
         return op
     v = _regex_item_transform_op(op)
 
@@ -360,7 +371,16 @@ def _regex_transform_op(op: Op) -> Op:
 
 
 def optimize_op(op: Op) -> Op:
-    op = _regex_transform_op(op)
+    """
+    Converts `op` to a single Regex where that is provably span-preserving, otherwise recurses to convert maximal
+    provable subtrees, leaving the surrounding structure interpreted.
+    """
+
+    if (n := _regex_transform_op(op)) is not op:
+        return n
+
+    if isinstance(op, CompositeOp):
+        return op.replace_children(*[optimize_op(c) for c in op.children])
 
     return op
 
@@ -412,13 +432,34 @@ def optimize_grammar(
         gram: Grammar,
         *,
         inline_channels: ta.Container[Channel] | None = (Channel.SPACE,),
+        parse_only: bool = False,
 ) -> Grammar:
+    """
+    Contract:
+
+    By default the optimized grammar produces the same match *spans* per (op, start) as the unoptimized one - regex
+    conversion only happens where the subtree's language is provably prefix-free, so `iter_parse` results are preserved
+    (modulo internal tree structure below converted nodes, which becomes opaque).
+
+    With `parse_only=True`, conversion is additionally allowed wherever the grammar-wide FIRST/FOLLOW analysis proves it
+    preserves `Grammar.parse()` results - longest match from the grammar root. Shorter alternatives that `iter_parse`
+    would have yielded may be lost; only use this when consuming grammars exclusively via `parse()`.
+    """
+
     if inline_channels:
         gram = _inline_rules(lambda r: r.channel in inline_channels, gram)
 
-    gram = gram.replace_rules(*[
-        r.replace_op(optimize_op(r.op))
-        for r in gram.rules
-    ])
+    anl: GrammarAnalysis | None = None
+    if parse_only:
+        anl = GrammarAnalysis(gram)
 
-    return gram
+    new_rules: list[Rule] = []
+    for r in gram.rules:
+        op = r.op
+        if anl is not None and anl.safe_to_convert(r):
+            op = _regex_transform_op(op, no_gate=True)
+        if op is r.op:
+            op = optimize_op(op)
+        new_rules.append(r.replace_op(op))
+
+    return gram.replace_rules(*new_rules)

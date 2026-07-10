@@ -1,5 +1,10 @@
+import pytest
+
+from .... import check
+from ..errors import AbnfGrammarParseError
 from ..grammars import Channel
 from ..meta import parse_grammar
+from ..ops import Either
 from ..utils import filter_match_channels
 from ..utils import only_match_rules
 
@@ -56,3 +61,128 @@ def test_meta() -> None:
     # ]:
     #     m = g.parse(s)
     #     print(m)
+
+
+##
+# Extension: '|' first-match alternation
+
+
+def test_pipe_alternation_first_match():
+    g = parse_grammar(
+        """
+        slash = "x" / "xy"
+        pipe  = "x" | "xy"
+        """,
+    )
+
+    # '/' explores all branches - longest match wins
+    m = g.parse('xy', 'slash')
+    assert m is not None
+    assert (m.start, m.end) == (0, 2)
+
+    # '|' commits to the first matching branch
+    m = g.parse('xy', 'pipe')
+    assert m is not None
+    assert (m.start, m.end) == (0, 1)
+
+
+def test_pipe_alternation_op_flags():
+    g = parse_grammar(
+        """
+        slash = "a" / "b"
+        pipe  = "a" | "b"
+        """,
+        no_optimize=True,
+    )
+
+    slash_op = check.not_none(g.rule('slash')).op
+    pipe_op = check.not_none(g.rule('pipe')).op
+
+    assert isinstance(slash_op, Either)
+    assert not slash_op.first_match
+
+    assert isinstance(pipe_op, Either)
+    assert pipe_op.first_match
+
+
+def test_mixed_alternation_operators_rejected():
+    with pytest.raises(AbnfGrammarParseError) as ei:
+        parse_grammar(
+            """
+            bad = "a" / "b" | "c"
+            """,
+        )
+
+    assert 'mix' in str(ei.value)
+
+
+def test_mixed_alternation_operators_parenthesized_ok():
+    g = parse_grammar(
+        """
+        ok = "a" / ("b" | "c")
+        """,
+    )
+
+    assert g.parse('c', 'ok') is not None
+
+
+def test_pipe_inside_quoted_string_is_literal():
+    g = parse_grammar(
+        """
+        r = "|" / "x"
+        """,
+    )
+
+    assert g.parse('|', 'r') is not None
+
+
+##
+# Extension: LF-tolerant meta-grammar
+
+
+def test_lf_line_endings():
+    g = parse_grammar('root = "a" 1*DIGIT\nother = "b"\n', root='root')
+
+    assert g.parse('a42', complete=True) is not None
+
+
+def test_crlf_line_endings():
+    g = parse_grammar('root = "a" 1*DIGIT\r\nother = "b"\r\n', root='root')
+
+    assert g.parse('a42', complete=True) is not None
+
+
+def test_mixed_line_endings():
+    g = parse_grammar('root = "a" 1*DIGIT\r\nother = "b"\n', root='root')
+
+    assert g.parse('a42', complete=True) is not None
+
+
+def test_no_trailing_newline():
+    g = parse_grammar('root = "a"', root='root')
+
+    assert g.parse('a', complete=True) is not None
+
+
+def test_lf_comments_and_folding():
+    g = parse_grammar(
+        'root = "a"  ; a comment\n'
+        '       / "b"\n'
+        '; standalone comment\n'
+        'other = "c"\n',
+        root='root',
+    )
+
+    assert g.parse('b', complete=True) is not None
+
+
+def test_grammar_error_line_position_unindented():
+    # unindented LF sources go through parsing offset-exactly, so errors point at real lines
+    with pytest.raises(AbnfGrammarParseError) as ei:
+        parse_grammar(
+            'root = "a"\n'
+            'ok = "b"\n'
+            'bad = &&&\n',
+        )
+
+    assert 'line 3' in str(ei.value)

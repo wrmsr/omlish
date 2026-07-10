@@ -11,14 +11,16 @@ from ..utils import filter_match_channels
 from ..utils import only_match_rules
 
 
-@pytest.mark.parametrize('optimize', [False, True])
+@pytest.mark.parametrize('optimize', [False, True, 'parse-only'])
 def test_json(optimize):
     with open(os.path.join(os.path.dirname(__file__), 'json.abnf')) as f:
         g_src = f.read()
 
     g = meta.parse_grammar(g_src, root='JSON-text')
 
-    if optimize:
+    if optimize == 'parse-only':
+        g = optimize_grammar(g, parse_only=True)
+    elif optimize:
         g = optimize_grammar(g)
 
     src = """\

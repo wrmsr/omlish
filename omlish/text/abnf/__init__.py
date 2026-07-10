@@ -18,9 +18,31 @@ from .core import (  # noqa
     CORE_RULES,
 )
 
+from .engines.base import (  # noqa
+    CompiledGrammar,
+    Engine,
+    EngineCapabilities,
+    MatchTreeFidelity,
+)
+
+from .engines.interp import (  # noqa
+    InterpEngine,
+)
+
+from .engines.lr import (  # noqa
+    LrEngine,
+)
+
 from .errors import (  # noqa
     AbnfError,
+
+    AbnfGrammarError,
+    AbnfUnknownRuleError,
     AbnfGrammarParseError,
+
+    AbnfParseError,
+    AbnfIncompleteParseError,
+    AbnfMaxStepsExceededError,
 )
 
 from .grammars import (  # noqa

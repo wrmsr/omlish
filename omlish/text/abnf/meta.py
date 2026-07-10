@@ -1,4 +1,5 @@
 """https://datatracker.ietf.org/doc/html/rfc5234"""
+import textwrap
 import typing as ta
 
 from ... import check
@@ -7,6 +8,7 @@ from ... import lang
 from .base import Op
 from .core import CORE_RULES
 from .errors import AbnfGrammarParseError
+from .errors import AbnfIncompleteParseError
 from .grammars import Channel
 from .grammars import Grammar
 from .grammars import Rule
@@ -20,8 +22,8 @@ from .ops import option
 from .ops import repeat
 from .ops import rule
 from .opto import optimize_grammar
+from .positions import format_offset
 from .utils import filter_match_channels
-from .utils import fix_ws
 from .utils import only_match_rules
 from .visitors import RuleMatchVisitor
 
@@ -50,10 +52,59 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
     Rule(
         'rule',
         concat(
+            repeat(
+                concat(
+                    rule('modifier'),
+                    repeat(
+                        1,
+                        rule('c-wsp'),
+                    ),
+                ),
+            ),
             rule('rulename'),
             rule('defined-as'),
             rule('elements'),
             rule('c-nl'),
+        ),
+    ),
+
+    # Extension: rule definitions may be prefixed with '%'-modifiers - '%token' marks a rule as a lexical token,
+    # '%channel(space)' / '%channel(comment)' etc. assign the rule's channel. Rule *references* are always bare.
+    Rule(
+        'modifier',
+        concat(
+            literal('%', case_sensitive=True),
+            rule('modifier-name'),
+            option(
+                concat(
+                    literal('('),
+                    rule('modifier-arg'),
+                    literal(')'),
+                ),
+            ),
+        ),
+    ),
+
+    Rule(
+        'modifier-name',
+        repeat(
+            1,
+            either(
+                rule('ALPHA'),
+                literal('-'),
+            ),
+        ),
+    ),
+
+    Rule(
+        'modifier-arg',
+        repeat(
+            1,
+            either(
+                rule('ALPHA'),
+                rule('DIGIT'),
+                literal('-'),
+            ),
         ),
     ),
 
@@ -113,7 +164,18 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
         'c-nl',
         either(
             rule('comment'),
+            rule('nl'),
+        ),
+        channel=Channel.SPACE,
+    ),
+
+    # Extension: RFC 5234 requires CRLF line endings, which is hostile to real-world files - the meta-grammar itself
+    # accepts bare LF as well. This does not affect user grammars' own use of the CRLF core rule.
+    Rule(
+        'nl',
+        either(
             rule('CRLF'),
+            rule('LF'),
         ),
         channel=Channel.SPACE,
     ),
@@ -128,7 +190,7 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
                     rule('VCHAR'),
                 ),
             ),
-            rule('CRLF'),
+            rule('nl'),
         ),
         channel=Channel.COMMENT,
     ),
@@ -142,13 +204,23 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
                     repeat(
                         rule('c-wsp'),
                     ),
-                    literal('/'),
+                    rule('alt-op'),
                     repeat(
                         rule('c-wsp'),
                     ),
                     rule('concatenation'),
                 ),
             ),
+        ),
+    ),
+
+    # Extension: '|' is accepted alongside RFC 5234's '/', denoting first-match ('committed choice') alternation. The
+    # two may not be mixed within a single un-parenthesized alternation.
+    Rule(
+        'alt-op',
+        either(
+            literal('/'),
+            literal('|'),
         ),
     ),
 
@@ -444,19 +516,79 @@ class MetaGrammarRuleMatchVisitor(RuleMatchVisitor[ta.Any]):
     class QuotedString(lang.Final):
         s: str
 
+    @dc.dataclass(frozen=True)
+    class AltOp(lang.Final):
+        s: str
+
+    @dc.dataclass(frozen=True)
+    class Modifier(lang.Final):
+        name: str
+        arg: str | None
+
     class AltRule(ta.NamedTuple):
         rule: Rule
 
+    @RuleMatchVisitor.register('modifier')
+    def visit_modifier_rule(self, m: Match) -> ta.Any:
+        cs = m.children
+        name = self._source[cs[0].start:cs[0].end]
+        arg = self._source[cs[1].start:cs[1].end] if len(cs) > 1 else None
+        return self.Modifier(name.casefold(), arg)
+
+    def _apply_rule_modifiers(
+            self,
+            rn: str,
+            mods: ta.Sequence[Modifier],
+    ) -> tuple[Channel, bool]:
+        channel = Channel.STRUCTURE
+        is_token = False
+
+        seen: set[str] = set()
+        for mod in mods:
+            if mod.name in seen:
+                raise AbnfGrammarParseError(f'Duplicate modifier {mod.name!r} on rule {rn!r}')
+            seen.add(mod.name)
+
+            if mod.name == 'token':
+                if mod.arg is not None:
+                    raise AbnfGrammarParseError(f'Modifier %token takes no argument (rule {rn!r})')
+                is_token = True
+
+            elif mod.name == 'channel':
+                if mod.arg is None:
+                    raise AbnfGrammarParseError(f'Modifier %channel requires an argument (rule {rn!r})')
+                try:
+                    channel = Channel[mod.arg.upper().replace('-', '_')]
+                except KeyError:
+                    raise AbnfGrammarParseError(f'Unknown channel {mod.arg!r} (rule {rn!r})') from None
+
+            else:
+                raise AbnfGrammarParseError(f'Unknown modifier {mod.name!r} on rule {rn!r}')
+
+        return (channel, is_token)
+
     @RuleMatchVisitor.register('rule')
     def visit_rule_rule(self, m: Match) -> ta.Any:
-        rn_m, da_m, el_m = m.children
+        *mod_ms, rn_m, da_m, el_m = m.children
         da_s = self._source[da_m.start:da_m.end].strip()
         rn = check.isinstance(self.visit_match(rn_m), self.RuleName).s
         el = self.visit_match(el_m)
-        r = Rule(rn, el)
+
+        mods = [check.isinstance(self.visit_match(mm), self.Modifier) for mm in mod_ms]
+        channel, is_token = self._apply_rule_modifiers(rn, mods)
+
+        r = Rule(
+            rn,
+            el,
+            channel=channel,
+            is_token=is_token,
+        )
+
         if da_s == '=':
             return r
         elif da_s == '=/':
+            if mods:
+                raise AbnfGrammarParseError(f'Modifiers not permitted on =/ continuations (rule {rn!r})')
             return self.AltRule(r)
         else:
             raise ValueError(da_s)
@@ -469,12 +601,31 @@ class MetaGrammarRuleMatchVisitor(RuleMatchVisitor[ta.Any]):
     def visit_elements_rule(self, m: Match) -> ta.Any:
         return self.visit_match(check.single(m.children))
 
+    @RuleMatchVisitor.register('alt-op')
+    def visit_alt_op_rule(self, m: Match) -> ta.Any:
+        return self.AltOp(self._source[m.start:m.end])
+
     @RuleMatchVisitor.register('alternation')
     def visit_alternation_rule(self, m: Match) -> ta.Any:
         if len(m.children) == 1:
             return self.visit_match(m.children[0])
-        else:
-            return either(*map(self.visit_match, m.children))
+
+        elems: list[Op] = []
+        seps: set[str] = set()
+        for c in m.children:
+            v = self.visit_match(c)
+            if isinstance(v, self.AltOp):
+                seps.add(v.s)
+            else:
+                elems.append(check.isinstance(v, Op))
+
+        if len(seps) > 1:
+            raise AbnfGrammarParseError(
+                f'May not mix alternation operators {sorted(seps)} in a single alternation - parenthesize '
+                f'({format_offset(self._source, m.start)})',
+            )
+
+        return either(*elems, first_match='|' in seps)
 
     @RuleMatchVisitor.register('concatenation')
     def visit_concatenation_rule(self, m: Match) -> ta.Any:
@@ -579,6 +730,16 @@ class MetaGrammarRuleMatchVisitor(RuleMatchVisitor[ta.Any]):
 ##
 
 
+def _fix_grammar_source(s: str) -> str:
+    """
+    Light source preparation: dedent (for indented, triple-quoted grammar literals - a no-op for file contents) and
+    ensure a trailing newline. Unlike `fix_ws` this does not rewrite line endings, keeping reported error offsets
+    accurate.
+    """
+
+    return textwrap.dedent(s).rstrip() + '\n'
+
+
 def parse_grammar(
         source: str,
         *,
@@ -587,14 +748,19 @@ def parse_grammar(
         no_optimize: bool = False,
         **kwargs: ta.Any,
 ) -> Grammar:
-    source = fix_ws(source)
+    source = _fix_grammar_source(source)
 
-    if (mg_m := META_GRAMMAR.parse(
+    try:
+        mg_m = META_GRAMMAR.parse(
             source,
             complete=True,
             **kwargs,
-    )) is None:
-        raise AbnfGrammarParseError(source)
+        )
+    except AbnfIncompleteParseError as e:
+        raise AbnfGrammarParseError(str(e)) from e
+
+    if mg_m is None:
+        raise AbnfGrammarParseError('No parse')
 
     mg_m = only_match_rules(mg_m)
 
@@ -629,6 +795,7 @@ def parse_grammar(
                 xr._name_f,  # noqa
                 xo,
                 channel=xr.channel,
+                is_token=xr.is_token,
             )
             rules[xr._name_f] = xr  # noqa
         else:
