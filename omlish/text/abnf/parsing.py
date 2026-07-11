@@ -36,6 +36,7 @@ class _EngineCache:
         return cg
 
 
+# FIXME: NO, NO GLOBALS!!
 _DEFAULT_ENGINE_CACHE = _EngineCache(InterpEngine())
 
 
