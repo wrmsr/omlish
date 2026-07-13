@@ -81,7 +81,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
+            dict(path='../../omlish/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
             dict(path='../../omlish/lite/attrops.py', sha1='ab1b299f7525e1bc21ed843347ae0f4ed9b0dbe6'),
             dict(path='../../omlish/lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
@@ -2702,7 +2702,7 @@ def sync_await(aw: ta.Awaitable[T]) -> T:
         except StopIteration:
             pass
 
-        if ret is missing or cr.cr_await is not None or cr.cr_running:
+        if ret is missing or cr.cr_await is not None or cr.cr_running:  # type: ignore[attr-defined]
             raise SyncAwaitCoroutineNotTerminatedError('Not terminated')
 
     finally:

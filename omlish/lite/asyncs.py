@@ -62,7 +62,7 @@ def sync_await(aw: ta.Awaitable[T]) -> T:
         except StopIteration:
             pass
 
-        if ret is missing or cr.cr_await is not None or cr.cr_running:
+        if ret is missing or cr.cr_await is not None or cr.cr_running:  # type: ignore[attr-defined]
             raise SyncAwaitCoroutineNotTerminatedError('Not terminated')
 
     finally:

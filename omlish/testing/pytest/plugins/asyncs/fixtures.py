@@ -198,7 +198,7 @@ class AsyncsFixture:
                 if isinstance(func_value, collections.abc.Coroutine):
                     self.fixture_value = await func_value
                 elif inspect.isasyncgen(func_value):
-                    self.fixture_value = await func_value.asend(None)
+                    self.fixture_value = await func_value.asend(None)  # type: ignore[arg-type]
                 elif isinstance(func_value, collections.abc.Generator):
                     self.fixture_value = func_value.send(None)
                 else:

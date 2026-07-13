@@ -73,7 +73,7 @@ def test_asyncio_from_trio3():
 
     async def trio_sleep(sec=2):
         f = aio_sleep(.1)
-        f = asyncio.ensure_future(f)
+        f = asyncio.ensure_future(f)  # type: ignore[assignment]
         r = await trai.aio_as_trio(f)
         assert r == 42
 

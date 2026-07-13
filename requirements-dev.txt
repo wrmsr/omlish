@@ -17,7 +17,7 @@ flake8==7.3.0
 flake8-pyproject==1.2.4
 ruff==0.15.21
 
-asyncpg-stubs==0.31.2
+asyncpg-stubs==0.31.3
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
 types-docutils==0.22.3.20260518
@@ -27,12 +27,12 @@ types-psutil==7.2.2.20260518
 types-pygments==2.20.0.20260518
 types-pymysql==1.1.0.20260518
 types-pyyaml==6.0.12.20260518
-types-regex==2026.6.28.20260630
+types-regex==2026.7.10.20260711
 types-setuptools==83.0.0.20260706
 types-ujson==5.10.0.20250822
 
 black==26.5.1
-mypy==2.2.0
+mypy==2.3.0
 pipdeptree==3.1.1
 
 astpretty==3.0.0
@@ -75,7 +75,7 @@ ujson==5.13.0
 markupsafe==3.0.3
 
 asgiref==3.11.1
-uvicorn==0.49.0
+uvicorn==0.51.0
 
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
@@ -99,7 +99,7 @@ mwparserfromhell==0.7.2
 wikitextparser==1.0.2  # !! GPL
 
 executing==2.2.1
-asttokens==3.0.1
+asttokens==3.0.2
 
 numpy==2.5.1
 
@@ -116,7 +116,7 @@ snowflake-connector-python[secure-local-storage]==4.6.0  # @omlish-venv !15t
 
 trino==0.338.0  # @omlish-venv !14t !14dt !15t  # orjson
 
-huggingface-hub==1.22.0  # @omlish-venv !15t
+huggingface-hub==1.23.0  # @omlish-venv !15t
 hf-xet==1.5.1  # @omlish-venv !15t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
@@ -135,9 +135,9 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3==1.43.45
-botocore==1.43.45
-types-boto3==1.43.45
+boto3==1.43.47
+botocore==1.43.47
+types-boto3==1.43.47
 botocore-stubs==1.43.14
 
 antlr4-python3-runtime==4.13.2
@@ -145,7 +145,7 @@ antlr4-python3-runtime==4.13.2
 mlx==0.31.2; sys_platform == "darwin"  # @omlish-venv !14t !4dt !15 !15t
 mlx-lm==0.31.3; sys_platform == "darwin"  # @omlish-venv !14t !14dt !15 !15t
 
-apsw==3.53.3.0
+apsw==3.53.3.1
 
 rapidocr-onnxruntime==1.4.4  # @omlish-venv !14t !14dt !15 !15t
 # opencv-python==4.12.0.88  # @omlish-venv !14t !14dt  # FIXME: downgrades numpy
@@ -156,7 +156,7 @@ pillow==12.3.0
 
 bitsandbytes==0.49.2  # @omlish-venv !15 !15t
 
-regex==2026.6.28
+regex==2026.7.10
 
 # x.server - TODO: delete
 

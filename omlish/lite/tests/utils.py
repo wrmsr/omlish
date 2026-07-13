@@ -15,7 +15,7 @@ def sync_await(aw):
         except StopIteration:
             pass
 
-        if ret is missing or cr.cr_await is not None or cr.cr_running:
+        if ret is missing or cr.cr_await is not None or cr.cr_running:  # type: ignore[attr-defined]
             raise TypeError('Not terminated')
 
     finally:

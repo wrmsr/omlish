@@ -38,7 +38,7 @@ def __omlish_amalg__():  # noqa
             dict(path='errors.py', sha1='231f62c44c201a261f2a781bcc0060e997ecf33c'),
             dict(path='../streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
+            dict(path='../../lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
             dict(path='../../lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
             dict(path='../../lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
@@ -526,7 +526,7 @@ def sync_await(aw: ta.Awaitable[T]) -> T:
         except StopIteration:
             pass
 
-        if ret is missing or cr.cr_await is not None or cr.cr_running:
+        if ret is missing or cr.cr_await is not None or cr.cr_running:  # type: ignore[attr-defined]
             raise SyncAwaitCoroutineNotTerminatedError('Not terminated')
 
     finally:

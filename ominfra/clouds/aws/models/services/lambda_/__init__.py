@@ -195,6 +195,9 @@ class Runtime(_base.Enum):
     PROVIDED = 'provided'
     PROVIDED_AL2 = 'provided.al2'
     PROVIDED_AL2023 = 'provided.al2023'
+    JAVA8_AL2023 = 'java8.al2023'
+    JAVA11_AL2023 = 'java11.al2023'
+    JAVA17_AL2023 = 'java17.al2023'
 
 
 RuntimeVersionArn = _ta.NewType('RuntimeVersionArn', str)

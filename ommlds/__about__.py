@@ -42,12 +42,12 @@ class Project(ProjectBase):
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 1.22',
+            'huggingface-hub ~= 1.23',
             'datasets ~= 5.0',
         ],
 
         'nanochat': [
-            'regex >= 2026.6',
+            'regex >= 2026.7',
         ],
 
         'numpy': [
