@@ -142,7 +142,7 @@ botocore-stubs==1.43.14
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.31.2; sys_platform == "darwin"  # @omlish-venv !14t !4dt !15 !15t
+mlx==0.32.0; sys_platform == "darwin"  # @omlish-venv !14t !4dt !15 !15t
 mlx-lm==0.31.3; sys_platform == "darwin"  # @omlish-venv !14t !14dt !15 !15t
 
 apsw==3.53.3.1
