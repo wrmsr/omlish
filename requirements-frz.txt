@@ -263,7 +263,7 @@ twine==6.2.0
 typer==0.26.8
 types-awscrt==0.34.1
 types-boto3==1.43.47
-types-docutils==0.22.3.20260518
+types-docutils==0.22.3.20260712
 types-greenlet==3.5.0.20260518
 types-paramiko==5.0.0.20260617
 types-psutil==7.2.2.20260518
