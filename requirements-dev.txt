@@ -126,7 +126,7 @@ datasets==5.0.0  # @omlish-venv !15 !15t  # !! includes arrow and pandas and shi
 transformers==5.11.0  # @omlish-venv !14t !14dt !15 !15t
 sentence-transformers==5.5.1  # @omlish-venv !14t !14dt !15 !15t
 
-sentencepiece==0.2.1
+sentencepiece==0.2.2
 tiktoken==0.13.0  # @omlish-venv !15 !15t
 tokenizers==0.22.2  # @omlish-venv !14t !14dt !15t
 

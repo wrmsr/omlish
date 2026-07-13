@@ -56,7 +56,7 @@ class SentencepieceTokenizer(tks.BaseTokenizer):
             self,
             tokens: ta.Iterable[tks.Token],
     ) -> str:
-        return self._spm_tokenizer.decode(tokens)
+        return self._spm_tokenizer.decode(lang.seq(tokens))
 
 
 ##

@@ -212,7 +212,7 @@ scipy==1.18.0
 scramp==1.4.12
 segno==1.6.6
 sentence-transformers==5.5.1
-sentencepiece==0.2.1
+sentencepiece==0.2.2
 setuptools==83.0.0
 shapely==2.1.2
 shellingham==1.5.4
