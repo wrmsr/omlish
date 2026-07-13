@@ -5,7 +5,7 @@ import unittest
 from ....io.pipelines.core import IoPipeline
 from ....io.pipelines.handlers.feedback import FeedbackInboundIoPipelineHandler
 from ....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
-from ....io.streams.utils import ByteStreamBuffers
+from ....io.streambufs.utils import ByteStreamBuffers
 from ...headers import HttpHeaders
 from ...versions import HttpVersion
 from ..clients.responses import IoPipelineHttpResponseDechunker

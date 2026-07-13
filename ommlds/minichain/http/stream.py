@@ -10,9 +10,9 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.http import all as http
 from omlish.http import sse
-from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
-from omlish.io.streams.scanning import ScanningByteStreamBuffer
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streambufs.scanning import ScanningByteStreamBuffer
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 from ..events.types import EventCallback
 from ..resources import UseResources

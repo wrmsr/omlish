@@ -4,9 +4,9 @@ import dataclasses as dc
 import json
 import typing as ta
 
-from omlish.io.streams.scanning import ScanningByteStreamBuffer
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
-from omlish.io.streams.utils import ByteStreamBuffers
+from omlish.io.streambufs.scanning import ScanningByteStreamBuffer
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.utils import ByteStreamBuffers
 from omlish.lite.bytes import Bytes
 from omlish.logs.modules import get_module_logger
 

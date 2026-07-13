@@ -10,9 +10,9 @@ from ... import check
 from ... import lang
 from ... import marshal as msh
 from ...asyncs import anyio as aiu
-from ...io.streams.scanning import ScanningByteStreamBuffer
-from ...io.streams.segmented import SegmentedByteStreamBuffer
-from ...io.streams.utils import ByteStreamBuffers
+from ...io.streambufs.scanning import ScanningByteStreamBuffer
+from ...io.streambufs.segmented import SegmentedByteStreamBuffer
+from ...io.streambufs.utils import ByteStreamBuffers
 from .types import Error
 from .types import Id
 from .types import Message

@@ -13,11 +13,11 @@ from ...io.pipelines.core import IoPipelineHandler
 from ...io.pipelines.core import IoPipelineHandlerContext
 from ...io.pipelines.core import IoPipelineMessages
 from ...io.pipelines.handlers.decoders import MessageToMessageDecoderIoPipelineHandler
-from ...io.streams.errors import FrameTooLargeByteStreamBufferError
-from ...io.streams.segmented import SegmentedByteStreamBuffer
-from ...io.streams.types import MutableByteStreamBuffer
-from ...io.streams.utils import ByteStreamBuffers
-from ...io.streams.utils import CanByteStreamBuffer
+from ...io.streambufs.errors import FrameTooLargeByteStreamBufferError
+from ...io.streambufs.segmented import SegmentedByteStreamBuffer
+from ...io.streambufs.types import MutableByteStreamBuffer
+from ...io.streambufs.utils import ByteStreamBuffers
+from ...io.streambufs.utils import CanByteStreamBuffer
 from ...lite.abstract import Abstract
 from ...lite.bytes import BytesLike
 from .bodymodes import IoPipelineHttpBodyMode

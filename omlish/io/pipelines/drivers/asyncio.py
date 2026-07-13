@@ -9,7 +9,7 @@ from ....lite.abstract import Abstract
 from ....lite.check import check
 from ....logs.modules import get_module_loggers
 from ....logs.utils import async_exception_logging
-from ...streams.utils import ByteStreamBuffers
+from ...streambufs.utils import ByteStreamBuffers
 from ..asyncs import AsyncIoPipelineMessages
 from ..core import IoPipeline
 from ..core import IoPipelineHandlerRef

@@ -8,9 +8,9 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
-from ...io.streams.adapters import ByteStreamBufferAsyncBytesReaderAdapter
-from ...io.streams.adapters import ByteStreamBufferBytesReaderAdapter
-from ...io.streams.segmented import SegmentedByteStreamBuffer
+from ...io.streambufs.adapters import ByteStreamBufferAsyncBytesReaderAdapter
+from ...io.streambufs.adapters import ByteStreamBufferBytesReaderAdapter
+from ...io.streambufs.segmented import SegmentedByteStreamBuffer
 from ..headers import HttpHeaders
 from .asyncs import AsyncHttpClient
 from .asyncs import AsyncStreamHttpClientResponse

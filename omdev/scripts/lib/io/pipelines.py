@@ -36,7 +36,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='errors.py', sha1='231f62c44c201a261f2a781bcc0060e997ecf33c'),
-            dict(path='../streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
+            dict(path='../streambufs/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
             dict(path='../../lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
@@ -45,7 +45,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
-            dict(path='../streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
+            dict(path='../streambufs/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
             dict(path='../../logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
@@ -56,23 +56,23 @@ def __omlish_amalg__():  # noqa
             dict(path='handlers/fns.py', sha1='6dd1901ebdbdb31caeffab06d239f1c41e3f2726'),
             dict(path='handlers/queues.py', sha1='f49d19c5dd7de77299bedbfb3a77a36479fd1edf'),
             dict(path='sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
-            dict(path='../streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='../streams/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
+            dict(path='../streambufs/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
+            dict(path='../streambufs/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
+            dict(path='../streambufs/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
             dict(path='../../logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../logs/utils.py', sha1='f19e8f456172673b7418f3413f4ccef00a4b251c'),
-            dict(path='bytes/queues.py', sha1='ea3b53a155622376836ba9e3499b85220f37b1fd'),
+            dict(path='bytes/queues.py', sha1='59355ab251e83c3ef7fbdbfa923e09d45469ee17'),
             dict(path='handlers/flatmap.py', sha1='118478ac94449a9a0b5ba44f5f3e8a5d69bb6f65'),
-            dict(path='../streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
-            dict(path='../streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
+            dict(path='../streambufs/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
+            dict(path='../streambufs/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
             dict(path='../../logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
             dict(path='../../logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
+            dict(path='../streambufs/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='../../logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
+            dict(path='bytes/decoders.py', sha1='ed307472f3d443f38eb33c66e0cdde9f9f1f7a00'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='3c5e22ffdaad0cea3026c9a10a740d68db1dab88'),
+            dict(path='drivers/asyncio.py', sha1='31d5a34e9f3113da152cd694e63f2b7669e745c5'),
             dict(path='_amalg.py', sha1='9133c93944973dd6cb229e63162628d519dc5ad4'),
         ],
     )
@@ -113,7 +113,7 @@ LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
 LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
 LoggingContextInfo = ta.Any  # ta.TypeAlias
 
-# ../streams/utils.py
+# ../streambufs/utils.py
 CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 # ../../logs/contexts.py
@@ -256,7 +256,7 @@ class FlowControlValidationIoPipelineError(IoPipelineError):
 
 
 ########################################
-# ../../streams/errors.py
+# ../../streambufs/errors.py
 
 
 ##
@@ -3218,7 +3218,7 @@ class IoPipeline:
 
 
 ########################################
-# ../../streams/types.py
+# ../../streambufs/types.py
 
 
 ##
@@ -4538,7 +4538,7 @@ class IoPipelineScheduling(Abstract):
 
 
 ########################################
-# ../../streams/base.py
+# ../../streambufs/base.py
 
 
 ##
@@ -4551,7 +4551,7 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 
 
 ########################################
-# ../../streams/framing.py
+# ../../streambufs/framing.py
 
 
 ##
@@ -4886,7 +4886,7 @@ class LengthFieldByteStreamFrameDecoder:
 
 
 ########################################
-# ../../streams/utils.py
+# ../../streambufs/utils.py
 
 
 ##
@@ -5726,7 +5726,7 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
 
 
 ########################################
-# ../../streams/direct.py
+# ../../streambufs/direct.py
 
 
 ##
@@ -5893,7 +5893,7 @@ def empty_byte_stream_buffer_view() -> ByteStreamBufferView:
 
 
 ########################################
-# ../../streams/scanning.py
+# ../../streambufs/scanning.py
 
 
 ##
@@ -6952,7 +6952,7 @@ class LogRecordLoggingContext(LoggingContext):
 
 
 ########################################
-# ../../streams/segmented.py
+# ../../streambufs/segmented.py
 
 
 ##

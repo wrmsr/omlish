@@ -10,7 +10,7 @@ from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 from ....io.readers import AsyncBytesReader
 from ....io.readers import AsyncBytesReaders
-from ....io.streams.utils import ByteStreamBuffers
+from ....io.streambufs.utils import ByteStreamBuffers
 from ....lite.bytes import Bytes
 from ....lite.bytes import bytes_like_to_bytes
 from ....lite.check import check

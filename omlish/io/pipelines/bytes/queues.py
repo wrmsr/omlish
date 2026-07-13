@@ -2,7 +2,7 @@
 # @omlish-lite
 import typing as ta
 
-from ...streams.utils import ByteStreamBuffers
+from ...streambufs.utils import ByteStreamBuffers
 from ..core import IoPipelineHandlerFn
 from ..handlers.fns import IoPipelineHandlerFns
 from ..handlers.queues import InboundQueueIoPipelineHandler

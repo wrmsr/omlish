@@ -6,7 +6,7 @@ import enum
 import ssl
 import typing as ta
 
-from ...streams.utils import ByteStreamBuffers
+from ...streambufs.utils import ByteStreamBuffers
 from ..bytes.buffering import InboundBytesBufferingIoPipelineHandler
 from ..bytes.buffering import OutboundBytesBufferingIoPipelineHandler
 from ..core import IoPipelineHandlerContext

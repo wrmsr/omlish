@@ -19,7 +19,7 @@ class RawBytesReader(ta.Protocol):
 
 class BytesReader(RawBytesReader, ta.Protocol):
     def read(self, n: int = -1, /) -> Bytes:
-        """Return exactly `n` bytes unless EOF is reached.."""
+        """Return exactly `n` bytes unless EOF is reached."""
 
 
 class BytesReaders(NamespaceClass):
@@ -60,7 +60,7 @@ class AsyncRawBytesReader(ta.Protocol):
 
 class AsyncBytesReader(AsyncRawBytesReader, ta.Protocol):
     def read(self, n: int = -1, /) -> ta.Awaitable[Bytes]:
-        """Return exactly `n` bytes unless EOF is reached.."""
+        """Return exactly `n` bytes unless EOF is reached."""
 
 
 class AsyncBytesReaders(NamespaceClass):

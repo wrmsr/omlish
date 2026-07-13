@@ -16,7 +16,7 @@ This package provides:
 ### Basic Usage
 
 ```python
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 # Create a buffer and write some data
 buf = SegmentedByteStreamBuffer(chunk_size=4096)
@@ -35,8 +35,8 @@ print(frame.tobytes())  # b'Hello, World!'
 ### Delimiter-Based Framing
 
 ```python
-from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 buf = SegmentedByteStreamBuffer(chunk_size=4096)
 framer = LongestMatchDelimiterByteStreamFrameDecoder(
@@ -60,8 +60,8 @@ for frame in frames:
 ### Length-Prefixed Framing
 
 ```python
-from omlish.io.streams.framing import LengthFieldByteStreamFrameDecoder
-from omlish.io.streams.linear import LinearByteStreamBuffer
+from omlish.io.streambufs.framing import LengthFieldByteStreamFrameDecoder
+from omlish.io.streambufs.linear import LinearByteStreamBuffer
 
 buf = LinearByteStreamBuffer()
 framer = LengthFieldByteStreamFrameDecoder(
@@ -81,8 +81,8 @@ print(frames[0].tobytes())  # b'Hello'
 ### Binary Protocol Parsing
 
 ```python
-from omlish.io.streams.linear import LinearByteStreamBuffer
-from omlish.io.streams.reading import ByteStreamBufferReader
+from omlish.io.streambufs.linear import LinearByteStreamBuffer
+from omlish.io.streambufs.reading import ByteStreamBufferReader
 
 buf = LinearByteStreamBuffer()
 reader = ByteStreamBufferReader(buf)
@@ -101,7 +101,7 @@ timestamp = reader.read_u32_be()  # 100
 ```python
 import socket
 
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 buf = SegmentedByteStreamBuffer(chunk_size=8192)
 sock = socket.socket()
@@ -128,8 +128,8 @@ Choose the right backend for your use case:
 Wrap any buffer to cache negative search results for trickle-data scenarios:
 
 ```python
-from omlish.io.streams.scanning import ScanningByteStreamBuffer
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.scanning import ScanningByteStreamBuffer
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 inner = SegmentedByteStreamBuffer(chunk_size=4096)
 buf = ScanningByteStreamBuffer(inner)
@@ -158,7 +158,7 @@ buf.find(b'\r\n')  # Found!
 `find()` and `rfind()` work correctly even when the pattern spans segment boundaries:
 
 ```python
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 buf = SegmentedByteStreamBuffer(chunk_size=4)
 buf.write(b'ab')
@@ -179,8 +179,8 @@ pos = buf.find(b'bc')  # Returns 1 (correctly finds cross-segment match)
 Bridge buffers to/from file-like objects:
 
 ```python
-from omlish.io.streams.adapters import ByteStreamBufferBytesReaderAdapter
-from omlish.io.streams.linear import LinearByteStreamBuffer
+from omlish.io.streambufs.adapters import ByteStreamBufferBytesReaderAdapter
+from omlish.io.streambufs.linear import LinearByteStreamBuffer
 
 buf = LinearByteStreamBuffer()
 buf.write(b'Hello, World!')
@@ -193,7 +193,7 @@ data = reader.read(5)  # b'Hello'
 ## Error Handling
 
 ```python
-from omlish.io.streams.errors import (
+from omlish.io.streambufs.errors import (
     NeedMoreDataByteStreamBufferError,      # Insufficient bytes buffered
     BufferTooLargeByteStreamBufferError,    # Buffer exceeded max_size
     FrameTooLargeByteStreamBufferError,     # Frame exceeded max_size

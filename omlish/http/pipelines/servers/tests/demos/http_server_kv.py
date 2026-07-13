@@ -9,7 +9,7 @@ from ......io.pipelines.core import IoPipelineHandler
 from ......io.pipelines.core import IoPipelineHandlerContext
 from ......io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 from ......io.pipelines.flow.stub import StubIoPipelineFlowService
-from ......io.streams.utils import ByteStreamBuffers
+from ......io.streambufs.utils import ByteStreamBuffers
 from ......lite.bytes import Bytes
 from ......logs.modules import get_module_loggers
 from ......logs.std.standard import configure_standard_logging

@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-generated
-# @omlish-amalg-output ../../../../omlish/io/streams/_amalg.py
+# @omlish-amalg-output ../../../../omlish/io/streambufs/_amalg.py
 # @omlish-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP037 UP045
 import abc
@@ -36,7 +36,7 @@ def __omlish_amalg__():  # noqa
             dict(path='adapters.py', sha1='c6fbf2e18ff040be75df7db137f14d91b57c64b4'),
             dict(path='linear.py', sha1='aa5ac37747d153479f4be3df9327b9c96a59381b'),
             dict(path='segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
-            dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
+            dict(path='_amalg.py', sha1='40e7a4a4ebfe4b61f86c6a8c9d2cda6e898d8c18'),
         ],
     )
 

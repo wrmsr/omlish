@@ -5,8 +5,8 @@ import typing as ta
 import urllib.error
 import urllib.request
 
-from ...io.streams.adapters import ByteStreamBufferBytesReaderAdapter
-from ...io.streams.segmented import SegmentedByteStreamBuffer
+from ...io.streambufs.adapters import ByteStreamBufferBytesReaderAdapter
+from ...io.streambufs.segmented import SegmentedByteStreamBuffer
 from ...lite.check import check
 from ..headers import HttpHeaders
 from .base import DEFAULT_HTTP_CLIENT_ENCODING

@@ -101,7 +101,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
             dict(path='../../omlish/io/pipelines/errors.py', sha1='231f62c44c201a261f2a781bcc0060e997ecf33c'),
-            dict(path='../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
+            dict(path='../../omlish/io/streambufs/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
             dict(path='../../omlish/lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
@@ -137,7 +137,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/parsing.py', sha1='1adee35518ee930557f2c3b19fd4253df98a5b3c'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
             dict(path='../../omlish/io/pipelines/core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
-            dict(path='../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
+            dict(path='../../omlish/io/streambufs/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
             dict(path='../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
@@ -165,9 +165,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
             dict(path='../../omlish/io/pipelines/flow/types.py', sha1='4353968e5bd490f4121eadf9e391076bd2673f28'),
             dict(path='../../omlish/io/pipelines/sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
-            dict(path='../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='../../omlish/io/streams/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
+            dict(path='../../omlish/io/streambufs/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
+            dict(path='../../omlish/io/streambufs/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
+            dict(path='../../omlish/io/streambufs/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
             dict(path='../../omlish/lite/inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
@@ -185,15 +185,15 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='5ae8fa62a717986ac45024d5988b626850ed1786'),
             dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='7e25a89726210c96b93b4d1c676fdd8347ba82c5'),
-            dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='fda7c252cec85e4c895b905d1e4dd4063e29db1a'),  # noqa
-            dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='f263936305f7be5085c6a5f2782ae734bf221813'),  # noqa
+            dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='0abf43a23ccd37537eb225f98ec0058026ce28b7'),  # noqa
+            dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='650380a2bad2ee5cdbe92088b7f606709095bcb5'),  # noqa
             dict(path='../../omlish/http/pipelines/encoders.py', sha1='fdcc3953e2a7f9ba4c1fddba9c365da113c77b45'),
             dict(path='../../omlish/http/pipelines/requests.py', sha1='a0115429e52527073df8638f692aeca95803d3a7'),
             dict(path='../../omlish/http/pipelines/responses.py', sha1='49c0a85b1fb7571dc52e0362f2b9eb68a2a4ee34'),
             dict(path='../../omlish/http/simple/handlers.py', sha1='f15e127ac962f4577e06adfdb3c05a19fa896e89'),
             dict(path='../../omlish/io/pipelines/handlers/decoders.py', sha1='c7a5db7b3989f8b5c952e255f9e6c8fc91fa6236'),  # noqa
-            dict(path='../../omlish/io/streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
-            dict(path='../../omlish/io/streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
+            dict(path='../../omlish/io/streambufs/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
+            dict(path='../../omlish/io/streambufs/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
             dict(path='../../omlish/logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
@@ -205,7 +205,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../specs/oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
-            dict(path='../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
+            dict(path='../../omlish/io/streambufs/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
@@ -214,14 +214,14 @@ def __omlish_amalg__():  # noqa
             dict(path='../specs/oci/dataserver.py', sha1='49c8cde4810c4185a57696e84ce933978a3ed3a1'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='5047d6c283348c2cd4265c955bb94651e971addd'),
-            dict(path='../../omlish/http/pipelines/aggregators.py', sha1='680f486f4a17e02746dbb8f05794fc39a978315d'),
-            dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
+            dict(path='../../omlish/http/pipelines/aggregators.py', sha1='dbffeb4a48b42edafea05abe1123b5e9862511bb'),
+            dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='ed307472f3d443f38eb33c66e0cdde9f9f1f7a00'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
             dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
             dict(path='utils.py', sha1='b7b7b439b1077771f2bd7c7c74ed422ea2663014'),
-            dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
-            dict(path='../../omlish/io/pipelines/drivers/sync.py', sha1='005f8130f95ea097f19144fc1df898fffefbaa79'),
+            dict(path='../../omlish/http/pipelines/decoders.py', sha1='d13e61a6e4ed6824b552b7b8dc3818eba43a6ce6'),
+            dict(path='../../omlish/io/pipelines/drivers/sync.py', sha1='a276abbb87270f8fc9c18685866b17c5f6415e32'),
             dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
             dict(path='docker/cache.py', sha1='1c30c907c44e7cc12cd985ccb88b1f6b65558899'),
@@ -236,7 +236,7 @@ def __omlish_amalg__():  # noqa
             dict(path='docker/imagepulling.py', sha1='d6b1ca1ecb9aa5c593a25e6deb78e942c75ebcb4'),
             dict(path='github/api/v1/client.py', sha1='6ddd600cd8a7ff72a6a3408ded14240bafab6944'),
             dict(path='github/api/v2/client.py', sha1='e28f27c07011487d5a3f4ae32fdfa1a857d02459'),
-            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='07c3ae396dda6334afe4310aa4077b4784988a63'),  # noqa
+            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='78f2e8f745cc126e57ff3bf65189a7144d4150bb'),  # noqa
             dict(path='ci.py', sha1='87b82e2bd86aa886764f1e0067251b056e359650'),
             dict(path='github/cache.py', sha1='d91f9c87d167574e94c99817e6c3a0f75925dfb9'),
             dict(path='github/cli.py', sha1='4f63c026d5d00b04a579ee9186a6264094eeae9d'),
@@ -345,7 +345,7 @@ AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
 SimpleHttpHandlerResponseData = ta.Union[Bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
-# ../../omlish/io/streams/utils.py
+# ../../omlish/io/streambufs/utils.py
 CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 # ../../omlish/lite/inject.py
@@ -957,7 +957,7 @@ class FlowControlValidationIoPipelineError(IoPipelineError):
 
 
 ########################################
-# ../../../omlish/io/streams/errors.py
+# ../../../omlish/io/streambufs/errors.py
 
 
 ##
@@ -8697,7 +8697,7 @@ class IoPipeline:
 
 
 ########################################
-# ../../../omlish/io/streams/types.py
+# ../../../omlish/io/streambufs/types.py
 
 
 ##
@@ -13658,7 +13658,7 @@ class IoPipelineScheduling(Abstract):
 
 
 ########################################
-# ../../../omlish/io/streams/base.py
+# ../../../omlish/io/streambufs/base.py
 
 
 ##
@@ -13671,7 +13671,7 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 
 
 ########################################
-# ../../../omlish/io/streams/framing.py
+# ../../../omlish/io/streambufs/framing.py
 
 
 ##
@@ -14006,7 +14006,7 @@ class LengthFieldByteStreamFrameDecoder:
 
 
 ########################################
-# ../../../omlish/io/streams/utils.py
+# ../../../omlish/io/streambufs/utils.py
 
 
 ##
@@ -22136,7 +22136,7 @@ class FnMessageToMessageDecoderIoPipelineHandler(MessageToMessageDecoderIoPipeli
 
 
 ########################################
-# ../../../omlish/io/streams/direct.py
+# ../../../omlish/io/streambufs/direct.py
 
 
 ##
@@ -22303,7 +22303,7 @@ def empty_byte_stream_buffer_view() -> ByteStreamBufferView:
 
 
 ########################################
-# ../../../omlish/io/streams/scanning.py
+# ../../../omlish/io/streambufs/scanning.py
 
 
 ##
@@ -26706,7 +26706,7 @@ class IoPipelineHttpResponseCompressor(IoPipelineHttpResponseObjects, IoPipeline
 
 
 ########################################
-# ../../../omlish/io/streams/segmented.py
+# ../../../omlish/io/streambufs/segmented.py
 
 
 ##

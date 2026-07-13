@@ -4,8 +4,8 @@ from omlish import check
 from omlish import marshal as msh
 from omlish.formats.json import all as json
 from omlish.http import sse
-from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 from ...types import Message
 from ..assemble import AnthropicSseMessageAssembler

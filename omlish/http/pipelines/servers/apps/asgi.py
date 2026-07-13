@@ -12,8 +12,8 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.flow.types import IoPipelineFlow
-from .....io.streams.types import BytesLike
-from .....io.streams.utils import ByteStreamBuffers
+from .....io.streambufs.types import BytesLike
+from .....io.streambufs.utils import ByteStreamBuffers
 from .....lite.abstract import Abstract
 from .....lite.check import check
 from .....lite.namespaces import NamespaceClass

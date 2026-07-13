@@ -17,8 +17,8 @@ from ....lite.check import check
 from ....logs.modules import get_module_logger
 from ....sockets.addresses import SocketAddress
 from ...fdio.handlers import SocketFdioHandler
-from ...streams.types import BytesLike
-from ...streams.utils import ByteStreamBuffers
+from ...streambufs.types import BytesLike
+from ...streambufs.utils import ByteStreamBuffers
 from ..core import IoPipeline
 from ..core import IoPipelineMessages
 from ..flow.types import IoPipelineFlow

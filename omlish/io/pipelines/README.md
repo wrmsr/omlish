@@ -191,7 +191,7 @@ While inspired by Netty's architecture, this implementation diverges in several 
 Beyond the core pipeline abstraction, the package includes:
 
 - **Byte stream handlers**: Helpers for working with byte streams, including buffering, framing, and decoding
-  (built on top of `omlish.io.streams`)
+  (built on top of `omlish.io.streambufs`)
 - **Services**: Cross-cutting pipeline concerns like async/await integration, task scheduling, and cooperative yielding
 - **Flow control**: Backpressure and readiness signaling for producers and consumers (implemented as a service)
 - **Metadata**: Type-safe attachment of configuration or context to pipelines

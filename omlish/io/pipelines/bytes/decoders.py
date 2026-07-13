@@ -10,14 +10,14 @@ import typing as ta
 
 from ....lite.abstract import Abstract
 from ....lite.check import check
-from ...streams.direct import DirectByteStreamBuffer
-from ...streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
-from ...streams.scanning import ScanningByteStreamBuffer
-from ...streams.segmented import SegmentedByteStreamBuffer
-from ...streams.types import ByteStreamBuffer
-from ...streams.types import MutableByteStreamBuffer
-from ...streams.utils import ByteStreamBuffers
-from ...streams.utils import CanByteStreamBuffer
+from ...streambufs.direct import DirectByteStreamBuffer
+from ...streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from ...streambufs.scanning import ScanningByteStreamBuffer
+from ...streambufs.segmented import SegmentedByteStreamBuffer
+from ...streambufs.types import ByteStreamBuffer
+from ...streambufs.types import MutableByteStreamBuffer
+from ...streambufs.utils import ByteStreamBuffers
+from ...streambufs.utils import CanByteStreamBuffer
 from ..core import IoPipelineHandler
 from ..core import IoPipelineHandlerContext
 from ..core import IoPipelineMessages

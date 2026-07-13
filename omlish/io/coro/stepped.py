@@ -2,7 +2,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ..streams.segmented import SegmentedByteStreamBuffer
+from ..streambufs.segmented import SegmentedByteStreamBuffer
 from .consts import DEFAULT_BUFFER_SIZE
 from .direct import BytesDirectCoro
 from .direct import StrDirectCoro

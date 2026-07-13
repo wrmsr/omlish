@@ -10,8 +10,8 @@ from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from ....io.readers import BytesReader
 from ....io.readers import BytesReaders
-from ....io.streams.types import Bytes
-from ....io.streams.utils import ByteStreamBuffers
+from ....io.streambufs.types import Bytes
+from ....io.streambufs.utils import ByteStreamBuffers
 from ....lite.bytes import bytes_like_to_bytes
 from ....lite.check import check
 from ...clients.base import HttpClientContext

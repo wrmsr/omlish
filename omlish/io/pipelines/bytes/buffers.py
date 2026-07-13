@@ -4,9 +4,9 @@ import dataclasses as dc
 import typing as ta
 
 from ....lite.check import check
-from ...streams.segmented import SegmentedByteStreamBuffer
-from ...streams.types import MutableByteStreamBuffer
-from ...streams.utils import ByteStreamBuffers
+from ...streambufs.segmented import SegmentedByteStreamBuffer
+from ...streambufs.types import MutableByteStreamBuffer
+from ...streambufs.utils import ByteStreamBuffers
 from ..core import IoPipelineHandlerContext
 from ..core import IoPipelineHandlerNotification
 from ..core import IoPipelineHandlerNotifications

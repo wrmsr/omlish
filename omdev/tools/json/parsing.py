@@ -8,9 +8,9 @@ from omlish.formats.json.stream.building import JsonValueBuilder
 from omlish.formats.json.stream.lexing import JsonStreamLexer
 from omlish.formats.json.stream.parsing import Event
 from omlish.formats.json.stream.parsing import JsonStreamParser
-from omlish.io.streams.scanning import ScanningByteStreamBuffer
-from omlish.io.streams.segmented import SegmentedByteStreamBuffer
-from omlish.io.streams.utils import ByteStreamBuffers
+from omlish.io.streambufs.scanning import ScanningByteStreamBuffer
+from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
+from omlish.io.streambufs.utils import ByteStreamBuffers
 
 from .formats import Format
 

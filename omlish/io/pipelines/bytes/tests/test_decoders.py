@@ -6,7 +6,7 @@ import unittest
 
 from .....lite.bytes import Bytes
 from .....lite.check import check
-from ....streams.types import ByteStreamBuffer
+from ....streambufs.types import ByteStreamBuffer
 from ...core import IoPipeline
 from ...core import IoPipelineMessages
 from ...core import IoPipelineService

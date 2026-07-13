@@ -1,5 +1,5 @@
 # @omlish-lite
-# @omlish-amalg ../../../omdev/scripts/lib/io/streams.py
+# @omlish-amalg ../../../omdev/scripts/lib/io/streambufs.py
 from .adapters import BytesIoByteStreamBuffer  # noqa
 from .direct import DirectByteStreamBuffer  # noqa
 from .framing import LongestMatchDelimiterByteStreamFrameDecoder  # noqa

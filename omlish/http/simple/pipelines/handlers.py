@@ -10,7 +10,7 @@ from ....io.pipelines.core import IoPipelineHandlerContext
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.core import IoPipelineMetadata
 from ....io.pipelines.flow.types import IoPipelineFlow
-from ....io.streams.utils import ByteStreamBuffers
+from ....io.streambufs.utils import ByteStreamBuffers
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
 from ....sockets.addresses import SocketAndAddress

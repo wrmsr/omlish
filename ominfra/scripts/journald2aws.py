@@ -61,7 +61,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/formats/ini/sections.py', sha1='731c92cce82e183d1d4bdc23fc781fad62187394'),
             dict(path='../../../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
-            dict(path='../../../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
+            dict(path='../../../../omlish/io/streambufs/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../../omlish/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
             dict(path='../../../../omlish/lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
@@ -82,7 +82,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../auth.py', sha1='2a565a74c25ce4dfc8526b092cfe72e66d73c427'),
             dict(path='../dataclasses.py', sha1='9d4c8d1aada04d5fe64899b85cbd1af0f5a1a972'),
             dict(path='../../../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
-            dict(path='../../../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
+            dict(path='../../../../omlish/io/streambufs/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
             dict(path='../../../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -90,23 +90,23 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
-            dict(path='../../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../../../../omlish/io/streams/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
+            dict(path='../../../../omlish/io/streambufs/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
+            dict(path='../../../../omlish/io/streambufs/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../../../../omlish/io/streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
-            dict(path='../../../../omlish/io/streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
+            dict(path='../../../../omlish/io/streambufs/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
+            dict(path='../../../../omlish/io/streambufs/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
-            dict(path='../../../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
+            dict(path='../../../../omlish/io/streambufs/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),  # noqa
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cursor.py', sha1='00f1c62e16e4c85b20658eaf33c0bedf22c9e18f'),
-            dict(path='../../../journald/messages.py', sha1='4e338150bfb744545fe2e8e819af1576f39e4060'),
+            dict(path='../../../journald/messages.py', sha1='db0d5d608e51aa2ae35839329b6feb7944b0a738'),
             dict(path='../../../threadworkers.py', sha1='1c03d1e5609bd44115be883c802e203c40e93a37'),
             dict(path='poster.py', sha1='275770a4e60ea5777053c9044e37d71397c3ed20'),
             dict(path='../../../journald/tailer.py', sha1='1c37a6bbde32e8556d26b94b439f14869731ac01'),
@@ -169,7 +169,7 @@ LoggingContextInfo = ta.Any  # ta.TypeAlias
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 ObjConfigDataT = ta.TypeVar('ObjConfigDataT', bound='ObjConfigData')
 
-# ../../../../omlish/io/streams/utils.py
+# ../../../../omlish/io/streambufs/utils.py
 CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 # ../../../../omlish/logs/contexts.py
@@ -1280,7 +1280,7 @@ class TomlWriter:
 
 
 ########################################
-# ../../../../../omlish/io/streams/errors.py
+# ../../../../../omlish/io/streambufs/errors.py
 
 
 ##
@@ -3812,7 +3812,7 @@ class DEFAULT_YAML_BACKEND:  # noqa
 
 
 ########################################
-# ../../../../../omlish/io/streams/types.py
+# ../../../../../omlish/io/streambufs/types.py
 
 
 ##
@@ -6025,7 +6025,7 @@ DEFAULT_CONFIG_RENDERER = SwitchedConfigRenderer(DEFAULT_CONFIG_RENDERERS)
 
 
 ########################################
-# ../../../../../omlish/io/streams/base.py
+# ../../../../../omlish/io/streambufs/base.py
 
 
 ##
@@ -6038,7 +6038,7 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 
 
 ########################################
-# ../../../../../omlish/io/streams/utils.py
+# ../../../../../omlish/io/streambufs/utils.py
 
 
 ##
@@ -6444,7 +6444,7 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 ########################################
-# ../../../../../omlish/io/streams/direct.py
+# ../../../../../omlish/io/streambufs/direct.py
 
 
 ##
@@ -6611,7 +6611,7 @@ def empty_byte_stream_buffer_view() -> ByteStreamBufferView:
 
 
 ########################################
-# ../../../../../omlish/io/streams/scanning.py
+# ../../../../../omlish/io/streambufs/scanning.py
 
 
 ##
@@ -7828,7 +7828,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../../../omlish/io/streams/segmented.py
+# ../../../../../omlish/io/streambufs/segmented.py
 
 
 ##
