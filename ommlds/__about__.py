@@ -70,12 +70,6 @@ class Project(ProjectBase):
             'tavily-python ~= 0.7',
         ],
 
-        'wiki': [
-            'mwparserfromhell ~= 0.7',
-
-            'wikitextparser ~= 1.0',  # !! GPL
-        ],
-
         'xml': [
             'lxml >= 6.1',
         ],

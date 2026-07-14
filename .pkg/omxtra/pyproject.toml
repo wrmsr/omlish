@@ -33,6 +33,8 @@ all = [
     'greenlet ~= 3.5',
     'paramiko ~= 5.0',
     'asyncssh ~= 2.24',
+    'mwparserfromhell ~= 0.7',
+    'wikitextparser ~= 1.0',
 ]
 omdev = [
     'omdev == 0.0.28',
@@ -43,6 +45,10 @@ async = [
 ssh = [
     'paramiko ~= 5.0',
     'asyncssh ~= 2.24',
+]
+wiki = [
+    'mwparserfromhell ~= 0.7',
+    'wikitextparser ~= 1.0',
 ]
 
 [project.entry-points]

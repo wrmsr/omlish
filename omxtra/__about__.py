@@ -25,6 +25,12 @@ class Project(ProjectBase):
 
             'asyncssh ~= 2.24',  # cffi
         ],
+
+        'wiki': [
+            'mwparserfromhell ~= 0.7',
+
+            'wikitextparser ~= 1.0',  # !! GPL
+        ],
     }
 
     entry_points = {
