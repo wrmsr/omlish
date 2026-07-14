@@ -8,7 +8,7 @@ __revision__ = None
 class ProjectBase:
     name: str | None = None
     authors = [{'name': 'wrmsr'}]
-    urls = {'source': 'https://github.com/wrmsr/omcore'}
+    urls = {'source': 'https://github.com/wrmsr/omlish'}
     license = 'BSD-3-Clause'
     readme = 'README.md'
     requires_python = '>=3.14'
@@ -147,6 +147,7 @@ class Project(ProjectBase):
 
 class SetuptoolsBase:
     cext = False
+    mypyc = False
     rs = False
 
     manifest_in = [
@@ -190,6 +191,7 @@ class SetuptoolsBase:
 
 class Setuptools(SetuptoolsBase):
     cext = True
+    mypyc = True
 
     find_packages = {
         'include': [Project.name, f'{Project.name}.*'],

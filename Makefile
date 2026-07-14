@@ -284,14 +284,17 @@ build-cext: venv
 	done
 
 # FIXME: ... also pyproject lol
-.PHONY: build-reflect
-build-reflect: venv
-	${PYTHON} -mmypyc omcore/reflect/core/*.py
-
-# FIXME: ... ... also also pyproject lol
-.PHONY: clean-reflect
-clean-reflect:
-	rm omcore/reflect/core/*.so || true
+.PHONY: build-mypyc
+build-mypyc: venv
+	rm "*__mypyc.*.so" || true
+	for d in $$(find .pkg -name '*-mypyc' -maxdepth 1 | sort) ; do \
+		echo ; \
+		echo "$$d" ; \
+		find "$$d" -name '*__mypyc.*.so' -maxdepth 1 -delete ; \
+		rm -rf "$$d/build" || true ; \
+		(cd "$$d" && ${PYTHON_ABS} setup.py build_ext --inplace) || exit 1 ; \
+		find "$$d" -name '*__mypyc.*.so' -maxdepth 1 | xargs -n1 -I % cp % ./ ; \
+	done
 
 
 ## pre-commit

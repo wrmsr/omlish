@@ -1,11 +1,12 @@
 [build-system]
 requires = [
     'setuptools',
+    'mypyc',
 ]
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omdev-cext'
+name = 'omcore-mypyc'
 authors = [
     {name = 'wrmsr'},
 ]
@@ -22,12 +23,14 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.14',
 ]
-description = 'omdev'
+description = 'omcore'
 dependencies = [
-    'omdev == 0.0.29',
+    'omcore == 0.0.29',
 ]
 
 [tool.setuptools]
 
 [tool.setuptools.packages.find]
-include = []
+include = [
+    'omcore.reflect.core',
+]

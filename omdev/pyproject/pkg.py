@@ -357,6 +357,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
 
         for k in [
             'cext',
+            'mypyc',
             'rs',
         ]:
             st.pop(k, None)
@@ -441,6 +442,13 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
                 pkg_suffix='-cext',
             ))
 
+        if self.build_specs().setuptools.get('mypyc'):
+            out.append(_PyprojectMypycPackageGenerator(
+                self._dir_name,
+                self._pkgs_root,
+                pkg_suffix='-mypyc',
+            ))
+
         if self.build_specs().setuptools.get('rs'):
             out.append(_PyprojectRsPackageGenerator(
                 self._dir_name,
@@ -485,6 +493,7 @@ class _PyprojectExtensionPackageGenerator(BasePyprojectPackageGenerator, Abstrac
 
         for k in [
             'cext',
+            'mypyc',
             'rs',
 
             'find_packages',
@@ -577,6 +586,87 @@ class _PyprojectCextPackageGenerator(_PyprojectExtensionPackageGenerator):
             '    ext_modules=[',
             *['        ' + l for l in ext_lines],
             '    ],',
+            ')',
+            '',
+        ])
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+            src,
+        )
+
+
+class _PyprojectMypycPackageGenerator(_PyprojectExtensionPackageGenerator):
+    @cached_nullary
+    def find_mypyc_dirs(self) -> ta.Sequence[str]:
+        return sorted(
+            dp
+            for dp, dns, fns in os.walk(self._dir_name)
+            for fn in fns
+            if fn == '.om-mypyc-ext'
+        )
+
+    #
+
+    @cached_nullary
+    def file_contents(self) -> _PyprojectExtensionPackageGenerator.FileContents:
+        prj = self._build_project_dict()
+        st = self._build_setuptools_dict()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools', 'mypyc'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        pyp_dct['project'] = prj
+        pyp_dct['tool.setuptools'] = st
+
+        #
+
+        ext_dirs = sorted(self.find_mypyc_dirs())
+
+        pyp_dct['tool.setuptools.packages.find'] = {
+            'include': [
+                ext_dir.replace(os.sep, '.')
+                for ext_dir in ext_dirs
+            ],
+        }
+
+        #
+
+        ext_lines: list = []
+
+        for ext_dir in ext_dirs:  # noqa
+            ext_files = [
+                fp
+                for fn in sorted(os.listdir(ext_dir))
+                if os.path.isfile(fp := os.path.join(ext_dir, fn)) and
+                fp.endswith('.py')
+            ]
+            ext_lines.extend([
+                '[',
+                *[
+                    f'    {fp!r},'
+                    for fp in ext_files
+                ],
+                '],',
+            ])
+
+        src = '\n'.join([
+            'import mypyc.build as mcb',
+            'import setuptools as st',
+            '',
+            '',
+            'st.setup(',
+            '    ext_modules=mcb.mypycify(',
+            *['        ' + l for l in ext_lines],
+            '    ),',
             ')',
             '',
         ])
@@ -737,6 +827,7 @@ class _PyprojectCliPackageGenerator(BasePyprojectPackageGenerator):
 
         for k in [
             'cext',
+            'mypyc',
             'rs',
 
             'find_packages',
