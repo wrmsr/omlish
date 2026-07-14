@@ -44,6 +44,16 @@ class Project(ProjectBase):
             'mypy ~= 2.3',
         ],
 
+        'ocr': [
+            'pytesseract ~= 0.3',
+
+            'rapidocr-onnxruntime ~= 1.4',
+        ],
+
+        'pillow': [
+            'pillow ~= 12.3',
+        ],
+
         'prof': [
             'gprof2dot ~= 2025.4',
         ],

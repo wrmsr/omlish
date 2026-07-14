@@ -68,3 +68,6 @@ exclude = [
     'LICENSE.txt',
     'AUTHORS',
 ]
+'omllm.modeldb' = [
+    'cache.json.bz2',
+]

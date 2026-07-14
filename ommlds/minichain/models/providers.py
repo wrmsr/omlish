@@ -16,7 +16,7 @@ from .attributes import SupportsTools
 
 
 with lang.auto_proxy_import(globals()):
-    from ... import modeldb
+    from omllm import modeldb
 
 
 ##

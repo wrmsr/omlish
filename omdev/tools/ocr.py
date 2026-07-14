@@ -8,9 +8,10 @@ import os.path
 import sys
 import typing as ta
 
-from omdev.cli import CliModule
 from omlish import check
 from omlish import lang
+
+from ..cli import CliModule
 
 
 with lang.auto_proxy_import(globals()):
@@ -18,7 +19,7 @@ with lang.auto_proxy_import(globals()):
     import rapidocr_onnxruntime as rapidocr
     from PIL import Image
 
-    from omdev.clipboard.capi import darwin_cf as darwin_clipboard
+    from ..clipboard.capi import darwin_cf as darwin_clipboard
 
 
 ##

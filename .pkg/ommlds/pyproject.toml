@@ -44,8 +44,6 @@ all = [
     'datasets ~= 5.0',
     'regex >= 2026.7',
     'numpy >= 2.5',
-    'pytesseract ~= 0.3',
-    'rapidocr-onnxruntime ~= 1.4',
     'pillow ~= 12.3',
     'ddgs ~= 9.14',
     'tavily-python ~= 0.7',
@@ -75,10 +73,6 @@ nanochat = [
 ]
 numpy = [
     'numpy >= 2.5',
-]
-ocr = [
-    'pytesseract ~= 0.3',
-    'rapidocr-onnxruntime ~= 1.4',
 ]
 pillow = [
     'pillow ~= 12.3',
@@ -129,7 +123,4 @@ exclude = [
 ]
 'ommlds.cli.chat.interfaces.web' = [
     'resources/*',
-]
-'ommlds.modeldb' = [
-    'cache.json.bz2',
 ]

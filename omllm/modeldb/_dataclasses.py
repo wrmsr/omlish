@@ -65,8 +65,8 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='61498cf644d82dfe1fc2c93b44484d966059aebf',
     cls_names=(
-        ('ommlds.modeldb.types', 'AuthoredCost'),
-        ('ommlds.modeldb.types', 'OutputCost'),
+        ('omllm.modeldb.types', 'AuthoredCost'),
+        ('omllm.modeldb.types', 'OutputCost'),
     ),
 )
 def _process_dataclass__61498cf644d82dfe1fc2c93b44484d966059aebf():
@@ -309,8 +309,8 @@ def _process_dataclass__61498cf644d82dfe1fc2c93b44484d966059aebf():
     ),
     plan_repr_sha1='96d40ba793c0b985e7bdccf131eb50377264de9c',
     cls_names=(
-        ('ommlds.modeldb.types', 'AuthoredModel'),
-        ('ommlds.modeldb.types', 'Model'),
+        ('omllm.modeldb.types', 'AuthoredModel'),
+        ('omllm.modeldb.types', 'Model'),
     ),
 )
 def _process_dataclass__96d40ba793c0b985e7bdccf131eb50377264de9c():
@@ -596,7 +596,7 @@ def _process_dataclass__96d40ba793c0b985e7bdccf131eb50377264de9c():
     ),
     plan_repr_sha1='64f89442bfd33e1438b2681bfdab9337ee7c2477',
     cls_names=(
-        ('ommlds.modeldb.types', 'Cost'),
+        ('omllm.modeldb.types', 'Cost'),
     ),
 )
 def _process_dataclass__64f89442bfd33e1438b2681bfdab9337ee7c2477():
@@ -785,7 +785,7 @@ def _process_dataclass__64f89442bfd33e1438b2681bfdab9337ee7c2477():
     ),
     plan_repr_sha1='7ec1e3d9c4cc2cf01c46d8e5290bb64a7e065e13',
     cls_names=(
-        ('ommlds.modeldb.types', 'CostTier'),
+        ('omllm.modeldb.types', 'CostTier'),
     ),
 )
 def _process_dataclass__7ec1e3d9c4cc2cf01c46d8e5290bb64a7e065e13():
@@ -962,7 +962,7 @@ def _process_dataclass__7ec1e3d9c4cc2cf01c46d8e5290bb64a7e065e13():
     ),
     plan_repr_sha1='abb0d290b2c97ca669a2f9ca5aa3ecb68302f6dd',
     cls_names=(
-        ('ommlds.modeldb.types', 'CostTierTier'),
+        ('omllm.modeldb.types', 'CostTierTier'),
     ),
 )
 def _process_dataclass__abb0d290b2c97ca669a2f9ca5aa3ecb68302f6dd():
@@ -1084,7 +1084,7 @@ def _process_dataclass__abb0d290b2c97ca669a2f9ca5aa3ecb68302f6dd():
     ),
     plan_repr_sha1='8a8240cd6f4d13bab2dd761fd7aa774036fa1dc9',
     cls_names=(
-        ('ommlds.modeldb.types', 'Experimental'),
+        ('omllm.modeldb.types', 'Experimental'),
     ),
 )
 def _process_dataclass__8a8240cd6f4d13bab2dd761fd7aa774036fa1dc9():
@@ -1201,7 +1201,7 @@ def _process_dataclass__8a8240cd6f4d13bab2dd761fd7aa774036fa1dc9():
     ),
     plan_repr_sha1='578691179d0b5f27fc9f73ed1a4711e2ba97310f',
     cls_names=(
-        ('ommlds.modeldb.types', 'ExperimentalMode'),
+        ('omllm.modeldb.types', 'ExperimentalMode'),
     ),
 )
 def _process_dataclass__578691179d0b5f27fc9f73ed1a4711e2ba97310f():
@@ -1327,7 +1327,7 @@ def _process_dataclass__578691179d0b5f27fc9f73ed1a4711e2ba97310f():
     ),
     plan_repr_sha1='5bca72421d06a9eead64a5df90e3d7f793cade1c',
     cls_names=(
-        ('ommlds.modeldb.types', 'ExperimentalModeProvider'),
+        ('omllm.modeldb.types', 'ExperimentalModeProvider'),
     ),
 )
 def _process_dataclass__5bca72421d06a9eead64a5df90e3d7f793cade1c():
@@ -1450,7 +1450,7 @@ def _process_dataclass__5bca72421d06a9eead64a5df90e3d7f793cade1c():
     ),
     plan_repr_sha1='11739faa37f665b4304128938db3eafd7a7ca0ce',
     cls_names=(
-        ('ommlds.modeldb.types', 'Interleaved'),
+        ('omllm.modeldb.types', 'Interleaved'),
     ),
 )
 def _process_dataclass__11739faa37f665b4304128938db3eafd7a7ca0ce():
@@ -1569,7 +1569,7 @@ def _process_dataclass__11739faa37f665b4304128938db3eafd7a7ca0ce():
     ),
     plan_repr_sha1='6e1be5172133ea88a1c54f987967e78890eaab91',
     cls_names=(
-        ('ommlds.modeldb.types', 'Limit'),
+        ('omllm.modeldb.types', 'Limit'),
     ),
 )
 def _process_dataclass__6e1be5172133ea88a1c54f987967e78890eaab91():
@@ -1701,7 +1701,7 @@ def _process_dataclass__6e1be5172133ea88a1c54f987967e78890eaab91():
     ),
     plan_repr_sha1='0474babc2a319e1f5b6ea8ccbb0d38d418c74e8a',
     cls_names=(
-        ('ommlds.modeldb.types', 'Modalities'),
+        ('omllm.modeldb.types', 'Modalities'),
     ),
 )
 def _process_dataclass__0474babc2a319e1f5b6ea8ccbb0d38d418c74e8a():
@@ -1875,7 +1875,7 @@ def _process_dataclass__0474babc2a319e1f5b6ea8ccbb0d38d418c74e8a():
     ),
     plan_repr_sha1='362664056191c441c1d0eaf1f28189295d01b0d6',
     cls_names=(
-        ('ommlds.modeldb.types', 'ModelBase'),
+        ('omllm.modeldb.types', 'ModelBase'),
     ),
 )
 def _process_dataclass__362664056191c441c1d0eaf1f28189295d01b0d6():
@@ -2135,7 +2135,7 @@ def _process_dataclass__362664056191c441c1d0eaf1f28189295d01b0d6():
     ),
     plan_repr_sha1='ac4c1e23253918eaca953d4b4b84de7546192c6c',
     cls_names=(
-        ('ommlds.modeldb.types', 'ModelProvider'),
+        ('omllm.modeldb.types', 'ModelProvider'),
     ),
 )
 def _process_dataclass__ac4c1e23253918eaca953d4b4b84de7546192c6c():
@@ -2301,7 +2301,7 @@ def _process_dataclass__ac4c1e23253918eaca953d4b4b84de7546192c6c():
     ),
     plan_repr_sha1='356396990ceb6d70e1f855edf834fc9410df483a',
     cls_names=(
-        ('ommlds.modeldb.types', 'Provider'),
+        ('omllm.modeldb.types', 'Provider'),
     ),
 )
 def _process_dataclass__356396990ceb6d70e1f855edf834fc9410df483a():

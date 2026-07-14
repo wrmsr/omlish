@@ -185,7 +185,7 @@ gen-aws-instance-types: venv
 
 .PHONY: gen-modeldb
 gen-modeldb: venv
-	${PYTHON} -m ommlds.modeldb fetch
+	${PYTHON} -m omllm.modeldb fetch
 
 .PHONY: gen-manifest
 gen-manifest: venv

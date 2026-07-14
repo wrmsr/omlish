@@ -487,6 +487,18 @@
     }
   },
   {
+    "module": ".tools.ocr",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/tools/ocr.py",
+    "line": 83,
+    "value": {
+      "!.cli.types.CliModule": {
+        "name": "ocr",
+        "module": "omdev.tools.ocr"
+      }
+    }
+  },
+  {
     "module": ".tools.pawk.pawk",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/pawk/pawk.py",

@@ -54,12 +54,6 @@ class Project(ProjectBase):
             'numpy >= 2.5',
         ],
 
-        'ocr': [
-            'pytesseract ~= 0.3',
-
-            'rapidocr-onnxruntime ~= 1.4',
-        ],
-
         'pillow': [
             'pillow ~= 12.3',
         ],
