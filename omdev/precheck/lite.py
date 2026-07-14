@@ -46,12 +46,12 @@ class LitePython8Precheck(Precheck['LitePython8Precheck.Config']):
         for fp in magic.find_magic_files(
                 magic.PY_MAGIC_STYLE,
                 self._context.src_roots,
-                keys=['@omlish-lite'],
+                keys=['@om-lite'],
         ):
             with open(fp) as f:  # noqa  # FIXME
                 src = f.read()
 
-            is_script = '# @omlish-script' in src.splitlines()
+            is_script = '# @om-script' in src.splitlines()
 
             if is_script:
                 lst.append(self._Target(fp, 'script'))

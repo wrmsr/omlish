@@ -1,7 +1,7 @@
 # type: ignore
 # ruff: noqa
 # flake8: noqa
-# @omlish-generated
+# @om-generated
 # Generated from Json.g4 by ANTLR 4.13.2
 from ....text.antlr._runtime._all import *
 if "." in __name__:

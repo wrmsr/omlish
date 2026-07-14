@@ -1,4 +1,4 @@
-# @omlish-generated
+# @om-generated
 """
 Note: This is all just a hacky workaround for python's lack of intersection types. See:
 

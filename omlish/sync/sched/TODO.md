@@ -1,5 +1,0 @@
-- log
-- more efficient setup than one giant shared cv
-- multiple threads?
-- shutdown cancel_all_timeout / `grace: float | None = None` -> `draining_deadline: float | None = None`
-- omlish-lite? will be used by sync driver

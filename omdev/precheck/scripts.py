@@ -30,7 +30,7 @@ class ScriptDepsPrecheck(Precheck['ScriptDepsPrecheck.Config']):
         for fp in sorted(magic.find_magic_files(
                 magic.PY_MAGIC_STYLE,
                 self._context.src_roots,
-                keys=['@omlish-script'],
+                keys=['@om-script'],
         )):
             if not (stat.S_IXUSR & os.stat(fp).st_mode):
                 yield Precheck.Violation(self, f'script {fp} is not executable')

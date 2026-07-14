@@ -1,5 +1,5 @@
 # ruff: noqa: TC003 UP006 UP007 UP045
-# @omlish-lite
+# @om-lite
 """
 TODO:
  - omlish-lite, move to pyproject/

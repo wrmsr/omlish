@@ -1,5 +1,5 @@
 from .thingies.manifests import SimpleThingyManifest
 
 
-# @omlish-manifest
+# @om-manifest
 _SIMPLE_THINGY = SimpleThingyManifest('fargles')

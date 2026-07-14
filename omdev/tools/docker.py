@@ -285,7 +285,7 @@ class Cli(ap.Cli):
         )
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('docker', __name__)
 
 

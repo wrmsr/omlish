@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-script
+# @om-script
 """
 https://stackoverflow.com/a/78339316
 

@@ -304,7 +304,7 @@ class Cli(ap.Cli):
         repl_run.run()
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('sqlrepl', __name__)
 
 

@@ -49,7 +49,7 @@ def drop_amalg_comment_lines(lines: ta.Iterable[tks.Tokens]) -> list[tks.Tokens]
     for l in lines:
         cl = list(tks.ignore_ws(l, drop_nl=True, keep=['COMMENT']))
         if len(cl) == 1 and (t := cl[0]).name == 'COMMENT':
-            if t.src.split()[1:2] == ['@omlish-amalg']:
+            if t.src.split()[1:2] == ['@om-amalg']:
                 continue
         out.append(l)
     return out

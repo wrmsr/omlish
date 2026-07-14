@@ -1,9 +1,0 @@
-- pull in yaml test suite
-- fix stupid Reader thing
-- strip out globbing / file io stuff
-- abstract backends like json
-- plug-in to omlish.configs.formats - must be optional
-  - formalize default shim to try to import yaml lazily
-- happy path for cst manip
-  - full whitespace preservation (currently drops multiple adjacent empty lines)
-  - position 'reflow'

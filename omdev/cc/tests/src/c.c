@@ -1,5 +1,5 @@
 //usr/bin/true; exec om cc run "$0" "$@"
-// @omlish-llm-author "gemini-2.5-pro"
+// @om-llm-author "gemini-2.5-pro"
 #include <stdio.h>
 
 struct Point {

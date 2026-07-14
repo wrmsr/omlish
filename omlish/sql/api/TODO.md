@@ -1,3 +1,0 @@
-- opt-in ahead of time `.close()`
-- injection helpers
-- fix Db.query - omlish.resources.managers?

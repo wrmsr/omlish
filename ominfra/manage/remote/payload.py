@@ -19,7 +19,7 @@ def _get_self_src() -> str:
 
 def _is_src_amalg(src: str) -> bool:
     for l in src.splitlines():  # noqa
-        if l.startswith('# @omlish-amalg-output '):
+        if l.startswith('# @om-amalg-output '):
             return True
     return False
 

@@ -65,7 +65,7 @@ def parse_nginx_log_line(
     return dict(zip(columns, vs, strict=True))
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!omdev.cli.types.CliModule': {
     'name': 'nginxlogs',
     'module': __name__,

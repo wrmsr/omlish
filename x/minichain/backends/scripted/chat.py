@@ -134,7 +134,7 @@ class _ScriptedChatChoicesServiceBase:
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='scripted',
 #     type='ChatChoicesService',
 # )
@@ -160,7 +160,7 @@ class ScriptedChatChoicesService(_ScriptedChatChoicesServiceBase):
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='scripted',
 #     type='ChatChoicesStreamService',
 # )
@@ -214,7 +214,7 @@ class ScriptedChatChoicesStreamService(_ScriptedChatChoicesServiceBase):
 ##
 
 
-# @omlish-manifest $.minichain.specs.manifests.BackendStringsManifest(
+# @om-manifest $.minichain.specs.manifests.BackendStringsManifest(
 #     [
 #         'ChatChoicesService',
 #         'ChatChoicesStreamService',

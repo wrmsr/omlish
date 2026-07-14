@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omlish-lite
-# @omlish-script
-# @omlish-generated
-# @omlish-amalg-output ../manage/main.py
-# @omlish-git-diff-omit
+# @om-lite
+# @om-script
+# @om-generated
+# @om-amalg-output ../manage/main.py
+# @om-git-diff-omit
 # ruff: noqa: N802 PYI034 TC003 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 """
 manage.py -s 'docker run -i python:3.13'
@@ -6346,7 +6346,7 @@ def _get_self_src() -> str:
 
 def _is_src_amalg(src: str) -> bool:
     for l in src.splitlines():  # noqa
-        if l.startswith('# @omlish-amalg-output '):
+        if l.startswith('# @om-amalg-output '):
             return True
     return False
 

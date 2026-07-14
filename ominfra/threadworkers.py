@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
-# @omlish-lite
+# @om-lite
 """
 FIXME:
  - group is racy af - meditate on has_started, etc

@@ -1,5 +1,5 @@
-# @omlish-amalg ./_tlog.py
-# @omlish-lite
+# @om-amalg ./_tlog.py
+# @om-lite
 import dataclasses as dc
 import logging
 

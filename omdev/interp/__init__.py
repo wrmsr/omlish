@@ -1,1 +1,1 @@
-# @omlish-lite
+# @om-lite

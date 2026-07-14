@@ -1,5 +1,5 @@
 //usr/bin/true; exec om java run "$0" "$@"
-/* @omlish-jdeps [
+/* @om-jdeps [
     "com.google.guava:guava:33.5.0-jre"
 ] */
 import com.google.common.base.Preconditions;

@@ -14,7 +14,7 @@ from .caches import HeadersCache
 ##
 
 
-ALLOW_ANY_UNICODE_HEADER = '# @omlish-precheck-allow-any-unicode'
+ALLOW_ANY_UNICODE_HEADER = '# @om-precheck-allow-any-unicode'
 
 
 class UnicodePrecheck(Precheck['UnicodePrecheck.Config']):

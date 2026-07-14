@@ -31,7 +31,7 @@ from .protocol import build_mc_ai_choices_deltas
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='google',
 #     type='ChatChoicesStreamService',
 # )

@@ -35,7 +35,7 @@ def build_dummy_packages(request) -> DummyPackages:
                 fp = os.path.join(dp, fn)
                 with open(fp) as f:
                     src = f.read()
-                src = src.replace('@test-omlish-manifest', '@omlish-manifest')
+                src = src.replace('@test-omlish-manifest', '@om-manifest')
                 with open(fp, 'w') as f:
                     f.write(src)
 

@@ -28,7 +28,7 @@ def _main() -> None:
     Cli()()
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('ollama', __name__)
 
 

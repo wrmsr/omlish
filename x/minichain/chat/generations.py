@@ -27,7 +27,7 @@ from .types import ChatOutputs
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
+# @om-manifest $.minichain.registries.manifests.RegistryTypeManifest
 class ChatGenerationMetadata(Metadata, lang.Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)

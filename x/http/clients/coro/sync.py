@@ -1,4 +1,4 @@
-# @omlish-lite
+# @om-lite
 # ruff: noqa: UP045
 import errno
 import socket

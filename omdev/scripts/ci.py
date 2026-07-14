@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omlish-lite
-# @omlish-script
-# @omlish-generated
-# @omlish-amalg-output ../ci/cli.py
-# @omlish-git-diff-omit
+# @om-lite
+# @om-script
+# @om-generated
+# @om-amalg-output ../ci/cli.py
+# @om-git-diff-omit
 # ruff: noqa: FURB188 N802 PYI034 TC003 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 """
 Inputs:

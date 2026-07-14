@@ -1,0 +1,3 @@
+- opt-in ahead of time `.close()`
+- injection helpers
+- fix Db.query - omcore.resources.managers?

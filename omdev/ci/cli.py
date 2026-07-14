@@ -1,4 +1,4 @@
-# @omlish-amalg ../scripts/ci.py
+# @om-amalg ../scripts/ci.py
 # ruff: noqa: UP006 UP007 UP045
 """
 Inputs:

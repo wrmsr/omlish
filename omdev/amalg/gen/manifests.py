@@ -14,7 +14,7 @@ def is_manifest_comment(line: tks.Tokens) -> bool:
 
     return (
         (ft := line[0]).name == 'COMMENT' and
-        ft.src.startswith('# @omlish-manifest')
+        ft.src.startswith('# @om-manifest')
     )
 
 

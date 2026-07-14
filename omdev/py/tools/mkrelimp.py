@@ -145,7 +145,7 @@ class Processor:
         self.process_dir(self._base_dir)
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('py/mkrelimp', __name__)
 
 

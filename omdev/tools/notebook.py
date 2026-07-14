@@ -120,7 +120,7 @@ class Cli(ap.Cli):
             sys.stdout.write(out_src)
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule(['notebook', 'nb'], __name__)
 
 

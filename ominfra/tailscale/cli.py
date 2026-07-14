@@ -115,7 +115,7 @@ class Cli(ap.Cli):
             print(check.not_none(status.self).ipv4s[0])
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule(['tailscale', 'ts'], __name__)
 
 

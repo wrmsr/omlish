@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-script
+# @om-script
 """
 Note: Not lite as supporting old ast grammars is annoying and a non-goal.
 
@@ -133,7 +133,7 @@ class ImportFinder:
 ##
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!.cli.types.CliModule': {
     'name': 'py/findimports',
     'module': __name__,

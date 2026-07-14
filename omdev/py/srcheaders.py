@@ -62,7 +62,7 @@ def get_py_header_lines(src: str) -> list[PyHeaderLine]:
 ##
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!.cli.types.CliModule': {
     'name': 'py/srcheaders',
     'module': __name__,

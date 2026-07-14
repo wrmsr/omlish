@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP045
-# @omlish-lite
+# @om-lite
 """
 TODO:
  - errors lol - set fut.error

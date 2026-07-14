@@ -16,7 +16,7 @@ from ..standard import ApiKey
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='tavily',
 #     type='SearchService',
 # )

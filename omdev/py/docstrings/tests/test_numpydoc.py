@@ -1,4 +1,4 @@
-# @omlish-no-fixdocstrings
+# @om-no-fixdocstrings
 """Tests for numpydoc-style docstring routines."""
 import pytest
 

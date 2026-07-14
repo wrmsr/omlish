@@ -1,4 +1,4 @@
-# @omlish-generated
+# @om-generated
 # ruff: noqa: UP007 UP037 UP045
 import typing as ta
 

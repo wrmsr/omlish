@@ -384,7 +384,7 @@ class CliCli(ap.Cli):
         )).run()
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('cli', __name__)
 
 

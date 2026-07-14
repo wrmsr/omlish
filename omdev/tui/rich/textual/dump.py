@@ -1,4 +1,4 @@
-# @omlish-llm-author "opus-4.6"
+# @om-llm-author "opus-4.6"
 from .themes import DumpedTextualTheme
 from .themes import render_dumped_textual_theme_src
 

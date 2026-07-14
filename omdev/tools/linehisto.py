@@ -327,7 +327,7 @@ def main() -> None:
         sys.stdout.write(KeyedHistoRenderer(histo).render_to_str())
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('linehisto', __name__)
 
 

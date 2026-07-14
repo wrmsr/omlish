@@ -1,4 +1,4 @@
-# @omlish-amalg ../../../scripts/journald2aws.py
+# @om-amalg ../../../scripts/journald2aws.py
 import argparse
 import dataclasses as dc
 import os.path

@@ -79,7 +79,7 @@ class Cli(ap.Cli):
         include_dirs: list[str] = []
 
         for src_magic in src_magics:
-            if src_magic.key == '@omlish-cdeps':
+            if src_magic.key == '@om-cdeps':
                 for dep in check.isinstance(src_magic.prepared, ta.Sequence):
                     if isinstance(dep, ta.Mapping):
                         dep = process_marshaled_cdep(dep)
@@ -103,10 +103,10 @@ class Cli(ap.Cli):
                         check.state(os.path.isdir(inc_dir))
                         include_dirs.append(inc_dir)
 
-            elif src_magic.key == '@omlish-llm-author':
+            elif src_magic.key == '@om-llm-author':
                 pass
 
-            elif src_magic.key == '@omlish-cext':
+            elif src_magic.key == '@om-cext':
                 # FIXME: lol - usecase for non-cext bins?
                 pass
 

@@ -390,7 +390,7 @@ def main() -> None:
         raise SystemExit(1) from None
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('pawk', __name__)
 
 

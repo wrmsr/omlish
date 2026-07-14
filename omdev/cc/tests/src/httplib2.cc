@@ -1,5 +1,5 @@
 //usr/bin/true; exec om cc run "$0" "$@"
-// @omlish-cdeps ["httplib"]
+// @om-cdeps ["httplib"]
 #include <iostream>
 
 // #define CPPHTTPLIB_OPENSSL_SUPPORT

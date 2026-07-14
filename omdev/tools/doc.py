@@ -103,7 +103,7 @@ class Cli(ap.Cli):
             print(html)
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('doc', __name__)
 
 

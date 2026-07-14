@@ -1,4 +1,4 @@
-# @omlish-amalg ../scripts/pyproject.py
+# @om-amalg ../scripts/pyproject.py
 # ruff: noqa: UP006 UP007 UP045
 """
 TODO:

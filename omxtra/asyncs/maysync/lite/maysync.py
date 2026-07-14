@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP007 UP037 UP043 UP045 UP046 UP047
-# @omlish-lite
+# @om-lite
 """
 A system for writing a python function once which can then be effectively used in both sync and async contexts -
 including IO, under any (or no) event loop.

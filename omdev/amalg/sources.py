@@ -1,5 +1,5 @@
 # ruff: noqa: UP045
-# @omlish-lite
+# @om-lite
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
@@ -33,7 +33,7 @@ class AmalgSources:
     @classmethod
     def is_src_amalg(cls, src: str) -> bool:
         for l in src.splitlines():  # noqa
-            if l.startswith('# @omlish-amalg-output '):
+            if l.startswith('# @om-amalg-output '):
                 return True
         return False
 
@@ -41,7 +41,7 @@ class AmalgSources:
     def is_amalg(self) -> bool:
         return self.is_src_amalg(self.get_src())
 
-    # TODO: read `@omlish-amalg ../scripts/manage.py`, given self._name/self._package, convert to resources path to read
+    # TODO: read `@om-amalg ../scripts/manage.py`, given self._name/self._package, convert to resources path to read
     # @cached_nullary
     # def get_amalg_src(self) -> str:
     #     if _is_self_amalg():

@@ -6,7 +6,7 @@ import typing as ta
 ##
 
 
-MAGIC_KEY_PREFIX = '@omlish-'
+MAGIC_KEY_PREFIX = '@om-'
 
 
 @dc.dataclass(frozen=True)

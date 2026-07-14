@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-script
+# @om-script
 import argparse
 import contextlib
 import os
@@ -114,7 +114,7 @@ def _main() -> None:
                         ns = next_sleep()
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!.cli.types.CliModule': {
     'name': 'slowcat',
     'module': __name__,

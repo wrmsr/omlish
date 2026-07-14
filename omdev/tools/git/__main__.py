@@ -1,7 +1,7 @@
 from ...cli import CliModule
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('git', __name__)
 
 

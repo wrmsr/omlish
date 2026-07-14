@@ -60,7 +60,7 @@ def _main() -> None:
     dot.open_dot(dot.render(scd), sleep_s=1.)
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!.cli.types.CliModule': {
     'name': 'py/classdot',
     'module': __name__,

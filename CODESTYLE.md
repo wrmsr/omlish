@@ -2,7 +2,7 @@
 
 - Target CPython 3.14 - use the modern language and library features it includes.
   - \[**lite**\] The exception is 'lite' code, which targets python 3.8.
-  - **A module is declared as being lite by having a `# @omlish-lite` comment at the top of it, or at the top of any
+  - **A module is declared as being lite by having a `# @om-lite` comment at the top of it, or at the top of any
     `__init__` module in its or any ancestor's package.**
   - As a reminder, non-\[**lite**\] core is referred to as 'standard' code.
 - Code should run on modern macOS and Linux - Windows support is not necessary, but still prefer things like
@@ -12,7 +12,7 @@
 ### Dependencies
 
 - Outside of a few specific subpackages (and test code), there are no external dependencies of any kind to rely on. Use
-  the standard library liberally, use `omlish` for everything else.
+  the standard library liberally, use `omcore` for everything else.
 - All external runtime dependencies are optional, and generally fit into the following categories:
   - Cryptography: `cryptography`. Its use is optional.
   - File formats: `orjson`, `pyyaml`, `cbor2`, `lxml`, `cloudpickle`, etc. Wherever possible, they serve only as
@@ -42,7 +42,7 @@
     fallbacks exist wherever possible.
   - Various other optional backends: `psutil`, `mwparserfromhell`, `regex`, `ddgs`, `tree-sitter`, etc.
 - Notably absent from this list:
-  - `httpx` / `requests` - use the internal `omlish.http` package.
+  - `httpx` / `requests` - use the internal `omcore.http` package.
   - `pydantic`. Use dataclasses.
   - `click`. Use argparse.
   - Any 'web client' library: `boto3`, `google-api-python-client`, `openai`, `anthropic`, etc. These are not used, even
@@ -50,9 +50,9 @@
     - Note: references to boto exist in code but only for code generation and cross-validation testing. Boto is not used
       for production aws interaction.
   - `gitpython`, `docker`, etc. Drive their cli's through a subprocess or talk to the api through the socket.
-  - `rich` (outside of `textual`). Use `omlish.term`, or simple inline escape codes, or just output plain text.
-  - `loguru` / `logbook` / `structlog`. Use `omlish.logs` or just stdlib `logging`.
-  - `json5`. Use `omlish.formats.json5`.
+  - `rich` (outside of `textual`). Use `omcore.term`, or simple inline escape codes, or just output plain text.
+  - `loguru` / `logbook` / `structlog`. Use `omcore.logs` or just stdlib `logging`.
+  - `json5`. Use `omcore.formats.json5`.
   - Various specs: `jsonrpc`, `jsonschema`, `openapi`, `mcp`. Internal implementations exist.
   - Web frameworks: `flask`, `fastapi`, `starlette`, etc. Equivalent internal patterns exist.
 
@@ -127,8 +127,8 @@
 - **NEVER** `import *`.
   - Because of this rule it's not necessary to ever use `__all__ = ...`.
 - **Always** use relative imports within a package. **Never** reference the name of the root package from within itself.
-  For example, within the `omlish` package, it's `from . import lang`, not `from omlish import lang`. Within the
-  `omlish` root package there should never be an import line containing the word `omlish` - and references to the root
+  For example, within the `omcore` package, it's `from . import lang`, not `from omcore import lang`. Within the
+  `omcore` root package there should never be an import line containing the word `omcore` - and references to the root
   name should be avoided in general.
 - Use the following import aliases for the following modules if they are used:
   - `import dataclasses as dc`
@@ -174,11 +174,11 @@
   globals). Instead, prefer to define and call a module private function which returns the desired global value.
 - Always use relative imports even in python modules intended to be directly executed. All python invocations will
   always be done via `python -m`.
-- The codebase uses a handful of `# @omlish-...` magic comments in python source files, including:
-  - `@omlish-lite` - denotes a \[**lite**\] source file. When present in a package's `__init__.py`, it means all source
+- The codebase uses a handful of `# @om-...` magic comments in python source files, including:
+  - `@om-lite` - denotes a \[**lite**\] source file. When present in a package's `__init__.py`, it means all source
     files in all packages and subpackages, recursively, are \[**lite**\].
-  - `@omlish-manifest` - triggers the automatic generation and maintenance of an entry in `.omlish-manifests.json`.
-  - `@omlish-generated` - written into source files that are the products of code generation - these are never to be
+  - `@om-manifest` - triggers the automatic generation and maintenance of an entry in `.om-manifests.json`.
+  - `@om-generated` - written into source files that are the products of code generation - these are never to be
     modified manually, and can generally be ignored (they tend to be huge).
 
 
@@ -187,7 +187,7 @@
 - Modules should generally follow the following layout:
   - A single `# ruff: noqa: ...` line if necessary
   - **NO blank line**
-  - Any module-scoped `# @omlish-...` comments
+  - Any module-scoped `# @om-...` comments
   - **NO blank line**
   - A module docstring, if any
   - **NO blank line**
@@ -219,7 +219,7 @@ As an example:
 ```python
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 
 T = ta.TypeVar('T')
@@ -275,7 +275,7 @@ def make_it_a_tuple(t: T) -> tuple[T]:
   boundaries.
 - For marking subgroups in an otherwise-'closed' family of classes, an empty mixed-in abstract class is usually
   preferred to a `ta.Union` type alias of the qualifying concrete types - but this is not a strict requirement.
-- Do not use `abc.ABC` - in standard code use `lang.Abstract` and in lite code use `omlish.lite.abstract.Abstract`.
+- Do not use `abc.ABC` - in standard code use `lang.Abstract` and in lite code use `omcore.lite.abstract.Abstract`.
   - Rationale: `abc.ABCMeta` adds extreme overhead to `isinstance` / `issubclass` checks (6x) in order to support
     virtual base classes, which are almost never needed or desirable.
 - `@abc.abstractmethod`'s should always do nothing but `raise NotImplementedError` - but they *should* do that,
@@ -311,7 +311,7 @@ def make_it_a_tuple(t: T) -> tuple[T]:
 - Do not use bare, un-called `@dc.dataclass` as a decorator - always use `@dc.dataclass()` even if it is given no
   arguments.
 - **Strongly** prefer frozen dataclasses.
-- In standard code, prefer to `from omlish import dataclasses as dc` - not the standard library `dataclasses` module.
+- In standard code, prefer to `from omcore import dataclasses as dc` - not the standard library `dataclasses` module.
   The interface and behavior are the same.
 
 
@@ -319,7 +319,7 @@ def make_it_a_tuple(t: T) -> tuple[T]:
 
 - **Never** use the `assert` statement anywhere but test code - rather, check a condition and raise an `Exception` if
   necessary.
-  - Prefer to use the 'check' system (`from omlish import check`, or `from omlish.lite.check import check` for lite
+  - Prefer to use the 'check' system (`from omcore import check`, or `from omcore.lite.check import check` for lite
     code) where `assert` would otherwise be used.
 - Outside of `TypeError`, `ValueError`, and `RuntimeError`, prefer to create custom subclasses of `Exception` for more
   specific errors. Use inheritance where beneficial to communicate subtypes of errors. Semantically meaningful error
@@ -459,7 +459,7 @@ def make_it_a_tuple(t: T) -> tuple[T]:
 - In general prefer to write native extensions in C++.
 - Use the C++ standard library liberally, but not 'excessively' lol. Write more 'C-style' code when interfacing with
   CPython.
-- C/C++ extensions should have `// @omlish-cext` as their first line, and will thereafter be automatically built and
+- C/C++ extensions should have `// @om-cext` as their first line, and will thereafter be automatically built and
   packaged by existing codebase machinery.
 - C/C++ extensions should be kept to a single, self-contained source file - do not write new header files.
 - C++ source files use the `.cc` extension, and C++ header files use the `.hh` extension.

@@ -133,7 +133,7 @@ def _main() -> None:
     Cli()(exit=True)  # noqa
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('imgur', __name__)
 
 

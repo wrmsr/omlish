@@ -245,7 +245,7 @@ def _main() -> None:
         print()
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('cloc', __name__)
 
 

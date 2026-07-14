@@ -307,7 +307,7 @@ class ModelGen:
         '# flake8: noqa: E501',
         '# ruff: noqa: N801 S105',
         '# fmt: off',
-        '# @omlish-generated',
+        '# @om-generated',
         'import typing as _ta  # noqa',
         '',
         'from omlish import dataclasses as _dc  # noqa',

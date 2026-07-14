@@ -218,7 +218,7 @@ The general principle is that *how code will run is a first-class design constra
 dists are assumed), resources via package-resource APIs, no environment variable configuration (injected config
 only), forkable process supervisors get selector-based IO rather than asyncio because asyncio spawns threads. Where
 most Python projects discover their deployment constraints late and retrofit, here the runtime envelope is part of
-each module's identity from the first line (`# @omlish-lite`).
+each module's identity from the first line (`# @om-lite`).
 
 
 ## 13. The monorepo is a refinery, not a museum

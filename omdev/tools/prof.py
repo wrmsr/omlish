@@ -129,7 +129,7 @@ class Cli(ap.Cli):
                 )
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('prof', __name__)
 
 

@@ -78,7 +78,7 @@ def _main() -> None:
     IntellijCli()(exit=True)
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule(['intellij', 'ij'], __name__)
 
 

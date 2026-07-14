@@ -74,7 +74,7 @@ def _main() -> None:
         subprocess.check_call(['open', out_file])
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('qr', __name__)
 
 

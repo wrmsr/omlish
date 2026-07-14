@@ -44,7 +44,7 @@ def scan_jdeps(src: str) -> ta.Sequence[str]:
     deps: list[str] = []
 
     for src_magic in src_magics:
-        if src_magic.key == '@omlish-jdeps':
+        if src_magic.key == '@om-jdeps':
             for dep in check.isinstance(src_magic.prepared, ta.Sequence):  # noqa
                 deps.append(dep)  # noqa
 

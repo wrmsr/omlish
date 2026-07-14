@@ -48,8 +48,8 @@ def strip_main_lines(cls: ta.Sequence[tks.Tokens]) -> list[tks.Tokens]:
 
 
 STRIPPED_HEADER_MAGICS = [
-    '@omlish-lite',
-    '@omlish-script',
+    '@om-lite',
+    '@om-script',
 ]
 
 STRIPPED_HEADER_PAT = magic.compile_magic_style_pat(

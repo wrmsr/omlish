@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omlish-lite
-# @omlish-script
-# @omlish-generated
-# @omlish-amalg-output ../clouds/aws/journald2aws/main.py
-# @omlish-git-diff-omit
+# @om-lite
+# @om-script
+# @om-generated
+# @om-amalg-output ../clouds/aws/journald2aws/main.py
+# @om-git-diff-omit
 # ruff: noqa: N802 PYI034 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 import abc
 import argparse

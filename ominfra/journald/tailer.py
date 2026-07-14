@@ -1,5 +1,5 @@
 # ruff: noqa: UP007 UP045
-# @omlish-lite
+# @om-lite
 """
 TODO:
  - https://www.rootusers.com/how-to-change-log-rate-limiting-in-linux/

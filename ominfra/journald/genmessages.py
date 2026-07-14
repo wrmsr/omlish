@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-script
+# @om-script
 import argparse
 import datetime
 import json

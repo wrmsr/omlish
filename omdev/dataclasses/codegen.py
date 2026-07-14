@@ -60,7 +60,7 @@ def _is_generated_py_file(fp: str) -> bool:
         gen_file_src = f.read()
 
     gen_hdr_lines = get_py_header_lines(gen_file_src)
-    return any(hl.src.strip() == '# @omlish-generated' for hl in gen_hdr_lines)
+    return any(hl.src.strip() == '# @om-generated' for hl in gen_hdr_lines)
 
 
 #
@@ -253,7 +253,7 @@ class DataclassCodeGen:
         #
 
         lines = [
-            '# @omlish-generated',
+            '# @om-generated',
         ]
 
         from . import _template

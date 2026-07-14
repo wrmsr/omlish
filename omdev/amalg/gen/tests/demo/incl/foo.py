@@ -1,4 +1,4 @@
-# @omlish-lite
+# @om-lite
 """foo includes"""
 # Hi!
 import os.path

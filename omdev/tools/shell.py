@@ -107,7 +107,7 @@ class ShellCli(ap.Cli):
 ##
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule(['shell', 'sh'], __name__)
 
 

@@ -1,0 +1,256 @@
+"""
+TODO:
+ - md5 spec to fn name
+"""
+import abc
+import dataclasses as dc
+import typing as ta
+
+from .... import check
+from .... import lang
+from ...clsattrs import IfAttrPresent
+from ..utils import repr_round_trip_value
+from .globals import FN_GLOBAL_IMPORTS
+from .globals import FN_GLOBALS
+from .globals import FUNCTION_TYPE_GLOBAL
+from .globals import PROPERTY_GLOBAL
+from .globals import SET_CLS_ATTR_GLOBAL
+from .idents import CLS_IDENT
+from .idents import IDENT_PREFIX
+from .ops import AddMethodOp
+from .ops import AddPropertyOp
+from .ops import Op
+from .ops import OpRef
+from .ops import Ref
+from .ops import SetAttrOp
+from .ops import add_ref
+from .ops import get_op_refs
+
+
+T = ta.TypeVar('T')
+
+
+##
+
+
+class OpCompiler:
+    class Style(lang.Abstract):
+        @abc.abstractmethod
+        def header_lines(self) -> ta.Sequence[str]:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def globals_ns(self) -> ta.Mapping[str, ta.Any]:
+            raise NotImplementedError
+
+    class JitStyle(Style):
+        def header_lines(self) -> ta.Sequence[str]:
+            return []
+
+        def globals_ns(self) -> ta.Mapping[str, ta.Any]:
+            return dict(FN_GLOBAL_IMPORTS)
+
+    class AotStyle(Style):
+        HEADER_LINES: ta.ClassVar[ta.Sequence[str]] = [
+            '# type: ignore',
+            '# ruff: noqa',
+            '# flake8: noqa',
+            '# @om-generated',
+        ]
+
+        def header_lines(self) -> ta.Sequence[str]:
+            return [
+                *self.HEADER_LINES,
+                *[
+                    f'import {i}'
+                    for i in FN_GLOBAL_IMPORTS
+                ],
+            ]
+
+        def globals_ns(self) -> ta.Mapping[str, ta.Any]:
+            return {}
+
+    #
+
+    def __init__(
+            self,
+            style: Style,
+    ) -> None:
+        super().__init__()
+
+        self._style = style
+
+    @property
+    def style(self) -> Style:
+        return self._style
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    class CompileResult:
+        fn_name: str
+        fn_params: ta.Sequence[str]
+
+        hdr_lines: ta.Sequence[str]
+        fn_lines: ta.Sequence[str]
+
+        refs: frozenset[Ref]
+
+    @dc.dataclass(frozen=True)
+    class _FnParam:
+        name: str
+        src: str | None = None
+        noqa: bool = dc.field(default=False, kw_only=True)
+
+    def _compile_set_cls_attr(
+            self,
+            attr_name: str,
+            value_src: str,
+            if_present: IfAttrPresent,
+            *,
+            set_qualname: bool = False,
+            refs: set[Ref],
+    ) -> list[str]:
+        stmt = ''.join([
+            f'{add_ref(SET_CLS_ATTR_GLOBAL, refs).ident}(',
+            ', '.join([
+                f'{CLS_IDENT}',
+                f'{attr_name!r}',
+                f'{value_src}',
+                f'{if_present!r}',
+                *(['set_qualname=True'] if set_qualname else []),
+            ]),
+            ')',
+        ])
+        return [stmt]
+
+    def compile(
+            self,
+            fn_name: str,
+            ops: ta.Sequence[Op],
+    ) -> CompileResult:
+        body_lines: list[str] = []
+        refs: set[Ref] = set()
+
+        for i, op in enumerate(ops):
+            if i:
+                body_lines.append('')
+
+            if isinstance(op, SetAttrOp):
+                if isinstance(v := op.value, OpRef):
+                    vs = v.ident()
+                    body_lines.extend([
+                        f'if isinstance({vs}, {add_ref(FUNCTION_TYPE_GLOBAL, refs).ident}):'
+                        f'    {vs}.__qualname__ = f"{{{CLS_IDENT}.__qualname__}}.{{{vs}.__name__}}"',
+                    ])
+                else:
+                    vs = repr(repr_round_trip_value(v))
+
+                body_lines.extend(self._compile_set_cls_attr(
+                    op.name,
+                    vs,
+                    op.if_present,
+                    refs=refs,
+                ))
+
+            elif isinstance(op, AddMethodOp):
+                body_lines.extend([
+                    *op.src.splitlines(),
+                    f'',
+                    *self._compile_set_cls_attr(
+                        op.name,
+                        op.name,
+                        op.if_present,
+                        set_qualname=True,
+                        refs=refs,
+                    ),
+                ])
+
+            elif isinstance(op, AddPropertyOp):
+                gen_ident = IDENT_PREFIX + f'property__{op.name}'
+
+                gen_lines = [
+                    f'def {gen_ident}():',
+                    f'    @{add_ref(PROPERTY_GLOBAL, refs).ident}',
+                    *[
+                        f'    {l}'
+                        for l in check.not_none(op.get_src).splitlines()
+                    ],
+                ]
+
+                if op.set_src is not None:
+                    gen_lines.extend([
+                        f'',
+                        f'    @{op.name}.setter',
+                        *[
+                            f'    {l}'
+                            for l in op.set_src.splitlines()
+                        ],
+                    ])
+                if op.del_src is not None:
+                    raise NotImplementedError
+                gen_lines.extend([
+                    f'',
+                    f'    return {op.name}',
+                ])
+
+                body_lines.extend([
+                    *gen_lines,
+                    f'',
+                    f'setattr({CLS_IDENT}, {op.name!r}, {gen_ident}())',
+                ])
+
+            else:
+                raise TypeError(op)
+
+        #
+
+        refs.update(*[get_op_refs(o) for o in ops])
+
+        params: list[OpCompiler._FnParam] = [
+            OpCompiler._FnParam(CLS_IDENT),
+            *[
+                OpCompiler._FnParam(p)
+                for p in sorted(
+                    r.ident()
+                    for r in refs
+                    if isinstance(r, OpRef)
+                )
+            ],
+        ]
+
+        params.extend([
+            OpCompiler._FnParam(
+                k.ident,
+                src=f'{k.ident}={v.src}' if not v.src.startswith('.') else k.ident,
+                noqa=k.ident != k.ident.lower() or not v.src.startswith('.'),
+            )
+            for k, v in sorted(FN_GLOBALS.items(), key=lambda t: t[0])
+            if k in refs
+        ])
+
+        #
+
+        fn_lines = [
+            f'def {fn_name}(',
+            f'    *,',
+            *[
+                f'    {p.src if p.src is not None else p.name},{"  # noqa" if p.noqa else ""}'
+                for p in params
+            ],
+            f'):',
+            *[
+                f'    {l}'
+                for l in body_lines
+            ],
+        ]
+
+        #
+
+        return self.CompileResult(
+            fn_name=fn_name,
+            fn_params=[p.name for p in params],
+
+            hdr_lines=self._style.header_lines(),
+            fn_lines=fn_lines,
+
+            refs=frozenset(refs),
+        )

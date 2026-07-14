@@ -44,7 +44,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-# @omlish-manifest $.minichain.specs.manifests.BackendStringsManifest(
+# @om-manifest $.minichain.specs.manifests.BackendStringsManifest(
 #     ['ChatChoicesService', 'ChatChoicesStreamService'],
 #     'mlx',
 # )
@@ -139,7 +139,7 @@ class BaseMlxChatChoicesService(lang.ExitStacked):
         return kwargs
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='mlx',
 #     type='ChatChoicesService',
 # )
@@ -169,7 +169,7 @@ class MlxChatChoicesService(BaseMlxChatChoicesService):
         ]))
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='mlx',
 #     type='ChatChoicesStreamService',
 # )

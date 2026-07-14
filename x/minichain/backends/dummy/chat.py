@@ -32,7 +32,7 @@ class DummyChatChoicesResponse(tv.UniqueScalarTypedValue[ChatChoices], Config):
     pass
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='dummy',
 #     type='ChatChoicesService',
 # )
@@ -67,7 +67,7 @@ class DummyChatChoicesStreamResponse(tv.UniqueScalarTypedValue[ta.Sequence[AiCho
     pass
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='dummy',
 #     type='ChatChoicesStreamService',
 # )
@@ -121,7 +121,7 @@ class DummyChatChoicesStreamService:
 ##
 
 
-# @omlish-manifest $.minichain.specs.manifests.BackendStringsManifest(
+# @om-manifest $.minichain.specs.manifests.BackendStringsManifest(
 #     [
 #         'ChatChoicesService',
 #         'ChatChoicesStreamService',

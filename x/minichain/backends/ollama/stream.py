@@ -30,7 +30,7 @@ from .protocol import build_mc_ai_choice_deltas
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='ollama',
 #     type='ChatChoicesStreamService',
 # )

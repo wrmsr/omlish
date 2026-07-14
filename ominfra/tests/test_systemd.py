@@ -1,5 +1,5 @@
 # ruff: noqa: PT009 UP006 UP007
-# @omlish-lite
+# @om-lite
 import unittest
 
 from ..systemd import SystemdListUnit

@@ -30,7 +30,7 @@ ChatRequest: ta.TypeAlias = Request[Chat, ChatOptions]
 
 ChatResponse: ta.TypeAlias = Response[ChatGeneration, ChatServiceOutputs]
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
+# @om-manifest $.minichain.registries.manifests.RegistryTypeManifest
 ChatService: ta.TypeAlias = Service[ChatRequest, ChatResponse]
 
 register_type(ChatService, module=__name__)

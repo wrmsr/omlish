@@ -28,8 +28,8 @@ RUFF_DISABLES: ta.AbstractSet[str] = {
     'UP036',  # outdated-version-block
 }
 
-OUTPUT_COMMENT = '# @omlish-amalg-output '
-SCAN_COMMENT = '# @omlish-amalg '
+OUTPUT_COMMENT = '# @om-amalg-output '
+SCAN_COMMENT = '# @om-amalg '
 
 
 class AmalgGenerator:
@@ -94,9 +94,9 @@ class AmalgGenerator:
         additional_header_lines = [
             '#!/usr/bin/env python3\n',
             '# noinspection DuplicatedCode\n',
-            '# @omlish-lite\n',
-            '# @omlish-script\n',
-            '# @omlish-generated\n',
+            '# @om-lite\n',
+            '# @om-script\n',
+            '# @om-generated\n',
             f'{OUTPUT_COMMENT.strip()} {ogf}\n',
             f'# {GIT_DIFF_OMIT_MAGIC}\n',
         ]

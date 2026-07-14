@@ -1,0 +1,14 @@
+# ruff: noqa: UP006 UP007 UP045
+# @om-lite
+import dataclasses as dc
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Fileno:
+    fd: int
+
+    def fileno(self) -> int:
+        return self.fd

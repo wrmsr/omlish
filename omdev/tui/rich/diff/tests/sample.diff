@@ -20,7 +20,7 @@ index 2e1de17fd..b43079e11 100644
 --- a/omdev/tui/rich/textual/dump.py
 +++ b/omdev/tui/rich/textual/dump.py
 @@ -1,6 +1,4 @@
- # @omlish-llm-author "opus-4.6"
+ # @om-llm-author "opus-4.6"
 -from mpmath import arg
 -
  from .themes import DumpedTextualTheme
@@ -76,7 +76,7 @@ index f636dac55..c6437f5d0 100644
 +++ b/requirements-dev.txt
 @@ -22,6 +22,7 @@ lxml-stubs==0.5.1
  types-greenlet==3.3.0.20251206
- types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
+ types-paramiko==4.0.0.20250822  # @om-venv !13t !13dt  # cffi ????
  types-psutil==7.2.2.20260130
 +types-pygments==2.19.0.20251121
  types-pyyaml==6.0.12.20250915

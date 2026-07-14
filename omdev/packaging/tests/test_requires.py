@@ -1,5 +1,5 @@
 # ruff: noqa: PT009
-# @omlish-lite
+# @om-lite
 import unittest
 
 from ..requires import parse_requirement

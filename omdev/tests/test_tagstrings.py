@@ -1,5 +1,5 @@
 # ruff: noqa: PT009
-# @omlish-lite
+# @om-lite
 import unittest
 
 from ..tagstrings import TagString

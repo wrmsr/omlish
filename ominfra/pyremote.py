@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP007 UP043 UP037 UP045
-# @omlish-lite
+# @om-lite
 """
 Basically this: https://mitogen.networkgenomics.com/howitworks.html
 

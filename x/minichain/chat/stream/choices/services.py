@@ -35,7 +35,7 @@ ChatChoicesStreamResponse: ta.TypeAlias = StreamResponse[
     ChatChoicesStreamServiceOutputs,
 ]
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
+# @om-manifest $.minichain.registries.manifests.RegistryTypeManifest
 ChatChoicesStreamService: ta.TypeAlias = Service[ChatChoicesStreamRequest, ChatChoicesStreamResponse]
 
 register_type(ChatChoicesStreamService, module=__name__)

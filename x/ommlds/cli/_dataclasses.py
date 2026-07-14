@@ -1,4 +1,4 @@
-# @omlish-generated
+# @om-generated
 # type: ignore
 # ruff: noqa
 # flake8: noqa

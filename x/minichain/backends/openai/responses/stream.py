@@ -28,7 +28,7 @@ from .protocol import ResponsesSseDeltaTranslator
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='openai-responses',
 #     type='ChatChoicesStreamService',
 # )

@@ -10,7 +10,7 @@ from ....specs.manifests import BackendStringsManifest
 ##
 
 
-# @omlish-manifest
+# @om-manifest
 _RESPONSES_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
     [
         'ChatChoicesService',

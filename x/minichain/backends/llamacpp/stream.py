@@ -39,7 +39,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-# @omlish-manifest $.minichain.specs.manifests.BackendStringsManifest(
+# @om-manifest $.minichain.specs.manifests.BackendStringsManifest(
 #     ['ChatChoicesStreamService'],
 #     'llamacpp',
 # )
@@ -48,7 +48,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='llamacpp',
 #     type='ChatChoicesStreamService',
 # )

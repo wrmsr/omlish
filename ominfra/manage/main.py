@@ -1,4 +1,4 @@
-# @omlish-amalg ../scripts/manage.py
+# @om-amalg ../scripts/manage.py
 # ruff: noqa: UP006 UP007 UP045
 """
 manage.py -s 'docker run -i python:3.13'

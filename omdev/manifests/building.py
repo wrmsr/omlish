@@ -59,7 +59,7 @@ log = get_module_logger(globals())  # noqa
 ##
 
 
-MANIFEST_MAGIC_KEY = '@omlish-manifest'
+MANIFEST_MAGIC_KEY = '@om-manifest'
 
 
 _IDENT_PAT_PART = r'[A-Za-z_][A-Za-z0-9_]*'

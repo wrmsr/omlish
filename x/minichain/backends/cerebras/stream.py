@@ -6,7 +6,7 @@ from .chat import CerebrasChatChoicesServiceBase
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='cerebras',
 #     type='ChatChoicesStreamService',
 # )

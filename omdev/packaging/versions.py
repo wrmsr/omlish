@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
-# @omlish-lite
+# @om-lite
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
 #

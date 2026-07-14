@@ -33,7 +33,7 @@ def test_amalg() -> None:
         while (l := next(lit)) and l.startswith('#'):
             pass
         for l in lit:
-            assert not l.startswith('# @omlish-lite')
+            assert not l.startswith('# @om-lite')
 
         out_path = os.path.join(src_base_dir, 'out', os.path.basename(main_file))
         mod = compile(src, out_path, 'exec')

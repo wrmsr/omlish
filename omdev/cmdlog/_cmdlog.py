@@ -1,4 +1,4 @@
-# NOTE: not '@omlish-lite' due to root level __init__ imports, but effectively lite.
+# NOTE: not '@om-lite' due to root level __init__ imports, but effectively lite.
 import dataclasses as dc
 import fcntl
 import json

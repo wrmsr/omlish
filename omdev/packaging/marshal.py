@@ -1,5 +1,5 @@
 """
-NOTE: This cannot be auto-imported as @omlish-lite usage of other modules in this package requires it be importable on
+NOTE: This cannot be auto-imported as @om-lite usage of other modules in this package requires it be importable on
 8.
 """
 import dataclasses as dc

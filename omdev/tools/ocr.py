@@ -80,7 +80,7 @@ def _main() -> None:
     print(text)
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('ocr', __name__)
 
 

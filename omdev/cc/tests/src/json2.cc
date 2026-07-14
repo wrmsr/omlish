@@ -1,5 +1,5 @@
 //usr/bin/true; exec om cc run "$0" "$@"
-/* @omlish-cdeps ["json"] */
+/* @om-cdeps ["json"] */
 #include <iostream>
 
 #include <nlohmann/json.hpp>

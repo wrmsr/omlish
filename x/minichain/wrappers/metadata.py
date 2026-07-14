@@ -13,7 +13,7 @@ if ta.TYPE_CHECKING:
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='RetryServiceResponseMetadata',
 #     type='ResponseMetadata',
 # )

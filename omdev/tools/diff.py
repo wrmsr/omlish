@@ -21,7 +21,7 @@ class Cli(ap.Cli):
         )
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('diff', __name__)
 
 

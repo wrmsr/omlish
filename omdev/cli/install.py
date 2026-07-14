@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ruff: noqa: UP045
-# @omlish-lite
-# @omlish-script
+# @om-lite
+# @om-script
 """curl -LsSf 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py' | python3 -"""
 import abc
 import argparse

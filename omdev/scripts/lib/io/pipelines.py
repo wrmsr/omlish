@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omlish-lite
-# @omlish-script
-# @omlish-generated
-# @omlish-amalg-output ../../../../omlish/io/pipelines/_amalg.py
-# @omlish-git-diff-omit
+# @om-lite
+# @om-script
+# @om-generated
+# @om-amalg-output ../../../../omlish/io/pipelines/_amalg.py
+# @om-git-diff-omit
 # ruff: noqa: FURB188 PYI034 UP006 UP007 UP036 UP037 UP045 UP046
 import abc
 import asyncio

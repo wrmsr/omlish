@@ -5,7 +5,7 @@ from .compat import OpenaiCompatChatChoicesService
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='openai',
 #     type='ChatChoicesService',
 # )

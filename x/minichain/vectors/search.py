@@ -68,7 +68,7 @@ VectorSearchRequest: ta.TypeAlias = Request[VectorSearch, VectorSearchOptions]
 
 VectorSearchResponse: ta.TypeAlias = Response[VectorHits, VectorSearchOutputs]
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
+# @om-manifest $.minichain.registries.manifests.RegistryTypeManifest
 VectorSearchService: ta.TypeAlias = Service[VectorSearchRequest, VectorSearchResponse]
 
 register_type(VectorSearchService, module=__name__)

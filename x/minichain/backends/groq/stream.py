@@ -6,7 +6,7 @@ from .chat import GroqChatChoicesServiceBase
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='groq',
 #     type='ChatChoicesStreamService',
 # )

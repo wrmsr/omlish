@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-lite
+# @om-lite
 """https://github.com/umlet/pwk/blob/dc23b3400108a71947a695f1fa1df0f514b42528/pwk"""
 import io
 import tokenize
@@ -89,7 +89,7 @@ def translate_brace_python(
 ##
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!.cli.types.CliModule': {
     'name': 'bracepy',
     'module': __name__,

@@ -20,7 +20,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-# @omlish-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='llm')
+# @om-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='llm')
 class LlmGitMessageGenerator(GitMessageGenerator):
     def _should_exclude_file_name(self, fn: str) -> bool:
         if not fn.endswith('.py'):
@@ -36,7 +36,7 @@ class LlmGitMessageGenerator(GitMessageGenerator):
 
         return any(
             hl.src.strip() in (
-                '# @omlish-generated',
+                '# @om-generated',
                 GIT_DIFF_OMIT_MAGIC_COMMENT,
             )
             for hl in hls

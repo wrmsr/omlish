@@ -120,7 +120,7 @@ def _main() -> None:
             print(f'{k}={v}')
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!.cli.types.CliModule': {
     'name': ['mkenv'],
     'module': __name__,

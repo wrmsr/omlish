@@ -139,7 +139,7 @@ class NaiveMarkdownLiveStream(MarkdownLiveStream):
 
 
 class IncrementalMarkdownLiveStream(MarkdownLiveStream):
-    # @omlish-llm-author "gemini-3-pro"
+    # @om-llm-author "gemini-3-pro"
 
     def __init__(
             self,
@@ -205,7 +205,7 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
 
 
 class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
-    # @omlish-llm-author "gemini-3-pro"
+    # @om-llm-author "gemini-3-pro"
 
     def __init__(
             self,
@@ -289,7 +289,7 @@ class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
 
 
 class ClaudeIncrementalMarkdownLiveStream(MarkdownLiveStream):
-    # @omlish-llm-author "claude-opus-4-5"
+    # @om-llm-author "claude-opus-4-5"
 
     def __init__(
             self,
@@ -375,7 +375,7 @@ class ClaudeIncrementalMarkdownLiveStream(MarkdownLiveStream):
 
 
 class GptIncrementalMarkdownLiveStream(MarkdownLiveStream):
-    # @omlish-llm-author "gpt-5.2"
+    # @om-llm-author "gpt-5.2"
 
     def __init__(
             self,

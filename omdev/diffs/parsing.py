@@ -1,5 +1,5 @@
-# @omlish-llm-author "gpt-5.4-thinking"
-# @omlish-precheck-allow-any-unicode
+# @om-llm-author "gpt-5.4-thinking"
+# @om-precheck-allow-any-unicode
 import dataclasses as dc
 import re
 import typing as ta

@@ -371,7 +371,7 @@ def _gen_cmd(args) -> None:
     cpg.run()
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('cmake', __name__)
 
 

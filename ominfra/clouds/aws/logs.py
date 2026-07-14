@@ -1,4 +1,4 @@
-# @omlish-lite
+# @om-lite
 # ruff: noqa: UP007 UP045
 """
 https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html :

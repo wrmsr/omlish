@@ -166,7 +166,7 @@ class ModuleRenderer:
 
     def _write_header(self, w: _Writer) -> None:
         if not self._config.omit_generated_marker:
-            w('# @omlish-generated')
+            w('# @om-generated')
         w('# ruff: noqa: UP007 UP037 UP045')
         w('import typing as ta')
         w()

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omlish-lite
-# @omlish-script
-# @omlish-generated
-# @omlish-amalg-output dumping.py
-# @omlish-git-diff-omit
+# @om-lite
+# @om-script
+# @om-generated
+# @om-amalg-output dumping.py
+# @om-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP037 UP045
 import abc
 import base64

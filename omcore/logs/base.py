@@ -1,0 +1,307 @@
+# ruff: noqa: UP006 UP007 UP045 UP046
+# @om-lite
+import abc
+import typing as ta
+
+from ..lite.abstract import Abstract
+from .contexts import CaptureLoggingContext
+from .contexts import CaptureLoggingContextImpl
+from .contexts import LoggingExcInfoArg
+from .levels import LogLevel
+from .levels import NamedLogLevel
+from .metrics.base import AnyLoggerMetricCollector
+from .metrics.base import AnyNopLoggerMetricCollector
+from .metrics.base import AsyncLoggerMetricCollector
+from .metrics.base import AsyncNopLoggerMetricCollector
+from .metrics.base import LoggerMetric
+from .metrics.base import LoggerMetricCollector
+from .metrics.base import NopLoggerMetricCollector
+
+
+T = ta.TypeVar('T')
+
+
+LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
+
+
+##
+
+
+class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
+    def is_enabled_for(self, level: LogLevel) -> bool:
+        return level >= self.get_effective_level()
+
+    @abc.abstractmethod
+    def get_effective_level(self) -> LogLevel:
+        raise NotImplementedError
+
+    #
+
+    @ta.final
+    def isEnabledFor(self, level: LogLevel) -> bool:  # noqa
+        return self.is_enabled_for(level)
+
+    @ta.final
+    def getEffectiveLevel(self) -> LogLevel:  # noqa
+        return self.get_effective_level()
+
+    ##
+
+    # This will be 1 for [Sync]Logger and 0 for AsyncLogger - in sync loggers these methods remain present on the stack,
+    # in async loggers they return a coroutine to be awaited and thus aren't actually present when said coroutine is
+    # awaited.
+    _level_proxy_method_stack_offset: int
+
+    @ta.overload
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
+
+    @ta.final
+    def log(self, level: LogLevel, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                level,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
+
+    @ta.final
+    def debug(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.DEBUG,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
+
+    @ta.final
+    def info(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.INFO,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
+
+    @ta.final
+    def warning(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.WARNING,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
+
+    @ta.final
+    def error(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.ERROR,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
+
+    @ta.final
+    def exception(self, *args, exc_info=True, **kwargs):
+        if not args:
+            if not exc_info:
+                raise TypeError('exc_info=False is not allowed when no args are passed')
+            args = ((),)
+        elif len(args) == 1:
+            if isinstance(arg0 := args[0], BaseException):
+                if exc_info is not True:  # noqa
+                    raise TypeError(f'exc_info={exc_info!r} is not allowed when exc={arg0!r} is passed')
+            args, exc_info = ((),), arg0
+
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.ERROR,
+                exc_info=exc_info,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
+
+    @ta.overload
+    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
+
+    @ta.final
+    def critical(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.CRITICAL,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @abc.abstractmethod
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> T:
+        raise NotImplementedError
+
+
+class Logger(LoggerMetricCollector, AnyLogger[None], Abstract):
+    _level_proxy_method_stack_offset: int = 1
+
+    @abc.abstractmethod
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> None:
+        raise NotImplementedError
+
+
+class AsyncLogger(AsyncLoggerMetricCollector, AnyLogger[ta.Awaitable[None]], Abstract):
+    _level_proxy_method_stack_offset: int = 0
+
+    @abc.abstractmethod
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class AnyNopLogger(AnyNopLoggerMetricCollector[T], AnyLogger[T], Abstract):
+    @ta.final
+    def get_effective_level(self) -> LogLevel:
+        return -999
+
+
+class NopLogger(NopLoggerMetricCollector, AnyNopLogger[None], Logger):
+    @ta.final
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        pass
+
+
+class AsyncNopLogger(AsyncNopLoggerMetricCollector, AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+    @ta.final
+    async def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        pass

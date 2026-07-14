@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-script
+# @om-script
 """
 TODO:
  - can xargs just do this lol
@@ -47,7 +47,7 @@ def _main() -> None:
         print(tmp_file)
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!.cli.types.CliModule': {
     'name': 'tmpexec',
     'module': __name__,

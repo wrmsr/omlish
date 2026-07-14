@@ -1,4 +1,4 @@
-# @omlish-precheck-allow-any-unicode
+# @om-precheck-allow-any-unicode
 import unittest
 
 from rich.cells import cell_len

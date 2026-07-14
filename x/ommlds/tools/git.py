@@ -194,7 +194,7 @@ class McServerGitAiBackend(GitAiBackend['McServerGitAiBackend.Config']):
 ##
 
 
-# @omlish-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='ai')
+# @om-manifest omdev.tools.git.messages.GitMessageGeneratorManifest(name='ai')
 class AiGitMessageGenerator(GitMessageGenerator):
     def __init__(
             self,
@@ -233,7 +233,7 @@ class AiGitMessageGenerator(GitMessageGenerator):
 
         return any(
             hl.src.strip() in (
-                '# @omlish-generated',
+                '# @om-generated',
                 GIT_DIFF_OMIT_MAGIC_COMMENT,
             )
             for hl in hls

@@ -24,7 +24,7 @@ OptionU = ta.TypeVar('OptionU', bound=Option)
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
+# @om-manifest $.minichain.registries.manifests.RegistryTypeManifest
 class RequestMetadata(Metadata, lang.Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)

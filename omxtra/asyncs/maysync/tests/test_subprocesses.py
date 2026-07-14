@@ -1,5 +1,5 @@
 # ruff: noqa: PT009 PT027
-# @omlish-lite
+# @om-lite
 import typing as ta
 import unittest
 

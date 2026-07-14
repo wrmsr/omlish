@@ -128,7 +128,7 @@ class Cli(ap.Cli):
             do_file(sys.stdin)
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('pip', __name__)
 
 

@@ -1,4 +1,4 @@
-# @omlish-amalg ../scripts/interp.py
+# @om-amalg ../scripts/interp.py
 # ruff: noqa: UP007 UP045
 """
 TODO:

@@ -1,4 +1,4 @@
-# @omlish-lite
+# @om-lite
 
 from .find import (  # noqa
     chop_magic_block,

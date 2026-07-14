@@ -1,7 +1,7 @@
 from omdev.cli import CliModule
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('aws', __name__)
 
 

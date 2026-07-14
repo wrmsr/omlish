@@ -60,7 +60,7 @@ from .protocol import build_ol_request_tool
 ##
 
 
-# @omlish-manifest $.minichain.specs.manifests.BackendStringsManifest(
+# @om-manifest $.minichain.specs.manifests.BackendStringsManifest(
 #     [
 #         'ChatChoicesService',
 #         'ChatChoicesStreamService',
@@ -132,7 +132,7 @@ class BaseOllamaChatChoicesService(lang.Abstract):
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+# @om-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='ollama',
 #     type='ChatChoicesService',
 # )

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omlish-script
+# @om-script
 # ruff: noqa: PYI034 UP006 UP007 UP037 UP045
 """
 TODO:
@@ -488,7 +488,7 @@ class SqliteWriter:
 ##
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!.cli.types.CliModule': {
     'name': 'py/importtrace',
     'module': __name__,

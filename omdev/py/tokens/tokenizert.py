@@ -1,4 +1,4 @@
-# @omlish-lite
+# @om-lite
 # ruff: noqa: UP006 UP007 UP045
 # Copyright (c) 2017 Anthony Sottile
 #

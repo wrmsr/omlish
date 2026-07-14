@@ -1,4 +1,4 @@
-# DISABLED: # @omlish-manifest omdev.cli.CliModule(['minichain-server', 'mcs'], __name__)
+# DISABLED: # @om-manifest omdev.cli.CliModule(['minichain-server', 'mcs'], __name__)
 
 
 if __name__ == '__main__':

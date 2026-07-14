@@ -1,5 +1,5 @@
 //usr/bin/true; exec om cc run "$0" "$@"
-/* @omlish-cdeps [
+/* @om-cdeps [
     {
         "git": {
             "url": "https://github.com/nlohmann/json",

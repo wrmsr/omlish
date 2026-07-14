@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omlish-lite
-# @omlish-script
-# @omlish-generated
-# @omlish-amalg-output ../pyproject/cli.py
-# @omlish-git-diff-omit
+# @om-lite
+# @om-script
+# @om-generated
+# @om-amalg-output ../pyproject/cli.py
+# @om-git-diff-omit
 # ruff: noqa: N802 TC003 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 """
 TODO:
@@ -310,7 +310,7 @@ def json_magic_preparer(src: str) -> ta.Any:
 ##
 
 
-MAGIC_KEY_PREFIX = '@omlish-'
+MAGIC_KEY_PREFIX = '@om-'
 
 
 @dc.dataclass(frozen=True)
@@ -4007,7 +4007,7 @@ class LoggingSetupWarning(Warning):
 
 
 class CextMagic:
-    KEY = '@omlish-cext'
+    KEY = '@om-cext'
     STYLE = C_MAGIC_STYLE
 
 
@@ -11490,7 +11490,7 @@ class RequirementsRewriter:
     def _tmp_dir(self) -> str:
         return tempfile.mkdtemp('-omlish-reqs')
 
-    VENV_MAGIC = '# @omlish-venv'
+    VENV_MAGIC = '# @om-venv'
 
     def rewrite_file(self, in_file: str) -> str:
         with open(in_file) as f:

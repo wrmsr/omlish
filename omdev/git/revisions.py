@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
-# @omlish-lite
+# @om-lite
 import os.path
 import subprocess
 import typing as ta

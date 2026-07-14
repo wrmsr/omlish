@@ -1,4 +1,4 @@
-# @omlish-llm-author gemini-2.5-pro
+# @om-llm-author gemini-2.5-pro
 import re
 import textwrap
 

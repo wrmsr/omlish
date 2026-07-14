@@ -120,7 +120,7 @@ class IncrementalMarkdownParser:
 
 
 class ClaudeIncrementalMarkdownParser:
-    # @omlish-llm-author "claude-opus-4-5"
+    # @om-llm-author "claude-opus-4-5"
 
     def __init__(
             self,
@@ -270,7 +270,7 @@ class ClaudeIncrementalMarkdownParser:
 
 
 class GptIncrementalMarkdownParser:
-    # @omlish-llm-author "gpt-5.2"
+    # @om-llm-author "gpt-5.2"
 
     def __init__(
             self,

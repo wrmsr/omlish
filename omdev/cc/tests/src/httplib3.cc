@@ -1,5 +1,5 @@
 //usr/bin/true; CFLAGS=$(pkg-config --cflags --libs openssl) exec om cc run "$0" "$@"
-// @omlish-cdeps ["httplib"]
+// @om-cdeps ["httplib"]
 #include <iostream>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT

@@ -1,4 +1,4 @@
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = {'!omdev.cli.types.CliModule': {
     'name': 'antlr',
     'module': __name__,

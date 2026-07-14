@@ -14,7 +14,7 @@ class ResolvedModelRepo(ta.NamedTuple):
     path: str
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
+# @om-manifest $.minichain.registries.manifests.RegistryTypeManifest
 class ModelRepoResolver(lang.Abstract):
     @abc.abstractmethod
     def can_resolve(self, repo: ModelRepo) -> bool:

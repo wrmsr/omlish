@@ -96,7 +96,7 @@ class ShadowCli(ap.Cli):
 ##
 
 
-# @omlish-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('shadow', __name__)
 
 
