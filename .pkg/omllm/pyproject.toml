@@ -5,7 +5,7 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omxtra'
+name = 'omllm'
 authors = [
     {name = 'wrmsr'},
 ]
@@ -22,7 +22,7 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.14',
 ]
-description = 'omxtra'
+description = 'omllm'
 dependencies = [
     'omlish == 0.0.27',
 ]
@@ -30,30 +30,20 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'omdev == 0.0.27',
-    'greenlet ~= 3.5',
-    'paramiko ~= 5.0',
-    'asyncssh ~= 2.24',
 ]
 omdev = [
     'omdev == 0.0.27',
 ]
-async = [
-    'greenlet ~= 3.5',
-]
-ssh = [
-    'paramiko ~= 5.0',
-    'asyncssh ~= 2.24',
-]
 
 [project.entry-points]
-'omlish.manifests' = {omxtra = 'omxtra'}
+'omlish.manifests' = {omllm = 'omllm'}
 
 [tool.setuptools]
 
 [tool.setuptools.packages.find]
 include = [
-    'omxtra',
-    'omxtra.*',
+    'omllm',
+    'omllm.*',
 ]
 exclude = [
     '*.tests',

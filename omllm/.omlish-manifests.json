@@ -1,0 +1,16 @@
+[
+  {
+    "module": ".dev.git",
+    "attr": null,
+    "file": "omllm/dev/git.py",
+    "line": 23,
+    "value": {
+      "!omdev.tools.git.messages.GitMessageGeneratorManifest": {
+        "module": "omllm.dev.git",
+        "attr": "LlmGitMessageGenerator",
+        "name": "llm",
+        "aliases": null
+      }
+    }
+  }
+]

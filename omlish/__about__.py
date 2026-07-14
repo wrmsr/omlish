@@ -39,15 +39,12 @@ class Project(ProjectBase):
             'anyio ~= 4.14',
             'sniffio ~= 1.3',
 
-            'greenlet ~= 3.5',
-
             'trio ~= 0.33',
             'trio-asyncio ~= 0.15',
         ],
 
         'compress': [
             'lz4 ~= 4.4',
-            # 'lz4 @ git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED'
 
             'python-snappy ~= 0.7',
 
@@ -88,12 +85,12 @@ class Project(ProjectBase):
 
         'sqldrivers': [
             'pg8000 ~= 1.31',
-            # 'psycopg2 ~= 3.3',
-            # 'psycopg ~= 3.2',
+            'psycopg2 ~= 2.9',
+            'psycopg ~= 3.3',
 
             'pymysql ~= 1.2',
-            # 'mysql-connector-python ~= 9.7',
-            # 'mysqlclient ~= 2.2',
+            'mysql-connector-python ~= 9.7',
+            'mysqlclient ~= 2.2',
 
             'snowflake-connector-python ~= 4.6',
 

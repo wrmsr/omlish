@@ -4,26 +4,16 @@ from omlish.__about__ import __version__
 
 
 class Project(ProjectBase):
-    name = 'omxtra'
-    description = 'omxtra'
+    name = 'omllm'
+    description = 'omllm'
 
     dependencies = [
         f'omlish == {__version__}',
     ]
 
-    optional_dependencies: dict = {
+    optional_dependencies = {
         'omdev': [
             f'omdev == {__version__}',
-        ],
-
-        'async': [
-            'greenlet ~= 3.5',
-        ],
-
-        'ssh': [
-            'paramiko ~= 5.0',  # !! LGPL
-
-            'asyncssh ~= 2.24',  # cffi
         ],
     }
 
@@ -33,7 +23,7 @@ class Project(ProjectBase):
 
 
 class Setuptools(SetuptoolsBase):
-    cext = True
+    rs = True
 
     find_packages = {
         'include': [Project.name, f'{Project.name}.*'],

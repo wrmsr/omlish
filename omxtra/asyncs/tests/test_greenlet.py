@@ -6,8 +6,8 @@ TODO:
 import asyncio
 import functools
 
-from ... import check
-from ...testing import pytest as ptu
+from omlish import check
+from omlish.testing import pytest as ptu
 
 
 @ptu.skip.if_cant_import('greenlet')
