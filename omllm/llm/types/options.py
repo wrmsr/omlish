@@ -33,7 +33,7 @@ class Options:
                 if mv is None:
                     continue
 
-                kw[fld.name] = fv
+                kw[fld.name] = mv
 
         if not kw:
             return self
