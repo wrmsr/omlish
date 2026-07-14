@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
-# @omlish-amalg ../scripts/supervisor.py
+# DISABLED: # @omlish-amalg ../scripts/supervisor.py
 #
 # Supervisor is Copyright (c) 2006-2015 Agendaless Consulting and Contributors.
 # (http://www.agendaless.com), All Rights Reserved

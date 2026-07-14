@@ -340,20 +340,6 @@
     }
   },
   {
-    "module": ".supervisor.__main__",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/supervisor/__main__.py",
-    "line": 4,
-    "value": {
-      "!.cli.types.CliModule": {
-        "name": [
-          "supervisor"
-        ],
-        "module": "omdev.supervisor.__main__"
-      }
-    }
-  },
-  {
     "module": ".tools.cloc",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/cloc.py",
