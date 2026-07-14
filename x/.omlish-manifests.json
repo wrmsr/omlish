@@ -1,1 +1,1211 @@
-[]
+[
+  {
+    "module": ".minichain.backends.anthropic.chat",
+    "attr": null,
+    "file": "x/minichain/backends/anthropic/chat.py",
+    "line": 123,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.anthropic.chat",
+        "attr": "AnthropicChatChoicesService",
+        "name": "anthropic",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.anthropic.names",
+    "attr": "_BACKEND_STRINGS_MANIFEST",
+    "file": "x/minichain/backends/anthropic/names.py",
+    "line": 45,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "anthropic",
+        "model_names": {
+          "default": "claude",
+          "aliases": {
+            "claude-opus-4-7": null,
+            "claude-opus": "claude-opus-4-7",
+            "opus": "claude-opus-4-7",
+            "claude-sonnet-4-6": null,
+            "claude-sonnet": "claude-sonnet-4-6",
+            "sonnet": "claude-sonnet-4-6",
+            "claude-haiku-4-5": null,
+            "claude-haiku": "claude-haiku-4-5",
+            "haiku": "claude-haiku-4-5",
+            "claude": "claude-haiku"
+          }
+        }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.anthropic.stream",
+    "attr": null,
+    "file": "x/minichain/backends/anthropic/stream.py",
+    "line": 35,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.anthropic.stream",
+        "attr": "AnthropicChatChoicesStreamService",
+        "name": "anthropic",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.cerebras.chat",
+    "attr": null,
+    "file": "x/minichain/backends/cerebras/chat.py",
+    "line": 34,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.cerebras.chat",
+        "attr": "CerebrasChatChoicesService",
+        "name": "cerebras",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.cerebras.names",
+    "attr": "_BACKEND_STRINGS_MANIFEST",
+    "file": "x/minichain/backends/cerebras/names.py",
+    "line": 34,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "cerebras",
+        "model_names": {
+          "default": "gpt-oss-120b",
+          "aliases": {
+            "llama3.1-8b": null,
+            "llama3": "llama3.1-8b",
+            "gpt-oss-120b": null,
+            "gpt-oss": "gpt-oss-120b",
+            "qwen-3-32b": null,
+            "qwen3": "qwen-3-32b",
+            "qwen-3-235b-a22b-instruct-2507": null,
+            "qwen-3-235b": "qwen-3-235b-a22b-instruct-2507",
+            "zai-glm-4.7": null,
+            "glm": "zai-glm-4.7"
+          }
+        }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.cerebras.stream",
+    "attr": null,
+    "file": "x/minichain/backends/cerebras/stream.py",
+    "line": 9,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.cerebras.stream",
+        "attr": "CerebrasChatChoicesStreamService",
+        "name": "cerebras",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.duckduckgo.search",
+    "attr": null,
+    "file": "x/minichain/backends/duckduckgo/search.py",
+    "line": 17,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.duckduckgo.search",
+        "attr": "DuckduckgoSearchService",
+        "name": "duckduckgo",
+        "aliases": [
+          "ddg"
+        ],
+        "type": "SearchService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.dummy.chat",
+    "attr": null,
+    "file": "x/minichain/backends/dummy/chat.py",
+    "line": 35,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.dummy.chat",
+        "attr": "DummyChatChoicesService",
+        "name": "dummy",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.dummy.chat",
+    "attr": null,
+    "file": "x/minichain/backends/dummy/chat.py",
+    "line": 70,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.dummy.chat",
+        "attr": "DummyChatChoicesStreamService",
+        "name": "dummy",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.dummy.chat",
+    "attr": null,
+    "file": "x/minichain/backends/dummy/chat.py",
+    "line": 124,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "dummy",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.google.chat",
+    "attr": null,
+    "file": "x/minichain/backends/google/chat.py",
+    "line": 84,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.google.chat",
+        "attr": "GoogleChatChoicesService",
+        "name": "google",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.google.names",
+    "attr": "_BACKEND_STRINGS_MANIFEST",
+    "file": "x/minichain/backends/google/names.py",
+    "line": 64,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "google",
+        "model_names": {
+          "default": "gemini",
+          "aliases": {
+            "gemini-3.1-pro-preview": null,
+            "gemini-3.1-pro": "gemini-3.1-pro-preview",
+            "gemini-3-pro": "gemini-3.1-pro-preview",
+            "gemini-pro": "gemini-3.1-pro-preview",
+            "gemini-3-flash-preview": null,
+            "gemini-3-flash": "gemini-3-flash-preview",
+            "gemini-flash": "gemini-3-flash-preview",
+            "gemini-3.1-flash-lite-preview": null,
+            "gemini-3.1-flash-lite": "gemini-3.1-flash-lite-preview",
+            "gemini-3-flash-lite": "gemini-3.1-flash-lite-preview",
+            "gemini-flash-lite": "gemini-3.1-flash-lite-preview",
+            "gemini-2.5-flash": null,
+            "gemini-2-flash": "gemini-2.5-flash",
+            "gemini-2.5-flash-lite": null,
+            "gemini-2-flash-lite": "gemini-2.5-flash-lite",
+            "gemini": "gemini-flash"
+          }
+        }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.google.stream",
+    "attr": null,
+    "file": "x/minichain/backends/google/stream.py",
+    "line": 34,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.google.stream",
+        "attr": "GoogleChatChoicesStreamService",
+        "name": "google",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.groq.chat",
+    "attr": null,
+    "file": "x/minichain/backends/groq/chat.py",
+    "line": 29,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.groq.chat",
+        "attr": "GroqChatChoicesService",
+        "name": "groq",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.groq.names",
+    "attr": "_BACKEND_STRINGS_MANIFEST",
+    "file": "x/minichain/backends/groq/names.py",
+    "line": 49,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "groq",
+        "model_names": {
+          "default": "gpt-oss-120b",
+          "aliases": {
+            "gpt-oss-120b": "openai/gpt-oss-120b",
+            "openai/gpt-oss-120b": null,
+            "gpt-oss-20b": "openai/gpt-oss-20b",
+            "openai/gpt-oss-20b": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.groq.stream",
+    "attr": null,
+    "file": "x/minichain/backends/groq/stream.py",
+    "line": 9,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.groq.stream",
+        "attr": "GroqChatChoicesStreamService",
+        "name": "groq",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.huggingface.repos",
+    "attr": null,
+    "file": "x/minichain/backends/huggingface/repos.py",
+    "line": 20,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.huggingface.repos",
+        "attr": "HuggingfaceModelRepoResolver",
+        "name": "huggingface",
+        "aliases": [
+          "hf"
+        ],
+        "type": "ModelRepoResolver"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.llamacpp.chat",
+    "attr": null,
+    "file": "x/minichain/backends/llamacpp/chat.py",
+    "line": 37,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService"
+        ],
+        "backend_name": "llamacpp",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.llamacpp.chat",
+    "attr": null,
+    "file": "x/minichain/backends/llamacpp/chat.py",
+    "line": 46,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.llamacpp.chat",
+        "attr": "LlamacppChatChoicesService",
+        "name": "llamacpp",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.llamacpp.completion",
+    "attr": null,
+    "file": "x/minichain/backends/llamacpp/completion.py",
+    "line": 28,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.llamacpp.completion",
+        "attr": "LlamacppCompletionService",
+        "name": "llamacpp",
+        "aliases": null,
+        "type": "CompletionService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.llamacpp.stream",
+    "attr": null,
+    "file": "x/minichain/backends/llamacpp/stream.py",
+    "line": 42,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "llamacpp",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.llamacpp.stream",
+    "attr": null,
+    "file": "x/minichain/backends/llamacpp/stream.py",
+    "line": 51,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.llamacpp.stream",
+        "attr": "LlamacppChatChoicesStreamService",
+        "name": "llamacpp",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.mistral",
+    "attr": null,
+    "file": "x/minichain/backends/mistral.py",
+    "line": 28,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.mistral",
+        "attr": "MistralChatChoicesService",
+        "name": "mistral",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.mlx.chat",
+    "attr": null,
+    "file": "x/minichain/backends/mlx/chat.py",
+    "line": 47,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "mlx",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.mlx.chat",
+    "attr": null,
+    "file": "x/minichain/backends/mlx/chat.py",
+    "line": 142,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.mlx.chat",
+        "attr": "MlxChatChoicesService",
+        "name": "mlx",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.mlx.chat",
+    "attr": null,
+    "file": "x/minichain/backends/mlx/chat.py",
+    "line": 172,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.mlx.chat",
+        "attr": "MlxChatChoicesStreamService",
+        "name": "mlx",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.ollama.chat",
+    "attr": null,
+    "file": "x/minichain/backends/ollama/chat.py",
+    "line": 63,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "ollama",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.ollama.chat",
+    "attr": null,
+    "file": "x/minichain/backends/ollama/chat.py",
+    "line": 135,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.ollama.chat",
+        "attr": "OllamaChatChoicesService",
+        "name": "ollama",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.ollama.stream",
+    "attr": null,
+    "file": "x/minichain/backends/ollama/stream.py",
+    "line": 33,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.ollama.stream",
+        "attr": "OllamaChatChoicesStreamService",
+        "name": "ollama",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.chat",
+    "attr": null,
+    "file": "x/minichain/backends/openai/chat.py",
+    "line": 8,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.openai.chat",
+        "attr": "OpenaiChatChoicesService",
+        "name": "openai",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.completion",
+    "attr": null,
+    "file": "x/minichain/backends/openai/completion.py",
+    "line": 18,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.openai.completion",
+        "attr": "OpenaiCompletionService",
+        "name": "openai",
+        "aliases": null,
+        "type": "CompletionService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.embedding",
+    "attr": null,
+    "file": "x/minichain/backends/openai/embedding.py",
+    "line": 17,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.openai.embedding",
+        "attr": "OpenaiEmbeddingService",
+        "name": "openai",
+        "aliases": null,
+        "type": "EmbeddingService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.names",
+    "attr": "_CHAT_BACKEND_STRINGS_MANIFEST",
+    "file": "x/minichain/backends/openai/names.py",
+    "line": 81,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "openai",
+        "model_names": {
+          "default": "gpt",
+          "aliases": {
+            "gpt-4": null,
+            "gpt-4-mini": null,
+            "gpt-4-nano": null,
+            "gpt-4.1": null,
+            "gpt-4.1-mini": null,
+            "gpt-4.1-nano": null,
+            "gpt-5": null,
+            "gpt-5-mini": null,
+            "gpt-5-nano": null,
+            "gpt-5-pro": null,
+            "gpt-5.4": null,
+            "gpt-5.4-mini": null,
+            "gpt-5.4-nano": null,
+            "gpt-5.4-pro": null,
+            "gpt-5.5": null,
+            "gpt-5.5-pro": null,
+            "gpt4": "gpt-4",
+            "gpt4-mini": "gpt-4-mini",
+            "gpt4-nano": "gpt-4-nano",
+            "gpt4.1": "gpt-4.1",
+            "gpt4.1-mini": "gpt-4.1-mini",
+            "gpt4.1-nano": "gpt-4.1-nano",
+            "gpt5": "gpt-5",
+            "gpt5-mini": "gpt-5-mini",
+            "gpt5-nano": "gpt-5-nano",
+            "gpt5-pro": "gpt-5-pro",
+            "gpt5.4": "gpt-5.4",
+            "gpt5.4-mini": "gpt-5.4-mini",
+            "gpt5.4-nano": "gpt-5.4-nano",
+            "gpt5.4-pro": "gpt-5.4-pro",
+            "gpt5.5": "gpt-5.5",
+            "gpt5.5-pro": "gpt-5.5-pro",
+            "gpt": "gpt-5",
+            "gpt-mini": "gpt-5-mini",
+            "gpt-nano": "gpt-5-nano",
+            "gpt-pro": "gpt-5-pro"
+          }
+        }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.names",
+    "attr": "_COMPLETION_BACKEND_STRINGS_MANIFEST",
+    "file": "x/minichain/backends/openai/names.py",
+    "line": 95,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "CompletionService"
+        ],
+        "backend_name": "openai",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.names",
+    "attr": "_EMBEDDING_BACKEND_STRINGS_MANIFEST",
+    "file": "x/minichain/backends/openai/names.py",
+    "line": 107,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "EmbeddingService"
+        ],
+        "backend_name": "openai",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.responses.chat",
+    "attr": null,
+    "file": "x/minichain/backends/openai/responses/chat.py",
+    "line": 76,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.openai.responses.chat",
+        "attr": "OpenaiResponsesChatChoicesService",
+        "name": "openai-responses",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.responses.names",
+    "attr": "_RESPONSES_BACKEND_STRINGS_MANIFEST",
+    "file": "x/minichain/backends/openai/responses/names.py",
+    "line": 13,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "openai-responses",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.responses.stream",
+    "attr": null,
+    "file": "x/minichain/backends/openai/responses/stream.py",
+    "line": 31,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.openai.responses.stream",
+        "attr": "OpenaiResponsesChatChoicesStreamService",
+        "name": "openai-responses",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.openai.stream",
+    "attr": null,
+    "file": "x/minichain/backends/openai/stream.py",
+    "line": 9,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.openai.stream",
+        "attr": "OpenaiChatChoicesStreamService",
+        "name": "openai",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.scripted.chat",
+    "attr": null,
+    "file": "x/minichain/backends/scripted/chat.py",
+    "line": 137,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.scripted.chat",
+        "attr": "ScriptedChatChoicesService",
+        "name": "scripted",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.scripted.chat",
+    "attr": null,
+    "file": "x/minichain/backends/scripted/chat.py",
+    "line": 163,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.scripted.chat",
+        "attr": "ScriptedChatChoicesStreamService",
+        "name": "scripted",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.scripted.chat",
+    "attr": null,
+    "file": "x/minichain/backends/scripted/chat.py",
+    "line": 217,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "scripted",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.tavily",
+    "attr": null,
+    "file": "x/minichain/backends/tavily.py",
+    "line": 19,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.tavily",
+        "attr": "TavilySearchService",
+        "name": "tavily",
+        "aliases": null,
+        "type": "SearchService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.tinygrad.chat",
+    "attr": null,
+    "file": "x/minichain/backends/tinygrad/chat.py",
+    "line": 124,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.tinygrad.chat",
+        "attr": "TinygradLlama3ChatChoicesService",
+        "name": "tinygrad-llama3",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.tinygrad.chat",
+    "attr": null,
+    "file": "x/minichain/backends/tinygrad/chat.py",
+    "line": 144,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.tinygrad.chat",
+        "attr": "TinygradLlama3ChatChoicesStreamService",
+        "name": "tinygrad-llama3",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.tinygrad.chat",
+    "attr": null,
+    "file": "x/minichain/backends/tinygrad/chat.py",
+    "line": 201,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "tinygrad-llama3",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.transformers.sentence",
+    "attr": null,
+    "file": "x/minichain/backends/transformers/sentence.py",
+    "line": 22,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.transformers.sentence",
+        "attr": "SentenceTransformersEmbeddingService",
+        "name": "sentence_transformers",
+        "aliases": [
+          "stfm"
+        ],
+        "type": "EmbeddingService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.transformers.transformers",
+    "attr": null,
+    "file": "x/minichain/backends/transformers/transformers.py",
+    "line": 54,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "transformers",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.transformers.transformers",
+    "attr": null,
+    "file": "x/minichain/backends/transformers/transformers.py",
+    "line": 70,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.transformers.transformers",
+        "attr": "TransformersCompletionService",
+        "name": "transformers",
+        "aliases": [
+          "tfm"
+        ],
+        "type": "CompletionService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.transformers.transformers",
+    "attr": null,
+    "file": "x/minichain/backends/transformers/transformers.py",
+    "line": 201,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.transformers.transformers",
+        "attr": "TransformersChatChoicesService",
+        "name": "transformers",
+        "aliases": [
+          "tfm"
+        ],
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.transformers.transformers",
+    "attr": null,
+    "file": "x/minichain/backends/transformers/transformers.py",
+    "line": 231,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.backends.transformers.transformers",
+        "attr": "TransformersChatChoicesStreamService",
+        "name": "transformers",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.chat.choices.services",
+    "attr": null,
+    "file": "x/minichain/chat/choices/services.py",
+    "line": 33,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.chat.choices.services",
+        "attr": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.chat.generations",
+    "attr": null,
+    "file": "x/minichain/chat/generations.py",
+    "line": 30,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.chat.generations",
+        "attr": "ChatGenerationMetadata"
+      }
+    }
+  },
+  {
+    "module": ".minichain.chat.services",
+    "attr": null,
+    "file": "x/minichain/chat/services.py",
+    "line": 33,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.chat.services",
+        "attr": "ChatService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.chat.stream.choices.services",
+    "attr": null,
+    "file": "x/minichain/chat/stream/choices/services.py",
+    "line": 38,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.chat.stream.choices.services",
+        "attr": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.chat.stream.services",
+    "attr": null,
+    "file": "x/minichain/chat/stream/services.py",
+    "line": 38,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.chat.stream.services",
+        "attr": "ChatStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.completion",
+    "attr": null,
+    "file": "x/minichain/completion.py",
+    "line": 42,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.completion",
+        "attr": "CompletionService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.models.repos.resolving",
+    "attr": null,
+    "file": "x/minichain/models/repos/resolving.py",
+    "line": 17,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.models.repos.resolving",
+        "attr": "ModelRepoResolver"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.bash.descriptors",
+    "attr": null,
+    "file": "x/minichain/modules/bash/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.modules.bash.descriptors",
+        "attr": "BASH_MODULE",
+        "name": "bash",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.code.descriptors",
+    "attr": null,
+    "file": "x/minichain/modules/code/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.modules.code.descriptors",
+        "attr": "CODE_MODULE",
+        "name": "code",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.descriptors",
+    "attr": null,
+    "file": "x/minichain/modules/descriptors.py",
+    "line": 16,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.modules.descriptors",
+        "attr": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.fs.descriptors",
+    "attr": null,
+    "file": "x/minichain/modules/fs/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.modules.fs.descriptors",
+        "attr": "FS_MODULE",
+        "name": "fs",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.skills.descriptors",
+    "attr": null,
+    "file": "x/minichain/modules/skills/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.modules.skills.descriptors",
+        "attr": "SKILLS_MODULE",
+        "name": "skills",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.todo.descriptors",
+    "attr": null,
+    "file": "x/minichain/modules/todo/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.modules.todo.descriptors",
+        "attr": "TODO_MODULE",
+        "name": "todo",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.weathertest.descriptors",
+    "attr": null,
+    "file": "x/minichain/modules/weathertest/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.modules.weathertest.descriptors",
+        "attr": "WEATHER_TEST_MODULE",
+        "name": "weather_test",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.web.descriptors",
+    "attr": null,
+    "file": "x/minichain/modules/web/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.modules.web.descriptors",
+        "attr": "WEB_MODULE",
+        "name": "web",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.search",
+    "attr": null,
+    "file": "x/minichain/search.py",
+    "line": 59,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.search",
+        "attr": "SearchService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.services.requests",
+    "attr": null,
+    "file": "x/minichain/services/requests.py",
+    "line": 27,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.services.requests",
+        "attr": "RequestMetadata"
+      }
+    }
+  },
+  {
+    "module": ".minichain.services.responses",
+    "attr": null,
+    "file": "x/minichain/services/responses.py",
+    "line": 25,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.services.responses",
+        "attr": "ResponseMetadata"
+      }
+    }
+  },
+  {
+    "module": ".minichain.vectors.embeddings",
+    "attr": null,
+    "file": "x/minichain/vectors/embeddings.py",
+    "line": 42,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.vectors.embeddings",
+        "attr": "EmbeddingService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.vectors.index",
+    "attr": null,
+    "file": "x/minichain/vectors/index.py",
+    "line": 51,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.vectors.index",
+        "attr": "VectorIndexService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.vectors.search",
+    "attr": null,
+    "file": "x/minichain/vectors/search.py",
+    "line": 71,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "x.minichain.vectors.search",
+        "attr": "VectorSearchService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.wrappers.metadata",
+    "attr": null,
+    "file": "x/minichain/wrappers/metadata.py",
+    "line": 16,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "x.minichain.wrappers.metadata",
+        "attr": "RetryServiceResponseMetadata",
+        "name": "RetryServiceResponseMetadata",
+        "aliases": null,
+        "type": "ResponseMetadata"
+      }
+    }
+  },
+  {
+    "module": ".ommlds.backends.huggingface.cli",
+    "attr": "_CLI_MODULE",
+    "file": "x/ommlds/backends/huggingface/cli.py",
+    "line": 203,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "hf",
+        "module": "x.ommlds.backends.huggingface.cli"
+      }
+    }
+  },
+  {
+    "module": ".ommlds.backends.ollama.cli",
+    "attr": "_CLI_MODULE",
+    "file": "x/ommlds/backends/ollama/cli.py",
+    "line": 31,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "ollama",
+        "module": "x.ommlds.backends.ollama.cli"
+      }
+    }
+  },
+  {
+    "module": ".ommlds.tools.git",
+    "attr": null,
+    "file": "x/ommlds/tools/git.py",
+    "line": 197,
+    "value": {
+      "!omdev.tools.git.messages.GitMessageGeneratorManifest": {
+        "module": "x.ommlds.tools.git",
+        "attr": "AiGitMessageGenerator",
+        "name": "ai",
+        "aliases": null
+      }
+    }
+  }
+]

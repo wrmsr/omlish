@@ -7,7 +7,6 @@ pkgs = [
     'ominfra',
     'omlish',
     'omllm',
-    'ommlds',
     'omxtra',
 ]
 
@@ -17,7 +16,6 @@ main = [
     'ominfra',
     'omlish',
     'omllm',
-    'ommlds',
     'omxtra',
 ]
 
@@ -148,6 +146,9 @@ module = [
     'pgcli',
     'pgcli.*',
 
+    'pytesseract',
+    'rapidocr_onnxruntime',
+
     ##
     # omlish
 
@@ -172,26 +173,28 @@ module = [
     'pydevd_pycharm',
 
     ##
-    # ommlds
+    # omllm
 
     'tinygrad',
     'tinygrad.*',
 
     'datasets',
-    'pytesseract',
-    'rapidocr_onnxruntime',
     'sentencepiece',
     'tokenizers',
     'tokenizers.*',
     'torchvision',
     'torchvision.*',
-    'wikitextparser',
 
     'llama_cpp',
     'llama_cpp.*',
 
     'mlx.*',
     'mlx_lm.*',
+
+    ##
+    # omxtra
+
+    'wikitextparser',
 
 ]
 ignore_missing_imports = true

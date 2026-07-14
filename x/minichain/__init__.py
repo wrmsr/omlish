@@ -1,0 +1,1051 @@
+# fmt: off
+# ruff: noqa: I001
+from omlish import dataclasses as _dc  # noqa
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
+
+
+from omlish import lang as _lang  # noqa
+
+
+with _lang.auto_proxy_init(
+        globals(),
+        # disable=True,
+        # eager=True,
+):
+    ##
+
+    from .backends.dummy.chat import (  # noqa
+        DummyChatChoicesResponse,
+        DummyChatChoicesService,
+
+        DummyChatChoicesStreamResponse,
+        DummyChatChoicesStreamService,
+    )
+
+    from .backends.scripted.chat import (  # noqa
+        ScriptedChatScript,
+        ScriptedChatCursor,
+        ScriptedChatChoicesService,
+        ScriptedChatChoicesStreamService,
+    )
+
+    from .backends.scripted.scripts import (  # noqa
+        ChatScriptTurnExpectation,
+        ChatScriptGate,
+
+        ChatScriptError,
+        ChatScriptExhaustedError,
+
+        ChatScriptGatePoint,
+
+        ChatScriptTurn,
+        ChatScript,
+
+        ChatScriptCursor,
+    )
+
+    ##
+
+    from .chat.choices.adapters import (  # noqa
+        ChatChoicesServiceChatService,
+    )
+
+    from .chat.choices.services import (  # noqa
+        ChatChoicesServiceOutput,
+        ChatChoicesServiceOutputs,
+
+        ChatChoicesRequest,
+        ChatChoicesResponse,
+        ChatChoicesService,
+        AbstractChatChoicesService,
+        static_check_is_chat_choices_service,
+    )
+
+    from .chat.choices.types import (  # noqa
+        ChatChoicesOption,
+        ChatChoicesOptions,
+
+        ChatChoicesOutput,
+        ChatChoicesOutputs,
+
+        ChatChoices,
+    )
+
+    from .chat.stream.choices.adapters import (  # noqa
+        ChatChoicesStreamServiceChatChoicesService,
+    )
+
+    from .chat.stream.choices.joining import (  # noqa
+        AiChoicesDeltaJoiner,
+    )
+
+    from .chat.stream.choices.services import (  # noqa
+        ChatChoicesStreamRequest,
+        ChatChoicesStreamResponse,
+        ChatChoicesStreamService,
+        AbstractChatChoicesStreamService,
+        static_check_is_chat_choices_stream_service,
+    )
+
+    from .chat.stream.choices.types import (  # noqa
+        ChatChoicesStreamOption,
+        ChatChoicesStreamOptions,
+
+        ChatChoicesStreamOutput,
+        ChatChoicesStreamOutputs,
+
+        ChatChoicesStreamResult,
+
+        AiChoiceDeltas,
+        AiChoicesDeltas,
+    )
+
+    from .chat.stream.events import (  # noqa
+        AiStreamEvent,
+        AiStreamBeginEvent,
+        AiStreamDeltaEvent,
+        AiStreamEndEvent,
+    )
+
+    from .chat.stream.joining import (  # noqa
+        AiDeltaJoiner,
+    )
+
+    from .chat.stream.services import (  # noqa
+        ChatStreamRequest,
+        ChatStreamResponse,
+        ChatStreamService,
+        AbstractChatStreamService,
+        static_check_is_chat_stream_service,
+    )
+
+    from .chat.stream.types import (  # noqa
+        ChatStreamOption,
+        ChatStreamOptions,
+
+        ChatStreamOutput,
+        ChatStreamOutputs,
+
+        ChatStreamResult,
+
+        AiDelta,
+        AiDeltas,
+
+        ContentAiDelta,
+
+        AnyToolUseAiDelta,
+        ToolUseAiDelta,
+        PartialToolUseAiDelta,
+
+        ThinkingAiDelta,
+    )
+
+    from .chat.transform.types import (  # noqa
+        MessageTransform,
+
+        CompositeMessageTransform,
+        FnMessageTransform,
+        TypeFilteredMessageTransform,
+
+        ChatTransform,
+
+        CompositeChatTransform,
+        FnChatTransform,
+        MessageTransformChatTransform,
+    )
+
+    from .chat.transform.content import (  # noqa
+        ContentTransformMessageTransform,
+    )
+
+    from .chat.transform.metadata import (  # noqa
+        CreatedAtAddingMessageTransform,
+        MessageUuidAddingMessageTransform,
+        TurnUuidAddingMessageTransform,
+    )
+
+    from .chat.events import (  # noqa
+        UserMessagesEvent,
+        AiMessagesEvent,
+    )
+
+    from .chat.formats import (  # noqa
+        JSON_RESPONSE_FORMAT,
+        JsonResponseFormat,
+        ResponseFormat,
+        TEXT_RESPONSE_FORMAT,
+        TextResponseFormat,
+    )
+
+    from .chat.generations import (  # Noqa
+        ChatGenerationMetadata,
+        ChatGenerationMetadatas,
+
+        ChatGeneration,
+    )
+
+    from .chat.messages import (  # noqa
+        Message,
+        Chat,
+
+        AnyUserMessage,
+        UserChat,
+        check_user_chat,
+
+        AnyAiMessage,
+        AiChat,
+        check_ai_chat,
+
+        SystemMessage,
+
+        DeveloperMessage,
+
+        UserMessage,
+
+        AiMessage,
+
+        ToolUseMessage,
+        ToolUseResultMessage,
+
+        ThinkingMessage,
+    )
+
+    from .chat.metadata import (  # noqa
+        MessageMetadata,
+        MessageMetadatas,
+
+        MessageUuid,
+        TurnUuid,
+
+        ThoughtSignature,
+    )
+
+    from .chat.services import (  # noqa
+        ChatServiceOutput,
+        ChatServiceOutputs,
+
+        ChatRequest,
+        ChatResponse,
+        ChatService,
+        AbstractChatService,
+        static_check_is_chat_service,
+    )
+
+    from .chat.templating import (  # noqa
+        ChatTemplatePart,
+        ChatTemplate,
+
+        MessageTemplate,
+        MessagePlaceholder,
+
+        ChatTemplater,
+    )
+
+    from .chat.tools.types import (  # noqa
+        Tool,
+    )
+
+    from .chat.types import (  # noqa
+        ChatOption,
+        ChatOptions,
+
+        ChatOutput,
+        ChatOutputs,
+    )
+
+    ##
+
+    from .content.parse.simple import (  # noqa
+        parse_simple_content,
+    )
+
+    ##
+
+    from .content.render.standard import (  # noqa
+        StandardContentRenderer,
+
+        render_content_str,
+    )
+
+    from .content.render.types import (  # noqa
+        ContentRenderer,
+        ContentStrRenderer,
+    )
+
+    ##
+
+    from .content.transform.materialize.placeholders import (  # noqa
+        PlaceholderContentKeyError,
+        MissingPlaceholderContentKeyError,
+        DuplicatePlaceholderContentKeyError,
+    )
+
+    from .content.transform.strings import (  # noqa
+        StringFnContentTransform,
+        transform_content_strings,
+    )
+
+    from .content.transform.types import (  # noqa
+        ContentTransform,
+
+        CompositeContentTransform,
+        FnContentTransform,
+        TypeFilteredContentTransform,
+    )
+
+    from .content.transform.visitors import (  # noqa
+        VisitorContentTransform,
+    )
+
+    ##
+
+    from .content.blank import (  # noqa
+        BlankContent,
+    )
+
+    from .content.code import (  # noqa
+        CodeContent,
+        InlineCodeContent,
+        BlockCodeContent,
+    )
+
+    from .content.composite import (  # noqa
+        CompositeContent,
+    )
+
+    from .content.containers import (  # noqa
+        ContainerContent,
+        FlowContent,
+        ConcatContent,
+        BlocksContent,
+    )
+
+    from .content.content import (  # noqa
+        ContentBase,
+
+        Content,
+        CONTENT_TYPES,
+    )
+
+    from .content.dynamic import (  # noqa
+        DynamicContent,
+    )
+
+    from .content.emphasis import (  # noqa
+        BoldContent,
+        ItalicContent,
+        BoldItalicContent,
+    )
+
+    from .content.images import (  # noqa
+        ImageContent,
+    )
+
+    from .content.itemlist import (  # noqa
+        ItemListContent,
+    )
+
+    from .content.json import (  # noqa
+        JsonContent,
+    )
+
+    from .content.link import (  # noqa
+        LinkContent,
+    )
+
+    from .content.markdown import (  # noqa
+        MarkdownContent,
+    )
+
+    from .content.marshal import (  # noqa
+        DisableDynamicClassMarshaling,
+        EnableDynamicClassUnmarshaling,
+
+        DynamicClassForbiddenMarshalError,
+    )
+
+    from .content.metadata import (  # noqa
+        ContentMetadata,
+        ContentMetadatas,
+
+        ContentUuid,
+    )
+
+    from .content.namespaces import (  # noqa
+        ContentNamespace,
+        NamespaceContent,
+    )
+
+    from .content.placeholders import (  # noqa
+        ContentPlaceholder,
+        PlaceholderContentKey,
+        PlaceholderContent,
+
+        PlaceholderContentValue,
+        PlaceholderContentMap,
+        PlaceholderContents,
+    )
+
+    from .content.quote import (  # noqa
+        QuoteContent,
+    )
+
+    from .content.raw import (  # noqa
+        NonStrSingleRawContent,
+        NON_STR_SINGLE_RAW_CONTENT_TYPES,
+
+        SingleRawContent,
+        SINGLE_RAW_CONTENT_TYPES,
+
+        RawContent,
+        RAW_CONTENT_TYPES,
+    )
+
+    from .content.recursive import (  # noqa
+        RecursiveContent,
+    )
+
+    from .content.resources import (  # noqa
+        ResourceContent,
+        resource_content,
+    )
+
+    from .content.section import (  # noqa
+        SectionContent,
+    )
+
+    from .content.sequence import (  # noqa
+        SequenceContent,
+    )
+
+    from .content.standard import (  # noqa
+        StandardContent,
+    )
+
+    from .content.tag import (  # noqa
+        TagContent,
+    )
+
+    from .content.templates import (  # noqa
+        TemplateContent,
+    )
+
+    from .content.text import (  # noqa
+        TextContent,
+    )
+
+    from .content.visitors import (  # noqa
+        ContentVisitor,
+
+        StandardContentVisitorTypeError,
+        StandardContentVisitor,
+
+        StaticContentVisitorTypeError,
+        StaticContentVisitor,
+    )
+
+    ##
+
+    from . import drivers  # noqa
+
+    ##
+
+    from .events.logging import (  # noqa
+        JsonlFileEventLogger,
+    )
+
+    from .events.manager import (  # noqa
+        EventsManager,
+    )
+
+    from .events.types import (  # noqa
+        Event,
+
+        EventCallback,
+        EventCallbacks,
+
+        ErrorEvent,
+    )
+
+    ##
+
+    from . import facades  # noqa
+
+    ##
+
+    from . import injection  # noqa
+
+    ##
+
+    from .llms.tokens import (  # noqa
+        Token,
+        Tokens,
+    )
+
+    from .llms.stopreasons import (  # noqa
+        StopReason,
+        EndTurnStopReason,
+        ToolUseStopReason,
+        MaxTokensStopReason,
+        StopSequenceStopReason,
+        ContentFilterStopReason,
+        OtherStopReason,
+    )
+
+    from .llms.tokens import (  # noqa
+        TokenUsage,
+    )
+
+    from .llms.types import (  # noqa
+        LlmOption,
+
+        TopK,
+        Temperature,
+        MaxTokens,
+        MaxCompletionTokens,
+
+        LlmOutput,
+
+        StopReasonOutput,
+        InputTokenUsageOutput,
+        TokenUsageOutput,
+        ModelNameOutput,
+    )
+
+    ##
+
+    from .models.repos.resolving import (  # noqa
+        ResolvedModelRepo,
+        ModelRepoResolver,
+    )
+
+    from .models.configs import (  # noqa
+        ModelSpecifier,
+        ModelName,
+        ModelPath,
+        ModelRepo,
+    )
+
+    from .models.names import (  # noqa
+        ModelNameCollection,
+    )
+
+    ##
+
+    from . import modules  # noqa
+
+    ##
+
+    from .registries.globals import (  # noqa
+        get_registry_cls,
+        register_type,
+        registry_new,
+        registry_of,
+    )
+
+    from .registries.reflect import (  # noqa
+        RegistryTypeName,
+
+        get_annotated_registry_type_name,
+        registry_type_repr,
+
+        strip_registry_annotations,
+    )
+
+    from .registries.registry import (  # noqa
+        Registry,
+    )
+
+    ##
+
+    from .services import (  # noqa
+        #
+
+        ServiceCallable,
+        service_callable,
+
+        #
+
+        ServiceOfProvider,
+
+        ServiceProvider,
+        GenericServiceProvider,
+
+        ServiceProviderProxyService,
+        ServiceProviderProxyStreamService,
+
+        #
+
+        ReflectedService,
+        ReflectedStreamService,
+
+        reflect_service_like,
+        reflect_service_cls,
+
+        is_stream_service_cls,
+
+        #
+
+        RequestMetadata,
+        RequestMetadatas,
+        Request,
+
+        #
+
+        ResponseMetadata,
+        ResponseMetadatas,
+        Response,
+
+        #
+
+        Service,
+
+        #
+
+        StreamOption,
+        StreamOptions,
+
+        StreamResponseSink,
+        StreamResponseIterator,
+
+        StreamServiceCancelledError,
+        StreamServiceNotAwaitedError,
+
+        StreamResponse,
+        new_stream_response,
+
+        #
+
+        WrappedRequestV,
+        WrappedOptionT,
+        WrappedResponseV,
+        WrappedOutputT,
+        WrappedStreamResponseEV,
+        WrappedStreamResponseRV,
+
+        WrappedRequest,
+        WrappedResponse,
+        WrappedService,
+
+        WrappedStreamOptions,
+        WrappedStreamRequest,
+        WrappedStreamResponse,
+        WrappedStreamService,
+
+        WrapperService,
+        MultiWrapperService,
+
+        WrapperStreamService,
+        MultiWrapperStreamService,
+
+        wrap_service,
+    )
+
+    ##
+
+    from .specs.instantiate import (  # noqa
+        instantiate_backend_spec,
+
+        DEFAULT_BACKEND_SPEC_INSTANTIATOR,
+    )
+
+    from .specs.resolving import (  # noqa
+        BackendSpecTypeResolver,
+        StringBackendSpecTypeResolver,
+        NameBackendSpecTypeResolver,
+        ModelBackendSpecTypeResolver,
+        ConfigBackendSpecTypeResolver,
+        RetryBackendSpecTypeResolver,
+        FirstInWinsBackendSpecTypeResolver,
+        TypeMapBackendSpecResolver,
+
+        DEFAULT_BACKEND_SPEC_TYPE_RESOLVERS,
+        DEFAULT_BACKEND_SPEC_RESOLVER,
+    )
+
+    from .specs.services import (  # noqa
+        BackendSpecServiceProvider,
+    )
+
+    from .specs.types import (  # noqa
+        CanBackendSpec,
+        BackendSpec,
+
+        StringBackendSpec,
+        NameBackendSpec,
+        ModelBackendSpec,
+        ConfigBackendSpec,
+        RetryBackendSpec,
+        FirstInWinsBackendSpec,
+
+        ResolvedBackendSpec,
+        BackendSpecResolver,
+
+        BackendSpecInstantiator,
+    )
+
+    ##
+
+    from .tools.execution.catalog import (  # noqa
+        ToolCatalogEntry,
+        ToolCatalogEntries,
+        ToolCatalog,
+    )
+
+    from .tools.execution.context import (  # noqa
+        ToolContextProvider,
+        ToolContextProviders,
+    )
+
+    from .tools.execution.errorhandling import (  # noqa
+        ErrorHandlingToolInvoker,
+    )
+
+    from .tools.execution.errors import (  # noqa
+        ToolExecutionError,
+        PermissionDeniedToolExecutionError,
+    )
+
+    from .tools.execution.events import (  # noqa
+        ToolUseEvent,
+        ToolUseResultEvent,
+    )
+
+    from .tools.execution.execution import (  # noqa
+        ToolUseExecution,
+
+        ToolUseExecutor,
+        ToolUseExecutorImpl,
+
+        execute_tool_use,
+    )
+
+    from .tools.execution.invokers import (  # noqa
+        ToolInvoker,
+
+        ToolFnToolInvoker,
+
+        NameSwitchedToolInvoker,
+    )
+
+    from .tools.execution.permissions import (  # noqa
+        DecidedToolPermissionState,
+        ToolPermissionDecider,
+        StaticToolPermissionDecider,
+        DENY_TOOL_PERMISSION_DECIDER,
+    )
+
+    from .tools.execution.reflect import (  # noqa
+        reflect_tool_catalog_entry,
+    )
+
+    from .tools.permissions.bash import (  # noqa
+        BashToolPermissionTarget,
+        BashToolPermissionMatcher,
+    )
+
+    from .tools.permissions.collection import (  # noqa
+        ToolPermissionRules,
+    )
+
+    from .tools.permissions.fs import (  # noqa
+        FsToolPermissionMode,
+
+        FsToolPermissionTarget,
+        GlobFsToolPermissionMatcher,
+    )
+
+    from .tools.permissions.managers import (  # noqa
+        ToolPermissionsManager,
+        SimpleToolPermissionsManager,
+    )
+
+    from .tools.permissions.types import (  # noqa
+        ToolPermissionState,
+
+        ToolPermissionTarget,
+
+        ToolPermissionMatcher,
+
+        ToolPermissionRule,
+    )
+
+    from .tools.permissions.url import (  # noqa
+        UrlToolPermissionTarget,
+        RegexUrlToolPermissionMatcher,
+    )
+
+    from .tools.fns import (  # noqa
+        ToolFn,
+
+        invoke_tool_fn,
+    )
+
+    from .tools.jsonschema import (  # noqa
+        build_tool_spec_json_schema,
+    )
+
+    from .tools.metadata import (  # noqa
+        ToolUseMetadata,
+        ToolUseMetadatas,
+
+        ToolUseUuid,
+
+        ToolUseResultMetadata,
+        ToolUseResultMetadatas,
+    )
+
+    from .tools.reflect import (  # noqa
+        tool_spec_attach,
+        tool_spec_override,
+        tool_param_metadata,
+
+        reflect_tool_spec,
+    )
+
+    from .tools.types import (  # noqa
+        ToolDtype,
+
+        PrimitiveToolDtype,
+
+        UnionToolDtype,
+        NullableToolDtype,
+
+        SequenceToolDtype,
+        MappingToolDtype,
+        TupleToolDtype,
+
+        EnumToolDtype,
+
+        ToolParam,
+
+        ToolSpec,
+
+        ToolUse,
+        ToolUseResult,
+    )
+
+    ##
+
+    from .ui.json import (  # noqa
+        JsonUiTextRendering,
+        render_obj_json_ui_text,
+        render_json_ui_texts,
+    )
+
+    from .ui.rich import (  # noqa
+        ui_text_to_rich_text,
+    )
+
+    from .ui.text import (  # noqa
+        CanUiText,
+        UiTextColor,
+
+        UiTextStyle,
+
+        UiText,
+        StrUiText,
+        ConcatUiText,
+        StyleUiText,
+
+        JsonUiText,
+    )
+
+    ##
+
+    from .vectors.embeddings import (  # noqa
+        EmbeddingOption,
+        EmbeddingOptions,
+
+        EmbeddingOutput,
+        EmbeddingOutputs,
+
+        EmbeddingRequest,
+        EmbeddingResponse,
+        EmbeddingService,
+        static_check_is_embedding_service,
+    )
+
+    from .vectors.index import (  # noqa
+        VectorIndexed,
+
+        VectorIndexOption,
+        VectorIndexOptions,
+
+        VectorIndexOutput,
+        VectorIndexOutputs,
+
+        VectorIndexRequest,
+        VectorIndexResponse,
+        VectorIndexService,
+        static_check_is_vector_index_service,
+    )
+
+    from .vectors.search import (  # noqa
+        VectorSearch,
+        VectorHit,
+        VectorHits,
+
+        VectorSearchOption,
+        VectorSearchOptions,
+
+        VectorSearchOutput,
+        VectorSearchSimilarity,
+        VectorSearchOutputs,
+
+        VectorSearchRequest,
+        VectorSearchResponse,
+        VectorSearchService,
+        static_check_is_vector_search_service,
+    )
+
+    from .vectors.similarity import (  # noqa
+        CALC_NP_SIMILARITIES_FUNCS,
+        Similarity,
+        calc_np_cosine_similarities,
+        calc_np_dot_similarities,
+        calc_np_similarities,
+    )
+
+    from .vectors.stores import (  # noqa
+        VectorStore,
+    )
+
+    from .vectors.types import (  # noqa
+        Vector,
+        Vectorable,
+    )
+
+    ##
+
+    from .wrappers.metadata import (  # noqa
+        RetryServiceResponseMetadata,
+    )
+
+    from .wrappers.retry import (  # noqa
+        AnyRetryService,
+
+        RetryServiceMaxRetriesExceededError,
+
+        RetryService,
+
+        RetryStreamService,
+    )
+
+    from .wrappers.uuids import (  # noqa
+        RequestResponseUuidAddingService,
+    )
+
+    ##
+
+    from .completion import (  # noqa
+        CompletionOption,
+        CompletionOptions,
+
+        CompletionOutput,
+        CompletionOutputs,
+
+        CompletionRequest,
+        CompletionResponse,
+        CompletionService,
+        static_check_is_completion_service,
+    )
+
+    from .configs import (  # noqa
+        Config,
+    )
+
+    from .envs import (  # noqa
+        Env,
+        EnvKey,
+    )
+
+    from .external import (  # noqa
+        ExternalServiceEvent,
+
+        ExternalServiceRequestEvent,
+        ExternalServiceResponseEvent,
+
+        ExternalServiceStreamResponseEvent,
+        ExternalServiceStreamResponseStartEvent,
+        ExternalServiceStreamResponseDataEvent,
+        ExternalServiceStreamResponseEndEvent,
+    )
+
+    from .fs.types import (  # noqa
+        FsRoot,
+    )
+
+    from .json import (  # noqa
+        JsonSchema,
+
+        JsonValue,
+    )
+
+    from .metadata import (  # noqa
+        Metadata,
+
+        MetadataContainer,
+
+        CommonMetadata,
+
+        CreatedAt,
+
+        RequestUuid,
+        ParentRequestUuid,
+        ResponseUuid,
+    )
+
+    from .resources import (  # noqa
+        ResourcesRef,
+        ResourcesRefNotRegisteredError,
+
+        Resources,
+        ResourceManaged,
+
+        ResourcesOption,
+        UseResources,
+    )
+
+    from .search import (  # noqa
+        SearchOption,
+        SearchOptions,
+
+        SearchOutput,
+        SearchOutputs,
+
+        SearchRequest,
+        SearchResponse,
+        SearchService,
+        static_check_is_search_service,
+    )
+
+    from .standard import (  # noqa
+        Device,
+
+        ApiUrl,
+
+        ApiKey,
+    )
+
+    from .types import (  # noqa
+        Option,
+
+        Output,
+    )
+
+
+##
+
+
+from omlish import marshal as _msh  # noqa
+
+_msh.register_global_module_import('._marshal', __package__)

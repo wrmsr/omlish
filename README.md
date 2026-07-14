@@ -21,8 +21,7 @@ for 3.8+.
 - **[omdev](https://github.com/wrmsr/omlish/blob/master/omdev#readme)** - Development utilities, including the
   all-in-one `om` CLI, the amalgamator, the `pyproject` tool, and the ci engine. This is intended to not generally be
   present in production environments.
-- **[ommlds](https://github.com/wrmsr/omlish/blob/master/ommlds#readme)** - ML / data science code, including
-  `minichain` (roughly like langchain) and its CLI.
+- **[omllm](https://github.com/wrmsr/omlish/blob/master/omllm#readme)** - LLM code
 - **[ominfra](https://github.com/wrmsr/omlish/blob/master/ominfra#readme)** - Infrastructure and cloud code, including
   a boto alternative, a remote management tool, and a [supervisor](https://github.com/Supervisor/supervisor) rebuild.
 
