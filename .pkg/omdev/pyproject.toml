@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/omcore'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
-version = '0.0.28'
+version = '0.0.29'
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
@@ -24,13 +24,13 @@ classifiers = [
 ]
 description = 'omdev'
 dependencies = [
-    'omcore == 0.0.28',
+    'omcore == 0.0.29',
 ]
 
 [project.optional-dependencies]
 all = [
-    'ominfra == 0.0.28',
-    'omllm == 0.0.28',
+    'ominfra == 0.0.29',
+    'omllm == 0.0.29',
     'black ~= 26.5',
     'pycparser ~= 3.0',
     'pcpp ~= 1.30',
@@ -50,10 +50,10 @@ all = [
     'textual-speedups ~= 0.2',
 ]
 ominfra = [
-    'ominfra == 0.0.28',
+    'ominfra == 0.0.29',
 ]
 omllm = [
-    'omllm == 0.0.28',
+    'omllm == 0.0.29',
 ]
 black = [
     'black ~= 26.5',

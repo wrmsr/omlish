@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/omcore'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
-version = '0.0.28'
+version = '0.0.29'
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
@@ -24,7 +24,7 @@ classifiers = [
 ]
 description = 'omxtra'
 dependencies = [
-    'omxtra == 0.0.28',
+    'omxtra == 0.0.29',
 ]
 
 [tool.setuptools]
