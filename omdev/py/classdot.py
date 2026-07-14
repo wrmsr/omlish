@@ -38,7 +38,7 @@ def gen_class_dot(roots: ta.Iterable[type]) -> dot.Graph:
 def _main() -> None:
     import argparse
 
-    from omlish import lang
+    from omcore import lang
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--import', '-i', action='append', dest='imports')

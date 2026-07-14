@@ -86,7 +86,7 @@ class Run:
 
     @cached_nullary
     def cfg(self) -> PyprojectConfig:
-        dct = self.raw_cfg()['tool']['omlish']['pyproject']
+        dct = self.raw_cfg()['tool']['om']['pyproject']
         return PyprojectConfigPreparer(
             python_versions=VersionsFile().pythons(),
         ).prepare_config(dct)

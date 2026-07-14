@@ -11,8 +11,8 @@ def test_amalg() -> None:
     mounts = {
         n: os.path.abspath(os.path.join(prj_dir, n))
         for n in [
+            'omcore',
             'ominfra',
-            'omlish',
             'omllm',
         ]
     }

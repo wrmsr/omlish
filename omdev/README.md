@@ -26,8 +26,8 @@ Development utilities and support code.
 
 - **[tools.json](https://github.com/wrmsr/omlish/blob/master/omdev/tools/json)** (cli: `om j`) - a tool for json-like
   data, obviously in the vein of [jq](https://github.com/jqlang/jq) but using the internal
-  [jmespath](https://github.com/wrmsr/omlish/blob/master/omlish/specs/jmespath) engine. supports
-  [true streaming](https://github.com/wrmsr/omlish/blob/master/omlish/formats/json/stream) json input and output, as
+  [jmespath](https://github.com/wrmsr/omlish/blob/master/omcore/specs/jmespath) engine. supports
+  [true streaming](https://github.com/wrmsr/omlish/blob/master/omcore/formats/json/stream) json input and output, as
   well as [various other](https://github.com/wrmsr/omlish/blob/master/omdev/tools/json/formats.py) non-streaming input
   formats.
 
@@ -37,7 +37,7 @@ Development utilities and support code.
 # Amalgamation
 
 Amalgamation is the process of stitching together multiple python source files into a single self-contained python
-script. ['lite'](https://github.com/wrmsr/omlish/blob/master/omlish#lite-code) code is written in a style conducive to
+script. ['lite'](https://github.com/wrmsr/omlish/blob/master/omcore#lite-code) code is written in a style conducive to
 this.
 
 # Local storage

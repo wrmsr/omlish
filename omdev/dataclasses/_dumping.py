@@ -35,17 +35,17 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omlish/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
-            dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
-            dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
-            dict(path='../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
+            dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
+            dict(path='../../omcore/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
+            dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
+            dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
+            dict(path='../../omcore/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='dumping.py', sha1='3a116abfd0a6c5abc2e2ad3f2ff48ce8c114ac07'),
         ],
     )
@@ -54,10 +54,10 @@ def __omlish_amalg__():  # noqa
 ########################################
 
 
-# ../../omlish/lite/abstract.py
+# ../../omcore/lite/abstract.py
 T = ta.TypeVar('T')
 
-# ../../omlish/lite/check.py
+# ../../omcore/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
 CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
@@ -65,12 +65,12 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
-# ../../omlish/lite/json.py
+# ../../omcore/lite/json.py
 JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
 
 ########################################
-# ../../../omlish/lite/abstract.py
+# ../../../omcore/lite/abstract.py
 
 
 ##
@@ -217,7 +217,7 @@ class Abstract:
 
 
 ########################################
-# ../../../omlish/lite/check.py
+# ../../../omcore/lite/check.py
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
@@ -797,7 +797,7 @@ check = Checks()
 
 
 ########################################
-# ../../../omlish/lite/io.py
+# ../../../omcore/lite/io.py
 
 
 ##
@@ -812,7 +812,7 @@ class FnWriter:
 
 
 ########################################
-# ../../../omlish/lite/objects.py
+# ../../../omcore/lite/objects.py
 
 
 ##
@@ -892,7 +892,7 @@ def dir_dict(o: ta.Any) -> ta.Dict[str, ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/reflect.py
+# ../../../omcore/lite/reflect.py
 
 
 ##
@@ -981,7 +981,7 @@ def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/strings.py
+# ../../../omcore/lite/strings.py
 
 
 ##
@@ -1070,7 +1070,7 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../omlish/lite/json.py
+# ../../../omcore/lite/json.py
 
 
 ##
@@ -1163,7 +1163,7 @@ def json_dumps(
 
 
 ########################################
-# ../../../omlish/lite/marshal.py
+# ../../../omcore/lite/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
@@ -1988,16 +1988,16 @@ class _DataclassCodegenDumper:
             cfg_pkg_name: ta.Optional[str] = None,
             debug: bool = False,
     ) -> None:
-        from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
-        from omlish.dataclasses.impl.generation.compilation import OpCompiler  # noqa
-        from omlish.dataclasses.impl.generation.globals import FnGlobal  # noqa
-        from omlish.dataclasses.impl.generation.ops import OpRef  # noqa
-        from omlish.dataclasses.impl.generation.processor import Codegen  # noqa
-        from omlish.dataclasses.impl.generation.processor import GeneratorProcessor  # noqa
-        from omlish.dataclasses.impl.generation.processor import ProcessingOption  # noqa
-        from omlish.dataclasses.impl.generation.processor import Verbosity  # noqa
-        from omlish.dataclasses.impl.processing.base import ProcessingContext  # noqa
-        from omlish.dataclasses.impl.processing.driving import processing_options_context  # noqa
+        from omcore.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
+        from omcore.dataclasses.impl.generation.compilation import OpCompiler  # noqa
+        from omcore.dataclasses.impl.generation.globals import FnGlobal  # noqa
+        from omcore.dataclasses.impl.generation.ops import OpRef  # noqa
+        from omcore.dataclasses.impl.generation.processor import Codegen  # noqa
+        from omcore.dataclasses.impl.generation.processor import GeneratorProcessor  # noqa
+        from omcore.dataclasses.impl.generation.processor import ProcessingOption  # noqa
+        from omcore.dataclasses.impl.generation.processor import Verbosity  # noqa
+        from omcore.dataclasses.impl.processing.base import ProcessingContext  # noqa
+        from omcore.dataclasses.impl.processing.driving import processing_options_context  # noqa
 
         cur_module: ta.Optional[str] = None
 

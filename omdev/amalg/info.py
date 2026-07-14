@@ -6,7 +6,7 @@ import typing as ta
 ##
 
 
-AMALG_INFO_ATTR = '__omlish_amalg__'
+AMALG_INFO_ATTR = '__om_amalg__'
 
 
 class AmalgInfoSrcFile(ta.NamedTuple):

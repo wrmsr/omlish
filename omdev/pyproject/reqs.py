@@ -35,7 +35,7 @@ class RequirementsRewriter:
 
     @cached_nullary
     def _tmp_dir(self) -> str:
-        return tempfile.mkdtemp('-omlish-reqs')
+        return tempfile.mkdtemp('-om-reqs')
 
     VENV_MAGIC = '# @om-venv'
 

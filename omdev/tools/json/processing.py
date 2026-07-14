@@ -5,11 +5,11 @@ from omcore import lang
 
 
 if ta.TYPE_CHECKING:
-    from omlish import marshal as msh
-    from omlish.specs import jmespath
+    from omcore import marshal as msh
+    from omcore.specs import jmespath
 else:
-    msh = lang.proxy_import('omlish.marshal')
-    jmespath = lang.proxy_import('omlish.specs.jmespath')
+    msh = lang.proxy_import('omcore.marshal')
+    jmespath = lang.proxy_import('omcore.specs.jmespath')
 
 
 ##

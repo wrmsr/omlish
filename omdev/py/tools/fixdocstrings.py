@@ -458,7 +458,7 @@ class _Runner:
 
         import concurrent.futures as cf
 
-        from omlish.concurrent.executors import new_executor
+        from omcore.concurrent.executors import new_executor
 
         with new_executor(
             self._num_workers if self._num_workers is not None else 0,

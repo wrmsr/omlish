@@ -13,34 +13,34 @@ from ..styles import PY_MAGIC_STYLE
 
 
 PY_TEST_FILE = """
-# %omlish-magic-test
+# %om-magic-test
 
-# %omlish-magic-test
+# %om-magic-test
 "bar"
 
-# %omlish-magic-test
+# %om-magic-test
 bar
 
-# %omlish-magic-test "foo"
+# %om-magic-test "foo"
 
-# %omlish-magic-test "foo"
+# %om-magic-test "foo"
 "bar"
 
 efg
-# %omlish-magic-test "foo"
+# %om-magic-test "foo"
 bar
 
-# %omlish-magic-2-test "foo"
+# %om-magic-2-test "foo"
 "bar"
 
-# %omlish-magic-test "foo"
-# %omlish-magic-test "bar"
+# %om-magic-test "foo"
+# %om-magic-test "bar"
 
-# %omlish-magic-test "foo", "bar"
+# %om-magic-test "foo", "bar"
 
-# %omlish-magic-test {"foo": 1, "bar": 2}
+# %om-magic-test {"foo": 1, "bar": 2}
 
-# %omlish-magic-test {
+# %om-magic-test {
 #     "foo": 1,
 #     "bar": 2
 # }
@@ -297,24 +297,24 @@ class TestCFindMagic(unittest.TestCase):
 
 
 PY_JSON_TEST_FILE = """
-# %omlish-magic-test
+# %om-magic-test
 bar
 
-# %omlish-magic-test "foo"
+# %om-magic-test "foo"
 
-# %omlish-magic-test "foo"
+# %om-magic-test "foo"
 "bar"
 
 efg
-# %omlish-magic-test "foo"
+# %om-magic-test "foo"
 bar
 
-# %omlish-magic-test "foo"
-# %omlish-magic-test "bar"
+# %om-magic-test "foo"
+# %om-magic-test "bar"
 
-# %omlish-magic-test {"foo": 1, "bar": 2}
+# %om-magic-test {"foo": 1, "bar": 2}
 
-# %omlish-magic-test {
+# %om-magic-test {
 #     "foo": 1,
 #     "bar": 2
 # }
@@ -413,7 +413,7 @@ class TestMagicPats(unittest.TestCase):
 
         assert not p.match('@om-foo')
         assert not p.match('# @xmlish-foo')
-        assert not p.match('# omlish-foo')
+        assert not p.match('# om-foo')
 
     def test_py_keys_pat(self):
         p = compile_magic_style_pat(PY_MAGIC_STYLE, keys=['@om-foo', '@om-bar'])
@@ -425,11 +425,11 @@ class TestMagicPats(unittest.TestCase):
 
         assert not p.match('@om-foo')
         assert not p.match('# @xmlish-foo')
-        assert not p.match('# omlish-foo')
+        assert not p.match('# om-foo')
 
         assert not p.match('@om-foo2')
         assert not p.match('# @xmlish-foo2')
-        assert not p.match('# omlish-foo2')
+        assert not p.match('# om-foo2')
 
     def test_c_pat(self):
         p = compile_magic_style_pat(C_MAGIC_STYLE)
@@ -440,7 +440,7 @@ class TestMagicPats(unittest.TestCase):
 
         assert not p.match('@om-foo')
         assert not p.match('// @xmlish-foo')
-        assert not p.match('// omlish-foo')
+        assert not p.match('// om-foo')
 
         assert p.match('/* @om-foo')
         assert p.match('/* @om-foo ')
@@ -448,4 +448,4 @@ class TestMagicPats(unittest.TestCase):
 
         assert not p.match('@om-foo')
         assert not p.match('/* @xmlish-foo')
-        assert not p.match('/* omlish-foo')
+        assert not p.match('/* om-foo')

@@ -9,8 +9,8 @@ TODO:
  - parallelize (asyncio)
   - anyio? aiofiles? :| nonblock open().read()
  - debug log
- - omlish-lite - no non-lite deps, etc etc
- - omlish-script - no deps, shebang, executable, can be 3.12
+ - om-lite - no non-lite deps, etc etc
+ - om-script - no deps, shebang, executable, can be 3.12
  - big git files https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#check-added-large-files
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#check-case-conflict
  - https://github.com/pre-commit/pre-commit-hooks?tab=readme-ov-file#check-symlinks

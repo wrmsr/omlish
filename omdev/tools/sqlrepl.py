@@ -1,7 +1,7 @@
 """
 TODO:
  - sqlite
- - unify-ish with omlish.sql
+ - unify-ish with omcore.sql
 """
 import abc
 import configparser

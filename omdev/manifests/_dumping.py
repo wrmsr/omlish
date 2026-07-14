@@ -34,16 +34,16 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
-            dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
-            dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
+            dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../omcore/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
+            dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
+            dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../omcore/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='dumping.py', sha1='49acd06fdcc3427f4a255fea295d7042bb655a13'),
         ],
     )
@@ -52,13 +52,13 @@ def __omlish_amalg__():  # noqa
 ########################################
 
 
-# ../../omlish/lite/abstract.py
+# ../../omcore/lite/abstract.py
 T = ta.TypeVar('T')
 
-# ../../omlish/lite/cached.py
+# ../../omcore/lite/cached.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
-# ../../omlish/lite/check.py
+# ../../omcore/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
 CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
@@ -68,7 +68,7 @@ CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
 
 ########################################
-# ../../../omlish/lite/abstract.py
+# ../../../omcore/lite/abstract.py
 
 
 ##
@@ -215,7 +215,7 @@ class Abstract:
 
 
 ########################################
-# ../../../omlish/lite/cached.py
+# ../../../omcore/lite/cached.py
 
 
 ##
@@ -328,7 +328,7 @@ globals()['cached_property'] = _cached_property
 
 
 ########################################
-# ../../../omlish/lite/check.py
+# ../../../omcore/lite/check.py
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
@@ -908,7 +908,7 @@ check = Checks()
 
 
 ########################################
-# ../../../omlish/lite/objects.py
+# ../../../omcore/lite/objects.py
 
 
 ##
@@ -988,7 +988,7 @@ def dir_dict(o: ta.Any) -> ta.Dict[str, ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/reflect.py
+# ../../../omcore/lite/reflect.py
 
 
 ##
@@ -1077,7 +1077,7 @@ def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/strings.py
+# ../../../omcore/lite/strings.py
 
 
 ##
@@ -1166,7 +1166,7 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../omlish/lite/marshal.py
+# ../../../omcore/lite/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version

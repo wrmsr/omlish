@@ -52,9 +52,9 @@ from .messages import load_message_generator_manifests_map
 
 
 if ta.TYPE_CHECKING:
-    from omlish import marshal as msh
+    from omcore import marshal as msh
 else:
-    msh = lang.proxy_import('omlish.marshal')
+    msh = lang.proxy_import('omcore.marshal')
 
 
 log = logs.get_module_logger(globals())

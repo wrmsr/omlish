@@ -11340,7 +11340,7 @@ class Uv:
 # ../../packaging/revisions.py
 """
 TODO:
- - omlish-lite, move to pyproject/
+ - om-lite, move to pyproject/
   - vendor-lite wheel.wheelfile
 """
 
@@ -11488,7 +11488,7 @@ class RequirementsRewriter:
 
     @cached_nullary
     def _tmp_dir(self) -> str:
-        return tempfile.mkdtemp('-omlish-reqs')
+        return tempfile.mkdtemp('-om-reqs')
 
     VENV_MAGIC = '# @om-venv'
 
@@ -12072,7 +12072,7 @@ https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa25
 
 https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
-'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
+'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omcore'
 """  # noqa
 
 
@@ -12622,7 +12622,7 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
             dp
             for dp, dns, fns in os.walk(self._dir_name)
             for fn in fns
-            if fn == '.omlish-rs-ext'
+            if fn == '.om-rs-ext'
         )
 
     #
@@ -13360,7 +13360,7 @@ class Run:
 
     @cached_nullary
     def cfg(self) -> PyprojectConfig:
-        dct = self.raw_cfg()['tool']['omlish']['pyproject']
+        dct = self.raw_cfg()['tool']['om']['pyproject']
         return PyprojectConfigPreparer(
             python_versions=VersionsFile().pythons(),
         ).prepare_config(dct)

@@ -11,7 +11,7 @@ from .. import specs
 
 @pytest.mark.online
 def test_default():
-    from omlish.logs import all as logs
+    from omcore.logs import all as logs
 
     logs.configure_standard_logging('INFO')
 

@@ -29,7 +29,7 @@ def _main() -> None:
     with open('pyproject.toml') as f:
         dct = toml_loads(f.read())
 
-    pkgs = dct['tool']['omlish']['pyproject']['pkgs']
+    pkgs = dct['tool']['om']['pyproject']['pkgs']
 
     for pkg in pkgs:
         pkg_about = importlib.import_module('.'.join([pkg, '__about__']))

@@ -381,7 +381,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         #         '*.c',
         #         '*.cc',
         #         '*.h',
-        #         '.omlish-manifests.json',
+        #         '.om-manifests.json',
         #         'LICENSE',
         #     ],
         # }
@@ -596,7 +596,7 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
             dp
             for dp, dns, fns in os.walk(self._dir_name)
             for fn in fns
-            if fn == '.omlish-rs-ext'
+            if fn == '.om-rs-ext'
         )
 
     #

@@ -21,12 +21,12 @@ if ta.TYPE_CHECKING:
 
     import yaml
 
-    from omlish.formats import dotenv
-    from omlish.formats import json5
-    from omlish.formats import props
-    from omlish.formats import xml
-    from omlish.formats.json import stream as json_stream
-    from omlish.formats.json5 import parsing as json5_parsing
+    from omcore.formats import dotenv
+    from omcore.formats import json5
+    from omcore.formats import props
+    from omcore.formats import xml
+    from omcore.formats.json import stream as json_stream
+    from omcore.formats.json5 import parsing as json5_parsing
 
 else:
     ast = lang.proxy_import('ast')
@@ -35,12 +35,12 @@ else:
 
     yaml = lang.proxy_import('yaml')
 
-    dotenv = lang.proxy_import('omlish.formats.dotenv')
-    json5 = lang.proxy_import('omlish.formats.json5')
-    props = lang.proxy_import('omlish.formats.props')
-    xml = lang.proxy_import('omlish.formats.xml')
-    json_stream = lang.proxy_import('omlish.formats.json.stream')
-    json5_parsing = lang.proxy_import('omlish.formats.json5.parsing')
+    dotenv = lang.proxy_import('omcore.formats.dotenv')
+    json5 = lang.proxy_import('omcore.formats.json5')
+    props = lang.proxy_import('omcore.formats.props')
+    xml = lang.proxy_import('omcore.formats.xml')
+    json_stream = lang.proxy_import('omcore.formats.json.stream')
+    json5_parsing = lang.proxy_import('omcore.formats.json5.parsing')
 
 
 ##

@@ -31,7 +31,7 @@ class IntellijCli(ap.Cli):
         if not os.path.isfile(exe := self.args.python_exe):
             raise FileNotFoundError(exe)
 
-        from omlish.diag._pycharm import runhack  # noqa
+        from omcore.diag._pycharm import runhack  # noqa
         src = inspect.getsource(runhack)
 
         src_file = tempfile.mktemp(__package__ + '-runhack')  # noqa

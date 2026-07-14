@@ -113,7 +113,7 @@ class DataclassCodeGen:
 
         init_calls: list[TopLevelCall] = []
         for call in tl.calls:
-            if call.imp.spec != 'omlish.dataclasses':
+            if call.imp.spec != 'omcore.dataclasses':
                 continue
             match call.node:
                 case ast.Call(func=ast.Attribute(attr='init_package')):

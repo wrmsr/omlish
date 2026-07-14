@@ -2,7 +2,7 @@
 # @om-lite
 """
 TODO:
- - omlish-lite, move to pyproject/
+ - om-lite, move to pyproject/
   - vendor-lite wheel.wheelfile
 """
 import argparse

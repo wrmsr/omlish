@@ -4,7 +4,7 @@
 Note: Not lite as supporting old ast grammars is annoying and a non-goal.
 
 TODO:
- - !! FIX: from omlish import lang - try lang as a subpackage
+ - !! FIX: from omcore import lang - try lang as a subpackage
  - multiple commands:
   - dumb cmp (a = set(sys.modules); import ...; print(set(sys.modules) - a)
  - graphviz

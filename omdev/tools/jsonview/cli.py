@@ -3,7 +3,7 @@ TODO:
  - read from stdin
  - evaluate jmespath on server using extended engine
  - integrate with json tool
- - use omlish server
+ - use omcore server
  - vendor deps, serve local
  - update to https://github.com/josdejong/svelte-jsoneditor
 """
@@ -61,7 +61,7 @@ def view_json(
     if mode == 'jsonl':
         json_content = [json.loads(sl) for l in raw_content.splitlines() if (sl := l.strip())]
     elif mode == 'json5':
-        from omlish.formats import json5
+        from omcore.formats import json5
         json_content = json5.loads(raw_content)
     elif mode in ('json', None):
         json_content = json.loads(raw_content)

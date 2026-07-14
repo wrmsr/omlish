@@ -60,16 +60,16 @@ class _DataclassCodegenDumper:
             cfg_pkg_name: ta.Optional[str] = None,
             debug: bool = False,
     ) -> None:
-        from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
-        from omlish.dataclasses.impl.generation.compilation import OpCompiler  # noqa
-        from omlish.dataclasses.impl.generation.globals import FnGlobal  # noqa
-        from omlish.dataclasses.impl.generation.ops import OpRef  # noqa
-        from omlish.dataclasses.impl.generation.processor import Codegen  # noqa
-        from omlish.dataclasses.impl.generation.processor import GeneratorProcessor  # noqa
-        from omlish.dataclasses.impl.generation.processor import ProcessingOption  # noqa
-        from omlish.dataclasses.impl.generation.processor import Verbosity  # noqa
-        from omlish.dataclasses.impl.processing.base import ProcessingContext  # noqa
-        from omlish.dataclasses.impl.processing.driving import processing_options_context  # noqa
+        from omcore.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
+        from omcore.dataclasses.impl.generation.compilation import OpCompiler  # noqa
+        from omcore.dataclasses.impl.generation.globals import FnGlobal  # noqa
+        from omcore.dataclasses.impl.generation.ops import OpRef  # noqa
+        from omcore.dataclasses.impl.generation.processor import Codegen  # noqa
+        from omcore.dataclasses.impl.generation.processor import GeneratorProcessor  # noqa
+        from omcore.dataclasses.impl.generation.processor import ProcessingOption  # noqa
+        from omcore.dataclasses.impl.generation.processor import Verbosity  # noqa
+        from omcore.dataclasses.impl.processing.base import ProcessingContext  # noqa
+        from omcore.dataclasses.impl.processing.driving import processing_options_context  # noqa
 
         cur_module: ta.Optional[str] = None
 

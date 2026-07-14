@@ -268,7 +268,7 @@ def _main() -> ta.Any:
             raise TypeError(cmd)
 
     if args.cli_debug:
-        from omlish.diag.debug import debugging_on_exception
+        from omcore.diag.debug import debugging_on_exception
 
         with debugging_on_exception():
             return inner()
