@@ -2,7 +2,6 @@
 TODO:
  - move omit magic to omdev lol
 """
-import os.path
 import typing as ta
 
 from omdev.git.magic import GIT_DIFF_OMIT_MAGIC_COMMENT
