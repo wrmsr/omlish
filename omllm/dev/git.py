@@ -2,6 +2,7 @@
 TODO:
  - move omit magic to omdev lol
 """
+import os.path
 import typing as ta
 
 from omdev.git.magic import GIT_DIFF_OMIT_MAGIC_COMMENT
@@ -71,9 +72,17 @@ class LlmGitMessageGenerator(GitMessageGenerator):
             cwd=args.cwd,
         ).decode()
 
+        # deleted_prompt: str | None = None
+        # if deleted_files := [fn for fn in diff_files if not os.path.isfile(fn)]:
+        #     deleted_prompt = '\n'.join([
+        #         'Additionally, the following files were deleted:',
+        #         *([f'- {fn}' for fn in deleted_files]),
+        #     ])
+
         return '\n\n'.join([
             'Write a short git commit message for the following git diff:',
             f'```\n{diff}\n```',
+            # *([deleted_prompt] if deleted_prompt else []),
             '\n'.join([
                 'Follow these rules:',
                 '- Use imperative tense (e.g., "Fix bug", "Add feature").',

@@ -51,7 +51,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='ee4d52c828b1db53b2acb8b345849cae44e53e33',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AgentCapabilities'),
+        ('omllm.specs.acp.protocol', 'AgentCapabilities'),
     ),
 )
 def _process_dataclass__ee4d52c828b1db53b2acb8b345849cae44e53e33():
@@ -195,9 +195,9 @@ def _process_dataclass__ee4d52c828b1db53b2acb8b345849cae44e53e33():
     ),
     plan_repr_sha1='31ed430692c23fb3cbca1bed435729411ef598a2',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AgentMessageChunkSessionUpdate'),
-        ('ommlds.specs.acp.protocol', 'AgentThoughtChunkSessionUpdate'),
-        ('ommlds.specs.acp.protocol', 'UserMessageChunkSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'AgentMessageChunkSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'AgentThoughtChunkSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'UserMessageChunkSessionUpdate'),
     ),
 )
 def _process_dataclass__31ed430692c23fb3cbca1bed435729411ef598a2():
@@ -318,8 +318,8 @@ def _process_dataclass__31ed430692c23fb3cbca1bed435729411ef598a2():
     ),
     plan_repr_sha1='2b0747cf2def5e479b402841b795a7dd2e6fb91c',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AgentNotification'),
-        ('ommlds.specs.acp.protocol', 'ClientNotification'),
+        ('omllm.specs.acp.protocol', 'AgentNotification'),
+        ('omllm.specs.acp.protocol', 'ClientNotification'),
     ),
 )
 def _process_dataclass__2b0747cf2def5e479b402841b795a7dd2e6fb91c():
@@ -435,8 +435,8 @@ def _process_dataclass__2b0747cf2def5e479b402841b795a7dd2e6fb91c():
     ),
     plan_repr_sha1='0c7f37642e561c61aa4ab609553040ec7fcc503e',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AgentRequest'),
-        ('ommlds.specs.acp.protocol', 'ClientRequest'),
+        ('omllm.specs.acp.protocol', 'AgentRequest'),
+        ('omllm.specs.acp.protocol', 'ClientRequest'),
     ),
 )
 def _process_dataclass__0c7f37642e561c61aa4ab609553040ec7fcc503e():
@@ -556,8 +556,8 @@ def _process_dataclass__0c7f37642e561c61aa4ab609553040ec7fcc503e():
     ),
     plan_repr_sha1='4b0948e5f368737e30e63e06f2f28da1159aa958',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AgentresponseError'),
-        ('ommlds.specs.acp.protocol', 'ClientresponseError'),
+        ('omllm.specs.acp.protocol', 'AgentresponseError'),
+        ('omllm.specs.acp.protocol', 'ClientresponseError'),
     ),
 )
 def _process_dataclass__4b0948e5f368737e30e63e06f2f28da1159aa958():
@@ -668,8 +668,8 @@ def _process_dataclass__4b0948e5f368737e30e63e06f2f28da1159aa958():
     ),
     plan_repr_sha1='47dc9231421fd90fda2e3a8b4096c69e2650fe37',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AgentresponseResult'),
-        ('ommlds.specs.acp.protocol', 'ClientresponseResult'),
+        ('omllm.specs.acp.protocol', 'AgentresponseResult'),
+        ('omllm.specs.acp.protocol', 'ClientresponseResult'),
     ),
 )
 def _process_dataclass__47dc9231421fd90fda2e3a8b4096c69e2650fe37():
@@ -788,7 +788,7 @@ def _process_dataclass__47dc9231421fd90fda2e3a8b4096c69e2650fe37():
     ),
     plan_repr_sha1='9fcd599f66de88b7c8bff2ec200188ce287b1faa',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'Annotations'),
+        ('omllm.specs.acp.protocol', 'Annotations'),
     ),
 )
 def _process_dataclass__9fcd599f66de88b7c8bff2ec200188ce287b1faa():
@@ -926,7 +926,7 @@ def _process_dataclass__9fcd599f66de88b7c8bff2ec200188ce287b1faa():
     ),
     plan_repr_sha1='2d0f8a601d454549923309fe3278e1e83fed4a0a',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AudioContent'),
+        ('omllm.specs.acp.protocol', 'AudioContent'),
     ),
 )
 def _process_dataclass__2d0f8a601d454549923309fe3278e1e83fed4a0a():
@@ -1065,7 +1065,7 @@ def _process_dataclass__2d0f8a601d454549923309fe3278e1e83fed4a0a():
     ),
     plan_repr_sha1='822c8da77516b9a3b4df3fde7a0521efc6651259',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AudioContentBlock'),
+        ('omllm.specs.acp.protocol', 'AudioContentBlock'),
     ),
 )
 def _process_dataclass__822c8da77516b9a3b4df3fde7a0521efc6651259():
@@ -1209,8 +1209,8 @@ def _process_dataclass__822c8da77516b9a3b4df3fde7a0521efc6651259():
     ),
     plan_repr_sha1='1414489816e89243ff67356feafaa816a54e8337',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AuthMethodAgent'),
-        ('ommlds.specs.acp.protocol', 'SessionMode'),
+        ('omllm.specs.acp.protocol', 'AuthMethodAgent'),
+        ('omllm.specs.acp.protocol', 'SessionMode'),
     ),
 )
 def _process_dataclass__1414489816e89243ff67356feafaa816a54e8337():
@@ -1340,7 +1340,7 @@ def _process_dataclass__1414489816e89243ff67356feafaa816a54e8337():
     ),
     plan_repr_sha1='24a229e26003b88758af5fa80826f21143a2143f',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AuthenticateRequest'),
+        ('omllm.specs.acp.protocol', 'AuthenticateRequest'),
     ),
 )
 def _process_dataclass__24a229e26003b88758af5fa80826f21143a2143f():
@@ -1450,12 +1450,12 @@ def _process_dataclass__24a229e26003b88758af5fa80826f21143a2143f():
     ),
     plan_repr_sha1='8800ad55a52dc8adc704496cbd2ecf06aa7df222',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AuthenticateResponse'),
-        ('ommlds.specs.acp.protocol', 'KillTerminalResponse'),
-        ('ommlds.specs.acp.protocol', 'ReleaseTerminalResponse'),
-        ('ommlds.specs.acp.protocol', 'SessionListCapabilities'),
-        ('ommlds.specs.acp.protocol', 'SetSessionModeResponse'),
-        ('ommlds.specs.acp.protocol', 'WriteTextFileResponse'),
+        ('omllm.specs.acp.protocol', 'AuthenticateResponse'),
+        ('omllm.specs.acp.protocol', 'KillTerminalResponse'),
+        ('omllm.specs.acp.protocol', 'ReleaseTerminalResponse'),
+        ('omllm.specs.acp.protocol', 'SessionListCapabilities'),
+        ('omllm.specs.acp.protocol', 'SetSessionModeResponse'),
+        ('omllm.specs.acp.protocol', 'WriteTextFileResponse'),
     ),
 )
 def _process_dataclass__8800ad55a52dc8adc704496cbd2ecf06aa7df222():
@@ -1566,7 +1566,7 @@ def _process_dataclass__8800ad55a52dc8adc704496cbd2ecf06aa7df222():
     ),
     plan_repr_sha1='92aab022349f23491bad20d4108c174fc72959a8',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AvailableCommand'),
+        ('omllm.specs.acp.protocol', 'AvailableCommand'),
     ),
 )
 def _process_dataclass__92aab022349f23491bad20d4108c174fc72959a8():
@@ -1697,7 +1697,7 @@ def _process_dataclass__92aab022349f23491bad20d4108c174fc72959a8():
     ),
     plan_repr_sha1='e864435390a33b6be864ac48e759a03da6b811f1',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AvailableCommandsUpdate'),
+        ('omllm.specs.acp.protocol', 'AvailableCommandsUpdate'),
     ),
 )
 def _process_dataclass__e864435390a33b6be864ac48e759a03da6b811f1():
@@ -1814,7 +1814,7 @@ def _process_dataclass__e864435390a33b6be864ac48e759a03da6b811f1():
     ),
     plan_repr_sha1='88103cf16f7b84ac162b9a9d14b407ff492926a7',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'AvailableCommandsUpdateSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'AvailableCommandsUpdateSessionUpdate'),
     ),
 )
 def _process_dataclass__88103cf16f7b84ac162b9a9d14b407ff492926a7():
@@ -1941,7 +1941,7 @@ def _process_dataclass__88103cf16f7b84ac162b9a9d14b407ff492926a7():
     ),
     plan_repr_sha1='8859d4c06c52c0510c84a06b53643745e0d9e622',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'BlobResourceContents'),
+        ('omllm.specs.acp.protocol', 'BlobResourceContents'),
     ),
 )
 def _process_dataclass__8859d4c06c52c0510c84a06b53643745e0d9e622():
@@ -2071,7 +2071,7 @@ def _process_dataclass__8859d4c06c52c0510c84a06b53643745e0d9e622():
     ),
     plan_repr_sha1='e1d0ca65be775287ff4194ad8d12f6ae986882d2',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'CancelNotification'),
+        ('omllm.specs.acp.protocol', 'CancelNotification'),
     ),
 )
 def _process_dataclass__e1d0ca65be775287ff4194ad8d12f6ae986882d2():
@@ -2181,7 +2181,7 @@ def _process_dataclass__e1d0ca65be775287ff4194ad8d12f6ae986882d2():
     ),
     plan_repr_sha1='e320679251b39fb8499ce869994c99f14e4af60c',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'CancelledRequestPermissionOutcome'),
+        ('omllm.specs.acp.protocol', 'CancelledRequestPermissionOutcome'),
     ),
 )
 def _process_dataclass__e320679251b39fb8499ce869994c99f14e4af60c():
@@ -2283,7 +2283,7 @@ def _process_dataclass__e320679251b39fb8499ce869994c99f14e4af60c():
     ),
     plan_repr_sha1='e938ca2b6aa6b612212c83e983c08dfac05753ed',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ClientCapabilities'),
+        ('omllm.specs.acp.protocol', 'ClientCapabilities'),
     ),
 )
 def _process_dataclass__e938ca2b6aa6b612212c83e983c08dfac05753ed():
@@ -2406,8 +2406,8 @@ def _process_dataclass__e938ca2b6aa6b612212c83e983c08dfac05753ed():
     ),
     plan_repr_sha1='8404b66be6d31761c6b0433d59d6e27a485fc8d4',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ConfigOptionUpdate'),
-        ('ommlds.specs.acp.protocol', 'SetSessionConfigOptionResponse'),
+        ('omllm.specs.acp.protocol', 'ConfigOptionUpdate'),
+        ('omllm.specs.acp.protocol', 'SetSessionConfigOptionResponse'),
     ),
 )
 def _process_dataclass__8404b66be6d31761c6b0433d59d6e27a485fc8d4():
@@ -2523,7 +2523,7 @@ def _process_dataclass__8404b66be6d31761c6b0433d59d6e27a485fc8d4():
     ),
     plan_repr_sha1='b80bce18690bf47cb1d3559c234ae02ae7155872',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ConfigOptionUpdateSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'ConfigOptionUpdateSessionUpdate'),
     ),
 )
 def _process_dataclass__b80bce18690bf47cb1d3559c234ae02ae7155872():
@@ -2644,9 +2644,9 @@ def _process_dataclass__b80bce18690bf47cb1d3559c234ae02ae7155872():
     ),
     plan_repr_sha1='79b94c18ca7f2404e31d3742ceb876c627ec5e4b',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'Content'),
-        ('ommlds.specs.acp.protocol', 'ContentChunk'),
-        ('ommlds.specs.acp.protocol', 'ReadTextFileResponse'),
+        ('omllm.specs.acp.protocol', 'Content'),
+        ('omllm.specs.acp.protocol', 'ContentChunk'),
+        ('omllm.specs.acp.protocol', 'ReadTextFileResponse'),
     ),
 )
 def _process_dataclass__79b94c18ca7f2404e31d3742ceb876c627ec5e4b():
@@ -2761,7 +2761,7 @@ def _process_dataclass__79b94c18ca7f2404e31d3742ceb876c627ec5e4b():
     ),
     plan_repr_sha1='2355dcaa7955d3b3d1deb153ad0366245a82c126',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ContentToolCallContent'),
+        ('omllm.specs.acp.protocol', 'ContentToolCallContent'),
     ),
 )
 def _process_dataclass__2355dcaa7955d3b3d1deb153ad0366245a82c126():
@@ -2898,7 +2898,7 @@ def _process_dataclass__2355dcaa7955d3b3d1deb153ad0366245a82c126():
     ),
     plan_repr_sha1='8c7c249376b2905044ad4537f593875f014ddd47',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'CreateTerminalRequest'),
+        ('omllm.specs.acp.protocol', 'CreateTerminalRequest'),
     ),
 )
 def _process_dataclass__8c7c249376b2905044ad4537f593875f014ddd47():
@@ -3055,8 +3055,8 @@ def _process_dataclass__8c7c249376b2905044ad4537f593875f014ddd47():
     ),
     plan_repr_sha1='567b6432536369af19c30400c5be327950a1dec9',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'CreateTerminalResponse'),
-        ('ommlds.specs.acp.protocol', 'Terminal'),
+        ('omllm.specs.acp.protocol', 'CreateTerminalResponse'),
+        ('omllm.specs.acp.protocol', 'Terminal'),
     ),
 )
 def _process_dataclass__567b6432536369af19c30400c5be327950a1dec9():
@@ -3169,7 +3169,7 @@ def _process_dataclass__567b6432536369af19c30400c5be327950a1dec9():
     ),
     plan_repr_sha1='06a2e412dd36eabcb107e2ed09ac258b435044df',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'CurrentModeUpdate'),
+        ('omllm.specs.acp.protocol', 'CurrentModeUpdate'),
     ),
 )
 def _process_dataclass__06a2e412dd36eabcb107e2ed09ac258b435044df():
@@ -3286,7 +3286,7 @@ def _process_dataclass__06a2e412dd36eabcb107e2ed09ac258b435044df():
     ),
     plan_repr_sha1='48e2d9ad56aef2be992716e7234686f4803512c6',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'CurrentModeUpdateSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'CurrentModeUpdateSessionUpdate'),
     ),
 )
 def _process_dataclass__48e2d9ad56aef2be992716e7234686f4803512c6():
@@ -3413,7 +3413,7 @@ def _process_dataclass__48e2d9ad56aef2be992716e7234686f4803512c6():
     ),
     plan_repr_sha1='349560dd1e95253b98e0dfc9af0e58167a113cee',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'Diff'),
+        ('omllm.specs.acp.protocol', 'Diff'),
     ),
 )
 def _process_dataclass__349560dd1e95253b98e0dfc9af0e58167a113cee():
@@ -3552,7 +3552,7 @@ def _process_dataclass__349560dd1e95253b98e0dfc9af0e58167a113cee():
     ),
     plan_repr_sha1='ef2ed0d1a12e61a7fb6550924cdbb966ec8f32ba',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'DiffToolCallContent'),
+        ('omllm.specs.acp.protocol', 'DiffToolCallContent'),
     ),
 )
 def _process_dataclass__ef2ed0d1a12e61a7fb6550924cdbb966ec8f32ba():
@@ -3693,7 +3693,7 @@ def _process_dataclass__ef2ed0d1a12e61a7fb6550924cdbb966ec8f32ba():
     ),
     plan_repr_sha1='872f10c4a51bb5bca05ed3c6ab7e32621515354a',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'EmbeddedResource'),
+        ('omllm.specs.acp.protocol', 'EmbeddedResource'),
     ),
 )
 def _process_dataclass__872f10c4a51bb5bca05ed3c6ab7e32621515354a():
@@ -3818,8 +3818,8 @@ def _process_dataclass__872f10c4a51bb5bca05ed3c6ab7e32621515354a():
     ),
     plan_repr_sha1='a74dbccc1be43eb892bbbd8622320859755b7d11',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'EnvVariable'),
-        ('ommlds.specs.acp.protocol', 'HttpHeader'),
+        ('omllm.specs.acp.protocol', 'EnvVariable'),
+        ('omllm.specs.acp.protocol', 'HttpHeader'),
     ),
 )
 def _process_dataclass__a74dbccc1be43eb892bbbd8622320859755b7d11():
@@ -3943,7 +3943,7 @@ def _process_dataclass__a74dbccc1be43eb892bbbd8622320859755b7d11():
     ),
     plan_repr_sha1='3f2d37275ba736bdbacfbc4100b49a39d31fe9b3',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'Error'),
+        ('omllm.specs.acp.protocol', 'Error'),
     ),
 )
 def _process_dataclass__3f2d37275ba736bdbacfbc4100b49a39d31fe9b3():
@@ -4058,9 +4058,9 @@ def _process_dataclass__3f2d37275ba736bdbacfbc4100b49a39d31fe9b3():
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ExtNotification'),
-        ('ommlds.specs.acp.protocol', 'ExtRequest'),
-        ('ommlds.specs.acp.protocol', 'ExtResponse'),
+        ('omllm.specs.acp.protocol', 'ExtNotification'),
+        ('omllm.specs.acp.protocol', 'ExtRequest'),
+        ('omllm.specs.acp.protocol', 'ExtResponse'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -4146,7 +4146,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
     ),
     plan_repr_sha1='c8cc0fcc4fa8b0b00adfddd7f75df9270457a2b4',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'FileSystemCapabilities'),
+        ('omllm.specs.acp.protocol', 'FileSystemCapabilities'),
     ),
 )
 def _process_dataclass__c8cc0fcc4fa8b0b00adfddd7f75df9270457a2b4():
@@ -4277,8 +4277,8 @@ def _process_dataclass__c8cc0fcc4fa8b0b00adfddd7f75df9270457a2b4():
     ),
     plan_repr_sha1='2bf17f7b8c58828e706a59ed9f8f3af6f388ed75',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'HttpMcpServer'),
-        ('ommlds.specs.acp.protocol', 'SseMcpServer'),
+        ('omllm.specs.acp.protocol', 'HttpMcpServer'),
+        ('omllm.specs.acp.protocol', 'SseMcpServer'),
     ),
 )
 def _process_dataclass__2bf17f7b8c58828e706a59ed9f8f3af6f388ed75():
@@ -4424,7 +4424,7 @@ def _process_dataclass__2bf17f7b8c58828e706a59ed9f8f3af6f388ed75():
     ),
     plan_repr_sha1='2d9a17457f1b154807e92294727394e0c017d42b',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ImageContent'),
+        ('omllm.specs.acp.protocol', 'ImageContent'),
     ),
 )
 def _process_dataclass__2d9a17457f1b154807e92294727394e0c017d42b():
@@ -4575,7 +4575,7 @@ def _process_dataclass__2d9a17457f1b154807e92294727394e0c017d42b():
     ),
     plan_repr_sha1='c25de1d54caa79509e798c4c00d49a754cd9c531',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ImageContentBlock'),
+        ('omllm.specs.acp.protocol', 'ImageContentBlock'),
     ),
 )
 def _process_dataclass__c25de1d54caa79509e798c4c00d49a754cd9c531():
@@ -4728,7 +4728,7 @@ def _process_dataclass__c25de1d54caa79509e798c4c00d49a754cd9c531():
     ),
     plan_repr_sha1='01285feeb3bd2694a4550302da4b2b0055b6f9fc',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'Implementation'),
+        ('omllm.specs.acp.protocol', 'Implementation'),
     ),
 )
 def _process_dataclass__01285feeb3bd2694a4550302da4b2b0055b6f9fc():
@@ -4866,7 +4866,7 @@ def _process_dataclass__01285feeb3bd2694a4550302da4b2b0055b6f9fc():
     ),
     plan_repr_sha1='6ee9945416c82a81b48f8738be72161d3c21e29e',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'InitializeRequest'),
+        ('omllm.specs.acp.protocol', 'InitializeRequest'),
     ),
 )
 def _process_dataclass__6ee9945416c82a81b48f8738be72161d3c21e29e():
@@ -5009,7 +5009,7 @@ def _process_dataclass__6ee9945416c82a81b48f8738be72161d3c21e29e():
     ),
     plan_repr_sha1='6a0e639b0203dfb168859dcafc619fae76a787a4',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'InitializeResponse'),
+        ('omllm.specs.acp.protocol', 'InitializeResponse'),
     ),
 )
 def _process_dataclass__6a0e639b0203dfb168859dcafc619fae76a787a4():
@@ -5152,10 +5152,10 @@ def _process_dataclass__6a0e639b0203dfb168859dcafc619fae76a787a4():
     ),
     plan_repr_sha1='6150b41b7dabd6e85ddc10546e8878919c4970fc',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'KillTerminalRequest'),
-        ('ommlds.specs.acp.protocol', 'ReleaseTerminalRequest'),
-        ('ommlds.specs.acp.protocol', 'TerminalOutputRequest'),
-        ('ommlds.specs.acp.protocol', 'WaitForTerminalExitRequest'),
+        ('omllm.specs.acp.protocol', 'KillTerminalRequest'),
+        ('omllm.specs.acp.protocol', 'ReleaseTerminalRequest'),
+        ('omllm.specs.acp.protocol', 'TerminalOutputRequest'),
+        ('omllm.specs.acp.protocol', 'WaitForTerminalExitRequest'),
     ),
 )
 def _process_dataclass__6150b41b7dabd6e85ddc10546e8878919c4970fc():
@@ -5279,7 +5279,7 @@ def _process_dataclass__6150b41b7dabd6e85ddc10546e8878919c4970fc():
     ),
     plan_repr_sha1='ead46e4bf3f341f8d289f7277b383878448e6ed5',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ListSessionsRequest'),
+        ('omllm.specs.acp.protocol', 'ListSessionsRequest'),
     ),
 )
 def _process_dataclass__ead46e4bf3f341f8d289f7277b383878448e6ed5():
@@ -5405,7 +5405,7 @@ def _process_dataclass__ead46e4bf3f341f8d289f7277b383878448e6ed5():
     ),
     plan_repr_sha1='0221f4106276f8923c4ac54e4f2963864e056892',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ListSessionsResponse'),
+        ('omllm.specs.acp.protocol', 'ListSessionsResponse'),
     ),
 )
 def _process_dataclass__0221f4106276f8923c4ac54e4f2963864e056892():
@@ -5533,7 +5533,7 @@ def _process_dataclass__0221f4106276f8923c4ac54e4f2963864e056892():
     ),
     plan_repr_sha1='1cc62ff4b89bda3e662088d487a880e3fb83e20a',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'LoadSessionRequest'),
+        ('omllm.specs.acp.protocol', 'LoadSessionRequest'),
     ),
 )
 def _process_dataclass__1cc62ff4b89bda3e662088d487a880e3fb83e20a():
@@ -5666,7 +5666,7 @@ def _process_dataclass__1cc62ff4b89bda3e662088d487a880e3fb83e20a():
     ),
     plan_repr_sha1='389b1375e48d8bee6c17546f5aa00cd9a0f12e92',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'LoadSessionResponse'),
+        ('omllm.specs.acp.protocol', 'LoadSessionResponse'),
     ),
 )
 def _process_dataclass__389b1375e48d8bee6c17546f5aa00cd9a0f12e92():
@@ -5792,7 +5792,7 @@ def _process_dataclass__389b1375e48d8bee6c17546f5aa00cd9a0f12e92():
     ),
     plan_repr_sha1='2e6cc6281b473f03fc4ac88a9a9805071f7aa922',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'McpCapabilities'),
+        ('omllm.specs.acp.protocol', 'McpCapabilities'),
     ),
 )
 def _process_dataclass__2e6cc6281b473f03fc4ac88a9a9805071f7aa922():
@@ -5920,8 +5920,8 @@ def _process_dataclass__2e6cc6281b473f03fc4ac88a9a9805071f7aa922():
     ),
     plan_repr_sha1='728207e462c6624ce78ae9c17850d196e373c080',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'McpServerHttp'),
-        ('ommlds.specs.acp.protocol', 'McpServerSse'),
+        ('omllm.specs.acp.protocol', 'McpServerHttp'),
+        ('omllm.specs.acp.protocol', 'McpServerSse'),
     ),
 )
 def _process_dataclass__728207e462c6624ce78ae9c17850d196e373c080():
@@ -6058,7 +6058,7 @@ def _process_dataclass__728207e462c6624ce78ae9c17850d196e373c080():
     ),
     plan_repr_sha1='615e21d7c205cc410b8de923095692c4f28667c8',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'McpServerStdio'),
+        ('omllm.specs.acp.protocol', 'McpServerStdio'),
     ),
 )
 def _process_dataclass__615e21d7c205cc410b8de923095692c4f28667c8():
@@ -6198,7 +6198,7 @@ def _process_dataclass__615e21d7c205cc410b8de923095692c4f28667c8():
     ),
     plan_repr_sha1='19b2619b0439234965c066efff3fea0ffff4b008',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'NewSessionRequest'),
+        ('omllm.specs.acp.protocol', 'NewSessionRequest'),
     ),
 )
 def _process_dataclass__19b2619b0439234965c066efff3fea0ffff4b008():
@@ -6326,7 +6326,7 @@ def _process_dataclass__19b2619b0439234965c066efff3fea0ffff4b008():
     ),
     plan_repr_sha1='50c32effbf1626cafddeffefb9b874bd813b11f4',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'NewSessionResponse'),
+        ('omllm.specs.acp.protocol', 'NewSessionResponse'),
     ),
 )
 def _process_dataclass__50c32effbf1626cafddeffefb9b874bd813b11f4():
@@ -6463,7 +6463,7 @@ def _process_dataclass__50c32effbf1626cafddeffefb9b874bd813b11f4():
     ),
     plan_repr_sha1='d468549cffd2ae4f16883a7c6759c7103da0769c',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'PermissionOption'),
+        ('omllm.specs.acp.protocol', 'PermissionOption'),
     ),
 )
 def _process_dataclass__d468549cffd2ae4f16883a7c6759c7103da0769c():
@@ -6592,7 +6592,7 @@ def _process_dataclass__d468549cffd2ae4f16883a7c6759c7103da0769c():
     ),
     plan_repr_sha1='2456074c414a2fcd275441d897db41ca9e5a29da',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'Plan'),
+        ('omllm.specs.acp.protocol', 'Plan'),
     ),
 )
 def _process_dataclass__2456074c414a2fcd275441d897db41ca9e5a29da():
@@ -6711,7 +6711,7 @@ def _process_dataclass__2456074c414a2fcd275441d897db41ca9e5a29da():
     ),
     plan_repr_sha1='ff0cfdbb4243f8851f3696049fa83593049a3743',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'PlanEntry'),
+        ('omllm.specs.acp.protocol', 'PlanEntry'),
     ),
 )
 def _process_dataclass__ff0cfdbb4243f8851f3696049fa83593049a3743():
@@ -6843,7 +6843,7 @@ def _process_dataclass__ff0cfdbb4243f8851f3696049fa83593049a3743():
     ),
     plan_repr_sha1='7207a8f2e5c2889fcc03c1001328a3a08985c5a2',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'PlanSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'PlanSessionUpdate'),
     ),
 )
 def _process_dataclass__7207a8f2e5c2889fcc03c1001328a3a08985c5a2():
@@ -6971,7 +6971,7 @@ def _process_dataclass__7207a8f2e5c2889fcc03c1001328a3a08985c5a2():
     ),
     plan_repr_sha1='79bb521aa33479b153245b5f117689448b7235be',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'PromptCapabilities'),
+        ('omllm.specs.acp.protocol', 'PromptCapabilities'),
     ),
 )
 def _process_dataclass__79bb521aa33479b153245b5f117689448b7235be():
@@ -7106,7 +7106,7 @@ def _process_dataclass__79bb521aa33479b153245b5f117689448b7235be():
     ),
     plan_repr_sha1='dedffe3ad43ebbf0f377839fbc1c661ac0c51397',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'PromptRequest'),
+        ('omllm.specs.acp.protocol', 'PromptRequest'),
     ),
 )
 def _process_dataclass__dedffe3ad43ebbf0f377839fbc1c661ac0c51397():
@@ -7227,7 +7227,7 @@ def _process_dataclass__dedffe3ad43ebbf0f377839fbc1c661ac0c51397():
     ),
     plan_repr_sha1='a187764d40284aa904dd820cd176363268bff78e',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'PromptResponse'),
+        ('omllm.specs.acp.protocol', 'PromptResponse'),
     ),
 )
 def _process_dataclass__a187764d40284aa904dd820cd176363268bff78e():
@@ -7349,7 +7349,7 @@ def _process_dataclass__a187764d40284aa904dd820cd176363268bff78e():
     ),
     plan_repr_sha1='04dfcd702fe36e6c8bc1885c6588f295840bfd6c',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ReadTextFileRequest'),
+        ('omllm.specs.acp.protocol', 'ReadTextFileRequest'),
     ),
 )
 def _process_dataclass__04dfcd702fe36e6c8bc1885c6588f295840bfd6c():
@@ -7494,7 +7494,7 @@ def _process_dataclass__04dfcd702fe36e6c8bc1885c6588f295840bfd6c():
     ),
     plan_repr_sha1='bc0f498a626da6415d123f047312a8d868f42b24',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'RequestPermissionRequest'),
+        ('omllm.specs.acp.protocol', 'RequestPermissionRequest'),
     ),
 )
 def _process_dataclass__bc0f498a626da6415d123f047312a8d868f42b24():
@@ -7623,7 +7623,7 @@ def _process_dataclass__bc0f498a626da6415d123f047312a8d868f42b24():
     ),
     plan_repr_sha1='49fcca1dc856608730fefa6635181ab724867950',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'RequestPermissionResponse'),
+        ('omllm.specs.acp.protocol', 'RequestPermissionResponse'),
     ),
 )
 def _process_dataclass__49fcca1dc856608730fefa6635181ab724867950():
@@ -7742,7 +7742,7 @@ def _process_dataclass__49fcca1dc856608730fefa6635181ab724867950():
     ),
     plan_repr_sha1='f43096e058ee91ee55f8145a15e01b7ad36a0096',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ResourceContentBlock'),
+        ('omllm.specs.acp.protocol', 'ResourceContentBlock'),
     ),
 )
 def _process_dataclass__f43096e058ee91ee55f8145a15e01b7ad36a0096():
@@ -7891,7 +7891,7 @@ def _process_dataclass__f43096e058ee91ee55f8145a15e01b7ad36a0096():
     ),
     plan_repr_sha1='a506908c7b060215cd39188eeb85194a68a0e880',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ResourceLink'),
+        ('omllm.specs.acp.protocol', 'ResourceLink'),
     ),
 )
 def _process_dataclass__a506908c7b060215cd39188eeb85194a68a0e880():
@@ -8079,7 +8079,7 @@ def _process_dataclass__a506908c7b060215cd39188eeb85194a68a0e880():
     ),
     plan_repr_sha1='537223d86cb1d4b513a97dd71a335869561e8b49',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ResourceLinkContentBlock'),
+        ('omllm.specs.acp.protocol', 'ResourceLinkContentBlock'),
     ),
 )
 def _process_dataclass__537223d86cb1d4b513a97dd71a335869561e8b49():
@@ -8256,7 +8256,7 @@ def _process_dataclass__537223d86cb1d4b513a97dd71a335869561e8b49():
     ),
     plan_repr_sha1='d6045c59e2b9ddd287d50bdc7a3314b97e1246c7',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SelectSessionConfigOption'),
+        ('omllm.specs.acp.protocol', 'SelectSessionConfigOption'),
     ),
 )
 def _process_dataclass__d6045c59e2b9ddd287d50bdc7a3314b97e1246c7():
@@ -8376,7 +8376,7 @@ def _process_dataclass__d6045c59e2b9ddd287d50bdc7a3314b97e1246c7():
     ),
     plan_repr_sha1='611d5d7d01baff06f75eb0fc432dab7e646a56ea',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SelectedPermissionOutcome'),
+        ('omllm.specs.acp.protocol', 'SelectedPermissionOutcome'),
     ),
 )
 def _process_dataclass__611d5d7d01baff06f75eb0fc432dab7e646a56ea():
@@ -8492,7 +8492,7 @@ def _process_dataclass__611d5d7d01baff06f75eb0fc432dab7e646a56ea():
     ),
     plan_repr_sha1='e351cfdd4f5e1a324cf43c4d0042ce23efc22c3a',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SelectedRequestPermissionOutcome'),
+        ('omllm.specs.acp.protocol', 'SelectedRequestPermissionOutcome'),
     ),
 )
 def _process_dataclass__e351cfdd4f5e1a324cf43c4d0042ce23efc22c3a():
@@ -8613,7 +8613,7 @@ def _process_dataclass__e351cfdd4f5e1a324cf43c4d0042ce23efc22c3a():
     ),
     plan_repr_sha1='19181ac8205e3b06b2d832950d5103dd90b219df',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionCapabilities'),
+        ('omllm.specs.acp.protocol', 'SessionCapabilities'),
     ),
 )
 def _process_dataclass__19181ac8205e3b06b2d832950d5103dd90b219df():
@@ -8727,7 +8727,7 @@ def _process_dataclass__19181ac8205e3b06b2d832950d5103dd90b219df():
     ),
     plan_repr_sha1='233831d4725c650e4680a853b193e597c3397f3f',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionConfigSelect'),
+        ('omllm.specs.acp.protocol', 'SessionConfigSelect'),
     ),
 )
 def _process_dataclass__233831d4725c650e4680a853b193e597c3397f3f():
@@ -8845,7 +8845,7 @@ def _process_dataclass__233831d4725c650e4680a853b193e597c3397f3f():
     ),
     plan_repr_sha1='ef4bb32eb1805300e980b4e0294ff3811e68f850',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionConfigSelectGroup'),
+        ('omllm.specs.acp.protocol', 'SessionConfigSelectGroup'),
     ),
 )
 def _process_dataclass__ef4bb32eb1805300e980b4e0294ff3811e68f850():
@@ -8980,7 +8980,7 @@ def _process_dataclass__ef4bb32eb1805300e980b4e0294ff3811e68f850():
     ),
     plan_repr_sha1='3b7bb867c3ee95fa308cd47e1124a4e7e470f748',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionConfigSelectOption'),
+        ('omllm.specs.acp.protocol', 'SessionConfigSelectOption'),
     ),
 )
 def _process_dataclass__3b7bb867c3ee95fa308cd47e1124a4e7e470f748():
@@ -9119,7 +9119,7 @@ def _process_dataclass__3b7bb867c3ee95fa308cd47e1124a4e7e470f748():
     ),
     plan_repr_sha1='0c48ebcd288005f41ca056557eb316a557e0f8a4',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionInfo'),
+        ('omllm.specs.acp.protocol', 'SessionInfo'),
     ),
 )
 def _process_dataclass__0c48ebcd288005f41ca056557eb316a557e0f8a4():
@@ -9262,7 +9262,7 @@ def _process_dataclass__0c48ebcd288005f41ca056557eb316a557e0f8a4():
     ),
     plan_repr_sha1='8884321ddff9ee3ca465afc21508731106646faf',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionInfoUpdate'),
+        ('omllm.specs.acp.protocol', 'SessionInfoUpdate'),
     ),
 )
 def _process_dataclass__8884321ddff9ee3ca465afc21508731106646faf():
@@ -9392,7 +9392,7 @@ def _process_dataclass__8884321ddff9ee3ca465afc21508731106646faf():
     ),
     plan_repr_sha1='6781ce1d6ce59cd7459a3b5db4a348f807a046b3',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionInfoUpdateSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'SessionInfoUpdateSessionUpdate'),
     ),
 )
 def _process_dataclass__6781ce1d6ce59cd7459a3b5db4a348f807a046b3():
@@ -9527,7 +9527,7 @@ def _process_dataclass__6781ce1d6ce59cd7459a3b5db4a348f807a046b3():
     ),
     plan_repr_sha1='dc32dc785bdac608508d1412f45b17907d8faf50',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionModeState'),
+        ('omllm.specs.acp.protocol', 'SessionModeState'),
     ),
 )
 def _process_dataclass__dc32dc785bdac608508d1412f45b17907d8faf50():
@@ -9651,7 +9651,7 @@ def _process_dataclass__dc32dc785bdac608508d1412f45b17907d8faf50():
     ),
     plan_repr_sha1='442eba46336a87f6583c31cc5d239c7fd20a719d',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SessionNotification'),
+        ('omllm.specs.acp.protocol', 'SessionNotification'),
     ),
 )
 def _process_dataclass__442eba46336a87f6583c31cc5d239c7fd20a719d():
@@ -9778,7 +9778,7 @@ def _process_dataclass__442eba46336a87f6583c31cc5d239c7fd20a719d():
     ),
     plan_repr_sha1='bc589d12fd76d2fd5ecf5ba8c187885152142509',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SetSessionConfigOptionRequest'),
+        ('omllm.specs.acp.protocol', 'SetSessionConfigOptionRequest'),
     ),
 )
 def _process_dataclass__bc589d12fd76d2fd5ecf5ba8c187885152142509():
@@ -9910,7 +9910,7 @@ def _process_dataclass__bc589d12fd76d2fd5ecf5ba8c187885152142509():
     ),
     plan_repr_sha1='2363afd9c48e9b7a99ffdfd776f0f8f14c30b3a7',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'SetSessionModeRequest'),
+        ('omllm.specs.acp.protocol', 'SetSessionModeRequest'),
     ),
 )
 def _process_dataclass__2363afd9c48e9b7a99ffdfd776f0f8f14c30b3a7():
@@ -10035,8 +10035,8 @@ def _process_dataclass__2363afd9c48e9b7a99ffdfd776f0f8f14c30b3a7():
     ),
     plan_repr_sha1='fe849c8247eedf27a219d81352351103c7fb8cab',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'TerminalExitStatus'),
-        ('ommlds.specs.acp.protocol', 'WaitForTerminalExitResponse'),
+        ('omllm.specs.acp.protocol', 'TerminalExitStatus'),
+        ('omllm.specs.acp.protocol', 'WaitForTerminalExitResponse'),
     ),
 )
 def _process_dataclass__fe849c8247eedf27a219d81352351103c7fb8cab():
@@ -10165,7 +10165,7 @@ def _process_dataclass__fe849c8247eedf27a219d81352351103c7fb8cab():
     ),
     plan_repr_sha1='eaca5140d86cc5520f91c11e4852a56232b27a66',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'TerminalOutputResponse'),
+        ('omllm.specs.acp.protocol', 'TerminalOutputResponse'),
     ),
 )
 def _process_dataclass__eaca5140d86cc5520f91c11e4852a56232b27a66():
@@ -10298,7 +10298,7 @@ def _process_dataclass__eaca5140d86cc5520f91c11e4852a56232b27a66():
     ),
     plan_repr_sha1='f96581d6ee0b2d7b21a64893a5c3b685394440e5',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'TerminalToolCallContent'),
+        ('omllm.specs.acp.protocol', 'TerminalToolCallContent'),
     ),
 )
 def _process_dataclass__f96581d6ee0b2d7b21a64893a5c3b685394440e5():
@@ -10422,7 +10422,7 @@ def _process_dataclass__f96581d6ee0b2d7b21a64893a5c3b685394440e5():
     ),
     plan_repr_sha1='d92dd2fa1df8c425c285f314f2b949d5f5cd49d8',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'TextContent'),
+        ('omllm.specs.acp.protocol', 'TextContent'),
     ),
 )
 def _process_dataclass__d92dd2fa1df8c425c285f314f2b949d5f5cd49d8():
@@ -10550,7 +10550,7 @@ def _process_dataclass__d92dd2fa1df8c425c285f314f2b949d5f5cd49d8():
     ),
     plan_repr_sha1='b74e5bfc5758c1ddb6d9766e30f9271a1fed73ac',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'TextContentBlock'),
+        ('omllm.specs.acp.protocol', 'TextContentBlock'),
     ),
 )
 def _process_dataclass__b74e5bfc5758c1ddb6d9766e30f9271a1fed73ac():
@@ -10686,7 +10686,7 @@ def _process_dataclass__b74e5bfc5758c1ddb6d9766e30f9271a1fed73ac():
     ),
     plan_repr_sha1='3fc8183553f9245f169fbdecdfe57eee98302ad0',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'TextResourceContents'),
+        ('omllm.specs.acp.protocol', 'TextResourceContents'),
     ),
 )
 def _process_dataclass__3fc8183553f9245f169fbdecdfe57eee98302ad0():
@@ -10839,7 +10839,7 @@ def _process_dataclass__3fc8183553f9245f169fbdecdfe57eee98302ad0():
     ),
     plan_repr_sha1='0898549135baf4847922e41b67a2ca8751a84700',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ToolCall'),
+        ('omllm.specs.acp.protocol', 'ToolCall'),
     ),
 )
 def _process_dataclass__0898549135baf4847922e41b67a2ca8751a84700():
@@ -11017,7 +11017,7 @@ def _process_dataclass__0898549135baf4847922e41b67a2ca8751a84700():
     ),
     plan_repr_sha1='1d850d56797ecc52123ba805c7fa0e35599c10db',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ToolCallLocation'),
+        ('omllm.specs.acp.protocol', 'ToolCallLocation'),
     ),
 )
 def _process_dataclass__1d850d56797ecc52123ba805c7fa0e35599c10db():
@@ -11165,7 +11165,7 @@ def _process_dataclass__1d850d56797ecc52123ba805c7fa0e35599c10db():
     ),
     plan_repr_sha1='0fa8cf010c6b08cf530bea02be919dbdae2c9d5f',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ToolCallSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'ToolCallSessionUpdate'),
     ),
 )
 def _process_dataclass__0fa8cf010c6b08cf530bea02be919dbdae2c9d5f():
@@ -11371,7 +11371,7 @@ def _process_dataclass__0fa8cf010c6b08cf530bea02be919dbdae2c9d5f():
     ),
     plan_repr_sha1='6f5cf08e9766f1ae72397e340be20a5e76f99121',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ToolCallUpdate'),
+        ('omllm.specs.acp.protocol', 'ToolCallUpdate'),
     ),
 )
 def _process_dataclass__6f5cf08e9766f1ae72397e340be20a5e76f99121():
@@ -11574,7 +11574,7 @@ def _process_dataclass__6f5cf08e9766f1ae72397e340be20a5e76f99121():
     ),
     plan_repr_sha1='38fa643486bd36d80327b6c196c32b6b909f00b3',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'ToolCallUpdateSessionUpdate'),
+        ('omllm.specs.acp.protocol', 'ToolCallUpdateSessionUpdate'),
     ),
 )
 def _process_dataclass__38fa643486bd36d80327b6c196c32b6b909f00b3():
@@ -11758,7 +11758,7 @@ def _process_dataclass__38fa643486bd36d80327b6c196c32b6b909f00b3():
     ),
     plan_repr_sha1='9780bcc164a6000cf084d03c5e966a83c49f074d',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'UnstructuredCommandInput'),
+        ('omllm.specs.acp.protocol', 'UnstructuredCommandInput'),
     ),
 )
 def _process_dataclass__9780bcc164a6000cf084d03c5e966a83c49f074d():
@@ -11877,7 +11877,7 @@ def _process_dataclass__9780bcc164a6000cf084d03c5e966a83c49f074d():
     ),
     plan_repr_sha1='af72e6356b5595eaae40793b6dd5328138c5abb3',
     cls_names=(
-        ('ommlds.specs.acp.protocol', 'WriteTextFileRequest'),
+        ('omllm.specs.acp.protocol', 'WriteTextFileRequest'),
     ),
 )
 def _process_dataclass__af72e6356b5595eaae40793b6dd5328138c5abb3():

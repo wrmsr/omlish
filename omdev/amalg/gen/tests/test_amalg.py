@@ -13,7 +13,7 @@ def test_amalg() -> None:
         for n in [
             'ominfra',
             'omlish',
-            'ommlds',
+            'omllm',
         ]
     }
 

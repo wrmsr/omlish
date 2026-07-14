@@ -16,8 +16,8 @@ class Project(ProjectBase):
             f'ominfra == {__version__}',
         ],
 
-        'ommlds': [
-            f'ommlds == {__version__}',
+        'omllm': [
+            f'omllm == {__version__}',
         ],
 
         #

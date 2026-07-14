@@ -42,7 +42,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='e7e073505602ad6fb0c906edee22c19316202e38',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'Annotations'),
+        ('omllm.specs.mcp.protocol', 'Annotations'),
     ),
 )
 def _process_dataclass__e7e073505602ad6fb0c906edee22c19316202e38():
@@ -174,8 +174,8 @@ def _process_dataclass__e7e073505602ad6fb0c906edee22c19316202e38():
     ),
     plan_repr_sha1='8bc2fca36896ec5d9c1d572771a9b7e8234bd269',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'AudioContent'),
-        ('ommlds.specs.mcp.protocol', 'ImageContent'),
+        ('omllm.specs.mcp.protocol', 'AudioContent'),
+        ('omllm.specs.mcp.protocol', 'ImageContent'),
     ),
 )
 def _process_dataclass__8bc2fca36896ec5d9c1d572771a9b7e8234bd269():
@@ -313,7 +313,7 @@ def _process_dataclass__8bc2fca36896ec5d9c1d572771a9b7e8234bd269():
     ),
     plan_repr_sha1='bd3748b60506e533f5a1c3395b6fd5bda4039d84',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'BaseMetadata'),
+        ('omllm.specs.mcp.protocol', 'BaseMetadata'),
     ),
 )
 def _process_dataclass__bd3748b60506e533f5a1c3395b6fd5bda4039d84():
@@ -432,7 +432,7 @@ def _process_dataclass__bd3748b60506e533f5a1c3395b6fd5bda4039d84():
     ),
     plan_repr_sha1='8859d4c06c52c0510c84a06b53643745e0d9e622',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'BlobResourceContents'),
+        ('omllm.specs.mcp.protocol', 'BlobResourceContents'),
     ),
 )
 def _process_dataclass__8859d4c06c52c0510c84a06b53643745e0d9e622():
@@ -568,7 +568,7 @@ def _process_dataclass__8859d4c06c52c0510c84a06b53643745e0d9e622():
     ),
     plan_repr_sha1='00e70aad2841a557afa43c4a5cdb6e50bf09f90f',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'BooleanSchema'),
+        ('omllm.specs.mcp.protocol', 'BooleanSchema'),
     ),
 )
 def _process_dataclass__00e70aad2841a557afa43c4a5cdb6e50bf09f90f():
@@ -698,20 +698,20 @@ def _process_dataclass__00e70aad2841a557afa43c4a5cdb6e50bf09f90f():
     ),
     plan_repr_sha1='7c54754743ec92b4871184490a7ce2c8e15737f9',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CallToolRequest'),
-        ('ommlds.specs.mcp.protocol', 'CancelledNotification'),
-        ('ommlds.specs.mcp.protocol', 'CompleteRequest'),
-        ('ommlds.specs.mcp.protocol', 'CreateMessageRequest'),
-        ('ommlds.specs.mcp.protocol', 'ElicitRequest'),
-        ('ommlds.specs.mcp.protocol', 'GetPromptRequest'),
-        ('ommlds.specs.mcp.protocol', 'InitializeRequest'),
-        ('ommlds.specs.mcp.protocol', 'LoggingMessageNotification'),
-        ('ommlds.specs.mcp.protocol', 'ProgressNotification'),
-        ('ommlds.specs.mcp.protocol', 'ReadResourceRequest'),
-        ('ommlds.specs.mcp.protocol', 'ResourceUpdatedNotification'),
-        ('ommlds.specs.mcp.protocol', 'SetLevelRequest'),
-        ('ommlds.specs.mcp.protocol', 'SubscribeRequest'),
-        ('ommlds.specs.mcp.protocol', 'UnsubscribeRequest'),
+        ('omllm.specs.mcp.protocol', 'CallToolRequest'),
+        ('omllm.specs.mcp.protocol', 'CancelledNotification'),
+        ('omllm.specs.mcp.protocol', 'CompleteRequest'),
+        ('omllm.specs.mcp.protocol', 'CreateMessageRequest'),
+        ('omllm.specs.mcp.protocol', 'ElicitRequest'),
+        ('omllm.specs.mcp.protocol', 'GetPromptRequest'),
+        ('omllm.specs.mcp.protocol', 'InitializeRequest'),
+        ('omllm.specs.mcp.protocol', 'LoggingMessageNotification'),
+        ('omllm.specs.mcp.protocol', 'ProgressNotification'),
+        ('omllm.specs.mcp.protocol', 'ReadResourceRequest'),
+        ('omllm.specs.mcp.protocol', 'ResourceUpdatedNotification'),
+        ('omllm.specs.mcp.protocol', 'SetLevelRequest'),
+        ('omllm.specs.mcp.protocol', 'SubscribeRequest'),
+        ('omllm.specs.mcp.protocol', 'UnsubscribeRequest'),
     ),
 )
 def _process_dataclass__7c54754743ec92b4871184490a7ce2c8e15737f9():
@@ -823,8 +823,8 @@ def _process_dataclass__7c54754743ec92b4871184490a7ce2c8e15737f9():
     ),
     plan_repr_sha1='0826e4dc808ea4d3d1b2de8f4865f4255c3b8547',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CallToolRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'GetPromptRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'CallToolRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'GetPromptRequest.Params'),
     ),
 )
 def _process_dataclass__0826e4dc808ea4d3d1b2de8f4865f4255c3b8547():
@@ -944,7 +944,7 @@ def _process_dataclass__0826e4dc808ea4d3d1b2de8f4865f4255c3b8547():
     ),
     plan_repr_sha1='11d71320cdf675b4e9bc1ab89e85ea3ebe677e73',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CallToolResult'),
+        ('omllm.specs.mcp.protocol', 'CallToolResult'),
     ),
 )
 def _process_dataclass__11d71320cdf675b4e9bc1ab89e85ea3ebe677e73():
@@ -1075,7 +1075,7 @@ def _process_dataclass__11d71320cdf675b4e9bc1ab89e85ea3ebe677e73():
     ),
     plan_repr_sha1='2496559b30977d739fa350baf8824086dc1aa15a',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CancelledNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'CancelledNotification.Params'),
     ),
 )
 def _process_dataclass__2496559b30977d739fa350baf8824086dc1aa15a():
@@ -1195,8 +1195,8 @@ def _process_dataclass__2496559b30977d739fa350baf8824086dc1aa15a():
     ),
     plan_repr_sha1='170da6364b7625208100edb082d6e5c1dfa008cf',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ClientCapabilities'),
-        ('ommlds.specs.mcp.protocolold', 'ClientCapabilities'),
+        ('omllm.specs.mcp.protocol', 'ClientCapabilities'),
+        ('omllm.specs.mcp.protocolold', 'ClientCapabilities'),
     ),
 )
 def _process_dataclass__170da6364b7625208100edb082d6e5c1dfa008cf():
@@ -1325,12 +1325,12 @@ def _process_dataclass__170da6364b7625208100edb082d6e5c1dfa008cf():
     ),
     plan_repr_sha1='d78dfa0a1b3d36442ff997752e3282d062066773',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ClientCapabilities.Roots'),
-        ('ommlds.specs.mcp.protocol', 'ServerCapabilities.Prompts'),
-        ('ommlds.specs.mcp.protocol', 'ServerCapabilities.Tools'),
-        ('ommlds.specs.mcp.protocolold', 'ClientCapabilities.Roots'),
-        ('ommlds.specs.mcp.protocolold', 'ServerCapabilities.Prompts'),
-        ('ommlds.specs.mcp.protocolold', 'ServerCapabilities.Tools'),
+        ('omllm.specs.mcp.protocol', 'ClientCapabilities.Roots'),
+        ('omllm.specs.mcp.protocol', 'ServerCapabilities.Prompts'),
+        ('omllm.specs.mcp.protocol', 'ServerCapabilities.Tools'),
+        ('omllm.specs.mcp.protocolold', 'ClientCapabilities.Roots'),
+        ('omllm.specs.mcp.protocolold', 'ServerCapabilities.Prompts'),
+        ('omllm.specs.mcp.protocolold', 'ServerCapabilities.Tools'),
     ),
 )
 def _process_dataclass__d78dfa0a1b3d36442ff997752e3282d062066773():
@@ -1438,7 +1438,7 @@ def _process_dataclass__d78dfa0a1b3d36442ff997752e3282d062066773():
     ),
     plan_repr_sha1='54477abb572d5cc21b4af950216f46aa0187a8cf',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CompleteRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'CompleteRequest.Params'),
     ),
 )
 def _process_dataclass__54477abb572d5cc21b4af950216f46aa0187a8cf():
@@ -1558,7 +1558,7 @@ def _process_dataclass__54477abb572d5cc21b4af950216f46aa0187a8cf():
     ),
     plan_repr_sha1='fa4b84852a3b44f975d22b16bd1bc5a71d6d2697',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CompleteRequest.Params.Argument'),
+        ('omllm.specs.mcp.protocol', 'CompleteRequest.Params.Argument'),
     ),
 )
 def _process_dataclass__fa4b84852a3b44f975d22b16bd1bc5a71d6d2697():
@@ -1667,7 +1667,7 @@ def _process_dataclass__fa4b84852a3b44f975d22b16bd1bc5a71d6d2697():
     ),
     plan_repr_sha1='94d4ff7c88c45a0052fe981979fc04c5a7eaed46',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CompleteRequest.Params.Context'),
+        ('omllm.specs.mcp.protocol', 'CompleteRequest.Params.Context'),
     ),
 )
 def _process_dataclass__94d4ff7c88c45a0052fe981979fc04c5a7eaed46():
@@ -1772,7 +1772,7 @@ def _process_dataclass__94d4ff7c88c45a0052fe981979fc04c5a7eaed46():
     ),
     plan_repr_sha1='96dba9ce96c263a334e485b056977bc8fe339fb1',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CompleteResult'),
+        ('omllm.specs.mcp.protocol', 'CompleteResult'),
     ),
 )
 def _process_dataclass__96dba9ce96c263a334e485b056977bc8fe339fb1():
@@ -1888,7 +1888,7 @@ def _process_dataclass__96dba9ce96c263a334e485b056977bc8fe339fb1():
     ),
     plan_repr_sha1='86219a5ebea8edd08269a34346c7b252dbfdc171',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CompleteResult.Completion'),
+        ('omllm.specs.mcp.protocol', 'CompleteResult.Completion'),
     ),
 )
 def _process_dataclass__86219a5ebea8edd08269a34346c7b252dbfdc171():
@@ -2032,7 +2032,7 @@ def _process_dataclass__86219a5ebea8edd08269a34346c7b252dbfdc171():
     ),
     plan_repr_sha1='f348d1c2b4c68d8a5f863d2d0726bcc1a10a345a',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CreateMessageRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'CreateMessageRequest.Params'),
     ),
 )
 def _process_dataclass__f348d1c2b4c68d8a5f863d2d0726bcc1a10a345a():
@@ -2207,7 +2207,7 @@ def _process_dataclass__f348d1c2b4c68d8a5f863d2d0726bcc1a10a345a():
     ),
     plan_repr_sha1='e912102995951e0d4e6f2ca6c87afef7998dbaa1',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'CreateMessageResult'),
+        ('omllm.specs.mcp.protocol', 'CreateMessageResult'),
     ),
 )
 def _process_dataclass__e912102995951e0d4e6f2ca6c87afef7998dbaa1():
@@ -2345,7 +2345,7 @@ def _process_dataclass__e912102995951e0d4e6f2ca6c87afef7998dbaa1():
     ),
     plan_repr_sha1='6e6e51bf59cbf0cf2581169a0255e152c5e3eea8',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ElicitRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'ElicitRequest.Params'),
     ),
 )
 def _process_dataclass__6e6e51bf59cbf0cf2581169a0255e152c5e3eea8():
@@ -2460,7 +2460,7 @@ def _process_dataclass__6e6e51bf59cbf0cf2581169a0255e152c5e3eea8():
     ),
     plan_repr_sha1='2aa910ce80ff5142d53acb90eddacd79ff77e2e6',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ElicitRequest.Params.RequestedSchema'),
+        ('omllm.specs.mcp.protocol', 'ElicitRequest.Params.RequestedSchema'),
     ),
 )
 def _process_dataclass__2aa910ce80ff5142d53acb90eddacd79ff77e2e6():
@@ -2584,7 +2584,7 @@ def _process_dataclass__2aa910ce80ff5142d53acb90eddacd79ff77e2e6():
     ),
     plan_repr_sha1='32b343c804f755448196e091e71a927c554f37dd',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ElicitResult'),
+        ('omllm.specs.mcp.protocol', 'ElicitResult'),
     ),
 )
 def _process_dataclass__32b343c804f755448196e091e71a927c554f37dd():
@@ -2712,7 +2712,7 @@ def _process_dataclass__32b343c804f755448196e091e71a927c554f37dd():
     ),
     plan_repr_sha1='7454ece969de86d110b10ffd38beea3a9310a9e5',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'EmbeddedResource'),
+        ('omllm.specs.mcp.protocol', 'EmbeddedResource'),
     ),
 )
 def _process_dataclass__7454ece969de86d110b10ffd38beea3a9310a9e5():
@@ -2851,7 +2851,7 @@ def _process_dataclass__7454ece969de86d110b10ffd38beea3a9310a9e5():
     ),
     plan_repr_sha1='ed3f07a84fe6b716ebe14a64aa127c890e5ac175',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'EnumSchema'),
+        ('omllm.specs.mcp.protocol', 'EnumSchema'),
     ),
 )
 def _process_dataclass__ed3f07a84fe6b716ebe14a64aa127c890e5ac175():
@@ -2993,7 +2993,7 @@ def _process_dataclass__ed3f07a84fe6b716ebe14a64aa127c890e5ac175():
     ),
     plan_repr_sha1='593834ff036e045c22468e46324fb0a4b8d3bc4c',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'GetPromptResult'),
+        ('omllm.specs.mcp.protocol', 'GetPromptResult'),
     ),
 )
 def _process_dataclass__593834ff036e045c22468e46324fb0a4b8d3bc4c():
@@ -3118,7 +3118,7 @@ def _process_dataclass__593834ff036e045c22468e46324fb0a4b8d3bc4c():
     ),
     plan_repr_sha1='9d97ac454146b25591e36aae91ffc5110f38cf48',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'Implementation'),
+        ('omllm.specs.mcp.protocol', 'Implementation'),
     ),
 )
 def _process_dataclass__9d97ac454146b25591e36aae91ffc5110f38cf48():
@@ -3243,7 +3243,7 @@ def _process_dataclass__9d97ac454146b25591e36aae91ffc5110f38cf48():
     ),
     plan_repr_sha1='9ca36653130f8aedf9144445d0200a36ce4e8dc7',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'InitializeRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'InitializeRequest.Params'),
     ),
 )
 def _process_dataclass__9ca36653130f8aedf9144445d0200a36ce4e8dc7():
@@ -3374,7 +3374,7 @@ def _process_dataclass__9ca36653130f8aedf9144445d0200a36ce4e8dc7():
     ),
     plan_repr_sha1='69db64334198503eed389c75c9f3f4866c3b3c1f',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'InitializeResult'),
+        ('omllm.specs.mcp.protocol', 'InitializeResult'),
     ),
 )
 def _process_dataclass__69db64334198503eed389c75c9f3f4866c3b3c1f():
@@ -3512,17 +3512,17 @@ def _process_dataclass__69db64334198503eed389c75c9f3f4866c3b3c1f():
     ),
     plan_repr_sha1='569b85d63cc6487eee0a33485dcb811d0c9db073',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'InitializedNotification'),
-        ('ommlds.specs.mcp.protocol', 'ListPromptsRequest'),
-        ('ommlds.specs.mcp.protocol', 'ListResourceTemplatesRequest'),
-        ('ommlds.specs.mcp.protocol', 'ListResourcesRequest'),
-        ('ommlds.specs.mcp.protocol', 'ListRootsRequest'),
-        ('ommlds.specs.mcp.protocol', 'ListToolsRequest'),
-        ('ommlds.specs.mcp.protocol', 'PingRequest'),
-        ('ommlds.specs.mcp.protocol', 'PromptListChangedNotification'),
-        ('ommlds.specs.mcp.protocol', 'ResourceListChangedNotification'),
-        ('ommlds.specs.mcp.protocol', 'RootsListChangedNotification'),
-        ('ommlds.specs.mcp.protocol', 'ToolListChangedNotification'),
+        ('omllm.specs.mcp.protocol', 'InitializedNotification'),
+        ('omllm.specs.mcp.protocol', 'ListPromptsRequest'),
+        ('omllm.specs.mcp.protocol', 'ListResourceTemplatesRequest'),
+        ('omllm.specs.mcp.protocol', 'ListResourcesRequest'),
+        ('omllm.specs.mcp.protocol', 'ListRootsRequest'),
+        ('omllm.specs.mcp.protocol', 'ListToolsRequest'),
+        ('omllm.specs.mcp.protocol', 'PingRequest'),
+        ('omllm.specs.mcp.protocol', 'PromptListChangedNotification'),
+        ('omllm.specs.mcp.protocol', 'ResourceListChangedNotification'),
+        ('omllm.specs.mcp.protocol', 'RootsListChangedNotification'),
+        ('omllm.specs.mcp.protocol', 'ToolListChangedNotification'),
     ),
 )
 def _process_dataclass__569b85d63cc6487eee0a33485dcb811d0c9db073():
@@ -3632,18 +3632,18 @@ def _process_dataclass__569b85d63cc6487eee0a33485dcb811d0c9db073():
     ),
     plan_repr_sha1='8800ad55a52dc8adc704496cbd2ecf06aa7df222',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'InitializedNotification.Params'),
-        ('ommlds.specs.mcp.protocol', 'JSONRPCNotification.Params'),
-        ('ommlds.specs.mcp.protocol', 'JSONRPCRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'ListRootsRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'Notification.Params'),
-        ('ommlds.specs.mcp.protocol', 'PingRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'PromptListChangedNotification.Params'),
-        ('ommlds.specs.mcp.protocol', 'Request.Params'),
-        ('ommlds.specs.mcp.protocol', 'ResourceListChangedNotification.Params'),
-        ('ommlds.specs.mcp.protocol', 'Result'),
-        ('ommlds.specs.mcp.protocol', 'RootsListChangedNotification.Params'),
-        ('ommlds.specs.mcp.protocol', 'ToolListChangedNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'InitializedNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'JSONRPCNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'JSONRPCRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'ListRootsRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'Notification.Params'),
+        ('omllm.specs.mcp.protocol', 'PingRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'PromptListChangedNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'Request.Params'),
+        ('omllm.specs.mcp.protocol', 'ResourceListChangedNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'Result'),
+        ('omllm.specs.mcp.protocol', 'RootsListChangedNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'ToolListChangedNotification.Params'),
     ),
 )
 def _process_dataclass__8800ad55a52dc8adc704496cbd2ecf06aa7df222():
@@ -3750,7 +3750,7 @@ def _process_dataclass__8800ad55a52dc8adc704496cbd2ecf06aa7df222():
     ),
     plan_repr_sha1='de9f6517fb38896abee122948901bc5b15dec3fd',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'JSONRPCError'),
+        ('omllm.specs.mcp.protocol', 'JSONRPCError'),
     ),
 )
 def _process_dataclass__de9f6517fb38896abee122948901bc5b15dec3fd():
@@ -3873,7 +3873,7 @@ def _process_dataclass__de9f6517fb38896abee122948901bc5b15dec3fd():
     ),
     plan_repr_sha1='3f2d37275ba736bdbacfbc4100b49a39d31fe9b3',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'JSONRPCError.Error'),
+        ('omllm.specs.mcp.protocol', 'JSONRPCError.Error'),
     ),
 )
 def _process_dataclass__3f2d37275ba736bdbacfbc4100b49a39d31fe9b3():
@@ -3997,7 +3997,7 @@ def _process_dataclass__3f2d37275ba736bdbacfbc4100b49a39d31fe9b3():
     ),
     plan_repr_sha1='41e04f82ba09f8641d2d3aa529addac5a91c3d3b',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'JSONRPCNotification'),
+        ('omllm.specs.mcp.protocol', 'JSONRPCNotification'),
     ),
 )
 def _process_dataclass__41e04f82ba09f8641d2d3aa529addac5a91c3d3b():
@@ -4123,7 +4123,7 @@ def _process_dataclass__41e04f82ba09f8641d2d3aa529addac5a91c3d3b():
     ),
     plan_repr_sha1='6bc5296b50f17194f669b68537a68955b5cd67c1',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'JSONRPCRequest'),
+        ('omllm.specs.mcp.protocol', 'JSONRPCRequest'),
     ),
 )
 def _process_dataclass__6bc5296b50f17194f669b68537a68955b5cd67c1():
@@ -4250,10 +4250,10 @@ def _process_dataclass__6bc5296b50f17194f669b68537a68955b5cd67c1():
     ),
     plan_repr_sha1='2eb86ba028e9a794403334d3f8779a79daf76446',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'JSONRPCRequest.Params.Meta'),
-        ('ommlds.specs.mcp.protocol', 'ListRootsRequest.Params.Meta'),
-        ('ommlds.specs.mcp.protocol', 'PingRequest.Params.Meta'),
-        ('ommlds.specs.mcp.protocol', 'Request.Params.Meta'),
+        ('omllm.specs.mcp.protocol', 'JSONRPCRequest.Params.Meta'),
+        ('omllm.specs.mcp.protocol', 'ListRootsRequest.Params.Meta'),
+        ('omllm.specs.mcp.protocol', 'PingRequest.Params.Meta'),
+        ('omllm.specs.mcp.protocol', 'Request.Params.Meta'),
     ),
 )
 def _process_dataclass__2eb86ba028e9a794403334d3f8779a79daf76446():
@@ -4360,7 +4360,7 @@ def _process_dataclass__2eb86ba028e9a794403334d3f8779a79daf76446():
     ),
     plan_repr_sha1='b1756ca8b1ff3a5e543d69a34384278b5bf730ce',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'JSONRPCResponse'),
+        ('omllm.specs.mcp.protocol', 'JSONRPCResponse'),
     ),
 )
 def _process_dataclass__b1756ca8b1ff3a5e543d69a34384278b5bf730ce():
@@ -4477,12 +4477,12 @@ def _process_dataclass__b1756ca8b1ff3a5e543d69a34384278b5bf730ce():
     ),
     plan_repr_sha1='f766093bd61562f127e07346cb0cd7c991dfe209',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ListPromptsRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'ListResourceTemplatesRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'ListResourcesRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'ListToolsRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'PaginatedRequest.Params'),
-        ('ommlds.specs.mcp.protocolold', 'CursorClientRequest'),
+        ('omllm.specs.mcp.protocol', 'ListPromptsRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'ListResourceTemplatesRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'ListResourcesRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'ListToolsRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'PaginatedRequest.Params'),
+        ('omllm.specs.mcp.protocolold', 'CursorClientRequest'),
     ),
 )
 def _process_dataclass__f766093bd61562f127e07346cb0cd7c991dfe209():
@@ -4590,7 +4590,7 @@ def _process_dataclass__f766093bd61562f127e07346cb0cd7c991dfe209():
     ),
     plan_repr_sha1='1ae342b03dec1f794a463ae9523bac35cfb9f2b9',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ListPromptsResult'),
+        ('omllm.specs.mcp.protocol', 'ListPromptsResult'),
     ),
 )
 def _process_dataclass__1ae342b03dec1f794a463ae9523bac35cfb9f2b9():
@@ -4716,7 +4716,7 @@ def _process_dataclass__1ae342b03dec1f794a463ae9523bac35cfb9f2b9():
     ),
     plan_repr_sha1='4c5c3eb53eb9a90fed29c35a646c10e37774c651',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ListResourceTemplatesResult'),
+        ('omllm.specs.mcp.protocol', 'ListResourceTemplatesResult'),
     ),
 )
 def _process_dataclass__4c5c3eb53eb9a90fed29c35a646c10e37774c651():
@@ -4842,7 +4842,7 @@ def _process_dataclass__4c5c3eb53eb9a90fed29c35a646c10e37774c651():
     ),
     plan_repr_sha1='bbc2e0cc1a9190530489b16dd22c9d2ca324876d',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ListResourcesResult'),
+        ('omllm.specs.mcp.protocol', 'ListResourcesResult'),
     ),
 )
 def _process_dataclass__bbc2e0cc1a9190530489b16dd22c9d2ca324876d():
@@ -4964,7 +4964,7 @@ def _process_dataclass__bbc2e0cc1a9190530489b16dd22c9d2ca324876d():
     ),
     plan_repr_sha1='c318546bd4011b1c5ca76807c52d3770f63499aa',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ListRootsResult'),
+        ('omllm.specs.mcp.protocol', 'ListRootsResult'),
     ),
 )
 def _process_dataclass__c318546bd4011b1c5ca76807c52d3770f63499aa():
@@ -5080,7 +5080,7 @@ def _process_dataclass__c318546bd4011b1c5ca76807c52d3770f63499aa():
     ),
     plan_repr_sha1='db514173f3c63ff671d6739eb7c1b69959eff7ae',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ListToolsResult'),
+        ('omllm.specs.mcp.protocol', 'ListToolsResult'),
     ),
 )
 def _process_dataclass__db514173f3c63ff671d6739eb7c1b69959eff7ae():
@@ -5205,7 +5205,7 @@ def _process_dataclass__db514173f3c63ff671d6739eb7c1b69959eff7ae():
     ),
     plan_repr_sha1='97ff9fd68f282de030711b91ed393e1d841a9bd9',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'LoggingMessageNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'LoggingMessageNotification.Params'),
     ),
 )
 def _process_dataclass__97ff9fd68f282de030711b91ed393e1d841a9bd9():
@@ -5323,7 +5323,7 @@ def _process_dataclass__97ff9fd68f282de030711b91ed393e1d841a9bd9():
     ),
     plan_repr_sha1='c324df10f26edffcea75a20f2b4b3730ff2011a7',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ModelHint'),
+        ('omllm.specs.mcp.protocol', 'ModelHint'),
     ),
 )
 def _process_dataclass__c324df10f26edffcea75a20f2b4b3730ff2011a7():
@@ -5437,7 +5437,7 @@ def _process_dataclass__c324df10f26edffcea75a20f2b4b3730ff2011a7():
     ),
     plan_repr_sha1='12d4d64254d185f44f5b1864381940b9b65855fd',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ModelPreferences'),
+        ('omllm.specs.mcp.protocol', 'ModelPreferences'),
     ),
 )
 def _process_dataclass__12d4d64254d185f44f5b1864381940b9b65855fd():
@@ -5569,9 +5569,9 @@ def _process_dataclass__12d4d64254d185f44f5b1864381940b9b65855fd():
     ),
     plan_repr_sha1='2b0747cf2def5e479b402841b795a7dd2e6fb91c',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'Notification'),
-        ('ommlds.specs.mcp.protocol', 'PaginatedRequest'),
-        ('ommlds.specs.mcp.protocol', 'Request'),
+        ('omllm.specs.mcp.protocol', 'Notification'),
+        ('omllm.specs.mcp.protocol', 'PaginatedRequest'),
+        ('omllm.specs.mcp.protocol', 'Request'),
     ),
 )
 def _process_dataclass__2b0747cf2def5e479b402841b795a7dd2e6fb91c():
@@ -5694,7 +5694,7 @@ def _process_dataclass__2b0747cf2def5e479b402841b795a7dd2e6fb91c():
     ),
     plan_repr_sha1='b441ab0b5764fee0a12bc56970abb7e312910cc7',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'NumberSchema'),
+        ('omllm.specs.mcp.protocol', 'NumberSchema'),
     ),
 )
 def _process_dataclass__b441ab0b5764fee0a12bc56970abb7e312910cc7():
@@ -5834,7 +5834,7 @@ def _process_dataclass__b441ab0b5764fee0a12bc56970abb7e312910cc7():
     ),
     plan_repr_sha1='be0d4c91ff874fa3b217062c470cb07d115488f4',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'PaginatedResult'),
+        ('omllm.specs.mcp.protocol', 'PaginatedResult'),
     ),
 )
 def _process_dataclass__be0d4c91ff874fa3b217062c470cb07d115488f4():
@@ -5955,7 +5955,7 @@ def _process_dataclass__be0d4c91ff874fa3b217062c470cb07d115488f4():
     ),
     plan_repr_sha1='59fcc1c2ae322b9f1ed648a1e2e49c19fd412726',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ProgressNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'ProgressNotification.Params'),
     ),
 )
 def _process_dataclass__59fcc1c2ae322b9f1ed648a1e2e49c19fd412726():
@@ -6095,7 +6095,7 @@ def _process_dataclass__59fcc1c2ae322b9f1ed648a1e2e49c19fd412726():
     ),
     plan_repr_sha1='2cbd168804bdb48b75fe63716ebfe24779ae990f',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'Prompt'),
+        ('omllm.specs.mcp.protocol', 'Prompt'),
     ),
 )
 def _process_dataclass__2cbd168804bdb48b75fe63716ebfe24779ae990f():
@@ -6242,7 +6242,7 @@ def _process_dataclass__2cbd168804bdb48b75fe63716ebfe24779ae990f():
     ),
     plan_repr_sha1='4f6785cb4de4e1c4f9b3424deb3cac45acc75b27',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'PromptArgument'),
+        ('omllm.specs.mcp.protocol', 'PromptArgument'),
     ),
 )
 def _process_dataclass__4f6785cb4de4e1c4f9b3424deb3cac45acc75b27():
@@ -6373,8 +6373,8 @@ def _process_dataclass__4f6785cb4de4e1c4f9b3424deb3cac45acc75b27():
     ),
     plan_repr_sha1='28fa0d9ed0acd7cd675991b58f309cafc8b4701f',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'PromptMessage'),
-        ('ommlds.specs.mcp.protocol', 'SamplingMessage'),
+        ('omllm.specs.mcp.protocol', 'PromptMessage'),
+        ('omllm.specs.mcp.protocol', 'SamplingMessage'),
     ),
 )
 def _process_dataclass__28fa0d9ed0acd7cd675991b58f309cafc8b4701f():
@@ -6488,7 +6488,7 @@ def _process_dataclass__28fa0d9ed0acd7cd675991b58f309cafc8b4701f():
     ),
     plan_repr_sha1='56b3acf6332e5731d048891a1c79d1648cafd084',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'PromptReference'),
+        ('omllm.specs.mcp.protocol', 'PromptReference'),
     ),
 )
 def _process_dataclass__56b3acf6332e5731d048891a1c79d1648cafd084():
@@ -6606,10 +6606,10 @@ def _process_dataclass__56b3acf6332e5731d048891a1c79d1648cafd084():
     ),
     plan_repr_sha1='276376c0f254cbe1b3a56856fd6c85897139215b',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ReadResourceRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'ResourceUpdatedNotification.Params'),
-        ('ommlds.specs.mcp.protocol', 'SubscribeRequest.Params'),
-        ('ommlds.specs.mcp.protocol', 'UnsubscribeRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'ReadResourceRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'ResourceUpdatedNotification.Params'),
+        ('omllm.specs.mcp.protocol', 'SubscribeRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'UnsubscribeRequest.Params'),
     ),
 )
 def _process_dataclass__276376c0f254cbe1b3a56856fd6c85897139215b():
@@ -6713,7 +6713,7 @@ def _process_dataclass__276376c0f254cbe1b3a56856fd6c85897139215b():
     ),
     plan_repr_sha1='d6f385465a04c65f50e9d9d65b494f089a1a86ac',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ReadResourceResult'),
+        ('omllm.specs.mcp.protocol', 'ReadResourceResult'),
     ),
 )
 def _process_dataclass__d6f385465a04c65f50e9d9d65b494f089a1a86ac():
@@ -6845,7 +6845,7 @@ def _process_dataclass__d6f385465a04c65f50e9d9d65b494f089a1a86ac():
     ),
     plan_repr_sha1='a506908c7b060215cd39188eeb85194a68a0e880',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'Resource'),
+        ('omllm.specs.mcp.protocol', 'Resource'),
     ),
 )
 def _process_dataclass__a506908c7b060215cd39188eeb85194a68a0e880():
@@ -7014,7 +7014,7 @@ def _process_dataclass__a506908c7b060215cd39188eeb85194a68a0e880():
     ),
     plan_repr_sha1='b0645a00c325b97bc04987be710b64012dc86783',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ResourceContents'),
+        ('omllm.specs.mcp.protocol', 'ResourceContents'),
     ),
 )
 def _process_dataclass__b0645a00c325b97bc04987be710b64012dc86783():
@@ -7158,7 +7158,7 @@ def _process_dataclass__b0645a00c325b97bc04987be710b64012dc86783():
     ),
     plan_repr_sha1='e74ff82cad7d3f5367d35009dd9ff5713864cd16',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ResourceLink'),
+        ('omllm.specs.mcp.protocol', 'ResourceLink'),
     ),
 )
 def _process_dataclass__e74ff82cad7d3f5367d35009dd9ff5713864cd16():
@@ -7349,7 +7349,7 @@ def _process_dataclass__e74ff82cad7d3f5367d35009dd9ff5713864cd16():
     ),
     plan_repr_sha1='ab6a6047bb0be016d16a43384dcc7d3812075dbf',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ResourceTemplate'),
+        ('omllm.specs.mcp.protocol', 'ResourceTemplate'),
     ),
 )
 def _process_dataclass__ab6a6047bb0be016d16a43384dcc7d3812075dbf():
@@ -7505,7 +7505,7 @@ def _process_dataclass__ab6a6047bb0be016d16a43384dcc7d3812075dbf():
     ),
     plan_repr_sha1='57a8e0b95db07424a50c3418127ad13c7b802859',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ResourceTemplateReference'),
+        ('omllm.specs.mcp.protocol', 'ResourceTemplateReference'),
     ),
 )
 def _process_dataclass__57a8e0b95db07424a50c3418127ad13c7b802859():
@@ -7620,7 +7620,7 @@ def _process_dataclass__57a8e0b95db07424a50c3418127ad13c7b802859():
     ),
     plan_repr_sha1='42cd9564620a5e4fd947996819f049abd4f7d609',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'Root'),
+        ('omllm.specs.mcp.protocol', 'Root'),
     ),
 )
 def _process_dataclass__42cd9564620a5e4fd947996819f049abd4f7d609():
@@ -7756,8 +7756,8 @@ def _process_dataclass__42cd9564620a5e4fd947996819f049abd4f7d609():
     ),
     plan_repr_sha1='0604ae887e3d1ab59338acbd6630052994c6f8d7',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ServerCapabilities'),
-        ('ommlds.specs.mcp.protocolold', 'ServerCapabilities'),
+        ('omllm.specs.mcp.protocol', 'ServerCapabilities'),
+        ('omllm.specs.mcp.protocolold', 'ServerCapabilities'),
     ),
 )
 def _process_dataclass__0604ae887e3d1ab59338acbd6630052994c6f8d7():
@@ -7908,8 +7908,8 @@ def _process_dataclass__0604ae887e3d1ab59338acbd6630052994c6f8d7():
     ),
     plan_repr_sha1='42bc667dce1ec8940899ca3e66ca6e82c18ef4ea',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ServerCapabilities.Resources'),
-        ('ommlds.specs.mcp.protocolold', 'ServerCapabilities.Resources'),
+        ('omllm.specs.mcp.protocol', 'ServerCapabilities.Resources'),
+        ('omllm.specs.mcp.protocolold', 'ServerCapabilities.Resources'),
     ),
 )
 def _process_dataclass__42bc667dce1ec8940899ca3e66ca6e82c18ef4ea():
@@ -8020,7 +8020,7 @@ def _process_dataclass__42bc667dce1ec8940899ca3e66ca6e82c18ef4ea():
     ),
     plan_repr_sha1='62d4589233c32ba393d739a4bb30443082ae877d',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'SetLevelRequest.Params'),
+        ('omllm.specs.mcp.protocol', 'SetLevelRequest.Params'),
     ),
 )
 def _process_dataclass__62d4589233c32ba393d739a4bb30443082ae877d():
@@ -8137,7 +8137,7 @@ def _process_dataclass__62d4589233c32ba393d739a4bb30443082ae877d():
     ),
     plan_repr_sha1='dd48b7dac215da904a7ef4a8083f4f71b413ad91',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'StringSchema'),
+        ('omllm.specs.mcp.protocol', 'StringSchema'),
     ),
 )
 def _process_dataclass__dd48b7dac215da904a7ef4a8083f4f71b413ad91():
@@ -8292,7 +8292,7 @@ def _process_dataclass__dd48b7dac215da904a7ef4a8083f4f71b413ad91():
     ),
     plan_repr_sha1='d27b4b9b84d6300c78acd44c9664a05f2a6043a7',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'TextContent'),
+        ('omllm.specs.mcp.protocol', 'TextContent'),
     ),
 )
 def _process_dataclass__d27b4b9b84d6300c78acd44c9664a05f2a6043a7():
@@ -8428,7 +8428,7 @@ def _process_dataclass__d27b4b9b84d6300c78acd44c9664a05f2a6043a7():
     ),
     plan_repr_sha1='3fc8183553f9245f169fbdecdfe57eee98302ad0',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'TextResourceContents'),
+        ('omllm.specs.mcp.protocol', 'TextResourceContents'),
     ),
 )
 def _process_dataclass__3fc8183553f9245f169fbdecdfe57eee98302ad0():
@@ -8575,7 +8575,7 @@ def _process_dataclass__3fc8183553f9245f169fbdecdfe57eee98302ad0():
     ),
     plan_repr_sha1='1579b60ea327cacf2757d1977dffca6a8642801e',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'Tool'),
+        ('omllm.specs.mcp.protocol', 'Tool'),
     ),
 )
 def _process_dataclass__1579b60ea327cacf2757d1977dffca6a8642801e():
@@ -8735,8 +8735,8 @@ def _process_dataclass__1579b60ea327cacf2757d1977dffca6a8642801e():
     ),
     plan_repr_sha1='7f8322f1099d8942449af86391573c8fc14ef849',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'Tool.InputSchema'),
-        ('ommlds.specs.mcp.protocol', 'Tool.OutputSchema'),
+        ('omllm.specs.mcp.protocol', 'Tool.InputSchema'),
+        ('omllm.specs.mcp.protocol', 'Tool.OutputSchema'),
     ),
 )
 def _process_dataclass__7f8322f1099d8942449af86391573c8fc14ef849():
@@ -8870,8 +8870,8 @@ def _process_dataclass__7f8322f1099d8942449af86391573c8fc14ef849():
     ),
     plan_repr_sha1='e22803d32e39ac5461f07f6c2170c01280b5f7b9',
     cls_names=(
-        ('ommlds.specs.mcp.protocol', 'ToolAnnotations'),
-        ('ommlds.specs.mcp.protocolold', 'ToolAnnotations'),
+        ('omllm.specs.mcp.protocol', 'ToolAnnotations'),
+        ('omllm.specs.mcp.protocolold', 'ToolAnnotations'),
     ),
 )
 def _process_dataclass__e22803d32e39ac5461f07f6c2170c01280b5f7b9():
@@ -9015,7 +9015,7 @@ def _process_dataclass__e22803d32e39ac5461f07f6c2170c01280b5f7b9():
     ),
     plan_repr_sha1='2f03740b99dc8066cfcbcc46b7cb91d872fdef60',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'CallToolRequest'),
+        ('omllm.specs.mcp.protocolold', 'CallToolRequest'),
     ),
 )
 def _process_dataclass__2f03740b99dc8066cfcbcc46b7cb91d872fdef60():
@@ -9139,7 +9139,7 @@ def _process_dataclass__2f03740b99dc8066cfcbcc46b7cb91d872fdef60():
     ),
     plan_repr_sha1='d67af412fc2e5e82d7729f9452c092674a3f36b3',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'CallToolResult'),
+        ('omllm.specs.mcp.protocolold', 'CallToolResult'),
     ),
 )
 def _process_dataclass__d67af412fc2e5e82d7729f9452c092674a3f36b3():
@@ -9268,7 +9268,7 @@ def _process_dataclass__d67af412fc2e5e82d7729f9452c092674a3f36b3():
     ),
     plan_repr_sha1='108625303d9cc86f36aa2da5265e213ac698f51f',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'CursorClientResult'),
+        ('omllm.specs.mcp.protocolold', 'CursorClientResult'),
     ),
 )
 def _process_dataclass__108625303d9cc86f36aa2da5265e213ac698f51f():
@@ -9373,7 +9373,7 @@ def _process_dataclass__108625303d9cc86f36aa2da5265e213ac698f51f():
     ),
     plan_repr_sha1='562f8e7e3d1263be9853f4a5c6ffd0a211afb158',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'Implementation'),
+        ('omllm.specs.mcp.protocolold', 'Implementation'),
     ),
 )
 def _process_dataclass__562f8e7e3d1263be9853f4a5c6ffd0a211afb158():
@@ -9492,7 +9492,7 @@ def _process_dataclass__562f8e7e3d1263be9853f4a5c6ffd0a211afb158():
     ),
     plan_repr_sha1='dfa967e29d93ab10275d0ebd2618c39c2c967745',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'InitializeRequest'),
+        ('omllm.specs.mcp.protocolold', 'InitializeRequest'),
     ),
 )
 def _process_dataclass__dfa967e29d93ab10275d0ebd2618c39c2c967745():
@@ -9628,7 +9628,7 @@ def _process_dataclass__dfa967e29d93ab10275d0ebd2618c39c2c967745():
     ),
     plan_repr_sha1='6a4c93d451d52a62674673241fca7e7164f79af1',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'InitializeResult'),
+        ('omllm.specs.mcp.protocolold', 'InitializeResult'),
     ),
 )
 def _process_dataclass__6a4c93d451d52a62674673241fca7e7164f79af1():
@@ -9763,9 +9763,9 @@ def _process_dataclass__6a4c93d451d52a62674673241fca7e7164f79af1():
     ),
     plan_repr_sha1='ed35b9cf3e3cd1bf5b385570823394625579cf9d',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'InitializedNotification'),
-        ('ommlds.specs.mcp.protocolold', 'PingClientResult'),
-        ('ommlds.specs.mcp.protocolold', 'PingServerResult'),
+        ('omllm.specs.mcp.protocolold', 'InitializedNotification'),
+        ('omllm.specs.mcp.protocolold', 'PingClientResult'),
+        ('omllm.specs.mcp.protocolold', 'PingServerResult'),
     ),
 )
 def _process_dataclass__ed35b9cf3e3cd1bf5b385570823394625579cf9d():
@@ -9853,8 +9853,8 @@ def _process_dataclass__ed35b9cf3e3cd1bf5b385570823394625579cf9d():
     ),
     plan_repr_sha1='a1b41055ff58a2964f0e25aae5ad9515639a4d58',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'ListPromptsRequest'),
-        ('ommlds.specs.mcp.protocolold', 'ListToolsRequest'),
+        ('omllm.specs.mcp.protocolold', 'ListPromptsRequest'),
+        ('omllm.specs.mcp.protocolold', 'ListToolsRequest'),
     ),
 )
 def _process_dataclass__a1b41055ff58a2964f0e25aae5ad9515639a4d58():
@@ -9966,7 +9966,7 @@ def _process_dataclass__a1b41055ff58a2964f0e25aae5ad9515639a4d58():
     ),
     plan_repr_sha1='4f9887cb1136aa1e731da1375b0df1156e0ab16b',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'ListPromptsResult'),
+        ('omllm.specs.mcp.protocolold', 'ListPromptsResult'),
     ),
 )
 def _process_dataclass__4f9887cb1136aa1e731da1375b0df1156e0ab16b():
@@ -10095,7 +10095,7 @@ def _process_dataclass__4f9887cb1136aa1e731da1375b0df1156e0ab16b():
     ),
     plan_repr_sha1='3a00e3d924bc002c85980317fcc32aaac988be1f',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'ListToolsResult'),
+        ('omllm.specs.mcp.protocolold', 'ListToolsResult'),
     ),
 )
 def _process_dataclass__3a00e3d924bc002c85980317fcc32aaac988be1f():
@@ -10212,7 +10212,7 @@ def _process_dataclass__3a00e3d924bc002c85980317fcc32aaac988be1f():
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'Message'),
+        ('omllm.specs.mcp.protocolold', 'Message'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -10294,8 +10294,8 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
     ),
     plan_repr_sha1='d7418a8cca2aa773c3a1ef3fa87a07dc73768748',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'PingClientRequest'),
-        ('ommlds.specs.mcp.protocolold', 'PingServerRequest'),
+        ('omllm.specs.mcp.protocolold', 'PingClientRequest'),
+        ('omllm.specs.mcp.protocolold', 'PingServerRequest'),
     ),
 )
 def _process_dataclass__d7418a8cca2aa773c3a1ef3fa87a07dc73768748():
@@ -10411,7 +10411,7 @@ def _process_dataclass__d7418a8cca2aa773c3a1ef3fa87a07dc73768748():
     ),
     plan_repr_sha1='2aa0c6160b68764b4737f79b76a7211fd320c708',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'Prompt'),
+        ('omllm.specs.mcp.protocolold', 'Prompt'),
     ),
 )
 def _process_dataclass__2aa0c6160b68764b4737f79b76a7211fd320c708():
@@ -10558,7 +10558,7 @@ def _process_dataclass__2aa0c6160b68764b4737f79b76a7211fd320c708():
     ),
     plan_repr_sha1='f49ebe3867d8d04657e10bd99b1f1faf792e98ec',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'PromptArgument'),
+        ('omllm.specs.mcp.protocolold', 'PromptArgument'),
     ),
 )
 def _process_dataclass__f49ebe3867d8d04657e10bd99b1f1faf792e98ec():
@@ -10686,7 +10686,7 @@ def _process_dataclass__f49ebe3867d8d04657e10bd99b1f1faf792e98ec():
     ),
     plan_repr_sha1='981a3fd6730d2d619e2c7c14e7ef8cc88d193ce6',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'TextContentBlock'),
+        ('omllm.specs.mcp.protocolold', 'TextContentBlock'),
     ),
 )
 def _process_dataclass__981a3fd6730d2d619e2c7c14e7ef8cc88d193ce6():
@@ -10807,7 +10807,7 @@ def _process_dataclass__981a3fd6730d2d619e2c7c14e7ef8cc88d193ce6():
     ),
     plan_repr_sha1='71b741a91f4a3186af46caf3ce63596c7f62fa3f',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'Tool'),
+        ('omllm.specs.mcp.protocolold', 'Tool'),
     ),
 )
 def _process_dataclass__71b741a91f4a3186af46caf3ce63596c7f62fa3f():
@@ -10961,7 +10961,7 @@ def _process_dataclass__71b741a91f4a3186af46caf3ce63596c7f62fa3f():
     ),
     plan_repr_sha1='b672ff406614f672ad0f891cad4e3a1cdeba7586',
     cls_names=(
-        ('ommlds.specs.mcp.protocolold', 'WithMeta'),
+        ('omllm.specs.mcp.protocolold', 'WithMeta'),
     ),
 )
 def _process_dataclass__b672ff406614f672ad0f891cad4e3a1cdeba7586():

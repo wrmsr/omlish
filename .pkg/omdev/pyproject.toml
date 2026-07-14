@@ -30,7 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'ominfra == 0.0.27',
-    'ommlds == 0.0.27',
+    'omllm == 0.0.27',
     'black ~= 26.5',
     'pycparser ~= 3.0',
     'pcpp ~= 1.30',
@@ -49,8 +49,8 @@ all = [
 ominfra = [
     'ominfra == 0.0.27',
 ]
-ommlds = [
-    'ommlds == 0.0.27',
+omllm = [
+    'omllm == 0.0.27',
 ]
 black = [
     'black ~= 26.5',

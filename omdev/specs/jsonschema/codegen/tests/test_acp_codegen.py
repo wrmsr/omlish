@@ -12,7 +12,7 @@ from ..generator import JsonSchemaCodeGen
 
 
 def test_acp_codegen_import_and_marshal(tmp_path):
-    from ommlds.specs.acp.spec import spec_json_schema
+    from omllm.specs.acp.spec import spec_json_schema
 
     src = JsonSchemaCodeGen(spec_json_schema()).gen_module()
     path = os.path.join(tmp_path, 'acp_protocol.py')
