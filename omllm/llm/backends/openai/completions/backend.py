@@ -29,13 +29,16 @@ class OpenaiCompletionsBackend(Backend):
         self._api_key = api_key
         self._http_client = http_client
 
+        self._model_http = check.not_none(model.http)
+        self._base_url = check.non_empty_str(self._model_http.base_url).rstrip('/')
+
     @property
     def model(self) -> Model:
         return self._model
 
     async def complete(self, context: Context, options: Options | None = None) -> AiMessage:
         raw_request: dict = {
-            'model': 'gpt-5.4-mini',
+            'model': self._model.key.id,
         }
 
         #
@@ -90,13 +93,14 @@ class OpenaiCompletionsBackend(Backend):
         http_headers = {
             'authorization': f'Bearer {check.not_none(self._api_key).reveal()}',
             'content-type': 'application/json',
-            'accept': 'text/event-stream',
+            'accept': 'application/json',
+            **(self._model_http.extra_headers or {}),
         }
 
         #
 
         http_response = await http.async_request(
-            'https://api.openai.com/v1/chat/completions',
+            self._base_url + '/chat/completions',
             headers=http_headers,
             data=json.dumps(raw_request).encode('utf-8'),
             client=self._http_client,

@@ -105,13 +105,9 @@ class LlmGitMessageGenerator(GitMessageGenerator):
 
         from omdev.home.secrets import load_secrets
 
-        api_key = load_secrets().get('openai_api_key')
-
-        #
-
         svc = llm.OpenaiCompletionsBackend(
-            llm.default_model_catalog()[llm.ModelKey('openai', 'gpt-5.4-mini')],
-            api_key=api_key,
+            llm.default_model_catalog()[llm.ModelKey('groq', 'openai/gpt-oss-120b')],
+            api_key=load_secrets().get('groq_api_key'),
             http_client=http.SyncAsyncHttpClient(http.client()),
         )
 

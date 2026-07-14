@@ -30,4 +30,12 @@ class Model:
 
     backend: str
 
-    base_url: str | None = None
+    @ta.final
+    @dc.dataclass(frozen=True, kw_only=True)
+    @dc.extra_class_params(default_repr_fn=lang.opt_repr)
+    class Http:
+        base_url: str | None = None
+
+        extra_headers: ta.Mapping[str, str] | None = None
+
+    http: Http | None = None

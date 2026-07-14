@@ -21,7 +21,9 @@ DEFAULT_MODELS: ta.Final[ta.Sequence[Model]] = [
         ),
         name='GPT 5.4 Mini',
         backend='openai-completions',
-        base_url='https://api.openai.com/v1',
+        http=Model.Http(
+            base_url='https://api.openai.com/v1',
+        ),
     ),
 
     # groq
@@ -33,7 +35,12 @@ DEFAULT_MODELS: ta.Final[ta.Sequence[Model]] = [
         ),
         name='GPT OSS 120B',
         backend='openai-completions',
-        base_url='https://api.groq.com/openai/v1',
+        http=Model.Http(
+            base_url='https://api.groq.com/openai/v1',
+            extra_headers={
+                'User-Agent': 'python-httpx/0.28.1',  # required or it 403's lol
+            },
+        ),
     ),
 
 ]

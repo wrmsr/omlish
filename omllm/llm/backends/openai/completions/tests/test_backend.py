@@ -9,11 +9,30 @@ from .....types.models import ModelKey
 from ..backend import OpenaiCompletionsBackend
 
 
+@pytest.mark.online
 @pytest.mark.asyncs('asyncio')
-async def test_backend(harness):
+async def test_openai_backend(harness):
     svc = OpenaiCompletionsBackend(
         default_model_catalog()[ModelKey('openai', 'gpt-5.4-mini')],
         api_key=harness[HarnessSecrets].get_or_skip('openai_api_key'),
+    )
+
+    out = await svc.complete(Context(
+        system_prompt='You are a helpful assistant.',
+        messages=[
+            UserMessage('hi'),
+        ],
+    ))
+
+    print(out)
+
+
+@pytest.mark.online
+@pytest.mark.asyncs('asyncio')
+async def test_groq_backend(harness):
+    svc = OpenaiCompletionsBackend(
+        default_model_catalog()[ModelKey('groq', 'openai/gpt-oss-120b')],
+        api_key=harness[HarnessSecrets].get_or_skip('groq_api_key'),
     )
 
     out = await svc.complete(Context(
