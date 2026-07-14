@@ -175,6 +175,24 @@ def test_freeze_prepares_held_infos() -> None:
     assert isinstance(typ, types.Instance)
     assert typ.type is info
 
+    #
+
+    t2_var = ta.TypeVar('T2')  # type: ignore
+
+    class Box2(ta.Generic[t2_var]):  # type: ignore
+        pass
+
+    # get_type_info alone leaves the info unprepared (no type vars reflected yet).
+    info2 = child.get_type_info(Box2)
+    assert info2.type_vars == ()
+
+    child._internal.freeze()
+
+    assert [type_var.name for type_var in info2.type_vars] == ['T2']  # type: ignore[var-annotated]
+    assert child._internal._state.is_info_prepared(Box2)
+
+    assert not mirror._internal._state.is_info_prepared(Box2)
+
 
 def test_freeze_heals_unresolved_aliases() -> None:
     calls: list[str] = []

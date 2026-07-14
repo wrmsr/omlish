@@ -203,7 +203,7 @@ class _MirrorState:
 
         self.__type_var_namespace = _RuntimeNamespace()
         if parent is not None:
-            self.__next_type_var_id: int = parent.__next_type_var_id + 1
+            self.__next_type_var_id: int = parent.__next_type_var_id
         else:
             self.__next_type_var_id = 1
 
