@@ -8,23 +8,30 @@ from ....types.content import TextContent
 from ....types.context import Context
 from ....types.messages import AiMessage
 from ....types.messages import UserMessage
+from ....types.models import Model
 from ....types.options import Options
 
 
 ##
 
 
-class CompletionOpenaiBackend(Backend):
+class OpenaiCompletionsBackend(Backend):
     def __init__(
             self,
+            model: Model,
             *,
             api_key: sec.Secret | None = None,
             http_client: http.AsyncHttpClient | None = None,
     ) -> None:
         super().__init__()
 
+        self._model = model
         self._api_key = api_key
         self._http_client = http_client
+
+    @property
+    def model(self) -> Model:
+        return self._model
 
     async def complete(self, context: Context, options: Options | None = None) -> AiMessage:
         raw_request: dict = {

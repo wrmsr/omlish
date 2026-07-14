@@ -22,8 +22,20 @@ with _lang.auto_proxy_init(
 ):
     ##
 
-    from .backends.openai.completion.backend import (  # noqa
-        CompletionOpenaiBackend,
+    from .backends.openai.completions.backend import (  # noqa
+        OpenaiCompletionsBackend,
+    )
+
+    ##
+
+    from .models.catalog import (  # noqa
+        ModelCatalog,
+    )
+
+    from .models.default import (  # noqa
+        DEFAULT_MODELS,
+
+        default_model_catalog,
     )
 
     ##
@@ -56,6 +68,10 @@ with _lang.auto_proxy_init(
 
         AiMessage,
         AiMessageBuilder,
+    )
+
+    from .types.models import (  # noqa
+        Model,
     )
 
     from .types.options import (  # noqa

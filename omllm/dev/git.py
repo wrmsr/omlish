@@ -109,7 +109,8 @@ class LlmGitMessageGenerator(GitMessageGenerator):
 
         #
 
-        svc = llm.CompletionOpenaiBackend(
+        svc = llm.OpenaiCompletionsBackend(
+            llm.default_model_catalog()['gpt-5.4-mini'],
             api_key=api_key,
             http_client=http.SyncAsyncHttpClient(http.client()),
         )
