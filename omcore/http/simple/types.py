@@ -8,8 +8,8 @@ import urllib.parse
 from ...lite.abstract import Abstract
 from ...lite.bytes import Bytes
 from ...lite.cached import cached_property
-from ...lite.dataclasses import install_dataclass_filtered_repr
 from ...lite.dataclasses import install_dataclass_kw_only_init
+from ...lite.dataclasses import install_dataclass_repr
 from ...lite.typemaps import TypeMap
 from ...sockets.addresses import SocketAddress
 from ..parsing import ParsedHttpHeaders
@@ -62,7 +62,7 @@ class SimpleHttpHandlerRequest:
         return self.Parsed.of(self.path)
 
 
-@install_dataclass_filtered_repr('omit_none')
+@install_dataclass_repr(filter='omit_none')
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerResponse:

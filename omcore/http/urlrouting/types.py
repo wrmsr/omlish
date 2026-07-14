@@ -4,7 +4,7 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from ...lite.dataclasses import install_dataclass_filtered_repr
+from ...lite.dataclasses import install_dataclass_repr
 
 
 UrlRouteEndpoint = ta.Any  # ta.TypeAlias
@@ -60,7 +60,7 @@ class UrlRouteRedirectRequiredError(UrlRouteMatchError):
 ##
 
 
-@install_dataclass_filtered_repr('omit_none')
+@install_dataclass_repr(filter='omit_none')
 @dc.dataclass(frozen=True)
 class UrlRoute:
     pattern: str

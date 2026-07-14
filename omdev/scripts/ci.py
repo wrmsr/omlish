@@ -104,7 +104,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../omcore/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
-            dict(path='../../omcore/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
+            dict(path='../../omcore/lite/dataclasses.py', sha1='8a28322d561255096b849137b33aed42c49047b7'),
             dict(path='../../omcore/lite/injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
             dict(path='../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
             dict(path='../../omcore/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
@@ -128,7 +128,7 @@ def __om_amalg__():  # noqa
             dict(path='../specs/oci/compression.py', sha1='427ff583b6df669b826228baa273193a83af5e17'),
             dict(path='../../omcore/argparse/parsers.py', sha1='46321356fbfd17d94eeb0347e86eb042a9333d37'),
             dict(path='../../omcore/formats/yaml/goyaml/errors.py', sha1='298b4d892d840ce98afb520143da35c56b98fb39'),
-            dict(path='../../omcore/http/headers.py', sha1='d256876b1151fba3efc7e767d7f469c9f602599e'),
+            dict(path='../../omcore/http/headers.py', sha1='0486a9e31f4ed77163e6b388bb15fc864b1a01ef'),
             dict(path='../../omcore/http/parsing.py', sha1='8325495aba43bc3da55c4dffa0af170879744b8f'),
             dict(path='../../omcore/http/pipelines/compression/codings.py', sha1='18baac5a24e320417b94316439bf873302c2dc32'),  # noqa
             dict(path='../../omcore/io/pipelines/core.py', sha1='629ab14961ca7b35893b7e5f1e781dcafb0beacb'),
@@ -156,7 +156,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/formats/yaml/goyaml/tokens.py', sha1='5dcdedc1e6af386b069afcc83783d3003bad08a6'),
             dict(path='../../omcore/http/pipelines/bodymodes.py', sha1='0df5c7697210b27064a7dd54c736487195f82703'),
             dict(path='../../omcore/http/pipelines/objects.py', sha1='18e331467e8ab0b66bc17938712434dd0e765f77'),
-            dict(path='../../omcore/http/simple/types.py', sha1='8e544dca75b3791ba12f28c73105941097063f8d'),
+            dict(path='../../omcore/http/simple/types.py', sha1='50fbfcfb97ef726d1bb4296d9428e6cb0713d54c'),
             dict(path='../../omcore/io/pipelines/bytes/buffering.py', sha1='bf1d8923427f11b35a9ebde1e10944786c81262f'),
             dict(path='../../omcore/io/pipelines/drivers/metadata.py', sha1='fa174d01438db50305953e0f500d303c6a80faac'),  # noqa
             dict(path='../../omcore/io/pipelines/flow/types.py', sha1='81ead96b6a9487fbda313e858d75701ebe2d5518'),
@@ -2261,67 +2261,79 @@ def dataclass_maybe_post_init(sup: ta.Any) -> bool:
 ##
 
 
-def dataclass_filtered_repr(
+def dataclass_repr(
         obj: ta.Any,
-        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+        *,
+        terse: bool = False,
+        filter: ta.Union[  # noqa
+            ta.Callable[[ta.Any, dc.Field, ta.Any], bool],
+            ta.Literal['omit_none', 'omit_falsey'],
+            None,
+        ] = None,
 ) -> str:
-    if fn == 'omit_none':
-        fn = lambda o, f, v: v is not None  # noqa
-    elif fn == 'omit_falsey':
-        fn = lambda o, f, v: bool(v)
+    if filter == 'omit_none':
+        filter = lambda o, f, v: v is not None  # noqa
+    elif filter == 'omit_falsey':
+        filter = lambda o, f, v: bool(v)  # noqa
 
-    return (
-        f'{obj.__class__.__qualname__}(' +
-        ', '.join([
-            f'{f.name}={v!r}'
-            for f in dc.fields(obj)
-            if fn(obj, f, v := getattr(obj, f.name))
-        ]) +
-        ')'
-    )
+    lst: ta.List[str] = [
+        f'{obj.__class__.__qualname__}(',
+    ]
+
+    i = 0
+    for f in dc.fields(obj):
+        if not f.repr:
+            continue
+
+        v = getattr(obj, f.name)
+
+        if filter is not None and not filter(obj, f, v):
+            continue
+
+        if i:
+            lst.append(', ')
+        i += 1
+
+        if not terse:
+            lst.append(f.name)
+            lst.append('=')
+
+        lst.append(repr(v))
+
+    lst.append(')')
+
+    return ''.join(lst)
 
 
 def dataclass_repr_omit_none(obj: ta.Any) -> str:
-    return dataclass_filtered_repr(obj, 'omit_none')
+    return dataclass_repr(obj, filter='omit_none')
 
 
 def dataclass_repr_omit_falsey(obj: ta.Any) -> str:
-    return dataclass_filtered_repr(obj, 'omit_falsey')
+    return dataclass_repr(obj, filter='omit_falsey')
 
 
-def install_dataclass_filtered_repr(
-        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+def install_dataclass_repr(
+        *,
+        terse: bool = False,
+        filter: ta.Union[  # noqa
+            ta.Callable[[ta.Any, dc.Field, ta.Any], bool],
+            ta.Literal['omit_none', 'omit_falsey'],
+            None,
+        ] = None,
 ):
     def inner(cls):
         if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
-        def filtered_repr(self) -> str:
-            return dataclass_filtered_repr(self, fn)
+        def repr_impl(self) -> str:
+            return dataclass_repr(
+                self,
+                terse=terse,
+                filter=filter,
+            )
 
-        _install_dataclass_fn(cls, filtered_repr, '__repr__')
-
-        return cls
-
-    return inner
-
-
-#
-
-
-def dataclass_terse_repr(obj: ta.Any) -> str:
-    return f'{obj.__class__.__qualname__}({", ".join(repr(getattr(obj, f.name)) for f in dc.fields(obj))})'
-
-
-def install_dataclass_terse_repr():
-    def inner(cls):
-        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
-            raise TypeError(cls)
-
-        def terse_repr(self) -> str:
-            return dataclass_terse_repr(self)
-
-        _install_dataclass_fn(cls, terse_repr, '__repr__')
+        _install_dataclass_fn(cls, repr_impl, '__repr__')
 
         return cls
 
@@ -4088,7 +4100,7 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
     #
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}<{", ".join(map(repr, self._dct))}>'
+        return f'{self.__class__.__name__}[{", ".join(map(repr, self._dct))}]'
 
     #
 
@@ -12855,7 +12867,7 @@ class SimpleHttpHandlerRequest:
         return self.Parsed.of(self.path)
 
 
-@install_dataclass_filtered_repr('omit_none')
+@install_dataclass_repr(filter='omit_none')
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerResponse:

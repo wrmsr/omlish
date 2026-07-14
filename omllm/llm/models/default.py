@@ -4,6 +4,7 @@ from omcore import lang
 
 from ..types.models import Model
 from ..types.models import ModelKey
+from ..types.options import Options
 from .catalog import ModelCatalog
 
 
@@ -40,6 +41,26 @@ DEFAULT_MODELS: ta.Final[ta.Sequence[Model]] = [
             extra_headers={
                 'User-Agent': 'python-httpx/0.28.1',  # required or it 403's lol
             },
+        ),
+    ),
+
+    # anthropic
+
+    Model(
+        key=ModelKey(
+            provider='anthropic',
+            id='claude-sonnet-5',
+        ),
+        name='Claude Sonnet 5',
+        backend='anthropic-messages',
+        http=Model.Http(
+            base_url='https://api.anthropic.com/v1',
+            extra_headers={
+                'anthropic-version': '2023-06-01',
+            },
+        ),
+        default_options=Options(
+            max_tokens=4096,
         ),
     ),
 

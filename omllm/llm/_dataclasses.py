@@ -34,7 +34,6 @@ def _register(**kwargs):
     cls_names=(
         ('omllm.llm.types.content', 'Content'),
         ('omllm.llm.types.messages', 'Message'),
-        ('omllm.llm.types.options', 'Options'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -436,29 +435,33 @@ def _process_dataclass__bfc883f34951c093e456a4fe3df87dd78a04784f():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('key', 'name', 'backend', 'base_url')), EqPlan(fields=('key', 'name', 'backend', '"
-        "base_url')), FrozenPlan(fields=('key', 'name', 'backend', 'base_url'), allow_dynamic_dunder_attrs=False), Hash"
-        "Plan(action='add', fields=('key', 'name', 'backend', 'base_url'), cache=False), InitPlan(fields=(InitPlan.Fiel"
-        "d(name='key', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='name', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None), InitPlan.Field(name='backend', annotation=OpRef(name='init.fields.2.annotation'), default=None,"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None), InitPlan.Field(name='base_url', annotation=OpRef(name='init.fields.3.annotation'), default=Op"
-        "Ref(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('key', '"
-        "name', 'backend', 'base_url'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()),"
-        " ReprPlan(fields=(ReprPlan.Field(name='key', kw_only=True, fn=None), ReprPlan.Field(name='name', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='backend', kw_only=True, fn=None), ReprPlan.Field(name='base_url', kw_only=True"
-        ", fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
+        "Plans(tup=(CopyPlan(fields=('key', 'name', 'backend', 'http', 'default_options')), EqPlan(fields=('key', 'name"
+        "', 'backend', 'http', 'default_options')), FrozenPlan(fields=('key', 'name', 'backend', 'http', 'default_optio"
+        "ns'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('key', 'name', 'backend', 'http', 'def"
+        "ault_options'), cache=False), InitPlan(fields=(InitPlan.Field(name='key', annotation=OpRef(name='init.fields.0"
+        ".annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='name', annotation=OpRef(name='init.fields.1."
+        "annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='backend', anno"
+        "tation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='http', annot"
+        "ation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='default_options', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='ini"
+        "t.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('key', 'name', 'backe"
+        "nd', 'http', 'default_options'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()"
+        "), ReprPlan(fields=(ReprPlan.Field(name='key', kw_only=True, fn=None), ReprPlan.Field(name='name', kw_only=Tru"
+        "e, fn=None), ReprPlan.Field(name='backend', kw_only=True, fn=None), ReprPlan.Field(name='http', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='default_options', kw_only=True, fn=None)), id=False, terse=False, default_fn=Op"
+        "Ref(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='80639eba9482db585c9c06d4f28d8e6658d38bf2',
+    plan_repr_sha1='2e7d6d3d90005938ebca71ce452b9cd314c6830c',
     cls_names=(
         ('omllm.llm.types.models', 'Model'),
     ),
 )
-def _process_dataclass__80639eba9482db585c9c06d4f28d8e6658d38bf2():
+def _process_dataclass__2e7d6d3d90005938ebca71ce452b9cd314c6830c():
     def _process_dataclass(
         *,
         __class__,
@@ -468,6 +471,8 @@ def _process_dataclass__80639eba9482db585c9c06d4f28d8e6658d38bf2():
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
         __dataclass__repr__default_fn,
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
         __dataclass__None=None,  # noqa
@@ -482,7 +487,8 @@ def _process_dataclass__80639eba9482db585c9c06d4f28d8e6658d38bf2():
                 key=self.key,
                 name=self.name,
                 backend=self.backend,
-                base_url=self.base_url,
+                http=self.http,
+                default_options=self.default_options,
             )
 
         __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
@@ -496,7 +502,8 @@ def _process_dataclass__80639eba9482db585c9c06d4f28d8e6658d38bf2():
                 self.key == other.key and
                 self.name == other.name and
                 self.backend == other.backend and
-                self.base_url == other.base_url
+                self.http == other.http and
+                self.default_options == other.default_options
             )
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
@@ -505,7 +512,8 @@ def _process_dataclass__80639eba9482db585c9c06d4f28d8e6658d38bf2():
             'key',
             'name',
             'backend',
-            'base_url',
+            'http',
+            'default_options',
         }
 
         def __setattr__(self, name, value):
@@ -533,7 +541,8 @@ def _process_dataclass__80639eba9482db585c9c06d4f28d8e6658d38bf2():
                 self.key,
                 self.name,
                 self.backend,
-                self.base_url,
+                self.http,
+                self.default_options,
             ))
 
         __dataclass__set_cls_attr(__class__, '__hash__', __hash__, 'replace', set_qualname=True)
@@ -544,12 +553,14 @@ def _process_dataclass__80639eba9482db585c9c06d4f28d8e6658d38bf2():
             key: __dataclass__init__fields__0__annotation,
             name: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             backend: __dataclass__init__fields__2__annotation,
-            base_url: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            http: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            default_options: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'key', key)
             __dataclass__object_setattr(self, 'name', name)
             __dataclass__object_setattr(self, 'backend', backend)
-            __dataclass__object_setattr(self, 'base_url', base_url)
+            __dataclass__object_setattr(self, 'http', http)
+            __dataclass__object_setattr(self, 'default_options', default_options)
 
         __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
 
@@ -562,8 +573,128 @@ def _process_dataclass__80639eba9482db585c9c06d4f28d8e6658d38bf2():
                 parts.append(f"name={s}")
             if (s := __dataclass__repr__default_fn(self.backend)) is not None:
                 parts.append(f"backend={s}")
+            if (s := __dataclass__repr__default_fn(self.http)) is not None:
+                parts.append(f"http={s}")
+            if (s := __dataclass__repr__default_fn(self.default_options)) is not None:
+                parts.append(f"default_options={s}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('base_url', 'extra_headers')), EqPlan(fields=('base_url', 'extra_headers')), Froze"
+        "nPlan(fields=('base_url', 'extra_headers'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=("
+        "'base_url', 'extra_headers'), cache=False), InitPlan(fields=(InitPlan.Field(name='base_url', annotation=OpRef("
+        "name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='extra_headers', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.def"
+        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None)), self_param='self', std_params=(), kw_only_params=('base_url', 'extra_headers'), froze"
+        "n=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(nam"
+        "e='base_url', kw_only=True, fn=None), ReprPlan.Field(name='extra_headers', kw_only=True, fn=None)), id=False, "
+        "terse=False, default_fn=OpRef(name='repr.default_fn'))))"
+    ),
+    plan_repr_sha1='6c89d81d5ca3b78c4d52109711a234163e2ba7ce',
+    cls_names=(
+        ('omllm.llm.types.models', 'Model.Http'),
+    ),
+)
+def _process_dataclass__6c89d81d5ca3b78c4d52109711a234163e2ba7ce():
+    def _process_dataclass(
+        *,
+        __class__,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__repr__default_fn,
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__set_cls_attr,
+    ):
+        def __copy__(self):
+            if self.__class__ is not __class__:
+                raise TypeError(self)
+            return __class__(  # noqa
+                base_url=self.base_url,
+                extra_headers=self.extra_headers,
+            )
+
+        __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.base_url == other.base_url and
+                self.extra_headers == other.extra_headers
+            )
+
+        __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
+
+        __dataclass___frozen_fields = {
+            'base_url',
+            'extra_headers',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__class__, self).__setattr__(name, value)
+
+        __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__class__, self).__delattr__(name)
+
+        __dataclass__set_cls_attr(__class__, '__delattr__', __delattr__, 'raise', set_qualname=True)
+
+        def __hash__(self):
+            return hash((
+                self.base_url,
+                self.extra_headers,
+            ))
+
+        __dataclass__set_cls_attr(__class__, '__hash__', __hash__, 'replace', set_qualname=True)
+
+        def __init__(
+            self,
+            *,
+            base_url: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            extra_headers: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'base_url', base_url)
+            __dataclass__object_setattr(self, 'extra_headers', extra_headers)
+
+        __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
             if (s := __dataclass__repr__default_fn(self.base_url)) is not None:
                 parts.append(f"base_url={s}")
+            if (s := __dataclass__repr__default_fn(self.extra_headers)) is not None:
+                parts.append(f"extra_headers={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -684,6 +815,108 @@ def _process_dataclass__a7b5c57ce0097a16cde0613f080138d253ed649c():
             parts = []
             parts.append(f"{self.provider!r}")
             parts.append(f"{self.id!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('max_tokens',)), EqPlan(fields=('max_tokens',)), FrozenPlan(fields=('max_tokens',)"
+        ", allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('max_tokens',), cache=False), InitPlan(fie"
+        "lds=(InitPlan.Field(name='max_tokens', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='"
+        "init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None),), self_param='self', std_params=(), kw_only_params=('max_tokens',), f"
+        "rozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field"
+        "(name='max_tokens', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='23ed12131a94a17096003f4c9205c00a29aee61c',
+    cls_names=(
+        ('omllm.llm.types.options', 'Options'),
+    ),
+)
+def _process_dataclass__23ed12131a94a17096003f4c9205c00a29aee61c():
+    def _process_dataclass(
+        *,
+        __class__,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__set_cls_attr,
+    ):
+        def __copy__(self):
+            if self.__class__ is not __class__:
+                raise TypeError(self)
+            return __class__(  # noqa
+                max_tokens=self.max_tokens,
+            )
+
+        __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.max_tokens == other.max_tokens
+            )
+
+        __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
+
+        __dataclass___frozen_fields = {
+            'max_tokens',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__class__, self).__setattr__(name, value)
+
+        __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__class__, self).__delattr__(name)
+
+        __dataclass__set_cls_attr(__class__, '__delattr__', __delattr__, 'raise', set_qualname=True)
+
+        def __hash__(self):
+            return hash((
+                self.max_tokens,
+            ))
+
+        __dataclass__set_cls_attr(__class__, '__hash__', __hash__, 'replace', set_qualname=True)
+
+        def __init__(
+            self,
+            *,
+            max_tokens: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'max_tokens', max_tokens)
+
+        __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"max_tokens={self.max_tokens!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

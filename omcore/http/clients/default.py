@@ -45,33 +45,48 @@ def _default_async_client() -> AsyncHttpClient:
 
 
 class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
+    @ta.overload
     def __call__(
-            self,
-            url: str,
-            method: str | None = None,
-            *,
-            headers: CanHttpHeaders | None = None,
-            data: bytes | str | None = None,
+        self,
+        request: HttpClientRequest,  # noqa
+        *,
+        context: HttpClientContext | None = None,
+        check: bool = False,
+        client: C | None = None,  # noqa
+    ) -> R: ...
 
-            timeout_s: float | None = None,
+    @ta.overload
+    def __call__(
+        self,
+        url: str,
+        method: str | None = None,
+        *,
+        headers: CanHttpHeaders | None = None,
+        data: bytes | str | None = None,
 
-            context: HttpClientContext | None = None,
-            check: bool = False,
-            client: C | None = None,  # noqa
+        timeout_s: float | None = None,
 
-            **kwargs: ta.Any,
+        context: HttpClientContext | None = None,
+        check: bool = False,
+        client: C | None = None,  # noqa
+
+        **kwargs: ta.Any,
+    ) -> R: ...
+
+    def __call__(
+        self,
+        *args,
+
+        context=None,
+        check=False,
+        client=None,  # noqa
+
+        **kwargs: ta.Any,
     ) -> R:
-        request = HttpClientRequest(  # noqa
-            url,
-            method=method,
-
-            headers=headers,
-            data=data,
-
-            timeout_s=timeout_s,
-
-            **kwargs,
-        )
+        if len(args) == 1 and isinstance(arg0 := args[0], HttpClientRequest):
+            request = arg0  # noqa
+        else:
+            request = HttpClientRequest(*args, **kwargs)  # noqa
 
         return self._do(
             request,

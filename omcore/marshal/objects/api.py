@@ -8,7 +8,7 @@ import typing as ta
 from ... import check
 from ... import lang
 from ... import metadata as md
-from ...lite.dataclasses import install_dataclass_filtered_repr
+from ...lite.dataclasses import install_dataclass_repr
 from ..api.configs import Config
 from ..api.naming import Naming
 from ..api.vias import MarshalVia
@@ -22,7 +22,7 @@ T = ta.TypeVar('T')
 
 
 @ta.final
-@install_dataclass_filtered_repr('omit_none')
+@install_dataclass_repr(filter='omit_none')
 @dc.dataclass(frozen=True, kw_only=True)
 class FieldOptions(lang.Final):
     """
@@ -126,7 +126,7 @@ class ObjectSpecials(lang.Final):
 
 
 @ta.final
-@install_dataclass_filtered_repr('omit_none')
+@install_dataclass_repr(filter='omit_none')
 @dc.dataclass(frozen=True, kw_only=True)
 class ObjectOptions(Config, lang.Final):
     """Object-level marshaling options."""

@@ -6,7 +6,7 @@ import typing as ta
 import urllib.parse
 
 from ...lite.check import check
-from ...lite.dataclasses import install_dataclass_filtered_repr
+from ...lite.dataclasses import install_dataclass_repr
 from .converters import URL_ROUTE_DEFAULT_CONVERTERS
 from .converters import UrlRouteConverter
 from .types import UrlRoute
@@ -54,7 +54,7 @@ class _CompiledUrlRoute:
     build_names: ta.AbstractSet[str]
 
 
-@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_repr(filter='omit_falsey')
 @dc.dataclass()
 class _UrlRouteNode:
     static: ta.MutableMapping[str, '_UrlRouteNode'] = dc.field(default_factory=dict)

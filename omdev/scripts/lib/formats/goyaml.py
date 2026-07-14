@@ -36,7 +36,7 @@ def __om_amalg__():  # noqa
         src_files=[
             dict(path='../../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../../lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
+            dict(path='../../../lite/dataclasses.py', sha1='8a28322d561255096b849137b33aed42c49047b7'),
             dict(path='errors.py', sha1='298b4d892d840ce98afb520143da35c56b98fb39'),
             dict(path='tokens.py', sha1='5dcdedc1e6af386b069afcc83783d3003bad08a6'),
             dict(path='ast.py', sha1='e64be33431c4289953d3dcd1173cbc098250fbf6'),
@@ -877,67 +877,79 @@ def dataclass_maybe_post_init(sup: ta.Any) -> bool:
 ##
 
 
-def dataclass_filtered_repr(
+def dataclass_repr(
         obj: ta.Any,
-        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+        *,
+        terse: bool = False,
+        filter: ta.Union[  # noqa
+            ta.Callable[[ta.Any, dc.Field, ta.Any], bool],
+            ta.Literal['omit_none', 'omit_falsey'],
+            None,
+        ] = None,
 ) -> str:
-    if fn == 'omit_none':
-        fn = lambda o, f, v: v is not None  # noqa
-    elif fn == 'omit_falsey':
-        fn = lambda o, f, v: bool(v)
+    if filter == 'omit_none':
+        filter = lambda o, f, v: v is not None  # noqa
+    elif filter == 'omit_falsey':
+        filter = lambda o, f, v: bool(v)  # noqa
 
-    return (
-        f'{obj.__class__.__qualname__}(' +
-        ', '.join([
-            f'{f.name}={v!r}'
-            for f in dc.fields(obj)
-            if fn(obj, f, v := getattr(obj, f.name))
-        ]) +
-        ')'
-    )
+    lst: ta.List[str] = [
+        f'{obj.__class__.__qualname__}(',
+    ]
+
+    i = 0
+    for f in dc.fields(obj):
+        if not f.repr:
+            continue
+
+        v = getattr(obj, f.name)
+
+        if filter is not None and not filter(obj, f, v):
+            continue
+
+        if i:
+            lst.append(', ')
+        i += 1
+
+        if not terse:
+            lst.append(f.name)
+            lst.append('=')
+
+        lst.append(repr(v))
+
+    lst.append(')')
+
+    return ''.join(lst)
 
 
 def dataclass_repr_omit_none(obj: ta.Any) -> str:
-    return dataclass_filtered_repr(obj, 'omit_none')
+    return dataclass_repr(obj, filter='omit_none')
 
 
 def dataclass_repr_omit_falsey(obj: ta.Any) -> str:
-    return dataclass_filtered_repr(obj, 'omit_falsey')
+    return dataclass_repr(obj, filter='omit_falsey')
 
 
-def install_dataclass_filtered_repr(
-        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+def install_dataclass_repr(
+        *,
+        terse: bool = False,
+        filter: ta.Union[  # noqa
+            ta.Callable[[ta.Any, dc.Field, ta.Any], bool],
+            ta.Literal['omit_none', 'omit_falsey'],
+            None,
+        ] = None,
 ):
     def inner(cls):
         if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
-        def filtered_repr(self) -> str:
-            return dataclass_filtered_repr(self, fn)
+        def repr_impl(self) -> str:
+            return dataclass_repr(
+                self,
+                terse=terse,
+                filter=filter,
+            )
 
-        _install_dataclass_fn(cls, filtered_repr, '__repr__')
-
-        return cls
-
-    return inner
-
-
-#
-
-
-def dataclass_terse_repr(obj: ta.Any) -> str:
-    return f'{obj.__class__.__qualname__}({", ".join(repr(getattr(obj, f.name)) for f in dc.fields(obj))})'
-
-
-def install_dataclass_terse_repr():
-    def inner(cls):
-        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
-            raise TypeError(cls)
-
-        def terse_repr(self) -> str:
-            return dataclass_terse_repr(self)
-
-        _install_dataclass_fn(cls, terse_repr, '__repr__')
+        _install_dataclass_fn(cls, repr_impl, '__repr__')
 
         return cls
 

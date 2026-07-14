@@ -4,6 +4,8 @@ from omcore import check
 from omcore import dataclasses as dc
 from omcore import lang
 
+from .options import Options
+
 
 ##
 
@@ -30,6 +32,8 @@ class Model:
 
     backend: str
 
+    #
+
     @ta.final
     @dc.dataclass(frozen=True, kw_only=True)
     @dc.extra_class_params(default_repr_fn=lang.opt_repr)
@@ -39,3 +43,7 @@ class Model:
         extra_headers: ta.Mapping[str, str] | None = None
 
     http: Http | None = None
+
+    #
+
+    default_options: Options | None = None

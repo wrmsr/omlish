@@ -145,7 +145,7 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
     #
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}<{", ".join(map(repr, self._dct))}>'
+        return f'{self.__class__.__name__}[{", ".join(map(repr, self._dct))}]'
 
     #
 

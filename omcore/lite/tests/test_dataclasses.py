@@ -6,9 +6,8 @@ import unittest
 from ..dataclasses import dataclass_descriptor_method
 from ..dataclasses import dataclass_maybe_post_init
 from ..dataclasses import install_dataclass_cache_hash
-from ..dataclasses import install_dataclass_filtered_repr
 from ..dataclasses import install_dataclass_kw_only_init
-from ..dataclasses import install_dataclass_terse_repr
+from ..dataclasses import install_dataclass_repr
 from ..dataclasses import is_immediate_dataclass
 
 
@@ -173,7 +172,7 @@ def test_dc_desc():
 ##
 
 
-@install_dataclass_filtered_repr('omit_none')
+@install_dataclass_repr(filter='omit_none')
 @dc.dataclass()
 class WithOmitNoneRepr:
     a: ta.Optional[str] = None
@@ -185,7 +184,7 @@ def test_filtered_repr():
     assert repr(WithOmitNoneRepr(b='hi')) == "WithOmitNoneRepr(b='hi')"
 
 
-@install_dataclass_terse_repr()
+@install_dataclass_repr(terse=True)
 @dc.dataclass()
 class WithTerseRepr:
     a: str

@@ -15,7 +15,7 @@ from ....types.options import Options
 ##
 
 
-class OpenaiCompletionsBackend(Backend):
+class AnthropicMessagesBackend(Backend):
     def __init__(
             self,
             model: Model,
@@ -56,10 +56,10 @@ class OpenaiCompletionsBackend(Backend):
         raw_messages: list[dict] = []
 
         if context.system_prompt:
-            raw_messages.append({
-                'role': 'system',
-                'content': context.system_prompt,
-            })
+            raw_request['system'] = [{
+                'type': 'text',
+                'text': context.system_prompt,
+            }]
 
         for msg in context.messages:
             if isinstance(msg, UserMessage):
@@ -101,14 +101,14 @@ class OpenaiCompletionsBackend(Backend):
         #
 
         http_headers = {
-            **({'authorization': f'Bearer {self._api_key.reveal()}'} if self._api_key is not None else {}),
+            **({'x-api-key': self._api_key.reveal()} if self._api_key is not None else {}),
             'content-type': 'application/json',
             'accept': 'application/json',
             **(self._model_http.extra_headers or {}),
         }
 
         http_request = http.HttpClientRequest(
-            self._base_url + '/chat/completions',
+            self._base_url + '/messages',
             headers=http_headers,
             data=json.dumps(raw_request).encode('utf-8'),
         )
@@ -125,15 +125,18 @@ class OpenaiCompletionsBackend(Backend):
 
         #
 
-        check.equal(raw_response['object'], 'chat.completion')
+        check.equal(raw_response['type'], 'message')
+        check.equal(raw_response['role'], 'assistant')
 
-        raw_choice = check.single(raw_response['choices'])
+        response_content: list[TextContent] = []
 
-        raw_msg = raw_choice['message']
-        check.equal(raw_msg['role'], 'assistant')
+        for raw_c in raw_response['content']:
+            if raw_c['type'] == 'text':
+                response_content.append(TextContent(raw_c['text']))
 
-        raw_text = check.non_empty_str(raw_msg['content'])
+            else:
+                raise ValueError(raw_c['type'])
 
         return AiMessage(
-            (TextContent(raw_text),),
+            response_content,
         )

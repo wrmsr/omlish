@@ -50,10 +50,15 @@ class HttpClientRequest:
 
     #
 
+    def __post_init__(self) -> None:
+        self.headers_  # noqa
+
+    #
+
     __repr__ = AttrOps['HttpClientRequest'](lambda o: (
         o.url,
         o.method,
-        (o.headers, dict(repr_fn=AttrOps.truthy_repr)),
+        (o.headers_, dict(display='headers', repr_fn=AttrOps.truthy_repr)),
         (o.data, dict(repr_fn=lambda v: '...' if v is not None else None)),
         (o.timeout_s, dict(repr_fn=AttrOps.opt_repr)),
     )).repr
