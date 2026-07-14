@@ -1,7 +1,7 @@
 """https://pytorch.org/tutorials/beginner/basics/data_tutorial.html"""
 from omdev.cache import data as dcache
-from omlish import lang
-from omlish.testing import pytest as ptu
+from omcore import lang
+from omcore.testing import pytest as ptu
 
 
 with lang.auto_proxy_import(globals()):

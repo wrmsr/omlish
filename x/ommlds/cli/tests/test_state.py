@@ -2,8 +2,8 @@ import contextlib
 import os.path
 import sqlite3
 
-from omlish import sql
-from omlish.sql.queries import Q
+from omcore import sql
+from omcore.sql.queries import Q
 
 
 def test_new_state(tmp_path):

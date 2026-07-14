@@ -5,9 +5,9 @@ import os.path
 import tarfile
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
-from omlish.os.paths import is_path_in_dir
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
+from omcore.os.paths import is_path_in_dir
 
 from .datarefs import BytesOciDataRef
 from .datarefs import FileOciDataRef

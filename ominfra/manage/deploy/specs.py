@@ -4,8 +4,8 @@ import dataclasses as dc
 import hashlib
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
 
 from .conf.specs import DeployAppConfSpec
 from .tags import DeployApp

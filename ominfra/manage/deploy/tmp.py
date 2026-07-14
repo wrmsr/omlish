@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007 UP045
-from omlish.lite.check import check
-from omlish.lite.typing import Func1
-from omlish.os.atomics import AtomicPathSwapping
-from omlish.os.atomics import TempDirAtomicPathSwapping
+from omcore.lite.check import check
+from omcore.lite.typing import Func1
+from omcore.os.atomics import AtomicPathSwapping
+from omcore.os.atomics import TempDirAtomicPathSwapping
 
 from .paths.owners import SingleDirDeployPathOwner
 from .types import DeployHome

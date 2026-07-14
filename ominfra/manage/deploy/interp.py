@@ -4,7 +4,7 @@ import dataclasses as dc
 from omdev.interp.default import get_default_interp_resolver
 from omdev.interp.types import InterpOpts
 from omdev.interp.types import InterpSpecifier
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor

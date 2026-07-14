@@ -8,7 +8,7 @@ import os
 import sys
 import time
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 from ...events import ProcessStateBackoffEvent
 from ...states import ProcessState

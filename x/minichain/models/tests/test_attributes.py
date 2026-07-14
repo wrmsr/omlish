@@ -1,6 +1,6 @@
 import pytest
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ..attributes import ContextWindow
 from ..attributes import MaxOutputTokens

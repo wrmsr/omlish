@@ -2,8 +2,8 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.http.statuses import HttpStatus
-from omlish.lite.check import check
+from omcore.http.statuses import HttpStatus
+from omcore.lite.check import check
 
 from .handlers import DataServerHandler
 from .handlers import DataServerRequest

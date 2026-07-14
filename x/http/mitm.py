@@ -3,16 +3,16 @@ import io
 import typing as ta
 import urllib.parse
 
-from omlish import check
-from omlish import codecs as cdu
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.http import all as hu
-from omlish.http.simple.handlers import SimpleHttpHandlerRequest
-from omlish.http.simple.handlers import SimpleHttpHandlerResponse
-from omlish.http.simple.pipelines.sync import make_simple_http_server
-from omlish.http.simple.types import SimpleHttpHandlerResponseStreamedData
-from omlish.io.coro import iterable_bytes_stepped_coro
+from omcore import check
+from omcore import codecs as cdu
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.http import all as hu
+from omcore.http.simple.handlers import SimpleHttpHandlerRequest
+from omcore.http.simple.handlers import SimpleHttpHandlerResponse
+from omcore.http.simple.pipelines.sync import make_simple_http_server
+from omcore.http.simple.types import SimpleHttpHandlerResponseStreamedData
+from omcore.io.coro import iterable_bytes_stepped_coro
 
 
 ##

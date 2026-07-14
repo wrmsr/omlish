@@ -3,14 +3,14 @@ import datetime
 import os.path
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.json import json_dumps_pretty
-from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.typing import Func0
-from omlish.lite.typing import Func1
-from omlish.os.paths import abs_real_path
-from omlish.os.paths import relative_symlink
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.json import json_dumps_pretty
+from omcore.lite.marshal import ObjMarshalerManager
+from omcore.lite.typing import Func0
+from omcore.lite.typing import Func1
+from omcore.os.paths import abs_real_path
+from omcore.os.paths import relative_symlink
 
 from .apps import DeployAppManager
 from .conf.manager import DeployConfManager

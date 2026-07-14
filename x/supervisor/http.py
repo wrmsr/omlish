@@ -4,25 +4,25 @@ import logging
 import socket
 import typing as ta
 
-from omlish.http.simple.handlers import ExceptionLoggingSimpleHttpHandler
-from omlish.http.simple.handlers import LoggingSimpleHttpHandler
-from omlish.http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
-from omlish.http.simple.responses import SimpleHttpHandlerResponses
-from omlish.http.simple.types import SimpleHttpHandler
-from omlish.http.simple.types import SimpleHttpHandler_
-from omlish.http.simple.types import SimpleHttpHandlerRequest
-from omlish.http.simple.types import SimpleHttpHandlerResponse
-from omlish.http.simple.urlrouting import UrlRoutingSimpleHttpHandler
-from omlish.http.urlrouting.router import UrlRouter
-from omlish.http.urlrouting.types import UrlRoute
-from omlish.http.urlrouting.types import UrlRouteMatch
-from omlish.http.urlrouting.types import UrlRouteSlashStyle
-from omlish.io.fdio.handlers import ServerSocketFdioHandler
-from omlish.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
-from omlish.lite.check import check
-from omlish.lite.marshal import marshal_obj
-from omlish.logs.modules import get_module_logger
-from omlish.sockets.addresses import SocketAddress
+from omcore.http.simple.handlers import ExceptionLoggingSimpleHttpHandler
+from omcore.http.simple.handlers import LoggingSimpleHttpHandler
+from omcore.http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
+from omcore.http.simple.responses import SimpleHttpHandlerResponses
+from omcore.http.simple.types import SimpleHttpHandler
+from omcore.http.simple.types import SimpleHttpHandler_
+from omcore.http.simple.types import SimpleHttpHandlerRequest
+from omcore.http.simple.types import SimpleHttpHandlerResponse
+from omcore.http.simple.urlrouting import UrlRoutingSimpleHttpHandler
+from omcore.http.urlrouting.router import UrlRouter
+from omcore.http.urlrouting.types import UrlRoute
+from omcore.http.urlrouting.types import UrlRouteMatch
+from omcore.http.urlrouting.types import UrlRouteSlashStyle
+from omcore.io.fdio.handlers import ServerSocketFdioHandler
+from omcore.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
+from omcore.lite.check import check
+from omcore.lite.marshal import marshal_obj
+from omcore.logs.modules import get_module_logger
+from omcore.sockets.addresses import SocketAddress
 
 from .dispatchers import Dispatchers
 from .group import ProcessGroup

@@ -11,7 +11,7 @@ from tinygrad.helpers import fetch
 from tinygrad.nn.state import load_state_dict
 from tinygrad.nn.state import safe_load
 
-from omlish import check
+from omcore import check
 
 from .sdxl import Dpmpp2mSampler
 from .sdxl import Sdxl

@@ -9,10 +9,10 @@ import shutil
 import subprocess
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.logs import all as logs
-from omlish.os.paths import is_path_in_dir
+from omcore import check
+from omcore import lang
+from omcore.logs import all as logs
+from omcore.os.paths import is_path_in_dir
 
 from .consts import ANTLR_JAR_URL
 from .consts import ANTLR_RUNTIME_VENDOR

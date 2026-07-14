@@ -7,7 +7,7 @@ import fnmatch
 import os.path
 import typing as ta
 
-from omlish.diag.pycharm import get_pycharm_version
+from omcore.diag.pycharm import get_pycharm_version
 
 
 ##

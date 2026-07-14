@@ -3,8 +3,8 @@ import pathlib
 
 from tinygrad import Tensor
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from .fetch import fetch_model
 from .llm import Llama3Llm

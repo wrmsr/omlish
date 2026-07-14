@@ -16,7 +16,7 @@ import os
 import termios
 import typing as ta
 
-from omlish.term import terminfo
+from omcore.term import terminfo
 
 from ..eventqueue import BaseEventQueue
 

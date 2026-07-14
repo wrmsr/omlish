@@ -1,12 +1,12 @@
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import reflect as rfl
-from omlish import typedvalues as tv
+from omcore import check
+from omcore import collections as col
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import reflect as rfl
+from omcore import typedvalues as tv
 
 from ._origclasses import _OrigClassCapture
 

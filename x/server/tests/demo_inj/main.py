@@ -11,9 +11,9 @@ import typing as ta
 
 import anyio
 
-from omlish import inject as inj
-from omlish.http import asgi
-from omlish.logs import all as logs
+from omcore import inject as inj
+from omcore.http import asgi
+from omcore.logs import all as logs
 
 from ...config import Config
 from ...default import serve

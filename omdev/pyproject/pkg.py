@@ -38,12 +38,12 @@ import textwrap
 import types
 import typing as ta
 
-from omlish.formats.toml.writer import TomlWriter
-from omlish.lite.abstract import Abstract
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.logs.modules import get_module_logger
-from omlish.subprocesses.sync import subprocesses
+from omcore.formats.toml.writer import TomlWriter
+from omcore.lite.abstract import Abstract
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.logs.modules import get_module_logger
+from omcore.subprocesses.sync import subprocesses
 
 from ..cexts.magic import CextMagic
 from ..magic.find import find_magic_files

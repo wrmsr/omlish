@@ -2,7 +2,7 @@ import typing as ta
 
 import pytest
 
-from omlish import reflect as rfl
+from omcore import reflect as rfl
 
 from ..reflect import RegistryTypeName
 from ..reflect import get_annotated_registry_type_name

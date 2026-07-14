@@ -3,9 +3,9 @@ import contextlib
 import io
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.sync.conddeque import ConditionDeque
+from omcore import check
+from omcore import lang
+from omcore.sync.conddeque import ConditionDeque
 
 from ..concurrent import threadlets as tls
 

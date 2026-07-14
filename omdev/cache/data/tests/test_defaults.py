@@ -2,7 +2,7 @@ import os.path
 
 import pytest
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from .. import actions
 from .. import defaults

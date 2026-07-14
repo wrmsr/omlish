@@ -11,8 +11,8 @@ import wsproto.extensions
 import wsproto.frame_protocol
 import wsproto.utilities
 
-from omlish import check
-from omlish.logs import all as logs
+from omcore import check
+from omcore.logs import all as logs
 
 from ..config import Config
 from ..events import Body

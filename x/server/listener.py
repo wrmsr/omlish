@@ -8,7 +8,7 @@ import typing as ta
 import anyio
 import anyio.abc
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from .config import Config
 from .lifespans import Lifespan

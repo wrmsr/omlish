@@ -1,7 +1,7 @@
 import abc
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ...chat.messages import Chat
 from .types import ChatPage

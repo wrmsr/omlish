@@ -23,8 +23,8 @@ import asyncio
 import os.path
 import typing as ta
 
-from omlish import inject as inj
-from omlish.logs import all as logs
+from omcore import inject as inj
+from omcore.logs import all as logs
 
 from .base import Precheck
 from .base import PrecheckContext

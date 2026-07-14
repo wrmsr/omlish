@@ -1,5 +1,5 @@
-from omlish import check
-from omlish import dataclasses as dc
+from omcore import check
+from omcore import dataclasses as dc
 
 from ...services import Response
 from ..generations import ChatGeneration

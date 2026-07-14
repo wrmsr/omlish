@@ -1,8 +1,8 @@
-from omlish import check
-from omlish import marshal as msh
-from omlish import typedvalues as tv
-from omlish.formats.json import all as json
-from omlish.http import all as http
+from omcore import check
+from omcore import marshal as msh
+from omcore import typedvalues as tv
+from omcore.formats.json import all as json
+from omcore.http import all as http
 
 from ...backends.tavily import protocol as pt
 from ..search import SearchHit

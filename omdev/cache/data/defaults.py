@@ -1,6 +1,6 @@
 import os.path
 
-from omlish import lang
+from omcore import lang
 
 from ...home.paths import get_cache_dir
 from .cache import Cache

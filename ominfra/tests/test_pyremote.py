@@ -5,8 +5,8 @@ import subprocess
 import sys
 import unittest
 
-from omlish.lite.check import check
-from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
+from omcore.lite.check import check
+from omcore.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 from .. import pyremote
 

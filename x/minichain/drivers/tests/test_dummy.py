@@ -3,8 +3,8 @@ import uuid
 
 import pytest  # noqa
 
-from omlish import check
-from omlish import inject as inj
+from omcore import check
+from omcore import inject as inj
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse

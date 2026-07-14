@@ -5,7 +5,7 @@ TODO:
 """
 import typing as ta
 
-from omlish.asyncs.asyncio import all as au
+from omcore.asyncs.asyncio import all as au
 
 from ..chat.events import UserMessagesEvent
 from ..chat.messages import Chat

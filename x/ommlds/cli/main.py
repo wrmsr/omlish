@@ -5,9 +5,9 @@ TODO:
 import asyncio
 import typing as ta
 
-from omlish import inject as inj
-from omlish.argparse import all as ap
-from omlish.logs import all as logs
+from omcore import inject as inj
+from omcore.argparse import all as ap
+from omcore.logs import all as logs
 
 from .chat.profiles import ChatProfile
 from .chat.profiles import CodeProfile

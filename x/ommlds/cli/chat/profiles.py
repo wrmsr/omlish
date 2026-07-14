@@ -3,9 +3,9 @@ import sys
 import typing as ta
 
 from omdev.home.paths import get_home_paths
-from omlish import check
-from omlish import dataclasses as dc
-from omlish.argparse import all as ap
+from omcore import check
+from omcore import dataclasses as dc
+from omcore.argparse import all as ap
 
 from ... import minichain as mc
 from ..profiles import AspectProfile

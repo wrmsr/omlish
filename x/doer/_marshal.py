@@ -3,12 +3,12 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.cached import static_init
-from omlish.lite.check import check
-from omlish.lite.marshal import ObjMarshalContext
-from omlish.lite.marshal import ObjMarshaler
-from omlish.lite.marshal import set_obj_marshaler
-from omlish.lite.objects import deep_subclasses
+from omcore.lite.cached import static_init
+from omcore.lite.check import check
+from omcore.lite.marshal import ObjMarshalContext
+from omcore.lite.marshal import ObjMarshaler
+from omcore.lite.marshal import set_obj_marshaler
+from omcore.lite.objects import deep_subclasses
 
 from .configs import DoerDefConfig
 from .configs import DoerExecutableConfig

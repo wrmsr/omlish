@@ -1,4 +1,4 @@
-from omlish.manifests.globals import GlobalManifestLoader
+from omcore.manifests.globals import GlobalManifestLoader
 
 
 def test_names():

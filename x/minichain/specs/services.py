@@ -1,8 +1,8 @@
 import contextlib
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from ..configs import Config
 from ..services import Service

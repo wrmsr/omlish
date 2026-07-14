@@ -2,9 +2,9 @@ import abc
 import contextvars
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.argparse import all as ap
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.argparse import all as ap
 
 from ...ui.text import CanUiText
 

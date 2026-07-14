@@ -1,8 +1,8 @@
 import json
 import unittest
 
-from omlish.formats.toml.parser import toml_loads
-from omlish.lite.marshal import marshal_obj
+from omcore.formats.toml.parser import toml_loads
+from omcore.lite.marshal import marshal_obj
 
 from ..configs import PyprojectConfigPreparer
 

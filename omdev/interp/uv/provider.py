@@ -10,7 +10,7 @@ uv python list --output-format=json
 import dataclasses as dc
 import typing as ta
 
-from omlish.logs.protocols import LoggerLike
+from omcore.logs.protocols import LoggerLike
 
 from ..inspect import InterpInspector
 from ..providers.base import InterpProvider

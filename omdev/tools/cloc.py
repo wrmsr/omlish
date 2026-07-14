@@ -8,7 +8,7 @@ import os
 import re
 import typing as ta
 
-from omlish import collections as col
+from omcore import collections as col
 
 from ..cli import CliModule
 

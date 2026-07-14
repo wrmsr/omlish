@@ -3,10 +3,10 @@
 import socket
 import typing as ta
 
-from omlish.http.simple.handlers import SimpleHttpHandler
-from omlish.io.fdio.handlers import SocketFdioHandler
-from omlish.lite.check import check
-from omlish.sockets.addresses import SocketAddress
+from omcore.http.simple.handlers import SimpleHttpHandler
+from omcore.io.fdio.handlers import SocketFdioHandler
+from omcore.lite.check import check
+from omcore.sockets.addresses import SocketAddress
 
 from .._buffers import IncrementalWriteBuffer
 from .._buffers import ReadableListBuffer

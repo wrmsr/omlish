@@ -39,14 +39,14 @@ import lz4.frame
 import sqlalchemy as sa
 import sqlalchemy.exc
 
-from omlish import cached
-from omlish import lang
-from omlish import marshal as msh
-from omlish import multiprocessing as mpu
-from omlish.concurrent import all as conc
-from omlish.formats.json import all as json
-from omlish.logs import all as logs
-from omlish.os import deathpacts
+from omcore import cached
+from omcore import lang
+from omcore import marshal as msh
+from omcore import multiprocessing as mpu
+from omcore.concurrent import all as conc
+from omcore.formats.json import all as json
+from omcore.logs import all as logs
+from omcore.os import deathpacts
 
 from . import models as mdl
 from .text import mfh  # noqa

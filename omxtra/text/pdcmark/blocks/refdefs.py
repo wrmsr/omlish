@@ -16,7 +16,7 @@ own line.) See CommonMark §4.7 for the full grammar. Cf. pulldown-cmark/src/fir
 """
 import typing as ta
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ..scanning.links import normalize_link_label
 from ..scanning.links import scan_link_destination

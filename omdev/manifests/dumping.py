@@ -8,9 +8,9 @@ import importlib
 import json
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.marshal import marshal_obj
-from omlish.lite.marshal import unmarshal_obj
+from omcore.lite.cached import cached_nullary
+from omcore.lite.marshal import marshal_obj
+from omcore.lite.marshal import unmarshal_obj
 
 
 ##

@@ -5,7 +5,7 @@ import pathlib
 import typing as ta
 import weakref
 
-from omlish import check
+from omcore import check
 
 from .errors import GrammarError
 from .errors import ParseError

@@ -5,7 +5,7 @@ Cf. `pulldown-cmark/src/lib.rs::Options` (bitflags). We use a frozen `kw_only` d
 discoverable, supports non-boolean fields (depth caps, fuel, broken-link resolver), and composes via `dc.replace` for
 preset variants.
 """
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .brokenlinks import BrokenLinkResolver
 

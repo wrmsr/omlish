@@ -4,7 +4,7 @@ Fenced code block open / close scanners.
 CommonMark §4.5. A code fence is three or more backticks or three or more tildes, optionally preceded by up to 3 spaces,
 followed by an optional info string. A backtick fence's info string must not contain backticks.
 """
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .whitespace import scan_ch_repeat
 

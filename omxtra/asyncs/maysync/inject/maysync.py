@@ -1,8 +1,8 @@
 import typing as ta
 
-from omlish import lang
-from omlish.inject.injector import _InjectorCreator
-from omlish.inject.sync import Injector
+from omcore import lang
+from omcore.inject.injector import _InjectorCreator
+from omcore.inject.sync import Injector
 
 
 if ta.TYPE_CHECKING:

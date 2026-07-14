@@ -1,5 +1,5 @@
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
 
 from . import metadata
 

@@ -2,9 +2,9 @@
 import os
 import typing as ta
 
-from omlish import check
-from omlish.formats.json import all as json
-from omlish.http import all as http
+from omcore import check
+from omcore.formats.json import all as json
+from omcore.http import all as http
 
 from ..chat.choices.services import ChatChoicesRequest
 from ..chat.choices.services import ChatChoicesResponse

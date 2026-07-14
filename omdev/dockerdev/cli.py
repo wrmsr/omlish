@@ -35,10 +35,10 @@ import subprocess
 import sys
 import tomllib
 
-from omlish import check
-from omlish import lang
-from omlish import marshal as msh
-from omlish.argparse import all as ap
+from omcore import check
+from omcore import lang
+from omcore import marshal as msh
+from omcore.argparse import all as ap
 
 from .build import build_image
 from .config import Config

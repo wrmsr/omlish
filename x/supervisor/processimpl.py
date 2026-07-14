@@ -7,9 +7,9 @@ import time
 import traceback
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.typing import Func1
-from omlish.logs.modules import get_module_logger
+from omcore.lite.check import check
+from omcore.lite.typing import Func1
+from omcore.logs.modules import get_module_logger
 
 from .configs import ProcessConfig
 from .dispatchers import Dispatchers

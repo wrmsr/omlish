@@ -11,16 +11,16 @@ import os.path
 import typing as ta
 
 from omdev.home.paths import get_home_paths
-from omlish.argparse.cli import ArgparseCli
-from omlish.argparse.parsers import argparse_arg
-from omlish.argparse.parsers import argparse_cmd
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.configs import load_config_file_obj
-from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.marshal import ObjMarshalOptions
-from omlish.lite.pycharm import PycharmRemoteDebug
-from omlish.logs.modules import get_module_logger
+from omcore.argparse.cli import ArgparseCli
+from omcore.argparse.parsers import argparse_arg
+from omcore.argparse.parsers import argparse_cmd
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.configs import load_config_file_obj
+from omcore.lite.marshal import ObjMarshalerManager
+from omcore.lite.marshal import ObjMarshalOptions
+from omcore.lite.pycharm import PycharmRemoteDebug
+from omcore.logs.modules import get_module_logger
 
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap

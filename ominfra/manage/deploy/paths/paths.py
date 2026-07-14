@@ -13,10 +13,10 @@ import dataclasses as dc
 import itertools
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.strings import split_keep_delimiter
+from omcore.lite.abstract import Abstract
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.strings import split_keep_delimiter
 
 from ..tags import DEPLOY_TAG_DELIMITERS
 from ..tags import DEPLOY_TAG_SIGIL

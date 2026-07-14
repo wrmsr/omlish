@@ -1,5 +1,5 @@
-from omlish import lang
-from omlish import marshal as msh
+from omcore import lang
+from omcore import marshal as msh
 
 
 ##

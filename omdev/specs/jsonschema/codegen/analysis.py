@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import check
-from omlish.specs import jsonschema as jsch
+from omcore import check
+from omcore.specs import jsonschema as jsch
 
 from .config import JsonSchemaCodeGenConfig
 from .errors import AmbiguousSchemaError

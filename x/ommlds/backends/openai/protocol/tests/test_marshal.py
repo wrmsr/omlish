@@ -1,7 +1,7 @@
 import json
 import typing as ta
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from .. import TextChatCompletionContentPart
 from ..chatcompletion.message import AssistantChatCompletionMessage

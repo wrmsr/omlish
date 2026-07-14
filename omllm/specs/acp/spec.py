@@ -3,10 +3,10 @@ import os.path
 import typing as ta
 
 from omdev.cache import data as dcache
-from omlish import lang
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
-from omlish.specs import jsonschema as js
+from omcore import lang
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
+from omcore.specs import jsonschema as js
 
 
 ##

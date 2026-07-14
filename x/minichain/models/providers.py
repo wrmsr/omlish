@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import lang
-from omlish import typedvalues as tv
+from omcore import lang
+from omcore import typedvalues as tv
 
 from .attributes import ContextWindow
 from .attributes import InputTokenCost

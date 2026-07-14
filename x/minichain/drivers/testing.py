@@ -5,8 +5,8 @@ end-to-end driver tests (see `drivers/tests/test_scripted.py` for usage).
 """
 import uuid
 
-from omlish import dataclasses as dc
-from omlish import inject as inj
+from omcore import dataclasses as dc
+from omcore import inject as inj
 
 from ..backends.scripted.chat import ScriptedChatChoicesService
 from ..backends.scripted.chat import ScriptedChatChoicesStreamService

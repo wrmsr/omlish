@@ -1,6 +1,6 @@
 import pytest
 
-from omlish import lang
+from omcore import lang
 
 from ....llms.types import MaxTokens
 from ....services import Request

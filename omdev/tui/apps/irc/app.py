@@ -10,8 +10,8 @@ TODO:
 import shlex
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from ... import textual as tx
 from .client import IrcClient

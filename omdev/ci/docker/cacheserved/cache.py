@@ -6,15 +6,15 @@ import json
 import os.path
 import typing as ta
 
-from omlish.asyncs.asyncio.sockets import asyncio_wait_until_can_connect
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.check import check
-from omlish.lite.json import json_dumps_compact
-from omlish.lite.marshal import marshal_obj
-from omlish.lite.marshal import unmarshal_obj
-from omlish.lite.timeouts import Timeout
-from omlish.lite.timeouts import TimeoutLike
-from omlish.logs.modules import get_module_logger
+from omcore.asyncs.asyncio.sockets import asyncio_wait_until_can_connect
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.check import check
+from omcore.lite.json import json_dumps_compact
+from omcore.lite.marshal import marshal_obj
+from omcore.lite.marshal import unmarshal_obj
+from omcore.lite.timeouts import Timeout
+from omcore.lite.timeouts import TimeoutLike
+from omcore.logs.modules import get_module_logger
 
 from ....dataserver.server import DataServer
 from ....dataserver.targets import DataServerTarget

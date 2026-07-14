@@ -25,7 +25,7 @@ import typing as ta
 import pytest
 
 from omdev.cache import data as dcache
-from omlish import lang
+from omcore import lang
 
 from ..tokenizers import HuggingFaceTokenizer
 from ..tokenizers import RustBPETokenizer

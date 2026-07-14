@@ -1,11 +1,11 @@
 import collections.abc
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish import reflect as rfl
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
+from omcore import reflect as rfl
 
 from .blank import BlankContent
 from .code import BlockCodeContent

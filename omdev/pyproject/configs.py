@@ -2,7 +2,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.marshal import unmarshal_obj
+from omcore.lite.marshal import unmarshal_obj
 
 from ..interp.venvs import InterpVenvConfig
 

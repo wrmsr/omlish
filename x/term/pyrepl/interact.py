@@ -24,7 +24,7 @@ import traceback
 import typing as ta
 import warnings
 
-from omlish import check
+from omcore import check
 
 from .console import CONSOLE_ERROR_TYPES
 from .readline import _get_reader

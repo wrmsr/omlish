@@ -9,10 +9,10 @@ import io
 import keyword
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.algorithm import all as alg
-from omlish.lite.strings import snake_case
+from omcore import check
+from omcore import lang
+from omcore.algorithm import all as alg
+from omcore.lite.strings import snake_case
 
 
 if ta.TYPE_CHECKING:

@@ -5,9 +5,9 @@ import typing as ta
 import urllib.parse
 import urllib.request
 
-from omlish.lite.check import check
-from omlish.lite.timing import log_timing_context
-from omlish.logs.modules import get_module_logger
+from omcore.lite.check import check
+from omcore.lite.timing import log_timing_context
+from omcore.logs.modules import get_module_logger
 
 from ...env import register_github_env_var
 from ..clients import BaseGithubCacheClient

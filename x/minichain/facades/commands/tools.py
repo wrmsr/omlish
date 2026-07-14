@@ -1,4 +1,4 @@
-from omlish.argparse import all as argparse
+from omcore.argparse import all as argparse
 
 from ...tools.execution.catalog import ToolCatalog
 from .base import Command

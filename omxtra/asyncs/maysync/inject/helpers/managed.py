@@ -1,10 +1,10 @@
 import contextlib
 import typing as ta
 
-from omlish import lang
-from omlish.inject.binder import bind
-from omlish.inject.elements import Elemental
-from omlish.inject.impl.inspect import build_kwargs_target
+from omcore import lang
+from omcore.inject.binder import bind
+from omcore.inject.elements import Elemental
+from omcore.inject.impl.inspect import build_kwargs_target
 
 
 if ta.TYPE_CHECKING:

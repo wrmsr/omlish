@@ -3,11 +3,11 @@ import typing as ta
 
 import pytest
 
-from omlish import check
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.subprocesses.run import SubprocessRun
-from omlish.subprocesses.run import SubprocessRunOutput
-from omlish.subprocesses.sync import AbstractSubprocesses
+from omcore import check
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.subprocesses.run import SubprocessRun
+from omcore.subprocesses.run import SubprocessRunOutput
+from omcore.subprocesses.sync import AbstractSubprocesses
 
 from ..subprocesses import MaysyncSubprocesses
 

@@ -1,8 +1,8 @@
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.specs import jsonschema as jsch
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.specs import jsonschema as jsch
 
 
 ##

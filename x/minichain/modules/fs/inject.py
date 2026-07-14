@@ -1,5 +1,5 @@
-from omlish import inject as inj
-from omlish import lang
+from omcore import inject as inj
+from omcore import lang
 
 from ...drivers.injection import system_message_providers
 from ...drivers.preparing.types import ProvidedSystemMessage

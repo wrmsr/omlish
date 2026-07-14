@@ -5,14 +5,14 @@ TODO:
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.http import all as http
-from omlish.http import sse
-from omlish.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
-from omlish.io.streambufs.scanning import ScanningByteStreamBuffer
-from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.http import all as http
+from omcore.http import sse
+from omcore.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omcore.io.streambufs.scanning import ScanningByteStreamBuffer
+from omcore.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 from ..events.types import EventCallback
 from ..resources import UseResources

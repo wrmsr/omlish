@@ -2,7 +2,7 @@ import typing as ta
 
 import pytest
 
-from omlish import lang
+from omcore import lang
 
 from .._typedvalues import _TypedValuesTypeError  # noqa
 from ..requests import Request

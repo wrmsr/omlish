@@ -3,7 +3,7 @@ import json
 import sys
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ... import textual as tx
 from .utils import clean_string_values

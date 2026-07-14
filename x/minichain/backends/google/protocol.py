@@ -7,9 +7,9 @@ Google is a genuinely distinct API (not an openai-compat dialect): `contents` of
 """
 import typing as ta
 
-from omlish import check
-from omlish import typedvalues as tv
-from omlish.formats.json import all as json
+from omcore import check
+from omcore import typedvalues as tv
+from omcore.formats.json import all as json
 
 from ....backends.google.protocol import types as pt
 from ...chat.choices.services import ChatChoicesResponse

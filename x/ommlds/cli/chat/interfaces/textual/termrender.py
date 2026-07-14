@@ -1,6 +1,6 @@
 from omdev.tui import textual as tx
-from omlish import check
-from omlish.term.alt import render_write_from_alt
+from omcore import check
+from omcore.term.alt import render_write_from_alt
 
 from .types import ChatAppGetter
 

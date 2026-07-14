@@ -2,7 +2,7 @@ import json
 import typing as ta
 import uuid
 
-from omlish import check
+from omcore import check
 
 from ..... import minichain as mc
 from .helpers import send_json

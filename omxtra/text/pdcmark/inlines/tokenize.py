@@ -13,7 +13,7 @@ fresh joined string rather than mutating a tree.
 """
 import unicodedata
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ..blocks.leaves import BufferedLine
 from ..scanning.autolinks import scan_autolink

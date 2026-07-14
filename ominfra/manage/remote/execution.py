@@ -10,10 +10,10 @@ import logging
 import time
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
-from omlish.logs.modules import get_module_logger
-from omlish.logs.protocols import LoggerLike
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
+from omcore.logs.modules import get_module_logger
+from omcore.logs.protocols import LoggerLike
 
 from ..commands.base import Command
 from ..commands.base import CommandException

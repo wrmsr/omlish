@@ -15,9 +15,9 @@ There are deliberately only three kinds:
 
 Finalization is item state (`item.finalized`), not an event kind.
 """
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
 
 from ...content.content import Content
 from ...events.types import Event

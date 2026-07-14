@@ -5,7 +5,7 @@ These cover the syntactic pieces needed to parse reference link definitions and 
 at this scanner level; multi-line orchestration (refdefs can span up to 3 lines per CommonMark §4.7) lives in the parser
 that uses these.
 """
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .whitespace import is_ascii_punctuation
 

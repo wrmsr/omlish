@@ -1,4 +1,4 @@
-from omlish.argparse import all as argparse
+from omcore.argparse import all as argparse
 
 from ...facades.commands.base import Command
 from ...ui.text import UiText

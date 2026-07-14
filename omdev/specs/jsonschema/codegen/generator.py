@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish.specs import jsonschema as jsch
+from omcore.specs import jsonschema as jsch
 
 from .analysis import JsonSchemaAnalyzer
 from .config import JsonSchemaCodeGenConfig

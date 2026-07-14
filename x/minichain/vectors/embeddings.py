@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ..content.content import Content
 from ..registries.globals import register_type

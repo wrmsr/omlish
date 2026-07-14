@@ -2,7 +2,7 @@ import argparse
 import os.path
 import typing as ta
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from .magic import CextMagic
 

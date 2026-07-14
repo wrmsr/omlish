@@ -1,5 +1,5 @@
-from omlish import inject as inj
-from omlish import lang
+from omcore import inject as inj
+from omcore import lang
 
 from ... import minichain as mc
 

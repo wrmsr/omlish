@@ -3,7 +3,7 @@ import asyncio
 import typing as ta
 import uuid
 
-from omlish.asyncs.asyncio import all as au
+from omcore.asyncs.asyncio import all as au
 
 from ...chat.events import AiMessagesEvent
 from ...chat.messages import Chat

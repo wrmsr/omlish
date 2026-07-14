@@ -2,7 +2,7 @@ import asyncio
 import types
 import typing as ta
 
-from omlish.sync.threadrunners import SingleThreadRunner
+from omcore.sync.threadrunners import SingleThreadRunner
 
 
 T = ta.TypeVar('T')

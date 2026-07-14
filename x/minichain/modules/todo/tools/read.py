@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import contextual as cxl
-from omlish import lang
+from omcore import contextual as cxl
+from omcore import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry

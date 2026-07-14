@@ -7,11 +7,11 @@ import shutil
 import sys
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.abstract import Abstract
-from omlish.lite.cached import async_cached_nullary
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.abstract import Abstract
+from omcore.lite.cached import async_cached_nullary
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
 
 from ..types import InterpOpts
 from .pyenv import Pyenv

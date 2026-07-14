@@ -4,7 +4,7 @@ import typing as ta
 
 import pytest
 
-from omlish import lang
+from omcore import lang
 
 from ...resources import UseResources
 from ...types import Output

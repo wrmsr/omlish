@@ -2,8 +2,8 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.logs.modules import get_module_logger
+from omcore.lite.check import check
+from omcore.logs.modules import get_module_logger
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor

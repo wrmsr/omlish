@@ -1,7 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 
 if ta.TYPE_CHECKING:

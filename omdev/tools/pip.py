@@ -7,9 +7,9 @@ import os.path
 import sys
 import typing as ta
 
-from omlish import marshal as msh
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
+from omcore import marshal as msh
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
 
 from ..cli import CliModule
 from ..packaging import marshal as _  # noqa

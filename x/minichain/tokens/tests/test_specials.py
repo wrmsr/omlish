@@ -1,6 +1,6 @@
 import pytest
 
-from omlish import lang
+from omcore import lang
 
 from ..specials import AmbiguousSpecialTokenError
 from ..specials import MismatchedSpecialTokenError

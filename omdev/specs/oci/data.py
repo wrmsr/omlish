@@ -4,10 +4,10 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
-from omlish.lite.marshal import OBJ_MARSHALER_FIELD_KEY
-from omlish.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
+from omcore.lite.marshal import OBJ_MARSHALER_FIELD_KEY
+from omcore.lite.marshal import OBJ_MARSHALER_OMIT_IF_NONE
 
 from .compression import OciCompression
 from .datarefs import OciDataRef

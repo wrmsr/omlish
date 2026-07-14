@@ -4,12 +4,12 @@ import os.path
 import shlex
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.cached import async_cached_nullary
-from omlish.lite.cached import cached_nullary
-from omlish.lite.contextmanagers import ExitStacked
-from omlish.logs.utils import log_timing_context
-from omlish.os.temp import temp_dir_context
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.cached import async_cached_nullary
+from omcore.lite.cached import cached_nullary
+from omcore.lite.contextmanagers import ExitStacked
+from omcore.logs.utils import log_timing_context
+from omcore.os.temp import temp_dir_context
 
 from ...specs.oci.building import BuiltOciImageIndexRepository
 from ...specs.oci.pack.repositories import OciPackedRepositoryBuilder

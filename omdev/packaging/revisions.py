@@ -12,10 +12,10 @@ import tarfile
 import typing as ta
 import zipfile
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.logs.modules import get_module_logger
-from omlish.logs.std.standard import configure_standard_logging
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.logs.modules import get_module_logger
+from omcore.logs.std.standard import configure_standard_logging
 
 from ..git.revisions import get_git_revision
 from .wheelfile import WheelFile

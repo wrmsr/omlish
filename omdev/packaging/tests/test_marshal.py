@@ -1,4 +1,4 @@
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from .. import marshal as _  # noqa
 from ..requires import parse_requirement

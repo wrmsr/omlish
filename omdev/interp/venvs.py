@@ -3,12 +3,12 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.cached import async_cached_nullary
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.typing import Func2
-from omlish.logs.protocols import LoggerLike
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.cached import async_cached_nullary
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.typing import Func2
+from omcore.logs.protocols import LoggerLike
 
 from .default import get_default_interp_resolver
 from .types import InterpSpecifier

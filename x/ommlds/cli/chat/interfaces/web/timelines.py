@@ -13,7 +13,7 @@ the TUI does - which is what the tests assert, projection included.
 import asyncio
 import typing as ta
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ..... import minichain as mc
 from .helpers import parse_query

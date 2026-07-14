@@ -5,12 +5,12 @@ hand-authored tool-use sequence, each driven through `AnthropicSseDeltaTranslato
 import os.path
 import typing as ta
 
-from omlish import check
-from omlish import marshal as msh
-from omlish.formats.json import all as json
-from omlish.http import sse
-from omlish.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
-from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
+from omcore import check
+from omcore import marshal as msh
+from omcore.formats.json import all as json
+from omcore.http import sse
+from omcore.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omcore.io.streambufs.segmented import SegmentedByteStreamBuffer
 
 from .....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ....chat.messages import AiMessage

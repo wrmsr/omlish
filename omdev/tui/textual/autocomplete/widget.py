@@ -19,7 +19,7 @@ from textual.widgets import Input
 from textual.widgets import OptionList
 from textual.widgets.option_list import Option
 
-from omlish import check
+from omcore import check
 
 from .matching import FuzzySearch
 

@@ -13,8 +13,8 @@ from textual.widgets import Footer
 from textual.widgets import Input
 from textual.widgets import Label
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from .borders import TEXT
 

@@ -2,7 +2,7 @@ import abc
 import dataclasses as dc
 import re
 
-from omlish import lang
+from omcore import lang
 
 
 ##

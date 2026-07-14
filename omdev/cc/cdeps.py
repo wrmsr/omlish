@@ -2,10 +2,10 @@ import dataclasses as dc
 import tomllib
 import typing as ta
 
-from omlish import cached
-from omlish import lang
-from omlish import marshal as msh
-from omlish.configs import all as cfgs
+from omcore import cached
+from omcore import lang
+from omcore import marshal as msh
+from omcore.configs import all as cfgs
 
 
 ##

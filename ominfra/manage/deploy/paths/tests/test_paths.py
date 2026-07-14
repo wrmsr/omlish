@@ -2,8 +2,8 @@
 import itertools
 import unittest
 
-from omlish.lite import marshal as msh
-from omlish.lite.json import json_dumps_pretty
+from omcore.lite import marshal as msh
+from omcore.lite.json import json_dumps_pretty
 
 from ...tags import DeployTagMap
 from ..paths import DeployPath

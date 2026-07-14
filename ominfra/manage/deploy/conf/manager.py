@@ -21,14 +21,14 @@ import functools
 import os.path
 import typing as ta
 
-from omlish.configs.nginx import NginxConfigItems
-from omlish.configs.nginx import render_nginx_config_str
-from omlish.formats.ini.sections import render_ini_sections
-from omlish.lite.check import check
-from omlish.lite.json import json_dumps_pretty
-from omlish.lite.strings import strip_with_newline
-from omlish.os.paths import is_path_in_dir
-from omlish.os.paths import relative_symlink
+from omcore.configs.nginx import NginxConfigItems
+from omcore.configs.nginx import render_nginx_config_str
+from omcore.formats.ini.sections import render_ini_sections
+from omcore.lite.check import check
+from omcore.lite.json import json_dumps_pretty
+from omcore.lite.strings import strip_with_newline
+from omcore.os.paths import is_path_in_dir
+from omcore.os.paths import relative_symlink
 
 from ..paths.paths import DeployPath
 from ..tags import DEPLOY_TAG_SEPARATOR

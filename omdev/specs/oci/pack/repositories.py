@@ -5,11 +5,11 @@ import os.path
 import shutil
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.contextmanagers import ExitStacked
-from omlish.lite.timing import log_timing_context
-from omlish.os.temp import temp_dir_context
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.contextmanagers import ExitStacked
+from omcore.lite.timing import log_timing_context
+from omcore.os.temp import temp_dir_context
 
 from ...oci.tars import WrittenOciDataTarFileInfo
 from ..building import BuiltOciImageIndexRepository

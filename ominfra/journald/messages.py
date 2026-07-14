@@ -4,11 +4,11 @@ import dataclasses as dc
 import json
 import typing as ta
 
-from omlish.io.streambufs.scanning import ScanningByteStreamBuffer
-from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
-from omlish.io.streambufs.utils import ByteStreamBuffers
-from omlish.lite.bytes import Bytes
-from omlish.logs.modules import get_module_logger
+from omcore.io.streambufs.scanning import ScanningByteStreamBuffer
+from omcore.io.streambufs.segmented import SegmentedByteStreamBuffer
+from omcore.io.streambufs.utils import ByteStreamBuffers
+from omcore.lite.bytes import Bytes
+from omcore.logs.modules import get_module_logger
 
 
 log = get_module_logger(globals())  # noqa

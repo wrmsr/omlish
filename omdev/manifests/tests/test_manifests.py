@@ -8,7 +8,7 @@ import tempfile
 import textwrap
 import typing as ta
 
-from omlish.diag._pycharm import runhack  # noqa
+from omcore.diag._pycharm import runhack  # noqa
 
 
 @dc.dataclass(frozen=True, kw_only=True)

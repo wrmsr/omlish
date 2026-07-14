@@ -1,8 +1,8 @@
 import datetime
 
-from omlish import __about__ as about
-from omlish import cached
-from omlish import dataclasses as dc
+from omcore import __about__ as about
+from omcore import cached
+from omcore import dataclasses as dc
 
 from ...git.revisions import get_git_revision
 from .consts import SERIALIZATION_VERSION

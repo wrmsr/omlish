@@ -1,9 +1,9 @@
 import os.path
 import typing as ta
 
-from omlish import lang
-from omlish.os.environ import EnvVar
-from omlish.secrets import all as sec
+from omcore import lang
+from omcore.os.environ import EnvVar
+from omcore.secrets import all as sec
 
 from .paths import get_home_paths
 

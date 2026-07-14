@@ -5,9 +5,9 @@ import os.path
 import shlex
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.check import check
-from omlish.os.temp import temp_file_context
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.check import check
+from omcore.os.temp import temp_file_context
 
 from ..shell import ShellCmd
 

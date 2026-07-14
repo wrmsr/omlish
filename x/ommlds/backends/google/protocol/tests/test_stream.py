@@ -20,7 +20,7 @@ curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:s
 import json
 import os.path
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ..types import GenerateContentResponse
 

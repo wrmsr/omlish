@@ -2,7 +2,7 @@ import asyncio
 import ssl
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 
 ##

@@ -9,8 +9,8 @@ import json
 
 import pytest
 
-from omlish import inject as inj
-from omlish import marshal as msh
+from omcore import inject as inj
+from omcore import marshal as msh
 
 from ...... import minichain as mc
 from ......minichain.facades.timelines.tests.test_manager import canon_items

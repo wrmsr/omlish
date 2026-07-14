@@ -2,7 +2,7 @@
 import abc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
+from omcore.lite.abstract import Abstract
 
 from .utils.users import User
 

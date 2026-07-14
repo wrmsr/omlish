@@ -5,7 +5,7 @@ import typing as ta
 import pytest
 import sniffio
 
-from omlish import lang
+from omcore import lang
 
 from ..lite.maysync import run_maysync
 from ..maysync import make_maysync

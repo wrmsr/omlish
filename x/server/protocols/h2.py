@@ -9,7 +9,7 @@ import h2.settings
 import hpack
 import priority
 
-from omlish import check
+from omcore import check
 
 from ..config import Config
 from ..events import Body

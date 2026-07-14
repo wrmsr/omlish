@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import inject as inj
+from omcore import inject as inj
 
 from ...chat.choices.services import ChatChoicesService
 from ...chat.stream.choices.services import ChatChoicesStreamService

@@ -1,6 +1,6 @@
 import abc
 
-from omlish import lang
+from omcore import lang
 
 from .types import CacheEntry
 from .types import CacheKey

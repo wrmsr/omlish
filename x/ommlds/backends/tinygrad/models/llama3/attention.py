@@ -5,7 +5,7 @@ from tinygrad import UOp
 from tinygrad import nn
 from tinygrad.helpers import getenv
 
-from omlish import check
+from omcore import check
 
 
 Variable_: ta.TypeAlias = UOp

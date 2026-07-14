@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from ..config import Config
 from ..events import Request

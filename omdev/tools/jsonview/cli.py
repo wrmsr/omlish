@@ -17,10 +17,10 @@ import threading
 import typing as ta
 import webbrowser
 
-from omlish import check
-from omlish import lang
-from omlish.sockets.ports import get_available_port
-from omlish.text import minja
+from omcore import check
+from omcore import lang
+from omcore.sockets.ports import get_available_port
+from omcore.text import minja
 
 
 ##

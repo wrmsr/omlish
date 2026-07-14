@@ -5,8 +5,8 @@ import logging
 import sys
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.logs.protocols import LoggerLike
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.logs.protocols import LoggerLike
 
 from ..packaging.versions import Version
 from .types import InterpOpts

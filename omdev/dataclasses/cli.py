@@ -1,5 +1,5 @@
-from omlish.argparse import all as ap
-from omlish.logs.std.standard import configure_standard_logging
+from omcore.argparse import all as ap
+from omcore.logs.std.standard import configure_standard_logging
 
 from .codegen import DataclassCodeGen
 

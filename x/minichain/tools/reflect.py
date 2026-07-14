@@ -14,14 +14,14 @@ import inspect
 import textwrap
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import contextual as cxl
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import metadata as md
-from omlish import reflect as rfl
-from omlish.lite.cached import cached_nullary
+from omcore import check
+from omcore import collections as col
+from omcore import contextual as cxl
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import metadata as md
+from omcore import reflect as rfl
+from omcore.lite.cached import cached_nullary
 
 from ..content.content import Content
 from .types import EnumToolDtype

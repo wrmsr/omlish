@@ -7,11 +7,11 @@ socat TCP-LISTEN:8000,fork UNIX-CONNECT:foo.sock
 """
 import typing as ta
 
-from omlish.http.simple.handlers import SimpleHttpHandlerRequest
-from omlish.http.simple.handlers import SimpleHttpHandlerResponse
-from omlish.http.simple.handlers import SimpleHttpHandlerResponseStreamedData
-from omlish.http.simple.handlers import UnsupportedMethodSimpleHttpHandlerError
-from omlish.lite.check import check
+from omcore.http.simple.handlers import SimpleHttpHandlerRequest
+from omcore.http.simple.handlers import SimpleHttpHandlerResponse
+from omcore.http.simple.handlers import SimpleHttpHandlerResponseStreamedData
+from omcore.http.simple.handlers import UnsupportedMethodSimpleHttpHandlerError
+from omcore.lite.check import check
 
 from ..simple import make_simple_http_server
 

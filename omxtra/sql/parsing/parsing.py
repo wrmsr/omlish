@@ -1,8 +1,8 @@
 # ruff: noqa: N802 N803
 import typing as ta
 
-from omlish import check
-from omlish.sql import queries as no
+from omcore import check
+from omcore.sql import queries as no
 
 from ...text.antlr import runtime as antlr4
 from ...text.antlr.delimit import DelimitingLexer

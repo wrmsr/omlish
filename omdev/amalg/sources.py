@@ -2,7 +2,7 @@
 # @om-lite
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
+from omcore.lite.cached import cached_nullary
 
 
 ##

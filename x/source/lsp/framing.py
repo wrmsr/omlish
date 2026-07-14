@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import check
-from omlish.asyncs.buffers import AsyncBufferedReader
+from omcore import check
+from omcore.asyncs.buffers import AsyncBufferedReader
 
 
 ##

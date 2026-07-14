@@ -1,14 +1,14 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.http import all as hu
-from omlish.http import asgi
-from omlish.http.apps.routes import Route
-from omlish.http.apps.routes import RouteHandlerHolder
-from omlish.http.apps.routes import handles
-from omlish.http.apps.sessions import with_session
-from omlish.http.apps.templates import JinjaTemplates
-from omlish.http.sessions import Session
+from omcore.http import all as hu
+from omcore.http import asgi
+from omcore.http.apps.routes import Route
+from omcore.http.apps.routes import RouteHandlerHolder
+from omcore.http.apps.routes import handles
+from omcore.http.apps.sessions import with_session
+from omcore.http.apps.templates import JinjaTemplates
+from omcore.http.sessions import Session
 
 from ..apps.users import with_user
 

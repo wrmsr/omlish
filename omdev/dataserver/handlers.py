@@ -7,9 +7,9 @@ import os
 import typing as ta
 import urllib.request
 
-from omlish.http.statuses import HttpStatus
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
+from omcore.http.statuses import HttpStatus
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
 
 from .targets import BytesDataServerTarget
 from .targets import DataServerTarget

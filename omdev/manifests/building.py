@@ -35,15 +35,15 @@ import sys
 import time
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.imports import import_attr
-from omlish.lite.json import json_dumps_pretty
-from omlish.logs.modules import get_module_logger
-from omlish.manifests.base import ModAttrManifest
-from omlish.manifests.globals import GlobalManifestLoader
-from omlish.manifests.types import Manifest
-from omlish.manifests.types import ManifestOrigin
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.imports import import_attr
+from omcore.lite.json import json_dumps_pretty
+from omcore.logs.modules import get_module_logger
+from omcore.manifests.base import ModAttrManifest
+from omcore.manifests.globals import GlobalManifestLoader
+from omcore.manifests.types import Manifest
+from omcore.manifests.types import ManifestOrigin
 
 from .. import magic
 

@@ -3,10 +3,10 @@
 import sys
 import typing as ta
 
-from omlish.subprocesses.asyncs import AbstractAsyncSubprocesses
-from omlish.subprocesses.run import SubprocessRun
-from omlish.subprocesses.run import SubprocessRunOutput
-from omlish.subprocesses.sync import AbstractSubprocesses
+from omcore.subprocesses.asyncs import AbstractAsyncSubprocesses
+from omcore.subprocesses.run import SubprocessRun
+from omcore.subprocesses.run import SubprocessRunOutput
+from omcore.subprocesses.sync import AbstractSubprocesses
 
 from .lite.maysync import make_maysync
 

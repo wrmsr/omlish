@@ -2,8 +2,8 @@ import datetime
 import typing as ta
 import uuid
 
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from ...metadata import CreatedAt
 from ..metadata import ToolUseUuid

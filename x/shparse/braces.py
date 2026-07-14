@@ -19,8 +19,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import copy
 
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from .nodes import BraceExp
 from .nodes import Lit

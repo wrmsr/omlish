@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import inject as inj
-from omlish import orm
+from omcore import inject as inj
+from omcore import orm
 
 from .configs import StorageConfig
 from .impl import DriverStorageManagerImpl

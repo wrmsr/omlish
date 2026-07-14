@@ -17,7 +17,7 @@
 # https://github.com/ml-explore/mlx-lm/blob/ce2358d297af245b002e690623f00195b6507da0/mlx_lm/generate.py
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 
 with lang.auto_proxy_import(globals()):

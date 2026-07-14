@@ -1,7 +1,7 @@
 import contextlib
 import typing as ta
 
-from omlish import inject as inj
+from omcore import inject as inj
 
 from ...... import minichain as mc
 from ....backends.inject import bind_backend

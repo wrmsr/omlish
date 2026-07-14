@@ -6,7 +6,7 @@ import sys
 
 import pytest
 
-from omlish import check
+from omcore import check
 
 
 def _compile_and_run(

@@ -1,4 +1,4 @@
-from omlish.argparse import all as argparse
+from omcore.argparse import all as argparse
 
 from ..input import UserInputSenderGetter
 from .base import Command

@@ -4,7 +4,7 @@
 # https://github.com/tinygrad/tinygrad/blob/ef17af85c6d3f84d1e1cc084d6dee8ced3d1a33e/extra/models/llama.py
 
 
-from omlish import lang as _lang
+from omcore import lang as _lang
 
 
 with _lang.auto_proxy_init(globals()):

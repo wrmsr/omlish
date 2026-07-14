@@ -12,9 +12,9 @@ import re
 import sys
 import typing as ta
 
-from omlish import check
-from omlish.logs import all as logs
-from omlish.re import regex_to_string
+from omcore import check
+from omcore.logs import all as logs
+from omcore.re import regex_to_string
 
 from ..tokens import all as tks
 

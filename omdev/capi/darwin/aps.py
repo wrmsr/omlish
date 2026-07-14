@@ -2,7 +2,7 @@ import ctypes as ct
 import ctypes.util
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from . import cf
 

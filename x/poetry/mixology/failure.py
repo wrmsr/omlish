@@ -2,7 +2,7 @@ import typing as ta
 
 from poetry.core.constraints.version import parse_constraint
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 from .incompatibility_cause import ConflictCauseError
 from .incompatibility_cause import PythonCauseError

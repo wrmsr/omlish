@@ -5,7 +5,7 @@ import typing as ta
 from textual._log import LogGroup
 from textual._log import LogVerbosity
 
-from omlish import check
+from omcore import check
 
 from .client import DevtoolsLog
 

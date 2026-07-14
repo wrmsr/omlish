@@ -3,12 +3,12 @@ import contextlib
 import os.path
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.inject import ContextvarInjectorScope
-from omlish.lite.inject import Injector
-from omlish.lite.inject import InjectorBindingOrBindings
-from omlish.lite.inject import InjectorBindings
-from omlish.lite.inject import inj
+from omcore.lite.check import check
+from omcore.lite.inject import ContextvarInjectorScope
+from omcore.lite.inject import Injector
+from omcore.lite.inject import InjectorBindingOrBindings
+from omcore.lite.inject import InjectorBindings
+from omcore.lite.inject import inj
 
 from ..commands.injection import bind_command
 from .apps import DeployAppManager

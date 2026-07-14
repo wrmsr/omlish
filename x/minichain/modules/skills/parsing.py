@@ -1,8 +1,8 @@
 import typing as ta
 
-from omlish import check
-from omlish import marshal as msh
-from omlish.formats.yaml import all as yaml
+from omcore import check
+from omcore import marshal as msh
+from omcore.formats.yaml import all as yaml
 
 from .types import Skill
 from .types import SkillHeader

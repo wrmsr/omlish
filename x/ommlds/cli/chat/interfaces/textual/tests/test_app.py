@@ -8,8 +8,8 @@ streamed thinking + prose widgets observed *while streaming*, finalization, resu
 import pytest
 
 from omdev.tui import textual as tx
-from omlish import dataclasses as dc
-from omlish import inject as inj
+from omcore import dataclasses as dc
+from omcore import inject as inj
 
 from ...... import minichain as mc
 from ......minichain.facades.timelines.tests.harness import PausingGate

@@ -29,7 +29,7 @@ import site
 import time
 import typing as ta
 
-from omlish.term.pager import get_pager  # noqa
+from omcore.term.pager import get_pager  # noqa
 
 
 if ta.TYPE_CHECKING:

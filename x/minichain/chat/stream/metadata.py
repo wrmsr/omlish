@@ -1,7 +1,7 @@
 # ruff: noqa: UP007
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ...metadata import CommonMetadata
 from ...metadata import Metadata

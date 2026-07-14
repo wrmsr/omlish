@@ -16,7 +16,7 @@ CommonMark §4.6 defines 7 distinct kinds of HTML block, each with its own start
 """
 import re
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .inlinehtml import scan_inline_html
 

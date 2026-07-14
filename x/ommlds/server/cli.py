@@ -3,14 +3,14 @@ import os.path
 import signal
 import typing as ta
 
-from omlish import check
-from omlish.argparse import all as ap
-from omlish.daemons.spawning import ForkSpawning  # noqa
-from omlish.daemons.spawning import MultiprocessingSpawning  # noqa
-from omlish.daemons.spawning import ThreadSpawning  # noqa
-from omlish.logs import all as logs
-from omlish.os.pidfiles.pinning import PidfilePinner
-from omlish.os.signals import parse_signal
+from omcore import check
+from omcore.argparse import all as ap
+from omcore.daemons.spawning import ForkSpawning  # noqa
+from omcore.daemons.spawning import MultiprocessingSpawning  # noqa
+from omcore.daemons.spawning import ThreadSpawning  # noqa
+from omcore.logs import all as logs
+from omcore.os.pidfiles.pinning import PidfilePinner
+from omcore.os.signals import parse_signal
 
 from .client import McServerClient
 from .service import mc_server_service_daemon

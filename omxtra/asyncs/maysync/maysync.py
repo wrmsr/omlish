@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from .lite.maysync import MaysyncFn
 from .lite.maysync import MaysyncGeneratorFn

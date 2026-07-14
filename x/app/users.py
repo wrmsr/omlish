@@ -2,9 +2,9 @@ import abc
 import dataclasses as dc
 import itertools
 
-from omlish import check
-from omlish import lang
-from omlish.logs import all as logs
+from omcore import check
+from omcore import lang
+from omcore.logs import all as logs
 
 
 log = logs.get_module_logger(globals())

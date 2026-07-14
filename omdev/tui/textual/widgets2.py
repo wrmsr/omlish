@@ -3,7 +3,7 @@ import typing as ta
 
 from textual.app import ComposeResult
 
-from omlish import check
+from omcore import check
 
 
 ##

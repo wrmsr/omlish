@@ -2,12 +2,12 @@
 TODO:
  - <hostname>/ subdir?
 """
-from omlish.configs.shadow import FileShadowConfigs
-from omlish.configs.shadow import FileShadowConfigsImpl
-from omlish.configs.shadow import ShadowConfigs
-from omlish.lite.check import check
-from omlish.os.shadow import ManglingShadowPaths
-from omlish.os.shadow import ShadowPaths
+from omcore.configs.shadow import FileShadowConfigs
+from omcore.configs.shadow import FileShadowConfigsImpl
+from omcore.configs.shadow import ShadowConfigs
+from omcore.lite.check import check
+from omcore.os.shadow import ManglingShadowPaths
+from omcore.os.shadow import ShadowPaths
 
 from .paths import HomePaths
 from .paths import get_home_paths

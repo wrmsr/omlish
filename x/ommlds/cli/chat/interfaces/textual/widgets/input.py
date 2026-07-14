@@ -2,7 +2,7 @@
 import typing as ta
 
 from omdev.tui import textual as tx
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ..inputhistory import InputHistoryManager
 from ..suggestions import SuggestionItem

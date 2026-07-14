@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from .llms.types import LlmOption
 from .llms.types import LlmOutput

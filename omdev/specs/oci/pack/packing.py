@@ -4,9 +4,9 @@ import heapq
 import tarfile
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.contextmanagers import ExitStacked
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.contextmanagers import ExitStacked
 
 from ..compression import OciCompression
 from ..tars import OciDataTarWriter

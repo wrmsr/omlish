@@ -7,8 +7,8 @@ import sys
 import typing as ta
 import warnings
 
-from omlish import check
-from omlish.logs import all as logs
+from omcore import check
+from omcore.logs import all as logs
 
 from ..dir_util import mkpath
 from ..errors import CompileError

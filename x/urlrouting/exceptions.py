@@ -2,7 +2,7 @@ import difflib
 import http
 import typing as ta
 
-from omlish import cached
+from omcore import cached
 
 
 if ta.TYPE_CHECKING:

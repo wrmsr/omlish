@@ -1,4 +1,4 @@
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ..rich import ui_text_to_rich_text
 from ..text import DiffUiText

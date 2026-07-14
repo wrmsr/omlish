@@ -4,8 +4,8 @@ import subprocess
 import traceback
 import typing as ta
 
-from omlish.diag.pydevd import silence_subprocess_check
-from omlish.docker.timebomb import docker_timebomb_payload
+from omcore.diag.pydevd import silence_subprocess_check
+from omcore.docker.timebomb import docker_timebomb_payload
 
 
 def run(*args, **kwargs):

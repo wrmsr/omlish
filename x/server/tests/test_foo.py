@@ -5,9 +5,9 @@ import anyio
 import httpx
 import pytest
 
-from omlish import lang
-from omlish.http.apps.tests.foo import build_foo_app
-from omlish.sockets.ports import get_available_port
+from omcore import lang
+from omcore.http.apps.tests.foo import build_foo_app
+from omcore.sockets.ports import get_available_port
 
 from ..config import Config
 from ..default import serve

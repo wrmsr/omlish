@@ -11,8 +11,8 @@ Cf. pulldown-cmark/src/firstpass.rs::FirstPass - pulldown stores containers as t
 `ItemBody::List` / `ItemBody::ListItem`; we store them as Python objects on a stack. Continuation handling and the
 "scan_containers" walk are the same algorithm.
 """
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from ..events import BlockQuoteKind
 

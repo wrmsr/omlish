@@ -1,7 +1,7 @@
 import abc
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ...transform.general import CompositeGeneralTransform
 from ...transform.general import FnGeneralTransform

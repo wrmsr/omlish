@@ -1,5 +1,5 @@
-from omlish import inject as inj
-from omlish import lang
+from omcore import inject as inj
+from omcore import lang
 
 from ...tools.execution.catalog import ToolCatalogEntry
 from ...tools.execution.injection import tool_catalog_entries

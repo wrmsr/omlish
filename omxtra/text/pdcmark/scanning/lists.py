@@ -7,7 +7,7 @@ marker must be followed by either a space / tab or end-of-line (otherwise the li
 We return only the marker descriptor itself. Post-marker indent / tab handling lives in the BlockMachine (it needs
 `LineStart` for correct tab-stop accounting).
 """
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 
 ##

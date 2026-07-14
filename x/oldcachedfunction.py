@@ -25,17 +25,17 @@ import inspect
 import types
 import typing as ta
 
-from omlish.lang.classes.abstract import Abstract
-from omlish.lang.contextmanagers import DefaultLockable
-from omlish.lang.contextmanagers import default_lock
-from omlish.lang.descriptors import unwrap_func
-from omlish.lang.descriptors import unwrap_func_with_partials
-from omlish.lang.params import KwargsParam
-from omlish.lang.params import Param
-from omlish.lang.params import ParamSeparator
-from omlish.lang.params import ParamSpec
-from omlish.lang.params import ValParam
-from omlish.lang.params import param_render
+from omcore.lang.classes.abstract import Abstract
+from omcore.lang.contextmanagers import DefaultLockable
+from omcore.lang.contextmanagers import default_lock
+from omcore.lang.descriptors import unwrap_func
+from omcore.lang.descriptors import unwrap_func_with_partials
+from omcore.lang.params import KwargsParam
+from omcore.lang.params import Param
+from omcore.lang.params import ParamSeparator
+from omcore.lang.params import ParamSpec
+from omcore.lang.params import ValParam
+from omcore.lang.params import param_render
 
 
 P = ta.ParamSpec('P')

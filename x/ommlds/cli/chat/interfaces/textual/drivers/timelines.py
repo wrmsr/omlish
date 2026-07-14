@@ -6,7 +6,7 @@ is exactly one translation - the same items render the same way whether they arr
 import typing as ta
 
 from omdev.tui import textual as tx
-from omlish import check
+from omcore import check
 
 from ...... import minichain as mc
 from ..widgets.messages.ai import StaticAiMessage

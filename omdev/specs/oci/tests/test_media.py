@@ -2,7 +2,7 @@
 # @om-lite
 import unittest
 
-from omlish.lite import marshal as msh
+from omcore.lite import marshal as msh
 
 from ..media import OciMediaImageIndex
 from ..media import OciMediaImageManifest

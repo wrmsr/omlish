@@ -1,6 +1,6 @@
 # ruff: noqa: SLF001
 """Offline coverage of the google (gemini) chat backend: request/response/stream translation through the real joiner."""
-from omlish import check
+from omcore import check
 
 from .....backends.google.protocol import types as pt
 from ....chat.choices.services import ChatChoicesRequest

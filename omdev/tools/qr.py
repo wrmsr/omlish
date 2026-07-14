@@ -11,7 +11,7 @@ import sys
 import tempfile
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ..cli import CliModule
 

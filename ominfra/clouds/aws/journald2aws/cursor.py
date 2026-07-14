@@ -2,7 +2,7 @@
 import os.path
 import typing as ta
 
-from omlish.logs.modules import get_module_logger
+from omcore.logs.modules import get_module_logger
 
 
 log = get_module_logger(globals())  # noqa

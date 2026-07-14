@@ -2,8 +2,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish import lang
-from omlish.configs import all as cfgs
+from omcore import lang
+from omcore.configs import all as cfgs
 
 
 PrecheckConfigT = ta.TypeVar('PrecheckConfigT', bound='Precheck.Config')

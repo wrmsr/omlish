@@ -9,8 +9,8 @@ import shutil
 
 from omdev.interp.default import get_default_interp_resolver
 from omdev.interp.types import InterpSpecifier
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.check import check
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.check import check
 
 from .specs import DeployVenvSpec
 

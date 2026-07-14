@@ -1,6 +1,6 @@
 import abc
 
-from omlish import lang
+from omcore import lang
 
 from .index import VectorIndexed
 from .search import VectorHits

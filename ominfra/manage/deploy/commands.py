@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
 import dataclasses as dc
 
-from omlish.logs.modules import get_module_logger
+from omcore.logs.modules import get_module_logger
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor

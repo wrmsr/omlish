@@ -1,9 +1,9 @@
 # ruff: noqa: PERF402
 import typing as ta
 
-from omlish import check
-from omlish import typedvalues as tv
-from omlish.text.lorem import LOREM
+from omcore import check
+from omcore import typedvalues as tv
+from omcore.text.lorem import LOREM
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse

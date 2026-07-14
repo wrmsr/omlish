@@ -8,8 +8,8 @@ import contextlib
 import typing as ta
 import uuid
 
-from omlish import dataclasses as dc
-from omlish import inject as inj
+from omcore import dataclasses as dc
+from omcore import inject as inj
 
 from ....backends.scripted.scripts import ChatScript
 from ....chat.messages import UserChat

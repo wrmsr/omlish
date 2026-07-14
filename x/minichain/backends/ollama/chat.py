@@ -30,12 +30,12 @@ https://github.com/ollama/ollama/blob/main/docs/api.md
 """
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish import marshal as msh
-from omlish import typedvalues as tv
-from omlish.formats.json import all as json
-from omlish.http import all as http
+from omcore import check
+from omcore import lang
+from omcore import marshal as msh
+from omcore import typedvalues as tv
+from omcore.formats.json import all as json
+from omcore.http import all as http
 
 from ....backends.ollama import protocol as pt
 from ...chat.choices.services import ChatChoicesRequest

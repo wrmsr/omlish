@@ -3,9 +3,9 @@ import os.path
 import typing as ta
 
 from omdev.cache import data as dcache
-from omlish import cached
-from omlish import dataclasses as dc
-from omlish.formats.json import all as json
+from omcore import cached
+from omcore import dataclasses as dc
+from omcore.formats.json import all as json
 
 
 ##

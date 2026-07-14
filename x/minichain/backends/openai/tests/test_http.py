@@ -19,13 +19,13 @@ import typing as ta
 
 import pytest
 
-from omlish import dataclasses as dc
-from omlish.formats.json import all as json
-from omlish.http import all as hu
-from omlish.http import sse
-from omlish.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
-from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
-from omlish.secrets.tests.harness import HarnessSecrets
+from omcore import dataclasses as dc
+from omcore.formats.json import all as json
+from omcore.http import all as hu
+from omcore.http import sse
+from omcore.io.streambufs.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omcore.io.streambufs.segmented import SegmentedByteStreamBuffer
+from omcore.secrets.tests.harness import HarnessSecrets
 
 
 @dc.dataclass(frozen=True)

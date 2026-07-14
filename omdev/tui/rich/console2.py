@@ -1,7 +1,7 @@
 import io
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 
 with lang.auto_proxy_import(globals()):

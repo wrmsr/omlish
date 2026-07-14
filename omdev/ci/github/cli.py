@@ -5,10 +5,10 @@ See:
 """
 import dataclasses as dc
 
-from omlish.argparse.cli import ArgparseCli
-from omlish.argparse.parsers import argparse_arg
-from omlish.argparse.parsers import argparse_cmd
-from omlish.lite.json import json_dumps_pretty
+from omcore.argparse.cli import ArgparseCli
+from omcore.argparse.parsers import argparse_arg
+from omcore.argparse.parsers import argparse_cmd
+from omcore.lite.json import json_dumps_pretty
 
 from .api.v1.client import GithubCacheServiceV1Client
 from .env import GITHUB_ENV_VARS

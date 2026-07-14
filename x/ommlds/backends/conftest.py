@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish.testing.pytest import plugins as ptp
+from omcore.testing.pytest import plugins as ptp
 
 
 BACKEND_DEPSKIP_MODULES: ta.Mapping[str, ta.Sequence[str]] = {

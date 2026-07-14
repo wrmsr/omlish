@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish.formats.json import all as json
+from omcore.formats.json import all as json
 
 from ..code import BlockCodeContent
 from ..code import InlineCodeContent

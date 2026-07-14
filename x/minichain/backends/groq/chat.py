@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ....backends.groq.clients import REQUIRED_HTTP_HEADERS
 from ...chat.choices.services import static_check_is_chat_choices_service

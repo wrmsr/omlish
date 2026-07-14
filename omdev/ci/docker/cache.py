@@ -3,9 +3,9 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
-from omlish.os.temp import temp_file_context
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
+from omcore.os.temp import temp_file_context
 
 from ..cache import FileCache
 from ..shell import ShellCmd

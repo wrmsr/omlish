@@ -2,9 +2,9 @@ import ast
 import os
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.text.filecache import TextFileCache
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.text.filecache import TextFileCache
 
 from ..py.srcheaders import PyHeaderLine
 from ..py.srcheaders import get_py_header_lines

@@ -1,5 +1,5 @@
-from omlish import check
-from omlish.text import templating as tpl
+from omcore import check
+from omcore.text import templating as tpl
 
 from ...content import Content
 from ...templates import TemplateContent

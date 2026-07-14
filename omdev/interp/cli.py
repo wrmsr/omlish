@@ -9,15 +9,15 @@ TODO:
 import asyncio
 import typing as ta
 
-from omlish.argparse.cli import ArgparseCli
-from omlish.argparse.parsers import argparse_arg
-from omlish.argparse.parsers import argparse_cmd
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.inject import Injector
-from omlish.lite.inject import inj
-from omlish.lite.runtime import check_lite_runtime_version
-from omlish.logs.std.standard import configure_standard_logging
+from omcore.argparse.cli import ArgparseCli
+from omcore.argparse.parsers import argparse_arg
+from omcore.argparse.parsers import argparse_cmd
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.inject import Injector
+from omcore.lite.inject import inj
+from omcore.lite.runtime import check_lite_runtime_version
+from omcore.logs.std.standard import configure_standard_logging
 
 from .inject import bind_interp
 from .resolvers import InterpResolver

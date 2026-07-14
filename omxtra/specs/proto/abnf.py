@@ -1,8 +1,8 @@
 import os.path
 
-from omlish import check
-from omlish import lang
-from omlish.text import abnf
+from omcore import check
+from omcore import lang
+from omcore.text import abnf
 
 
 ##

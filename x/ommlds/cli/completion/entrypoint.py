@@ -1,4 +1,4 @@
-from omlish import check
+from omcore import check
 
 from ... import minichain as mc
 from ..types import Entrypoint

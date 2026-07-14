@@ -1,7 +1,7 @@
 import itertools
 import typing as ta
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .drivers.types import ChatDriverInterfaceGetter
 

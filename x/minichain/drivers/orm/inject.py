@@ -2,9 +2,9 @@ import contextlib
 import os.path
 import typing as ta
 
-from omlish import check
-from omlish import inject as inj
-from omlish import orm
+from omcore import check
+from omcore import inject as inj
+from omcore import orm
 
 from .configs import OrmConfig
 from .impl import OrmImpl

@@ -57,7 +57,7 @@ Don't see:
 import copy
 import typing as ta
 
-from omlish import collections as col
+from omcore import collections as col
 
 from .storage import Storage
 from .types import CacheEntry

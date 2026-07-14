@@ -8,12 +8,12 @@ import anyio
 import httpx
 import pytest
 
-from omlish import check
-from omlish import inject as inj
-from omlish import lang
-from omlish.http import asgi
-from omlish.sockets.ports import get_available_port
-from omlish.testing import pytest as ptu
+from omcore import check
+from omcore import inject as inj
+from omcore import lang
+from omcore.http import asgi
+from omcore.sockets.ports import get_available_port
+from omcore.testing import pytest as ptu
 
 from ...app.dbs import bind_dbs
 from ...app.secrets import bind_secrets

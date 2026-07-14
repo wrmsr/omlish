@@ -4,7 +4,7 @@ import enum
 import typing as ta
 
 from omdev.tui import textual as tx
-from omlish import check
+from omcore import check
 
 from .base import Message
 from .base import MessageFinalized

@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import inject as inj
-from omlish import lang
+from omcore import inject as inj
+from omcore import lang
 
 from ...tools.execution.catalog import ToolCatalogEntries
 from ...tools.execution.catalog import ToolCatalogEntry

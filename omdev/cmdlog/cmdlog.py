@@ -4,8 +4,8 @@ import sys
 import tempfile
 import typing as ta
 
-from omlish import cached
-from omlish import check
+from omcore import cached
+from omcore import check
 
 from . import _cmdlog
 

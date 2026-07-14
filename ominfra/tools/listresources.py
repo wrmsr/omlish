@@ -16,10 +16,10 @@ import pprint
 import urllib3
 
 from omdev.home.secrets import load_secrets
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.secrets import all as sec
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.secrets import all as sec
 
 
 ##

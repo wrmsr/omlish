@@ -7,9 +7,9 @@ import functools
 import json
 import typing as ta
 
-from omlish import marshal as msh
-from omlish.asyncs.buffers import AsyncBufferedReader
-from omlish.specs import jsonrpc as jr
+from omcore import marshal as msh
+from omcore.asyncs.buffers import AsyncBufferedReader
+from omcore.specs import jsonrpc as jr
 
 from .framing import format_http_framed_message
 from .framing import read_http_framed_message

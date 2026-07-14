@@ -2,10 +2,10 @@ import json
 
 import pytest
 
-from omlish import check
-from omlish.http import all as http
-from omlish.secrets.tests.harness import HarnessSecrets
-from omlish.testing import pytest as ptu
+from omcore import check
+from omcore.http import all as http
+from omcore.secrets.tests.harness import HarnessSecrets
+from omcore.testing import pytest as ptu
 
 from ..auth import get_gcp_access_token
 

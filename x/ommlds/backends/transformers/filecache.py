@@ -6,7 +6,7 @@ import typing as ta
 
 import transformers as tfm
 
-from omlish import lang
+from omcore import lang
 
 from ..._hacks.funcs import create_detour
 

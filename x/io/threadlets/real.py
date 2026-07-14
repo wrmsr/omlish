@@ -10,10 +10,10 @@ import itertools
 import threading
 import typing as ta
 
-from omlish import lang
-from omlish.concurrent.threadlets import Threadlet
-from omlish.concurrent.threadlets import Threadlets
-from omlish.logs import all as logs
+from omcore import lang
+from omcore.concurrent.threadlets import Threadlet
+from omcore.concurrent.threadlets import Threadlets
+from omcore.logs import all as logs
 
 
 log = logs.get_module_logger(globals())

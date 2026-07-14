@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from .requests import RequestT_contra
 from .responses import ResponseT_co

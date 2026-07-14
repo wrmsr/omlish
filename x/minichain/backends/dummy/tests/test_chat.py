@@ -1,4 +1,4 @@
-from omlish import lang
+from omcore import lang
 
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.messages import Message

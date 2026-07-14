@@ -6,10 +6,10 @@ import signal
 import tempfile
 import typing as ta
 
-from omlish.lite.cached import cached_property
-from omlish.lite.check import check
-from omlish.lite.dataclasses import install_dataclass_filtered_repr
-from omlish.lite.dataclasses import install_dataclass_kw_only_init
+from omcore.lite.cached import cached_property
+from omcore.lite.check import check
+from omcore.lite.dataclasses import install_dataclass_filtered_repr
+from omcore.lite.dataclasses import install_dataclass_kw_only_init
 
 from .utils.fs import check_existing_dir
 from .utils.fs import check_path_with_existing_dir

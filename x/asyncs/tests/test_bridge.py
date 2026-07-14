@@ -9,8 +9,8 @@ import threading
 import anyio
 import pytest
 
-from omlish.asyncs import anyio as aiu
-from omlish.testing import pytest as ptu
+from omcore.asyncs import anyio as aiu
+from omcore.testing import pytest as ptu
 
 from .. import bridge as br
 

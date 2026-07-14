@@ -1,6 +1,6 @@
 from omdev.tui import textual as tx
-from omlish import check
-from omlish.formats import json5
+from omcore import check
+from omcore.formats import json5
 
 from ...... import minichain as mc
 from .types import ChatDriverInterfaceGetter

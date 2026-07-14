@@ -6,8 +6,8 @@ import anyio.abc
 import anyio.from_thread
 import anyio.to_thread
 
-from omlish import check
-from omlish.logs import all as logs
+from omcore import check
+from omcore.logs import all as logs
 
 from .config import Config
 from .debug import handle_error_debug

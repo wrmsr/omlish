@@ -6,7 +6,7 @@ import typing as ta
 
 from rich.segment import Segment
 
-from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketText
+from omcore.http.pipelines.websockets.objects import IoPipelineWebsocketText
 
 
 ##

@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ...resources import ResourceManaged
 from ...resources import Resources

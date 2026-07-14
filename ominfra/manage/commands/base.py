@@ -4,10 +4,10 @@ import dataclasses as dc
 import traceback
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
-from omlish.lite.strings import snake_case
-from omlish.logs.protocols import LoggerLike
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
+from omcore.lite.strings import snake_case
+from omcore.logs.protocols import LoggerLike
 
 
 CommandT = ta.TypeVar('CommandT', bound='Command')

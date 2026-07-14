@@ -6,13 +6,13 @@ TODO:
 import ast
 import typing as ta
 
-from omlish import collections as col
-from omlish import lang
-from omlish import marshal as msh
-from omlish import reflect as rfl
-from omlish.formats.json import all as json
+from omcore import collections as col
+from omcore import lang
+from omcore import marshal as msh
+from omcore import reflect as rfl
+from omcore.formats.json import all as json
 
-from omlish.text import asdl
+from omcore.text import asdl
 
 
 ##

@@ -7,14 +7,14 @@ import abc
 import inspect
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish import reflect as rfl
-from omlish.formats import json5
-from omlish.manifests.globals import GlobalManifestLoader
+from omcore import check
+from omcore import collections as col
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
+from omcore import reflect as rfl
+from omcore.formats import json5
+from omcore.manifests.globals import GlobalManifestLoader
 
 from ..configs import Config
 from ..models.configs import ModelName

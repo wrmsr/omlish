@@ -1,5 +1,5 @@
-from omlish.http.apps.sessions import SESSION
-from omlish.http.apps.templates import default_template_helper
+from omcore.http.apps.sessions import SESSION
+from omcore.http.apps.templates import default_template_helper
 
 
 ##

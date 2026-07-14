@@ -2,11 +2,11 @@ import typing as ta
 
 import pytest
 
-from omlish import check
-from omlish import lang
-from omlish import marshal as msh
-from omlish.http import all as http
-from omlish.secrets.tests.harness import HarnessSecrets
+from omcore import check
+from omcore import lang
+from omcore import marshal as msh
+from omcore.http import all as http
+from omcore.secrets.tests.harness import HarnessSecrets
 
 from .....backends.openai import protocol as pt
 from ....chat.choices.services import ChatChoicesRequest

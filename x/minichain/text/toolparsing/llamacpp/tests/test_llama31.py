@@ -1,4 +1,4 @@
-from omlish import lang
+from omcore import lang
 
 from ..llama31 import Llama31Parser
 from ..types import ChatMsg

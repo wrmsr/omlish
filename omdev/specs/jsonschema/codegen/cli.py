@@ -2,10 +2,10 @@ import os.path
 import sys
 import typing as ta
 
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
-from omlish.logs.std.standard import configure_standard_logging
-from omlish.specs import jsonschema as jsch
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
+from omcore.logs.std.standard import configure_standard_logging
+from omcore.specs import jsonschema as jsch
 
 from .generator import JsonSchemaCodeGen
 

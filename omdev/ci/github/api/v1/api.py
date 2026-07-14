@@ -38,8 +38,8 @@ curl -s \
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.strings import camel_case
-from omlish.lite.strings import snake_case
+from omcore.lite.strings import camel_case
+from omcore.lite.strings import snake_case
 
 
 T = ta.TypeVar('T')

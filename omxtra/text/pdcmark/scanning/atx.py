@@ -7,7 +7,7 @@ runs until end-of-line; optional trailing `#` sequence (preceded by space and fo
 This module provides the scan side; trimming the trailing `#` run lives in `strip_atx_trailers` for the block machine to
 call after isolating the content.
 """
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .whitespace import scan_ch_repeat
 

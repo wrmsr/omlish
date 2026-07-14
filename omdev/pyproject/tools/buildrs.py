@@ -6,7 +6,7 @@ import subprocess
 import sys
 import zipfile
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 
 ##

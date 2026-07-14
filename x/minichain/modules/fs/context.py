@@ -1,7 +1,7 @@
 import os.path
 import stat
 
-from omlish import check
+from omcore import check
 
 from ...fs.binfiles import has_binary_file_extension
 from ...fs.binfiles import is_binary_file

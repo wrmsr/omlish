@@ -6,7 +6,7 @@ import importlib.metadata
 import re
 import sys
 
-from omlish.formats.toml.parser import toml_loads
+from omcore.formats.toml.parser import toml_loads
 
 from ...packaging.names import canonicalize_name
 from ...packaging.requires import parse_requirement

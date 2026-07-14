@@ -7,7 +7,7 @@ import typing as ta
 from textual.dom import DOMNode
 from textual.widget import Widget
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ..types import trbl_to_dict
 

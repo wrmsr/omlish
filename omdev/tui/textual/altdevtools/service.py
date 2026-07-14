@@ -7,13 +7,13 @@ from rich.console import Console
 from rich.markup import escape
 from textual._log import LogGroup
 
-from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketClose
-from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketOpen
-from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketText
-from omlish.io.pipelines.core import IoPipelineHandler
-from omlish.io.pipelines.core import IoPipelineHandlerContext
-from omlish.io.pipelines.core import IoPipelineMessages
-from omlish.io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
+from omcore.http.pipelines.websockets.objects import IoPipelineWebsocketClose
+from omcore.http.pipelines.websockets.objects import IoPipelineWebsocketOpen
+from omcore.http.pipelines.websockets.objects import IoPipelineWebsocketText
+from omcore.io.pipelines.core import IoPipelineHandler
+from omcore.io.pipelines.core import IoPipelineHandlerContext
+from omcore.io.pipelines.core import IoPipelineMessages
+from omcore.io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 
 from .protocol import DevtoolsWebsocketSend
 from .protocol import decode_message

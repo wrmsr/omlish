@@ -4,9 +4,9 @@ import typing as ta
 
 import anyio.abc
 
-from omlish import check
-from omlish import lang
-from omlish.logs import all as logs
+from omcore import check
+from omcore import lang
+from omcore.logs import all as logs
 
 from .config import Config
 from .events import Closed

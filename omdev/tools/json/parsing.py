@@ -2,15 +2,15 @@ import codecs
 import io
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.formats.json.stream.building import JsonValueBuilder
-from omlish.formats.json.stream.lexing import JsonStreamLexer
-from omlish.formats.json.stream.parsing import Event
-from omlish.formats.json.stream.parsing import JsonStreamParser
-from omlish.io.streambufs.scanning import ScanningByteStreamBuffer
-from omlish.io.streambufs.segmented import SegmentedByteStreamBuffer
-from omlish.io.streambufs.utils import ByteStreamBuffers
+from omcore import check
+from omcore import lang
+from omcore.formats.json.stream.building import JsonValueBuilder
+from omcore.formats.json.stream.lexing import JsonStreamLexer
+from omcore.formats.json.stream.parsing import Event
+from omcore.formats.json.stream.parsing import JsonStreamParser
+from omcore.io.streambufs.scanning import ScanningByteStreamBuffer
+from omcore.io.streambufs.segmented import SegmentedByteStreamBuffer
+from omcore.io.streambufs.utils import ByteStreamBuffers
 
 from .formats import Format
 

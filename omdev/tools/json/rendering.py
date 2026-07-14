@@ -3,12 +3,12 @@ import dataclasses as dc
 import json
 import typing as ta
 
-from omlish import lang
-from omlish.formats.json.rendering import JsonRenderer
-from omlish.formats.json.stream.parsing import Event
-from omlish.formats.json.stream.rendering import StreamJsonRenderer
-from omlish.formats.json5.rendering import Json5Renderer
-from omlish.term import codes as tc
+from omcore import lang
+from omcore.formats.json.rendering import JsonRenderer
+from omcore.formats.json.stream.parsing import Event
+from omcore.formats.json.stream.rendering import StreamJsonRenderer
+from omcore.formats.json5.rendering import Json5Renderer
+from omcore.term import codes as tc
 
 
 ##

@@ -15,11 +15,11 @@ import time
 import typing as ta
 import urllib.request
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.logs.modules import get_module_logger
-from omlish.os.temp import make_temp_file
+from omcore.lite.abstract import Abstract
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.logs.modules import get_module_logger
+from omcore.os.temp import make_temp_file
 
 from .consts import CI_CACHE_VERSION
 

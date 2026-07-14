@@ -1,15 +1,15 @@
 import contextvars
 import dataclasses as dc
 
-from omlish import lang
-from omlish.http import all as hu
-from omlish.http import asgi
-from omlish.http.apps.markers import AppMarker
-from omlish.http.apps.markers import AppMarkerProcessor
-from omlish.http.apps.markers import append_app_marker
-from omlish.http.apps.sessions import SESSION
-from omlish.http.apps.templates import default_template_helper
-from omlish.logs import all as logs
+from omcore import lang
+from omcore.http import all as hu
+from omcore.http import asgi
+from omcore.http.apps.markers import AppMarker
+from omcore.http.apps.markers import AppMarkerProcessor
+from omcore.http.apps.markers import append_app_marker
+from omcore.http.apps.sessions import SESSION
+from omcore.http.apps.templates import default_template_helper
+from omcore.logs import all as logs
 
 from ...users import User
 from ...users import UserStore

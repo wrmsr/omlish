@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish.testing.pytest import plugins as ptp
+from omcore.testing.pytest import plugins as ptp
 
 from ...backends.conftest import BACKEND_DEPSKIP_MODULES as BASE_BACKEND_DEPSKIP_MODULES
 

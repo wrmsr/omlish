@@ -4,8 +4,8 @@ import dataclasses as dc
 import os.path
 import sys
 
-from omlish.lite.configs import load_config_file_obj
-from omlish.logs.std.standard import configure_standard_logging
+from omcore.lite.configs import load_config_file_obj
+from omcore.logs.std.standard import configure_standard_logging
 
 from .driver import JournalctlToAwsDriver
 

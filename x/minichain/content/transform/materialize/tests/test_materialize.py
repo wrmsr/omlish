@@ -1,4 +1,4 @@
-from omlish.text import templating as tpl
+from omcore.text import templating as tpl
 
 from ....content import Content
 from ....namespaces import ContentNamespace

@@ -1,7 +1,7 @@
 import typing as ta
 import uuid
 
-from omlish import lang
+from omcore import lang
 
 
 ##

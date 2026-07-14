@@ -4,10 +4,10 @@ import uuid
 
 import pytest
 
-from omlish import check
-from omlish import inject as inj
-from omlish.http import all as http
-from omlish.secrets.tests.harness import HarnessSecrets
+from omcore import check
+from omcore import inject as inj
+from omcore.http import all as http
+from omcore.secrets.tests.harness import HarnessSecrets
 
 from .....backends.openai.stream import OpenaiChatChoicesStreamService
 from .....chat.messages import UserMessage

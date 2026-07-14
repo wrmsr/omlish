@@ -5,7 +5,7 @@ See docs/02_PrePlan.md for the streaming model and invariants.
 """
 import typing as ta
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ..events import Event
 

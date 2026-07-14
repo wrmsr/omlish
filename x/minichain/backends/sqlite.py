@@ -4,7 +4,7 @@ TODO:
 """
 import sqlite3
 
-from omlish import lang
+from omcore import lang
 
 from ..vectors.index import VectorIndexed
 from ..vectors.search import VectorHit

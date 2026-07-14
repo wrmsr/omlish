@@ -45,9 +45,9 @@ import subprocess
 import sys
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.funcs import pipes as fp
+from omcore import check
+from omcore import lang
+from omcore.funcs import pipes as fp
 
 from .formats import FORMATS_BY_NAME
 from .formats import Format

@@ -5,10 +5,10 @@ TODO:
 import inspect
 import typing as ta
 
-from omlish import contextual as cxl
-from omlish import lang
-from omlish import marshal as msh
-from omlish import reflect as rfl
+from omcore import contextual as cxl
+from omcore import lang
+from omcore import marshal as msh
+from omcore import reflect as rfl
 
 from ..fns import ToolFn
 from ..reflect import reflect_tool_spec

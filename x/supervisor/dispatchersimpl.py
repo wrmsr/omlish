@@ -4,8 +4,8 @@ import logging
 import os
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.logs.modules import get_module_logger
+from omcore.lite.abstract import Abstract
+from omcore.logs.modules import get_module_logger
 
 from .configs import ProcessConfig
 from .configs import ServerConfig

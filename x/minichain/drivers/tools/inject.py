@@ -1,4 +1,4 @@
-from omlish import inject as inj
+from omcore import inject as inj
 
 from ...tools.execution.catalog import ToolCatalog
 from ...tools.execution.errorhandling import ErrorHandlingToolUseExecutor

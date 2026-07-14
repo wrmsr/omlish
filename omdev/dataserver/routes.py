@@ -6,7 +6,7 @@ TODO:
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 from .targets import DataServerTarget
 

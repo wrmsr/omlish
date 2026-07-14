@@ -5,9 +5,9 @@ TODO:
 import threading
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.manifests.globals import GlobalManifestLoader
+from omcore import check
+from omcore import lang
+from omcore.manifests.globals import GlobalManifestLoader
 
 from .manifests import RegistryManifest
 from .manifests import RegistryTypeManifest

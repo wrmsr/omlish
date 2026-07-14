@@ -13,7 +13,7 @@ import uuid
 
 import pytest
 
-from omlish import check
+from omcore import check
 
 from ....backends.scripted.scripts import ChatScript
 from ....backends.scripted.scripts import ChatScriptTurn

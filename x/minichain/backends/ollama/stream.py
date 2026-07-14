@@ -1,11 +1,11 @@
 # ruff: noqa: SLF001
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish.formats.json import all as json
-from omlish.http import all as http
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
+from omcore.formats.json import all as json
+from omcore.http import all as http
 
 from ....backends.ollama import protocol as pt
 from ...chat.choices.types import ChatChoices

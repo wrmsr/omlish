@@ -1,8 +1,8 @@
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish.funcs import pairs as fps
+from omcore import check
+from omcore import dataclasses as dc
+from omcore.funcs import pairs as fps
 
 from ..numerics import numerics as nr
 from .formats import MessageFormat

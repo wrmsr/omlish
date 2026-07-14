@@ -5,7 +5,7 @@ TODO:
 import contextlib
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from .cache import Cache
 from .contexts import ActiveContext

@@ -6,7 +6,7 @@ import types
 import typing as ta
 import urllib.parse
 
-from omlish import check
+from omcore import check
 
 from .converters import ValidationError
 from .utils import iter_multi_items

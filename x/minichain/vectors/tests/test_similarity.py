@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import lang
-from omlish.testing import pytest as ptu
+from omcore import lang
+from omcore.testing import pytest as ptu
 
 from ..similarity import Similarity
 from ..similarity import calc_np_similarities

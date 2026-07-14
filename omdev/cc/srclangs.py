@@ -1,8 +1,8 @@
 import typing as ta
 
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import collections as col
+from omcore import dataclasses as dc
+from omcore import lang
 
 
 ##

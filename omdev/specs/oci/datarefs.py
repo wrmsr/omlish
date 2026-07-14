@@ -9,9 +9,9 @@ import shutil
 import tarfile
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
+from omcore.lite.abstract import Abstract
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
 
 
 ##

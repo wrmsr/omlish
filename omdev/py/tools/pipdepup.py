@@ -45,12 +45,12 @@ from pip._internal.models.release_control import ReleaseControl  # noqa
 from pip._internal.network.session import PipSession  # noqa
 from pip._vendor.packaging.version import Version  # noqa
 
-from omlish import cached
-from omlish import check
-from omlish import collections as col
-from omlish.concurrent import all as conc
-from omlish.formats.json import all as json
-from omlish.sync.objectpools import ObjectPool
+from omcore import cached
+from omcore import check
+from omcore import collections as col
+from omcore.concurrent import all as conc
+from omcore.formats.json import all as json
+from omcore.sync.objectpools import ObjectPool
 
 
 ##

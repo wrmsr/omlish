@@ -1,8 +1,8 @@
 import typing as ta
 
-from omlish import inject as inj
-from omlish.http.apps import inject as base_apps_inj
-from omlish.http.apps.templates import JinjaTemplates
+from omcore import inject as inj
+from omcore.http.apps import inject as base_apps_inj
+from omcore.http.apps.templates import JinjaTemplates
 
 from ...users import User
 from .login import _LoginRequiredAppMarker

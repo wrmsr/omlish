@@ -9,8 +9,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 
 ##

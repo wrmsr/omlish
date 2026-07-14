@@ -1,4 +1,4 @@
-from omlish import lang
+from omcore import lang
 
 from ...chat.choices.services import ChatChoicesService
 from ..instantiate import instantiate_backend_spec

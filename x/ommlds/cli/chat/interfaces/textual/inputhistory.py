@@ -2,8 +2,8 @@ import abc
 import os
 import typing as ta
 
-from omlish import lang
-from omlish.formats.json import all as json
+from omcore import lang
+from omcore.formats.json import all as json
 
 
 ##

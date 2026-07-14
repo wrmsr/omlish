@@ -1,7 +1,7 @@
 import threading
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 
 if ta.TYPE_CHECKING:

@@ -10,7 +10,7 @@ returns, and nothing here can lag the driver.
 import functools
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ..... import minichain as mc
 from ....interfaces.bare.printing.types import ContentPrinting

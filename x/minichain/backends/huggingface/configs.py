@@ -1,5 +1,5 @@
-from omlish import dataclasses as dc
-from omlish import typedvalues as tv
+from omcore import dataclasses as dc
+from omcore import typedvalues as tv
 
 from ...standard import SecretConfig
 

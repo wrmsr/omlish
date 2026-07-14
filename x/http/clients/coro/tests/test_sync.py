@@ -1,6 +1,6 @@
 import pytest
 
-from omlish.http.clients.base import HttpClientRequest
+from omcore.http.clients.base import HttpClientRequest
 
 from ..sync import CoroHttpClient
 

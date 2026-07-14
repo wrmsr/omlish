@@ -1,4 +1,4 @@
-from omlish import lang
+from omcore import lang
 
 from ..callables import ServiceCallable
 from ..requests import Request

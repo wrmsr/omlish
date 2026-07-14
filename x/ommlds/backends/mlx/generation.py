@@ -21,8 +21,8 @@ import io
 import sys
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from .caching import maybe_quantize_kv_cache
 from .limits import wired_limit_context

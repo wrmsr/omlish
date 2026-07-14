@@ -1,7 +1,7 @@
 """
 Miscellaneous functions.
 """
-from omlish import check
+from omcore import check
 
 from ..core import GrammarNodeVisitor
 from ..core import GrammarRule

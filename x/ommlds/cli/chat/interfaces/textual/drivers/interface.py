@@ -6,11 +6,11 @@ import weakref
 
 from omdev import clipboard as cpb
 from omdev.tui import textual as tx
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.asyncs.relays import SchedulingAsyncBufferRelay
-from omlish.logs import all as logs
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.asyncs.relays import SchedulingAsyncBufferRelay
+from omcore.logs import all as logs
 
 from ...... import minichain as mc
 from ..termrender import BackgroundTerminalRenderer

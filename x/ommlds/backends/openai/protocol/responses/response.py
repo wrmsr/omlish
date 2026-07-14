@@ -1,9 +1,9 @@
 """https://platform.openai.com/docs/api-reference/responses/object"""
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
 
 from .._common import _set_class_marshal_options
 

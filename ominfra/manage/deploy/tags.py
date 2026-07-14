@@ -2,9 +2,9 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
-from omlish.lite.marshal import register_single_field_type_obj_marshaler
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
+from omcore.lite.marshal import register_single_field_type_obj_marshaler
 
 
 ##

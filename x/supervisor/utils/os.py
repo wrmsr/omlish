@@ -3,7 +3,7 @@ import errno
 import os
 import typing as ta
 
-from omlish.logs.protocols import LoggerLike
+from omcore.logs.protocols import LoggerLike
 
 from .ostypes import Pid
 from .ostypes import Rc

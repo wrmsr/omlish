@@ -4,13 +4,13 @@ import functools
 import os.path
 import typing as ta
 
-from omlish.asyncs.asyncio.utils import asyncio_wait_maybe_concurrent
-from omlish.lite.cached import async_cached_nullary
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.contextmanagers import AsyncExitStacked
-from omlish.lite.timing import log_timing_context
-from omlish.os.temp import temp_file_context
+from omcore.asyncs.asyncio.utils import asyncio_wait_maybe_concurrent
+from omcore.lite.cached import async_cached_nullary
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.contextmanagers import AsyncExitStacked
+from omcore.lite.timing import log_timing_context
+from omcore.os.temp import temp_file_context
 
 from .compose import DockerComposeRun
 from .compose import get_compose_service_dependencies

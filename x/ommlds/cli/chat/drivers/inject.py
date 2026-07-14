@@ -3,8 +3,8 @@ import os
 import typing as ta
 
 from omdev.home.paths import get_home_paths
-from omlish import inject as inj
-from omlish import lang
+from omcore import inject as inj
+from omcore import lang
 
 from .... import minichain as mc
 from ...backends.injection import backend_configs

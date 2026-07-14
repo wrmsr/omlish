@@ -11,8 +11,8 @@ Conventions:
 - `line_start` / `line_next` mean absolute character offsets into the parser's logical input stream. `line_next` is the
   offset of the first character *after* this line's trailing newline (or end of input).
 """
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from ..events import Alignment
 

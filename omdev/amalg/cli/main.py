@@ -31,8 +31,8 @@ import os.path
 import stat
 import typing as ta
 
-from omlish import check
-from omlish.logs import all as logs
+from omcore import check
+from omcore.logs import all as logs
 
 from ..gen.gen import SCAN_COMMENT
 from ..gen.gen import AmalgGenerator

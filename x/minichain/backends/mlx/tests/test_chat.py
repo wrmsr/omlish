@@ -1,6 +1,6 @@
 import pytest
 
-from omlish import lang
+from omcore import lang
 
 from ....chat.messages import UserMessage
 from ....models.configs import ModelRepo

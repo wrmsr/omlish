@@ -2,7 +2,7 @@
 import errno
 import os
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from .errors import DistutilsFileError
 from .errors import DistutilsInternalError

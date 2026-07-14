@@ -8,7 +8,7 @@ import enum
 import os.path
 import typing as ta
 
-from omlish.os.environ import EnvVar
+from omcore.os.environ import EnvVar
 
 
 ##

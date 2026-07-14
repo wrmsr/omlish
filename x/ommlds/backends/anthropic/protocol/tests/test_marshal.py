@@ -1,6 +1,6 @@
 import json
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ..types import Content
 from ..types import Message

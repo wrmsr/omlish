@@ -1,6 +1,6 @@
 import platform
 
-from omlish import lang
+from omcore import lang
 
 from .commands import PbcopyDarwinClipboard
 from .commands import XclipLinuxClipboard

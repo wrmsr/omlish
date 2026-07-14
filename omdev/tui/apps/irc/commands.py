@@ -1,9 +1,9 @@
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.argparse import all as argparse
+from omcore import check
+from omcore import lang
+from omcore.argparse import all as argparse
 
 
 if ta.TYPE_CHECKING:

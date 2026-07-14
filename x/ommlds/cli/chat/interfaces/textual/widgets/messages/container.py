@@ -4,9 +4,9 @@ import uuid
 
 from omdev import clipboard as cpb
 from omdev.tui import textual as tx
-from omlish import check
-from omlish import lang
-from omlish.asyncs.relays import SchedulingAsyncBufferRelay
+from omcore import check
+from omcore import lang
+from omcore.asyncs.relays import SchedulingAsyncBufferRelay
 
 from .base import Message
 from .stream import ContentStreamMessagePart

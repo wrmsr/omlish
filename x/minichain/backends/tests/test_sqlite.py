@@ -1,6 +1,6 @@
 import sqlite3
 
-from omlish.testing import pytest as ptu
+from omcore.testing import pytest as ptu
 
 from ...vectors.index import VectorIndexed
 from ...vectors.search import VectorSearch

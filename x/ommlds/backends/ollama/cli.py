@@ -1,9 +1,9 @@
 from omdev.cli import CliModule
-from omlish import check
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
-from omlish.http import all as http
-from omlish.logs import all as logs
+from omcore import check
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
+from omcore.http import all as http
+from omcore.logs import all as logs
 
 
 log = logs.get_module_logger(globals())

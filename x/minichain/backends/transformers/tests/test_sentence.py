@@ -1,6 +1,6 @@
 import pytest
 
-from omlish import lang
+from omcore import lang
 
 from ....models.configs import ModelPath
 from ....services import Request

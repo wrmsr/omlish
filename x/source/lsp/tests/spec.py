@@ -8,10 +8,10 @@ import os.path
 import typing as ta
 
 from omdev.cache import data as dcache
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish.formats.json import all as json
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
+from omcore.formats.json import all as json
 
 
 ##

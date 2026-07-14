@@ -1,4 +1,4 @@
-from omlish import dataclasses as _dc  # noqa
+from omcore import dataclasses as _dc  # noqa
 
 
 _dc.init_package(

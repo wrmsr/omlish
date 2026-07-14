@@ -2,7 +2,7 @@
 TODO:
  - '$schema': 'http://json-schema.org/draft-07/schema#'
 """
-from omlish import check
+from omcore import check
 
 from ..content.render.standard import StandardContentRenderer
 from ..content.render.types import ContentStrRenderer

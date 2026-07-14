@@ -1,7 +1,7 @@
 import contextlib
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ...... import minichain as mc
 

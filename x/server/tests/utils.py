@@ -2,7 +2,7 @@ import typing as ta
 
 import pytest
 
-from omlish.diag import pydevd as pdu
+from omcore.diag import pydevd as pdu
 
 from .. import headers
 

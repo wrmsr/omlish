@@ -17,7 +17,7 @@ import hmac
 import typing as ta
 import urllib.parse
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 
 ##

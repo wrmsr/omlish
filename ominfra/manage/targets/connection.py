@@ -4,8 +4,8 @@ import contextlib
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
 
 from ..bootstrap import MainBootstrap
 from ..commands.base import CommandExecutor

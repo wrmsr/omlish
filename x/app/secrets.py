@@ -1,10 +1,10 @@
 import os
 
 from omdev.home.secrets import load_secrets
-from omlish import check
-from omlish import inject as inj
-from omlish.logs import all as logs
-from omlish.secrets import all as sec
+from omcore import check
+from omcore import inject as inj
+from omcore.logs import all as logs
+from omcore.secrets import all as sec
 
 
 log = logs.get_module_logger(globals())

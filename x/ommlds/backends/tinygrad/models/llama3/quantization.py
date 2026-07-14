@@ -1,7 +1,7 @@
 from tinygrad import Tensor
 from tinygrad import dtypes
 
-from omlish import check
+from omcore import check
 
 
 ##

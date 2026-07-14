@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from omlish import orm
+from omcore import orm
 
 from ....chat.messages import UserMessage
 from ....chat.metadata import MessageUuid

@@ -3,7 +3,7 @@ import itertools
 import os.path
 import typing as ta
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from ...cli import CliModule
 from ..tokens import all as tks

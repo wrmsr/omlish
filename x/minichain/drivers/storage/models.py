@@ -6,9 +6,9 @@ import datetime
 import typing as ta
 import uuid
 
-from omlish import dataclasses as dc
-from omlish import orm
-from omlish import sql
+from omcore import dataclasses as dc
+from omcore import orm
+from omcore import sql
 
 from ...chat.messages import Message
 from ...content.marshal import DisableDynamicClassMarshaling

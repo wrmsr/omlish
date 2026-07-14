@@ -1,6 +1,6 @@
-from omlish.__about__ import ProjectBase
-from omlish.__about__ import SetuptoolsBase
-from omlish.__about__ import __version__
+from omcore.__about__ import ProjectBase
+from omcore.__about__ import SetuptoolsBase
+from omcore.__about__ import __version__
 
 
 class Project(ProjectBase):

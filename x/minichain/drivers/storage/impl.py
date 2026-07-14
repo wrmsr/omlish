@@ -1,4 +1,4 @@
-from omlish import orm
+from omcore import orm
 
 from ...chat.messages import Chat
 from ...chat.metadata import MessageUuid

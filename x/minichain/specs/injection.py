@@ -88,8 +88,8 @@ r"""
 import functools
 import typing as ta
 
-from omlish import check
-from omlish import inject as inj
+from omcore import check
+from omcore import inject as inj
 
 from .types import ResolvedBackendSpec
 

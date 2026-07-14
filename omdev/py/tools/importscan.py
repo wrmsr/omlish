@@ -22,9 +22,9 @@ import subprocess
 import sys
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.concurrent import all as conc
+from omcore import check
+from omcore import lang
+from omcore.concurrent import all as conc
 
 from ...cli import CliModule
 

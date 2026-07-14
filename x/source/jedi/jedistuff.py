@@ -13,9 +13,9 @@ import tempfile
 
 import jedi.api.environment
 
-from omlish import check
-from omlish import lang
-from omlish.diag import pydevd
+from omcore import check
+from omcore import lang
+from omcore.diag import pydevd
 
 from ..inspect import find_source
 

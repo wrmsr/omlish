@@ -9,9 +9,9 @@ import os
 import re
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.logs.protocols import LoggerLike
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.logs.protocols import LoggerLike
 
 from ...packaging.versions import InvalidVersion
 from ..inspect import InterpInspector

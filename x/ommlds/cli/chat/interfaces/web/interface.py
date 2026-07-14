@@ -1,4 +1,4 @@
-from omlish.http.pipelines.servers.apps.asgi import IoPipelineAsgiSpec
+from omcore.http.pipelines.servers.apps.asgi import IoPipelineAsgiSpec
 
 from ..... import minichain as mc
 from ..base import ChatInterface

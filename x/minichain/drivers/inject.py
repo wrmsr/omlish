@@ -1,6 +1,6 @@
 import uuid
 
-from omlish import inject as inj
+from omcore import inject as inj
 
 from ..events.inject import bind_events
 from ..registries.globals import get_global_registry

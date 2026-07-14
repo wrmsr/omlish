@@ -1,4 +1,4 @@
-from omlish.http.apps.tests.foo import build_foo_app
+from omcore.http.apps.tests.foo import build_foo_app
 
 
 ##

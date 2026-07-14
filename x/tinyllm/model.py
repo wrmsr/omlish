@@ -3,7 +3,7 @@ import functools
 import itertools
 import pathlib
 
-from omlish import check
+from omcore import check
 
 from tinygrad import Tensor
 from tinygrad import TinyJit

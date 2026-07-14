@@ -1,7 +1,7 @@
 import json
 import uuid
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ...metadata import MessageUuid
 from ..types import AiDeltas

@@ -2,10 +2,10 @@
 import time
 import typing as ta
 
-from omlish.io.fdio.pollers import FdioPoller
-from omlish.lite.check import check
-from omlish.lite.typing import Func2
-from omlish.logs.modules import get_module_logger
+from omcore.io.fdio.pollers import FdioPoller
+from omcore.lite.check import check
+from omcore.lite.typing import Func2
+from omcore.logs.modules import get_module_logger
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig

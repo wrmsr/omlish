@@ -1,11 +1,11 @@
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish import marshal as msh
-from omlish.argparse import all as ap
-from omlish.formats import json5
-from omlish.formats.json import all as json
+from omcore import check
+from omcore import lang
+from omcore import marshal as msh
+from omcore.argparse import all as ap
+from omcore.formats import json5
+from omcore.formats.json import all as json
 
 from ...tools.permissions.managers import ToolPermissionsManager
 from ...tools.permissions.types import ToolPermissionMatcher

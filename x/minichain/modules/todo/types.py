@@ -5,8 +5,8 @@ TODO:
 """
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from ...tools.reflect import tool_param_metadata
 from ...tools.types import ToolParam

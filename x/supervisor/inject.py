@@ -3,13 +3,13 @@ import contextlib
 import dataclasses as dc
 import typing as ta
 
-from omlish.io.fdio.kqueue import KqueueFdioPoller  # noqa
-from omlish.io.fdio.pollers import FdioPoller
-from omlish.io.fdio.pollers import PollFdioPoller  # noqa
-from omlish.io.fdio.pollers import SelectFdioPoller
-from omlish.lite.inject import InjectorBindingOrBindings
-from omlish.lite.inject import InjectorBindings
-from omlish.lite.inject import inj
+from omcore.io.fdio.kqueue import KqueueFdioPoller  # noqa
+from omcore.io.fdio.pollers import FdioPoller
+from omcore.io.fdio.pollers import PollFdioPoller  # noqa
+from omcore.io.fdio.pollers import SelectFdioPoller
+from omcore.lite.inject import InjectorBindingOrBindings
+from omcore.lite.inject import InjectorBindings
+from omcore.lite.inject import inj
 
 from .configs import ServerConfig
 from .dispatchersimpl import ProcessInputDispatcherImpl

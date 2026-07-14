@@ -13,9 +13,9 @@ import shlex
 import sys
 import typing as ta
 
-from omlish import check
-from omlish.configs.formats import DEFAULT_CONFIG_FILE_LOADER
-from omlish.specs import jmespath
+from omcore import check
+from omcore.configs.formats import DEFAULT_CONFIG_FILE_LOADER
+from omcore.specs import jmespath
 
 
 ##

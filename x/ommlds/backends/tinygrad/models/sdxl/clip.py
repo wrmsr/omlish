@@ -12,8 +12,8 @@ from tinygrad.nn import Embedding
 from tinygrad.nn import LayerNorm
 from tinygrad.nn import Linear
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 
 ##

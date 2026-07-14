@@ -1,14 +1,14 @@
 import abc
 import typing as ta
 
-from omlish import cached
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.manifests import globals as manifest_globals
-from omlish.manifests.base import ModAttrManifest
-from omlish.manifests.base import NameAliasesManifest
-from omlish.manifests.static import StaticModAttrManifest
+from omcore import cached
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.manifests import globals as manifest_globals
+from omcore.manifests.base import ModAttrManifest
+from omcore.manifests.base import NameAliasesManifest
+from omcore.manifests.static import StaticModAttrManifest
 
 from . import consts
 

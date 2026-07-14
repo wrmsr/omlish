@@ -2,7 +2,7 @@ import abc
 import subprocess
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from .types import Clipboard
 from .types import ClipboardContents

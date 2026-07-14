@@ -2,7 +2,7 @@ import typing as ta
 
 import anyio.abc
 
-from omlish import inject as inj
+from omcore import inject as inj
 
 from .config import Config
 from .inject import bind_server

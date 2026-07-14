@@ -7,7 +7,7 @@ import io
 import re
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from .config import Config
 from .content import LazyContent

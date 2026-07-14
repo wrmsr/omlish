@@ -9,7 +9,7 @@ into `EmphasisGroup`s. Anything left unpaired at the end falls back to plain tex
 Cf. pulldown-cmark/src/parse.rs::{handle_emphasis_and_hard_break, InlineStack} - same algorithm. The pulldown version
 operates on its block tree in place; we operate on a fresh list.
 """
-from omlish import check
+from omcore import check
 
 from .nodes import DelimNode
 from .nodes import EmphasisGroup

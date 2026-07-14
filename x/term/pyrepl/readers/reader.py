@@ -19,7 +19,7 @@ import dataclasses as dc
 import sys
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ..colorize import can_colorize
 from ..commands import Command

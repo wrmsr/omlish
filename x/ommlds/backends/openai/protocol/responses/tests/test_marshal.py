@@ -3,7 +3,7 @@ import typing as ta
 
 import pytest
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ..events import ResponsesSseEvents
 from ..request import FunctionCallOutputResponsesInputItem

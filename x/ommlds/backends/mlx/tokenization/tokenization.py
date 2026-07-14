@@ -2,7 +2,7 @@ import typing as ta
 
 import transformers as tfm
 
-from omlish import check
+from omcore import check
 
 from .detokenization.base import StreamingDetokenizer
 from .types import Tokenizer

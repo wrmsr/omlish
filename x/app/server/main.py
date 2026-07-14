@@ -1,10 +1,10 @@
 import enum
 import os
 
-from omlish import dataclasses as dc
-from omlish import inject as inj
-from omlish.configs.processing.strings import StringConfigRewriter
-from omlish.http.apps.base import BaseServerUrl
+from omcore import dataclasses as dc
+from omcore import inject as inj
+from omcore.configs.processing.strings import StringConfigRewriter
+from omcore.http.apps.base import BaseServerUrl
 
 from .. import shell
 from ..dbs import bind_dbs

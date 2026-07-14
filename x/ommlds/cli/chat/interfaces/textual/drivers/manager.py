@@ -1,9 +1,9 @@
 import contextlib
 import typing as ta
 
-from omlish import check
-from omlish import inject as inj
-from omlish import lang
+from omcore import check
+from omcore import inject as inj
+from omcore import lang
 
 from ....configs import ChatConfig
 from ._inject import bind_driver_internal

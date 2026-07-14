@@ -1,4 +1,4 @@
-from omlish import lang
+from omcore import lang
 
 from ..descriptors import ModuleDescriptor
 from .configs import SkillsConfig

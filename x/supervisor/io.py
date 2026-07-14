@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007 UP045
 import typing as ta
 
-from omlish.io.fdio.pollers import FdioPoller
-from omlish.logs.modules import get_module_logger
+from omcore.io.fdio.pollers import FdioPoller
+from omcore.logs.modules import get_module_logger
 
 from .dispatchers import Dispatchers
 from .types import ExitNow

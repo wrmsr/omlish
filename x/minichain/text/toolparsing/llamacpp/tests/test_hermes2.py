@@ -1,4 +1,4 @@
-from omlish import lang
+from omcore import lang
 
 from ..hermes2 import Hermes2ProParser
 from ..types import ChatMsg

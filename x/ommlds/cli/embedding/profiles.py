@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import check
-from omlish.argparse import all as ap
+from omcore import check
+from omcore.argparse import all as ap
 
 from ..configs import EntrypointConfig
 from ..profiles import Profile

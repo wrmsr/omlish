@@ -1,8 +1,8 @@
 # ruff: noqa: UP007
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from .._common import _set_class_marshal_options
 from .contentpart import TextChatCompletionContentPart

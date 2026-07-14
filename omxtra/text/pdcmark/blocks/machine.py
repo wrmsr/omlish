@@ -19,8 +19,8 @@ Algorithm sketch for `feed_line`:
   4. Dispatch the remaining line content to leaf-block recognition (ATX heading, hrule, fence,
      HTML block, indented code, paragraph).
 """
-from omlish import check
-from omlish import dataclasses as dc
+from omcore import check
+from omcore import dataclasses as dc
 
 from ..events import BlockQuote
 from ..events import BlockQuoteKind

@@ -4,8 +4,8 @@ import os.path
 import subprocess
 import typing as ta
 
-from omlish.subprocesses.sync import subprocesses
-from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
+from omcore.subprocesses.sync import subprocesses
+from omcore.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 
 ##

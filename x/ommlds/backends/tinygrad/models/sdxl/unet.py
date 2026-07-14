@@ -9,7 +9,7 @@ from tinygrad.nn import GroupNorm
 from tinygrad.nn import LayerNorm
 from tinygrad.nn import Linear
 
-from omlish import check
+from omcore import check
 
 
 ##

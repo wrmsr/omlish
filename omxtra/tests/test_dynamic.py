@@ -2,7 +2,7 @@ import contextlib
 
 import pytest
 
-from omlish.testing import pytest as ptu
+from omcore.testing import pytest as ptu
 
 from .. import dynamic as dyn
 

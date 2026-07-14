@@ -11,7 +11,7 @@ claude-opus-4-6
 claude-opus-4-7
 claude-sonnet-4-6
 """  # noqa
-from omlish import lang
+from omcore import lang
 
 from ...models.names import ModelNameCollection
 from ...specs.manifests import BackendStringsManifest

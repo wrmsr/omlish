@@ -1,8 +1,8 @@
 import typing as ta
 
-from omlish import check
-from omlish.formats.json import all as json
-from omlish.funcs import genmachine
+from omcore import check
+from omcore.formats.json import all as json
+from omcore.funcs import genmachine
 
 from ..types import Content
 from ..types import Message

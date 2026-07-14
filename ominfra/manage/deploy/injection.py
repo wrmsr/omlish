@@ -1,6 +1,6 @@
 # ruff: noqa: UP006 UP007 UP045
-from omlish.lite.inject import InjectorBindings
-from omlish.lite.inject import inj
+from omcore.lite.inject import InjectorBindings
+from omcore.lite.inject import inj
 
 from .paths.owners import DeployPathOwner
 

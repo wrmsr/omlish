@@ -1,10 +1,10 @@
 import os.path
 
 from omdev.cache import data as dcache
-from omlish import marshal as msh
-from omlish.formats.json import all as json
-from omlish.formats.yaml import all as yaml
-from omlish.specs import openapi
+from omcore import marshal as msh
+from omcore.formats.json import all as json
+from omcore.formats.yaml import all as yaml
+from omcore.specs import openapi
 
 
 ##

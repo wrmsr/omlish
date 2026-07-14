@@ -12,8 +12,8 @@ import dataclasses as dc
 import typing as ta
 import xml.etree.ElementTree as ET
 
-from omlish import lang
-from omlish.formats.xml import strip_ns
+from omcore import lang
+from omcore.formats.xml import strip_ns
 
 
 if ta.TYPE_CHECKING:

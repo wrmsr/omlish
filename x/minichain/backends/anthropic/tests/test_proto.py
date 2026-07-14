@@ -1,6 +1,6 @@
 # ruff: noqa: SLF001
 """Offline coverage of the anthropic request/response translation and option handling."""
-from omlish import check
+from omcore import check
 
 from .....backends.anthropic.protocol import types as pt
 from ....chat.choices.services import ChatChoicesRequest

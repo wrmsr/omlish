@@ -5,7 +5,7 @@ import hashlib
 import tarfile
 import typing as ta
 
-from omlish.lite.contextmanagers import ExitStacked
+from omcore.lite.contextmanagers import ExitStacked
 
 from .compression import OciCompression
 from .datarefs import OciDataRef

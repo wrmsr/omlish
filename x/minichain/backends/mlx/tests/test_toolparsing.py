@@ -186,7 +186,7 @@ import typing as ta
 
 import pytest
 
-from omlish.testing import pytest as ptu
+from omcore.testing import pytest as ptu
 
 from ....tools.jsonschema import build_tool_spec_json_schema
 from ....tools.types import PrimitiveToolDtype

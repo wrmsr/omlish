@@ -5,9 +5,9 @@ import typing as ta
 
 import pytest
 
-from omlish import check
-from omlish import marshal as msh
-from omlish.specs import jsonschema as jsch
+from omcore import check
+from omcore import marshal as msh
+from omcore.specs import jsonschema as jsch
 
 from ..errors import UnresolvedRefError
 from ..errors import UnsupportedSchemaError

@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
-from omlish.io.fdio.handlers import FdioHandler
+from omcore.io.fdio.handlers import FdioHandler
 
 from .types import ProcessOutputDispatcher
 from .utils.collections import KeyedCollection

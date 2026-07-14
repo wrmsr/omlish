@@ -7,14 +7,14 @@ import logging
 import os.path
 
 from omdev.home.paths import get_home_paths
-from omlish import cached
-from omlish import check
-from omlish.daemons import spawning
-from omlish.daemons.daemon import Daemon
-from omlish.daemons.services import Service
-from omlish.daemons.services import ServiceDaemon
-from omlish.daemons.services import ServiceTarget
-from omlish.logs import all as logs
+from omcore import cached
+from omcore import check
+from omcore.daemons import spawning
+from omcore.daemons.daemon import Daemon
+from omcore.daemons.services import Service
+from omcore.daemons.services import ServiceDaemon
+from omcore.daemons.services import ServiceTarget
+from omcore.logs import all as logs
 
 from .server import McServer
 

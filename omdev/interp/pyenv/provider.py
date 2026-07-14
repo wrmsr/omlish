@@ -2,8 +2,8 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.logs.protocols import LoggerLike
+from omcore.lite.check import check
+from omcore.logs.protocols import LoggerLike
 
 from ...packaging.versions import InvalidVersion
 from ...packaging.versions import Version

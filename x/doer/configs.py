@@ -3,8 +3,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
 
 
 ##

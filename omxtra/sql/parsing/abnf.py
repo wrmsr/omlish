@@ -1,6 +1,6 @@
 import os.path
 
-from omlish.text import abnf
+from omcore.text import abnf
 
 
 def _main() -> None:

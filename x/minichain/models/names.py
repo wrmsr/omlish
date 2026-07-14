@@ -4,10 +4,10 @@ TODO:
 """
 import typing as ta
 
-from omlish import cached
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.algorithm.toposort import mut_toposort
+from omcore import cached
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.algorithm.toposort import mut_toposort
 
 
 ##

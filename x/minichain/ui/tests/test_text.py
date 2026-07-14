@@ -1,7 +1,7 @@
 # ruff: noqa: B017 PT011
 import pytest
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ..text import ConcatUiText
 from ..text import StrUiText

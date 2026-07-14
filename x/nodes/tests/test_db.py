@@ -1,8 +1,8 @@
 import contextlib
 import sqlite3
 
-from omlish import sql
-from omlish.sql import Q
+from omcore import sql
+from omcore.sql import Q
 
 from ..db import setup_db
 

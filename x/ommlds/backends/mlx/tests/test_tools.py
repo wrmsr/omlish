@@ -3,8 +3,8 @@ import typing as ta
 
 import pytest
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from ..generation import GenerationParams
 from ..generation import generate

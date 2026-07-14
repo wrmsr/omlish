@@ -10,8 +10,8 @@ list in place), but the events emitted at the end are immutable.
 Cf. pulldown-cmark/src/parse.rs::ItemBody - same conceptual role, different shape (pulldown stores inlines in its block
 tree as `Maybe*` placeholders that the inline pass mutates in place; we maintain a separate flat list per block).
 """
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from ..events import LinkType
 

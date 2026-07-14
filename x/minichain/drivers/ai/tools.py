@@ -1,5 +1,5 @@
-from omlish import check
-from omlish import dataclasses as dc
+from omcore import check
+from omcore import dataclasses as dc
 
 from ...chat.messages import Chat
 from ...chat.messages import Message

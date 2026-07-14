@@ -1,5 +1,5 @@
-from omlish import inject as inj
-from omlish.http.apps.inject import bind_route_handler_class
+from omcore import inject as inj
+from omcore.http.apps.inject import bind_route_handler_class
 
 from .auth import AuthHandler
 from .diag import DiagHandler

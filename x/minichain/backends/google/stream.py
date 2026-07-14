@@ -2,11 +2,11 @@
 """https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models"""
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import marshal as msh
-from omlish.formats.json import all as json
-from omlish.http import all as http
-from omlish.http import sse
+from omcore import dataclasses as dc
+from omcore import marshal as msh
+from omcore.formats.json import all as json
+from omcore.http import all as http
+from omcore.http import sse
 
 from ....backends.google.protocol import types as pt
 from ...chat.choices.types import ChatChoices

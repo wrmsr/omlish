@@ -1,7 +1,7 @@
 import typing as ta
 import uuid
 
-from omlish import check
+from omcore import check
 
 from ...metadata import MessageUuid
 from ..types import AiDelta

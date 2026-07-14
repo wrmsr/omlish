@@ -3,11 +3,11 @@ import os.path
 import typing as ta
 
 from omdev.home.secrets import load_secrets
-from omlish import lang
-from omlish import marshal as msh
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
-from omlish.secrets import all as sec
+from omcore import lang
+from omcore import marshal as msh
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
+from omcore.secrets import all as sec
 
 from .cache import load_instance_types
 

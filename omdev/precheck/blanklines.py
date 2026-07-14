@@ -2,7 +2,7 @@ import dataclasses as dc
 import os
 import typing as ta
 
-from omlish.text.filecache import TextFileCache
+from omcore.text.filecache import TextFileCache
 
 from .base import Precheck
 from .base import PrecheckContext

@@ -1,7 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.marshal import ObjMarshalerManager
+from omcore.lite.marshal import ObjMarshalerManager
 
 
 ##

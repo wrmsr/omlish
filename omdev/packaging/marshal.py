@@ -5,9 +5,9 @@ NOTE: This cannot be auto-imported as @om-lite usage of other modules in this pa
 import dataclasses as dc
 import typing as ta
 
-from omlish import lang
-from omlish import marshal as msh
-from omlish import reflect as rfl
+from omcore import lang
+from omcore import marshal as msh
+from omcore import reflect as rfl
 
 from .requires import ParsedRequirement
 from .requires import RequiresMarkerItem

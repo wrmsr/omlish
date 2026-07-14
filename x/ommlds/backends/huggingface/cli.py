@@ -4,11 +4,11 @@ import sys
 import typing as ta
 
 from omdev.cli import CliModule
-from omlish import lang
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
-from omlish.logs import all as logs
-from omlish.term.confirm import confirm_action
+from omcore import lang
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
+from omcore.logs import all as logs
+from omcore.term.confirm import confirm_action
 
 
 with lang.auto_proxy_import(globals()):

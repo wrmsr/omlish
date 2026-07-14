@@ -8,9 +8,9 @@ TODO:
 import os.path
 import shutil
 
-from omlish import check
-from omlish.argparse import all as ap
-from omlish.subprocesses.editor import get_user_text_editor
+from omcore import check
+from omcore.argparse import all as ap
+from omcore.subprocesses.editor import get_user_text_editor
 
 from ..cli.types import CliModule
 from ..home.shadow import get_file_shadow_configs

@@ -1,4 +1,4 @@
-from omlish.sql import tabledefs as td
+from omcore.sql import tabledefs as td
 
 
 ##

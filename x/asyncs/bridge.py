@@ -39,9 +39,9 @@ import types
 import typing as ta
 import weakref
 
-from omlish import check
-from omlish import lang
-from omlish.sync import all as sync
+from omcore import check
+from omcore import lang
+from omcore.sync import all as sync
 
 from ..concurrent import threadlets
 

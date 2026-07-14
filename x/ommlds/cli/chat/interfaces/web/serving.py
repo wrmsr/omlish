@@ -1,8 +1,8 @@
 import typing as ta
 
 from omdev.cache import data as dcache
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 
 ##

@@ -1,8 +1,8 @@
 import os.path
 import tempfile
 
-from omlish.secrets.tests.harness import HarnessSecrets
-from omlish.subprocesses.sync import subprocesses
+from omcore.secrets.tests.harness import HarnessSecrets
+from omcore.subprocesses.sync import subprocesses
 
 from ..git import AiGitMessageGenerator
 from ..git import GitAiBackend

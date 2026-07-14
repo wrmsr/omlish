@@ -9,9 +9,9 @@ import json
 import os
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
 
 
 SystemPackageOrStr = ta.Union['SystemPackage', str]  # ta.TypeAlias

@@ -7,10 +7,10 @@ import sys
 import threading
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish import typedvalues as tv
-from omlish.asyncs.asyncio.relays import AsyncioSyncToAsyncBufferRelay
+from omcore import check
+from omcore import lang
+from omcore import typedvalues as tv
+from omcore.asyncs.asyncio.relays import AsyncioSyncToAsyncBufferRelay
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse

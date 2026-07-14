@@ -407,11 +407,11 @@ import subprocess
 import time
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.logs.modules import get_module_logger
-from omlish.subprocesses.utils import subprocess_close
-from omlish.subprocesses.wrap import subprocess_shell_wrap_exec
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.logs.modules import get_module_logger
+from omcore.subprocesses.utils import subprocess_close
+from omcore.subprocesses.wrap import subprocess_shell_wrap_exec
 
 from ..threadworkers import ThreadWorker
 from .messages import JournalctlMessage  # noqa

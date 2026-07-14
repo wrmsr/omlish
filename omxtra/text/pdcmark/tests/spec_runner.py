@@ -22,7 +22,7 @@ import os.path
 import re
 import typing as ta
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 
 ##

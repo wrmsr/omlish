@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from . import models as mdl
 from .utils import xml as xu

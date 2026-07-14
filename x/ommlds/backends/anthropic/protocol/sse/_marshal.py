@@ -1,4 +1,4 @@
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from .events import AnthropicSseDecoderEvents
 

@@ -2,8 +2,8 @@
 """https://github.com/anomalyco/models.dev/blob/64ea80d416e2fc9d4f205421c92b7a1dfec1f7fb/packages/core/src/schema.ts"""
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import marshal as msh
+from omcore import dataclasses as dc
+from omcore import marshal as msh
 
 
 ##

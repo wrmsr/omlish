@@ -1,8 +1,8 @@
 import pytest
 
-from omlish import lang
-from omlish.http import all as http
-from omlish.secrets.tests.harness import HarnessSecrets
+from omcore import lang
+from omcore.http import all as http
+from omcore.secrets.tests.harness import HarnessSecrets
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesService

@@ -2,8 +2,8 @@ import contextlib
 import os.path
 import typing as ta
 
-from omlish import lang
-from omlish import typedvalues as tv
+from omcore import lang
+from omcore import typedvalues as tv
 
 from ...completion import CompletionOption
 from ...completion import CompletionRequest

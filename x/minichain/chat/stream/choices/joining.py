@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ...messages import AiChat
 from ...stream.joining import AiDeltaJoiner

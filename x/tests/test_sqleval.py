@@ -1,4 +1,4 @@
-from omlish.sql.queries import Q
+from omcore.sql.queries import Q
 
 from .. import sqleval as ev
 

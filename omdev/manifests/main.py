@@ -4,8 +4,8 @@ import dataclasses as dc
 import multiprocessing as mp
 import os.path
 
-from omlish.lite.json import json_dumps_pretty
-from omlish.logs.std.standard import configure_standard_logging
+from omcore.lite.json import json_dumps_pretty
+from omcore.logs.std.standard import configure_standard_logging
 
 from .building import ManifestBuilder
 from .building import check_package_manifests

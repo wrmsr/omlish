@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tempfile
 
-from omlish.argparse import all as ap
+from omcore.argparse import all as ap
 
 from ..cli import CliModule
 

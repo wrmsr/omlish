@@ -2,13 +2,13 @@ import operator
 import types
 import typing as ta
 
-from omlish import cached
-from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish import reflect as rfl
+from omcore import cached
+from omcore import check
+from omcore import collections as col
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
+from omcore import reflect as rfl
 
 from ..content.content import Content
 from ..metadata import MetadataContainerDataclass

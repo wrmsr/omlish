@@ -7,8 +7,8 @@ import typing as ta
 import uuid
 import warnings
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from .names import NamespaceBuilder
 from .params import render_param_spec_call

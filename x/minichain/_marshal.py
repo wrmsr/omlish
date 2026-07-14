@@ -1,9 +1,9 @@
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish import reflect as rfl
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
+from omcore import reflect as rfl
 
 from .json import JsonValue
 

@@ -36,10 +36,10 @@ import tempfile
 import textwrap
 import typing as ta
 
-from omlish import check
-from omlish import marshal as msh
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
+from omcore import check
+from omcore import marshal as msh
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
 
 from .. import intellij as ij
 from .. import magic

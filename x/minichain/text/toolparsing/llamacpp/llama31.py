@@ -2,7 +2,7 @@
 import json
 import re
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from .types import ChatMsg
 from .types import ChatToolCall

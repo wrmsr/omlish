@@ -11,12 +11,12 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 """
 import datetime
 
-from omlish import inject as inj
-from omlish.http import asgi
-from omlish.http import sessions
-from omlish.http.apps.routes import RouteHandlerApp
-from omlish.http.apps.templates import JinjaTemplates
-from omlish.secrets import all as sec
+from omcore import inject as inj
+from omcore.http import asgi
+from omcore.http import sessions
+from omcore.http.apps.routes import RouteHandlerApp
+from omcore.http.apps.templates import JinjaTemplates
+from omcore.secrets import all as sec
 
 from ..users import InMemoryUserStore
 from ..users import UserStore

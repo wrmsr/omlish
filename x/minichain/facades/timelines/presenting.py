@@ -10,7 +10,7 @@ item values - synchronous, effect-free, and never seen by the model (UiText is f
 import abc
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ...ui.text import UiText
 from .items import TimelineItem

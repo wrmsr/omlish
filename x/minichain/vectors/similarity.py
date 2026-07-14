@@ -1,8 +1,8 @@
 import enum
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 
 if ta.TYPE_CHECKING:

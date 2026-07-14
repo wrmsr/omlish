@@ -26,11 +26,11 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
-from omlish import check
-from omlish import marshal as msh
-from omlish.formats.json import all as json
-from omlish.http import all as hu
-from omlish.secrets.secrets import Secret
+from omcore import check
+from omcore import marshal as msh
+from omcore.formats.json import all as json
+from omcore.http import all as hu
+from omcore.secrets.secrets import Secret
 
 from .cli import CliModule
 from .home.secrets import load_secrets
@@ -110,7 +110,7 @@ def upload_image(
 
 
 def _main() -> None:
-    from omlish.argparse import all as ap
+    from omcore.argparse import all as ap
 
     class Cli(ap.Cli):
         @ap.cmd(

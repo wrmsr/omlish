@@ -2,9 +2,9 @@ import json
 import time
 import typing as ta
 
-from omlish import check
-from omlish.http import all as http
-from omlish.http import jwt
+from omcore import check
+from omcore.http import all as http
+from omcore.http import jwt
 
 
 ##

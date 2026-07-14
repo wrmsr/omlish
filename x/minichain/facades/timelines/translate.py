@@ -10,7 +10,7 @@ call id), anchored at the use's position - they do not become separate items, ju
 import typing as ta
 import uuid
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat

@@ -9,7 +9,7 @@ from rich.measure import Measurement
 from rich.style import Style
 from rich.text import Text
 
-from omlish import check
+from omcore import check
 
 
 ##

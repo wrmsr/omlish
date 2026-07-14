@@ -3,10 +3,10 @@
 import itertools
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.sockets.addresses import SocketAndAddress
-from omlish.sockets.handlers.types import SocketHandler_
-from omlish.sockets.io import SocketIoPair
+from omcore.lite.check import check
+from omcore.sockets.addresses import SocketAndAddress
+from omcore.sockets.handlers.types import SocketHandler_
+from omcore.sockets.io import SocketIoPair
 
 from .._pushback import PushbackReader
 from ..io import CoroHttpIo

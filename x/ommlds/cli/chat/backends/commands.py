@@ -1,5 +1,5 @@
-from omlish import check
-from omlish.argparse import all as ap
+from omcore import check
+from omcore.argparse import all as ap
 
 from .... import minichain as mc
 from ..backends.manager import BackendManager

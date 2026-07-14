@@ -28,8 +28,8 @@ import dataclasses as dc
 import re
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.dataclasses import install_dataclass_cache_hash
+from omcore.lite.check import check
+from omcore.lite.dataclasses import install_dataclass_cache_hash
 
 from .specifiers import Specifier
 

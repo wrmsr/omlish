@@ -9,7 +9,7 @@ import dataclasses as dc
 import socket
 import typing as ta
 
-from omlish.lite.abstract import Abstract
+from omcore.lite.abstract import Abstract
 
 from .core import BlueletCoro
 from .core import ReturnBlueletEvent

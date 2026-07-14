@@ -1,7 +1,7 @@
 import typing as ta
 import weakref
 
-from omlish import lang
+from omcore import lang
 
 
 K = ta.TypeVar('K')

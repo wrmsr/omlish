@@ -3,7 +3,7 @@ TODO:
  - Lists?
  - Tags
 """
-from omlish.text import docwrap as dw
+from omcore.text import docwrap as dw
 
 from ..content import Content
 

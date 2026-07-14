@@ -9,7 +9,7 @@ import time
 import typing as ta
 import urllib.request
 
-from omlish.logs.modules import get_module_logger
+from omcore.logs.modules import get_module_logger
 
 from ....journald.messages import JournalctlMessage  # noqa
 from ....threadworkers import ThreadWorker

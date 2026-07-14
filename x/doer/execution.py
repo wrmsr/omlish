@@ -18,17 +18,17 @@ import sys
 import textwrap
 import typing as ta
 
-from omlish.funcs.builders import FnBuilder
-from omlish.funcs.builders import SimpleFnBuilder
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.json import json_dumps_compact
-from omlish.lite.json import json_dumps_pretty
-from omlish.lite.marshal import marshal_obj
-from omlish.lite.marshal import unmarshal_obj
-from omlish.text.minja import MinjaTemplate
-from omlish.text.minja import MinjaTemplateParam
-from omlish.text.minja import compile_minja_template
+from omcore.funcs.builders import FnBuilder
+from omcore.funcs.builders import SimpleFnBuilder
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.json import json_dumps_compact
+from omcore.lite.json import json_dumps_pretty
+from omcore.lite.marshal import marshal_obj
+from omcore.lite.marshal import unmarshal_obj
+from omcore.text.minja import MinjaTemplate
+from omcore.text.minja import MinjaTemplateParam
+from omcore.text.minja import compile_minja_template
 
 from .configs import DoerConfig
 from .configs import DoerDefConfig

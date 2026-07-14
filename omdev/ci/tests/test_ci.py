@@ -2,7 +2,7 @@
 import shutil
 import unittest
 
-from omlish.lite.tests.pytest import pytest_mark
+from omcore.lite.tests.pytest import pytest_mark
 
 from .harness import CiHarness
 

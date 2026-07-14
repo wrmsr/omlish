@@ -1,7 +1,7 @@
 import enum
 
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from ..vectors.types import Vector
 

@@ -8,7 +8,7 @@ import dataclasses as dc
 import itertools
 import typing as ta
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 
 CacheKeyPart = ta.Union[str, 'CacheKey']  # ta.TypeAlias

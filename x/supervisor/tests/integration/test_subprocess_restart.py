@@ -3,7 +3,7 @@
 import sys
 import time
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 from ...states import ProcessState
 from .subprocess_base import SupervisorSubprocessTestBase

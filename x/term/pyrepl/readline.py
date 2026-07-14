@@ -26,7 +26,7 @@ import sys
 import typing as ta
 import warnings
 
-from omlish import check
+from omcore import check
 
 from .commands import Command
 from .console import CONSOLE_ERROR_TYPES

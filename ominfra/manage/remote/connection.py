@@ -3,10 +3,10 @@ import asyncio
 import contextlib
 import typing as ta
 
-from omlish.asyncs.asyncio.channels import asyncio_create_bytes_channel
-from omlish.lite.cached import cached_nullary
-from omlish.lite.contextmanagers import aclosing
-from omlish.lite.marshal import ObjMarshalerManager
+from omcore.asyncs.asyncio.channels import asyncio_create_bytes_channel
+from omcore.lite.cached import cached_nullary
+from omcore.lite.contextmanagers import aclosing
+from omcore.lite.marshal import ObjMarshalerManager
 
 from ...pyremote import PyremoteBootstrapDriver
 from ...pyremote import PyremoteBootstrapOptions

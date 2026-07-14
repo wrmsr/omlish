@@ -1,5 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 
 ##

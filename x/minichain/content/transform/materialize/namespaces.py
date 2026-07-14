@@ -1,4 +1,4 @@
-from omlish import check
+from omcore import check
 
 from ...content import Content
 from ...namespaces import ContentNamespace

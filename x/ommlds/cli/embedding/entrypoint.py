@@ -1,4 +1,4 @@
-from omlish.formats.json import all as json
+from omcore.formats.json import all as json
 
 from ... import minichain as mc
 from ..types import Entrypoint

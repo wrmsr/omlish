@@ -8,7 +8,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
+from omcore.lite.abstract import Abstract
 
 
 R = ta.TypeVar('R')

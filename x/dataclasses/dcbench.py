@@ -1,6 +1,6 @@
 """
 import dataclasses as dc0
-from omlish import dataclasses as dc1
+from omcore import dataclasses as dc1
 from x import dataclasses as dc2
 
 dc = dc0

@@ -2,11 +2,11 @@ import itertools
 import operator
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import dispatch
-from omlish.sql import qn
-from omlish.sql import queries as no
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import dispatch
+from omcore.sql import qn
+from omcore.sql import queries as no
 
 
 StrMap: ta.TypeAlias = ta.Mapping[str, ta.Any]

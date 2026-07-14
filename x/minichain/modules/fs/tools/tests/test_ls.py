@@ -2,7 +2,7 @@ import os.path
 
 import pytest
 
-from omlish import contextual as cxl
+from omcore import contextual as cxl
 
 from .....fs.types import FsRoot
 from .....tools.execution.permissions import StaticToolPermissionDecider

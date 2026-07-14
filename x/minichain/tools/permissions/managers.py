@@ -1,7 +1,7 @@
 import abc
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from .collection import ToolPermissionRules
 from .types import ToolPermissionRule

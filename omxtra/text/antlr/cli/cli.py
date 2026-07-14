@@ -3,8 +3,8 @@ import re
 import subprocess
 import sys
 
-from omlish.argparse import all as ap
-from omlish.logs import all as logs
+from omcore.argparse import all as ap
+from omcore.logs import all as logs
 
 from .consts import ANTLR_RUNTIME_PACKAGE
 from .gen import GenPy

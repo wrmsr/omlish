@@ -11,11 +11,11 @@ import urllib.request
 from omdev.git.magic import GIT_DIFF_OMIT_MAGIC_COMMENT
 from omdev.py.srcheaders import get_py_header_lines
 from omdev.tools.git.messages import GitMessageGenerator
-from omlish import check
-from omlish import lang
-from omlish.configs.classes import Configurable
-from omlish.http import all as http
-from omlish.subprocesses.sync import subprocesses
+from omcore import check
+from omcore import lang
+from omcore.configs.classes import Configurable
+from omcore.http import all as http
+from omcore.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
 from ..cli.secrets import install_env_secrets

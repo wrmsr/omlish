@@ -1,12 +1,12 @@
 import asyncio
 
-from omlish.http.pipelines.servers.apps.asgi import AsgiIoPipelineHandler
-from omlish.http.pipelines.servers.apps.asgi import IoPipelineAsgiSpec
-from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
-from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
-from omlish.http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
-from omlish.io.pipelines.core import IoPipeline
-from omlish.io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
+from omcore.http.pipelines.servers.apps.asgi import AsgiIoPipelineHandler
+from omcore.http.pipelines.servers.apps.asgi import IoPipelineAsgiSpec
+from omcore.http.pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
+from omcore.http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
+from omcore.http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
+from omcore.io.pipelines.core import IoPipeline
+from omcore.io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 
 
 ##

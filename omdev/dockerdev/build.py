@@ -4,7 +4,7 @@ import re
 import subprocess
 import tempfile
 
-from omlish import check
+from omcore import check
 
 from .config import Config
 from .gen import gen_src

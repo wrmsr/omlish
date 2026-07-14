@@ -3,8 +3,8 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
 
 from ....dataserver.routes import DataServerRoute
 from ....dataserver.targets import BytesDataServerTarget

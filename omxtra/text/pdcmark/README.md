@@ -112,7 +112,7 @@ whether to wrap items' content in `<p>`.
 
 ```python
 import pdcmark
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 opts = dc.replace(
     pdcmark.COMMONMARK,

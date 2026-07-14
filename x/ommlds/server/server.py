@@ -8,19 +8,19 @@ import time
 import typing as ta
 
 from omdev.home.secrets import load_secrets
-from omlish import cached
-from omlish import check
-from omlish import lang
-from omlish.http.simple.handlers import ExceptionLoggingSimpleHttpHandler
-from omlish.http.simple.handlers import LoggingSimpleHttpHandler
-from omlish.http.simple.pipelines.sync import make_simple_http_server
-from omlish.http.simple.types import SimpleHttpHandler_
-from omlish.http.simple.types import SimpleHttpHandlerRequest
-from omlish.http.simple.types import SimpleHttpHandlerResponse
-from omlish.logs import all as logs
-from omlish.sockets.bind import CanSocketBinderConfig
-from omlish.sockets.bind import SocketBinder
-from omlish.sockets.handlers.server import SocketHandlerServer
+from omcore import cached
+from omcore import check
+from omcore import lang
+from omcore.http.simple.handlers import ExceptionLoggingSimpleHttpHandler
+from omcore.http.simple.handlers import LoggingSimpleHttpHandler
+from omcore.http.simple.pipelines.sync import make_simple_http_server
+from omcore.http.simple.types import SimpleHttpHandler_
+from omcore.http.simple.types import SimpleHttpHandlerRequest
+from omcore.http.simple.types import SimpleHttpHandlerResponse
+from omcore.logs import all as logs
+from omcore.sockets.bind import CanSocketBinderConfig
+from omcore.sockets.bind import SocketBinder
+from omcore.sockets.handlers.server import SocketHandlerServer
 
 from .. import minichain as mc
 from ..minichain.backends.openai.chat import OpenaiChatChoicesService

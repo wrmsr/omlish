@@ -1,11 +1,11 @@
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.algorithm.prefixes import MinUniquePrefixNode
-from omlish.algorithm.prefixes import build_min_unique_prefix_tree
+from omcore import check
+from omcore import collections as col
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.algorithm.prefixes import MinUniquePrefixNode
+from omcore.algorithm.prefixes import build_min_unique_prefix_tree
 
 from ... import _fieldhash as fh
 from .types import ToolPermissionRule

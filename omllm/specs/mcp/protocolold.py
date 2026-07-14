@@ -14,10 +14,10 @@ TODO:
 import abc
 import typing as ta
 
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
+from omcore import collections as col
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
 
 
 ClientRequestT = ta.TypeVar('ClientRequestT', bound='ClientRequest')

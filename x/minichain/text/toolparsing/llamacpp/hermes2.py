@@ -1,7 +1,7 @@
 # @om-llm-author gemini-2.5-pro
 import re
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from .types import ChatMsg
 from .utils import handle_think_tag_prelude

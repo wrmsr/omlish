@@ -55,8 +55,8 @@ from tinygrad.helpers import trange
 from tinygrad.nn import Conv2d
 from tinygrad.nn import GroupNorm
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from .clip import Embedder
 from .clip import FrozenClosedClipEmbedder

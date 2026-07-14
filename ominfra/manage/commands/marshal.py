@@ -1,5 +1,5 @@
-from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.marshal import PolymorphicObjMarshaler
+from omcore.lite.marshal import ObjMarshalerManager
+from omcore.lite.marshal import PolymorphicObjMarshaler
 
 from .base import Command
 from .base import CommandNameMap

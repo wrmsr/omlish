@@ -1,4 +1,4 @@
-from omlish import lang
+from omcore import lang
 
 from ...search import SearchHit
 from ...search import SearchHits

@@ -22,8 +22,8 @@ import heapq
 import itertools
 import typing as ta
 
-from omlish import cached
-from omlish import lang
+from omcore import cached
+from omcore import lang
 
 
 with lang.auto_proxy_import(globals()):

@@ -7,7 +7,7 @@ Note: This is all just a hacky workaround for python's lack of intersection type
 """
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from .interfaces import IterableKv
 from .interfaces import Kv

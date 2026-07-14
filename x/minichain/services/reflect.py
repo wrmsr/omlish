@@ -9,9 +9,9 @@ TODO:
 import typing as ta
 import weakref
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import reflect as rfl
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import reflect as rfl
 
 from ..resources import ResourceManaged
 from .requests import Request

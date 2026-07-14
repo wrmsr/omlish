@@ -2,8 +2,8 @@
 import typing as ta
 import unittest
 
-from omlish.lite.tests.utils import sync_async_list
-from omlish.lite.tests.utils import sync_await
+from omcore.lite.tests.utils import sync_async_list
+from omcore.lite.tests.utils import sync_await
 
 from ..maysync import make_maysync
 from ..maysync import run_maysync

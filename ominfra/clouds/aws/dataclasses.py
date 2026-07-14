@@ -4,11 +4,11 @@ import collections.abc
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.reflect import get_optional_alias_arg
-from omlish.lite.reflect import is_generic_alias
-from omlish.lite.reflect import is_optional_alias
-from omlish.lite.strings import camel_case
+from omcore.lite.cached import cached_nullary
+from omcore.lite.reflect import get_optional_alias_arg
+from omcore.lite.reflect import is_generic_alias
+from omcore.lite.reflect import is_optional_alias
+from omcore.lite.strings import camel_case
 
 
 ##

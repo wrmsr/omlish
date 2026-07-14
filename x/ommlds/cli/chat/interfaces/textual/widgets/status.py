@@ -1,5 +1,5 @@
 from omdev.tui import textual as tx
-from omlish.term.spinners import SPINNERS
+from omcore.term.spinners import SPINNERS
 
 from ..drivers.types import ChatDriverInterfaceState
 

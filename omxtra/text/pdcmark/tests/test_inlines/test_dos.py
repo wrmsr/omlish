@@ -5,7 +5,7 @@ same large refdef can balloon output size quadratically.
 """
 import time
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .... import pdcmark as m
 from ...options import COMMONMARK

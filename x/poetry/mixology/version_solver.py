@@ -7,7 +7,7 @@ import typing as ta
 from poetry.core.packages.dependency import Dependency
 from poetry.packages import PackageCollection
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 from .failure import SolveFailureError
 from .incompatibility import Incompatibility

@@ -4,7 +4,7 @@ from textual.binding import Binding
 from textual.binding import BindingsMap
 from textual.dom import DOMNode
 
-from omlish import check
+from omcore import check
 
 
 ##

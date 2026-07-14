@@ -1,6 +1,6 @@
 import pytest
 
-from omlish import check
+from omcore import check
 
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.messages import AiMessage

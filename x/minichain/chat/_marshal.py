@@ -4,7 +4,7 @@ TODO:
 """
 import typing as ta
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from .formats import ResponseFormat  # noqa
 from .messages import AnyAiMessage

@@ -20,12 +20,12 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from omlish import check
-from omlish import lang
-from omlish import marshal as msh
-from omlish.formats.json import all as json
-from omlish.logs import all as logs
-from omlish.os.files import touch
+from omcore import check
+from omcore import lang
+from omcore import marshal as msh
+from omcore.formats.json import all as json
+from omcore.logs import all as logs
+from omcore.os.files import touch
 
 from ...git.shallow import git_shallow_clone
 from .actions import Action

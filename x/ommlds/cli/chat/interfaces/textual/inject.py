@@ -7,8 +7,8 @@ import contextlib
 import functools
 import typing as ta
 
-from omlish import inject as inj
-from omlish import lang
+from omcore import inject as inj
+from omcore import lang
 
 from ...configs import ChatConfig
 from ..base import ChatInterface

@@ -1,4 +1,4 @@
-from omlish import lang
+from omcore import lang
 
 from ..funcs import create_detour
 

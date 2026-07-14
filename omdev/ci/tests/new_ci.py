@@ -2,8 +2,8 @@
 import asyncio
 import dataclasses as dc
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.logs.std.standard import configure_standard_logging
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.logs.std.standard import configure_standard_logging
 
 from ..cache import FileCacheDataCache
 from ..ci import Ci

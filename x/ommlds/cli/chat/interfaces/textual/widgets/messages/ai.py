@@ -3,7 +3,7 @@ import abc
 import typing as ta
 
 from omdev.tui import textual as tx
-from omlish import lang
+from omcore import lang
 
 from .base import Message
 from .base import StaticMessage

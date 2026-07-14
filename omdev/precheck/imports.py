@@ -3,7 +3,7 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
-from omlish.text.filecache import TextFileCache
+from omcore.text.filecache import TextFileCache
 
 from .base import Precheck
 from .base import PrecheckContext

@@ -1,6 +1,6 @@
 import uuid
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ...metadata import RequestUuid
 from .chat import ChatRequest

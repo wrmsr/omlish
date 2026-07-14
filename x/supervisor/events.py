@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
 import typing as ta
 
-from omlish.lite.abstract import Abstract
+from omcore.lite.abstract import Abstract
 
 from .states import ProcessState
 

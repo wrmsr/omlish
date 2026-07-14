@@ -18,7 +18,7 @@ See pulldown-cmark/src/scanners.rs::{scan_inline_html_*, scan_html_type_7}.
 """
 import re
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 
 ##

@@ -7,9 +7,9 @@ import subprocess
 import textwrap
 import typing as ta
 
-from omlish import cached
-from omlish.logs import all as logs
-from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
+from omcore import cached
+from omcore.logs import all as logs
+from omcore.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 
 from .. import magic
 from .base import Precheck

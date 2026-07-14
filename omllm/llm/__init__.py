@@ -1,6 +1,6 @@
 # fmt: off
 # ruff: noqa: I001
-from omlish import dataclasses as _dc  # noqa
+from omcore import dataclasses as _dc  # noqa
 
 
 _dc.init_package(
@@ -12,7 +12,7 @@ _dc.init_package(
 ##
 
 
-from omlish import lang as _lang  # noqa
+from omcore import lang as _lang  # noqa
 
 
 with _lang.auto_proxy_init(

@@ -5,14 +5,14 @@ import socket
 import typing as ta
 import urllib.parse
 
-from omlish.http.clients.base import HttpClientContext
-from omlish.http.clients.base import HttpClientError
-from omlish.http.clients.base import HttpClientRequest
-from omlish.http.clients.sync import HttpClient
-from omlish.http.clients.sync import StreamHttpClientResponse
-from omlish.http.headers import HttpHeaders
-from omlish.http.urls import unparse_url_request_path
-from omlish.lite.check import check
+from omcore.http.clients.base import HttpClientContext
+from omcore.http.clients.base import HttpClientError
+from omcore.http.clients.base import HttpClientRequest
+from omcore.http.clients.sync import HttpClient
+from omcore.http.clients.sync import StreamHttpClientResponse
+from omcore.http.headers import HttpHeaders
+from omcore.http.urls import unparse_url_request_path
+from omcore.lite.check import check
 
 from ...coro._buffers import ReadableListBuffer
 from ...coro.client.connection import CoroHttpClientConnection

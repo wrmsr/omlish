@@ -1,4 +1,4 @@
-from omlish import inject as inj
+from omcore import inject as inj
 
 from .injection import event_callbacks
 from .manager import EventsManager

@@ -1,10 +1,10 @@
 # ruff: noqa: N802 N803
 import typing as ta
 
-from omlish.formats.json5.errors import Json5Error
-from omlish.formats.json5.literals import LITERAL_VALUES
-from omlish.formats.json5.literals import parse_number_literal
-from omlish.formats.json5.literals import parse_string_literal
+from omcore.formats.json5.errors import Json5Error
+from omcore.formats.json5.literals import LITERAL_VALUES
+from omcore.formats.json5.literals import parse_number_literal
+from omcore.formats.json5.literals import parse_string_literal
 
 from ...text import antlr
 from ._antlr.Json5Lexer import Json5Lexer  # type: ignore

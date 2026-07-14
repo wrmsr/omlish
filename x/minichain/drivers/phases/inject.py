@@ -1,4 +1,4 @@
-from omlish import inject as inj
+from omcore import inject as inj
 
 from .injection import phase_callbacks
 from .manager import PhaseManager

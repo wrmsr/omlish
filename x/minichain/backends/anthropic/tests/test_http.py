@@ -1,10 +1,10 @@
 """https://docs.anthropic.com/en/api/getting-started"""
 import pytest
 
-from omlish import lang
-from omlish.formats.json import all as json
-from omlish.http import all as http
-from omlish.secrets.tests.harness import HarnessSecrets
+from omcore import lang
+from omcore.formats.json import all as json
+from omcore.http import all as http
+from omcore.secrets.tests.harness import HarnessSecrets
 
 from ....chat.messages import UserMessage
 from ....models.configs import ModelName

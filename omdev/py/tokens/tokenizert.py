@@ -22,7 +22,7 @@ import re
 import tokenize
 import typing as ta
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 
 ##

@@ -5,9 +5,9 @@ import shlex
 import stat
 import typing as ta
 
-from omlish.io.fdio.handlers import FdioHandler
-from omlish.lite.check import check
-from omlish.lite.typing import Func3
+from omcore.io.fdio.handlers import FdioHandler
+from omcore.lite.check import check
+from omcore.lite.typing import Func3
 
 from .configs import ProcessConfig
 from .configs import ServerConfig

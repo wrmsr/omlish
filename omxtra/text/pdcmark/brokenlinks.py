@@ -11,8 +11,8 @@ because Python has no per-callback monomorphization concerns; we use a small pro
 """
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from .events import LinkType
 

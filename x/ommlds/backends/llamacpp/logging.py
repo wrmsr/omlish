@@ -10,7 +10,7 @@ import ctypes as ct
 import llama_cpp
 from llama_cpp import _logger as lcl  # noqa
 
-from omlish import lang
+from omcore import lang
 
 
 ##

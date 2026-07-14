@@ -1,7 +1,7 @@
 import pytest
 
-from omlish import lang
-from omlish.testing import pytest as ptu
+from omcore import lang
+from omcore.testing import pytest as ptu
 
 from ....registries.globals import registry_new
 from ....search import SearchService

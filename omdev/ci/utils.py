@@ -2,7 +2,7 @@
 import hashlib
 import typing as ta
 
-from omlish.formats.yaml.goyaml.decoding import yaml_decode
+from omcore.formats.yaml.goyaml.decoding import yaml_decode
 
 
 ##

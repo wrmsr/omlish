@@ -6,8 +6,8 @@ import re
 import shlex
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
+from omcore import check
+from omcore import dataclasses as dc
 
 from .content import Content
 from .content import LazyContent

@@ -16,7 +16,7 @@ from textual.widgets import Static
 from textual.widgets import TabbedContent
 from textual.widgets.option_list import Option
 
-from omlish import lang
+from omcore import lang
 
 
 ##

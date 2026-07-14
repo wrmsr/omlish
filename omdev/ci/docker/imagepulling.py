@@ -3,9 +3,9 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.timing import log_timing_context
-from omlish.text.mangle import StringMangler
+from omcore.lite.abstract import Abstract
+from omcore.lite.timing import log_timing_context
+from omcore.text.mangle import StringMangler
 
 from ..cache import FileCache
 from .cache import DockerCache

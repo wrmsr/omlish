@@ -4,7 +4,7 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
-from omlish.subprocesses.sync import subprocesses
+from omcore.subprocesses.sync import subprocesses
 
 
 ##

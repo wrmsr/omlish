@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
 import typing as ta
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 from ...dataserver.routes import DataServerRoute
 from ...dataserver.targets import DataServerTarget

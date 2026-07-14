@@ -1,12 +1,12 @@
 import urllib.request
 
-from omlish import check
-from omlish.daemons.spawning import ForkSpawning  # noqa
-from omlish.daemons.spawning import MultiprocessingSpawning  # noqa
-from omlish.daemons.spawning import ThreadSpawning  # noqa
-from omlish.sockets.bind import TcpSocketBinder
-from omlish.sockets.wait import socket_can_connect
-from omlish.sockets.wait import socket_wait_until_can_connect
+from omcore import check
+from omcore.daemons.spawning import ForkSpawning  # noqa
+from omcore.daemons.spawning import MultiprocessingSpawning  # noqa
+from omcore.daemons.spawning import ThreadSpawning  # noqa
+from omcore.sockets.bind import TcpSocketBinder
+from omcore.sockets.wait import socket_can_connect
+from omcore.sockets.wait import socket_wait_until_can_connect
 
 from .service import mc_server_service_daemon
 

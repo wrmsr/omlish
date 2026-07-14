@@ -1,7 +1,7 @@
 import shlex
 
-from omlish.argparse import all as ap
-from omlish.subprocesses.sync import subprocesses
+from omcore.argparse import all as ap
+from omcore.subprocesses.sync import subprocesses
 
 from ..cli import CliModule
 

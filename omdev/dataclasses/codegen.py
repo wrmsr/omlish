@@ -18,13 +18,13 @@ import tempfile
 import time
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish.asyncs.asyncio import all as au
-from omlish.lite.marshal import unmarshal_obj
-from omlish.logs import all as logs
+from omcore import check
+from omcore import collections as col
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore.asyncs.asyncio import all as au
+from omcore.lite.marshal import unmarshal_obj
+from omcore.logs import all as logs
 
 from ..py.asts.toplevel import TopLevelCall
 from ..py.asts.toplevel import analyze_module_top_level

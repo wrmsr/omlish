@@ -8,12 +8,12 @@ import typing as ta
 
 import anyio.abc
 
-from omlish import inject as inj
-from omlish import lang
-from omlish.asyncs import anyio as anu
-from omlish.formats import dotenv
-from omlish.http import asgi
-from omlish.logs import all as logs
+from omcore import inject as inj
+from omcore import lang
+from omcore.asyncs import anyio as anu
+from omcore.formats import dotenv
+from omcore.http import asgi
+from omcore.logs import all as logs
 
 from .. import server
 

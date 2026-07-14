@@ -1,4 +1,4 @@
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ..cache import Cache
 from ..currents import setting_current_cache

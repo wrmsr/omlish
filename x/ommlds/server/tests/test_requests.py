@@ -1,5 +1,5 @@
-from omlish import marshal as msh
-from omlish.formats.json import all as json
+from omcore import marshal as msh
+from omcore.formats.json import all as json
 
 from ... import minichain as mc
 

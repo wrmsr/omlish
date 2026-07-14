@@ -4,14 +4,14 @@ import os.path  # noqa
 import pprint
 import typing as ta  # noqa
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.logs.modules import get_module_logger
-from omlish.lite.runtime import check_lite_runtime_version
-from omlish.logs.std.standard import configure_standard_logging
-from omlish.os.sizes import PAGE_SIZE
-from omlish.os.temp import make_temp_file  # noqa
-from omlish.subprocesses.sync import subprocesses
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.logs.modules import get_module_logger
+from omcore.lite.runtime import check_lite_runtime_version
+from omcore.logs.std.standard import configure_standard_logging
+from omcore.os.sizes import PAGE_SIZE
+from omcore.os.temp import make_temp_file  # noqa
+from omcore.subprocesses.sync import subprocesses
 
 from .incl.foo import foo
 

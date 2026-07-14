@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import check
-from omlish import reflect as rfl
+from omcore import check
+from omcore import reflect as rfl
 
 
 ##

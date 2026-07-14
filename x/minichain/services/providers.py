@@ -1,9 +1,9 @@
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish import reflect as rfl
+from omcore import check
+from omcore import lang
+from omcore import reflect as rfl
 
 from ..resources import UseResources
 from ..types import Option

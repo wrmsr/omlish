@@ -3,7 +3,7 @@
 # Hi!
 import os.path
 
-from omlish.lite.resources import read_package_resource_binary
+from omcore.lite.resources import read_package_resource_binary
 
 
 FAVICON_ICO = read_package_resource_binary(__package__, 'favicon.ico')

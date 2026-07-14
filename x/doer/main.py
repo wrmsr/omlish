@@ -11,12 +11,12 @@ import argparse
 import os.path
 import typing as ta
 
-from omlish.formats.toml.parser import toml_loads
-from omlish.funcs.builders import DebugFnBuilder  # noqa
-from omlish.funcs.builders import FnBuilder
-from omlish.funcs.builders import SimpleFnBuilder  # noqa
-from omlish.lite.inject import inj
-from omlish.lite.marshal import unmarshal_obj
+from omcore.formats.toml.parser import toml_loads
+from omcore.funcs.builders import DebugFnBuilder  # noqa
+from omcore.funcs.builders import FnBuilder
+from omcore.funcs.builders import SimpleFnBuilder  # noqa
+from omcore.lite.inject import inj
+from omcore.lite.marshal import unmarshal_obj
 
 from ._marshal import _install_doer_marshaling
 from .configs import DoerConfig

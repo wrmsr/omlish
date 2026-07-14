@@ -1,4 +1,4 @@
-from omlish.http.simple.pipelines.sync import make_simple_http_server
+from omcore.http.simple.pipelines.sync import make_simple_http_server
 
 from ..handlers import DataServerRequest
 from ..http import DataServerSimpleHttpHandler

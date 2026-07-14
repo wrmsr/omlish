@@ -1,7 +1,7 @@
 import itertools
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ..types import Tokenizer
 from .base import BaseStreamingDetokenizer

@@ -1,10 +1,10 @@
 import contextlib
 import typing as ta
 
-from omlish import lang
-from omlish import resources as _resources
-from omlish import typedvalues as tv
-from omlish.logs import all as logs
+from omcore import lang
+from omcore import resources as _resources
+from omcore import typedvalues as tv
+from omcore.logs import all as logs
 
 from .types import Option
 

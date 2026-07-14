@@ -1,4 +1,4 @@
-from omlish import sql
+from omcore import sql
 
 from .models import NODES
 

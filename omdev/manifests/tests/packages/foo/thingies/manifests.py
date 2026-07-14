@@ -1,7 +1,7 @@
 import dataclasses as dc
 
-from omlish.manifests.base import ModAttrManifest
-from omlish.manifests.base import NameAliasesManifest
+from omcore.manifests.base import ModAttrManifest
+from omcore.manifests.base import NameAliasesManifest
 
 
 ##

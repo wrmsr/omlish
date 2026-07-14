@@ -12,10 +12,10 @@ import shutil
 import sys
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.check import check
-from omlish.os.paths import abs_real_path
-from omlish.os.paths import is_path_in_dir
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.check import check
+from omcore.os.paths import abs_real_path
+from omcore.os.paths import is_path_in_dir
 
 from .specs import DeploySystemdSpec
 from .tmp import DeployHomeAtomics

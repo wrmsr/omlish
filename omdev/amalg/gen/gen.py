@@ -3,10 +3,10 @@ import os.path
 import textwrap
 import typing as ta
 
-from omlish import cached
-from omlish import lang
-from omlish.algorithm import all as alg
-from omlish.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
+from omcore import cached
+from omcore import lang
+from omcore.algorithm import all as alg
+from omcore.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
 
 from ...git.magic import GIT_DIFF_OMIT_MAGIC
 from ...py.tokens import all as tks

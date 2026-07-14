@@ -2,10 +2,10 @@ import contextlib
 import threading
 import typing as ta  # noqa
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import typedvalues as tv
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import typedvalues as tv
 
 from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration

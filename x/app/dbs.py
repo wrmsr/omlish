@@ -1,7 +1,7 @@
-from omlish import inject as inj
-from omlish.logs import all as logs
-from omlish.secrets import all as sec
-from omlish.sql import dbs
+from omcore import inject as inj
+from omcore.logs import all as logs
+from omcore.secrets import all as sec
+from omcore.sql import dbs
 
 
 log = logs.get_module_logger(globals())

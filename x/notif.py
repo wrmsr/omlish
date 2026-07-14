@@ -8,9 +8,9 @@ import sys
 import time
 import typing as ta
 
-from omlish import check
-from omlish.sockets.peercreds import PeerCred
-from omlish.sockets.peercreds import get_unix_socket_peer_cred
+from omcore import check
+from omcore.sockets.peercreds import PeerCred
+from omcore.sockets.peercreds import get_unix_socket_peer_cred
 
 
 ##

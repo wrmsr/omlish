@@ -14,8 +14,8 @@ CommonMark Appendix A:
   - Resolution order for a closer: inline → reference → collapsed → shortcut. Whichever first succeeds wins. None
     succeeded? The opener / closer revert to text.
 """
-from omlish import check
-from omlish import dataclasses as dc
+from omcore import check
+from omcore import dataclasses as dc
 
 from ..blocks.refdefs import LinkDef
 from ..blocks.refdefs import RefDefs

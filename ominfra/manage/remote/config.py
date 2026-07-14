@@ -2,7 +2,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.pycharm import PycharmRemoteDebug
+from omcore.lite.pycharm import PycharmRemoteDebug
 
 
 ##

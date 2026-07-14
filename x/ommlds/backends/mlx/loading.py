@@ -3,8 +3,8 @@ import dataclasses as dc
 import pathlib
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from .tokenization import Tokenization
 from .tokenization import load_tokenization

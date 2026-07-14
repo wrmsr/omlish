@@ -2,7 +2,7 @@ import typing as ta
 import weakref
 
 from omdev.tui import textual as tx
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from .drivers.interface import ChatDriverInterface
 from .drivers.types import ChatDriverInterfaceState

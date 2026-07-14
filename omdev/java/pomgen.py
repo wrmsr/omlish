@@ -2,8 +2,8 @@ import functools
 import typing as ta
 import xml.etree.ElementTree as ET
 
-from omlish import check
-from omlish import dataclasses as dc
+from omcore import check
+from omcore import dataclasses as dc
 
 from .xml import append_xml_tail
 from .xml import append_xml_val

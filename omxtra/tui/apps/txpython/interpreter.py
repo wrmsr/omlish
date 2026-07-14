@@ -3,7 +3,7 @@ import builtins
 import io
 import traceback
 
-from omlish import check
+from omcore import check
 
 
 ##

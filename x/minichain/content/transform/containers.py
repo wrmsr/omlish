@@ -4,7 +4,7 @@ TODO:
 """
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ..containers import ConcatContent
 from ..containers import ContainerContent

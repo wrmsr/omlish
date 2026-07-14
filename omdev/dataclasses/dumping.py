@@ -6,9 +6,9 @@ import os.path
 import traceback
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.json import json_dumps_pretty
-from omlish.lite.marshal import marshal_obj
+from omcore.lite.check import check
+from omcore.lite.json import json_dumps_pretty
+from omcore.lite.marshal import marshal_obj
 
 
 ##

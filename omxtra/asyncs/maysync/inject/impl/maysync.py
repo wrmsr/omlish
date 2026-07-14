@@ -1,14 +1,14 @@
 # ruff: noqa: SLF001
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.inject.elements import CollectedElements
-from omlish.inject.impl.injector import AsyncInjectorImpl
-from omlish.inject.injector import AsyncInjector
-from omlish.inject.inspect import KwargsTarget
-from omlish.inject.keys import as_key
-from omlish.inject.sync import Injector
+from omcore import check
+from omcore import lang
+from omcore.inject.elements import CollectedElements
+from omcore.inject.impl.injector import AsyncInjectorImpl
+from omcore.inject.injector import AsyncInjector
+from omcore.inject.inspect import KwargsTarget
+from omcore.inject.keys import as_key
+from omcore.inject.sync import Injector
 
 from ...maysync import run_maysync
 from ..maysync import MaysyncInjector

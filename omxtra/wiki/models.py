@@ -2,7 +2,7 @@ import dataclasses as dc
 import operator
 import typing as ta
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 
 T = ta.TypeVar('T')

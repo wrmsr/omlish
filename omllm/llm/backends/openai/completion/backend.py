@@ -1,7 +1,7 @@
-from omlish import check
-from omlish.formats.json import all as json
-from omlish.http import all as http
-from omlish.secrets import all as sec
+from omcore import check
+from omcore.formats.json import all as json
+from omcore.http import all as http
+from omcore.secrets import all as sec
 
 from ....types.backends import Backend
 from ....types.content import TextContent

@@ -3,8 +3,8 @@ import abc
 import functools
 import typing as ta
 
-from omlish.io.fdio.handlers import FdioHandler
-from omlish.lite.abstract import Abstract
+from omcore.io.fdio.handlers import FdioHandler
+from omcore.lite.abstract import Abstract
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig

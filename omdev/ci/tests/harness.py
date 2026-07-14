@@ -4,9 +4,9 @@ import os.path
 import shlex
 import shutil
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.contextmanagers import AsyncExitStacked
-from omlish.os.temp import temp_dir_context
+from omcore.lite.cached import cached_nullary
+from omcore.lite.contextmanagers import AsyncExitStacked
+from omcore.os.temp import temp_dir_context
 
 from ..cache import DirectoryFileCache
 from ..cache import FileCache

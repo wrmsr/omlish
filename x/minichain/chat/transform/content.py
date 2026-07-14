@@ -4,7 +4,7 @@ FIXME:
 """
 import typing as ta
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ...content.transform.types import ContentTransform
 from ..messages import AiMessage

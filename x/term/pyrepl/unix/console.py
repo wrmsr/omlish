@@ -27,11 +27,11 @@ import threading
 import time
 import typing as ta
 
-from omlish import check
-from omlish.term import terminfo
-from omlish.term.termstate import TermState
-from omlish.term.termstate import get_term_state
-from omlish.term.termstate import set_term_state
+from omcore import check
+from omcore.term import terminfo
+from omcore.term.termstate import TermState
+from omcore.term.termstate import get_term_state
+from omcore.term.termstate import set_term_state
 
 from ..console import CONSOLE_ERROR_TYPES
 from ..console import Console

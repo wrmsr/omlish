@@ -1,8 +1,8 @@
 # ruff: noqa: PT009
 import unittest
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.subprocesses.sync import subprocesses
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.subprocesses.sync import subprocesses
 
 from ..shell import ShellCmd
 

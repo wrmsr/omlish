@@ -9,7 +9,7 @@ import time
 import anyio
 import jinja2
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from ..config import Config
 from ..default import serve

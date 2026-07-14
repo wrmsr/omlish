@@ -16,9 +16,9 @@ import threading
 import time
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.contextmanagers import ExitStacked
-from omlish.logs.modules import get_module_logger
+from omcore.lite.abstract import Abstract
+from omcore.lite.contextmanagers import ExitStacked
+from omcore.logs.modules import get_module_logger
 
 
 T = ta.TypeVar('T')

@@ -1,8 +1,8 @@
 import abc
 import typing as ta
 
-from omlish import contextual as cxl
-from omlish import lang
+from omcore import contextual as cxl
+from omcore import lang
 
 from ...tools.execution.execution import ToolUseExecution
 from ...tools.execution.permissions import DecidedToolPermissionState

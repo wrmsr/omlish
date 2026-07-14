@@ -2,8 +2,8 @@ import importlib.util
 import os.path
 import sys
 
-from omlish import check
-from omlish import marshal as msh
+from omcore import check
+from omcore import marshal as msh
 
 from ..generator import JsonSchemaCodeGen
 

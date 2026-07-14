@@ -27,15 +27,15 @@ import tempfile
 import typing as ta
 import urllib.parse
 
-from omlish import cached
-from omlish import check
-from omlish import lang
-from omlish.argparse import all as ap
-from omlish.configs.processing.merging import merge_configs
-from omlish.formats.json import all as json
-from omlish.formats.yaml import all as yaml
-from omlish.logs import all as logs
-from omlish.subprocesses.sync import subprocesses
+from omcore import cached
+from omcore import check
+from omcore import lang
+from omcore.argparse import all as ap
+from omcore.configs.processing.merging import merge_configs
+from omcore.formats.json import all as json
+from omcore.formats.yaml import all as yaml
+from omcore.logs import all as logs
+from omcore.subprocesses.sync import subprocesses
 
 from ...git.status import GitStatusItem
 from ...git.status import get_git_status

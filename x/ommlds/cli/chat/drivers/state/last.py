@@ -1,7 +1,7 @@
 import uuid
 
-from omlish import dataclasses as dc
-from omlish import orm
+from omcore import dataclasses as dc
+from omcore import orm
 
 from ..... import minichain as mc
 

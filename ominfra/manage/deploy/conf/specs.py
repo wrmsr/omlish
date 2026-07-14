@@ -2,10 +2,10 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.formats.ini.sections import IniSectionSettingsMap
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
-from omlish.lite.marshal import register_single_field_type_obj_marshaler
+from omcore.formats.ini.sections import IniSectionSettingsMap
+from omcore.lite.abstract import Abstract
+from omcore.lite.check import check
+from omcore.lite.marshal import register_single_field_type_obj_marshaler
 
 from ..paths.specs import check_valid_deploy_spec_path
 

@@ -2,8 +2,8 @@ import os.path
 
 import pytest
 
-from omlish import check
-from omlish import contextual as cxl
+from omcore import check
+from omcore import contextual as cxl
 
 from ......chat.messages import ToolUse
 from ......fs.types import FsRoot

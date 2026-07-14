@@ -19,8 +19,8 @@ error (and a STREAMING tool item moves to FAILED).
 """
 import uuid
 
-from omlish import check
-from omlish import dataclasses as dc
+from omcore import check
+from omcore import dataclasses as dc
 
 from ...chat.events import AiMessagesEvent
 from ...chat.events import UserMessagesEvent

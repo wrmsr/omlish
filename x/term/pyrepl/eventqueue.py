@@ -19,7 +19,7 @@ See unix_eventqueue and windows_eventqueue for subclasses.
 """
 import collections
 
-from omlish import check
+from omcore import check
 
 from .console import ConsoleEvent
 from .keymap import compile_keymap

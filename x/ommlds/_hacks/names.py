@@ -5,8 +5,8 @@ TODO:
 import string
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
+from omcore import check
+from omcore import collections as col
 
 
 ##

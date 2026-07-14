@@ -3,12 +3,12 @@
 import dataclasses as dc
 import logging
 
-from omlish.logs.typed.bindings import FullTypedLoggerBindings
-from omlish.logs.typed.bindings import TypedLoggerValueWrapper
-from omlish.logs.typed.tests.api import DEFAULT_TYPED_LOGGER_BINDINGS
-from omlish.logs.typed.tests.api import TypedLogger
-from omlish.logs.typed.types import DefaultTypedLoggerValue
-from omlish.logs.typed.types import TypedLoggerValue
+from omcore.logs.typed.bindings import FullTypedLoggerBindings
+from omcore.logs.typed.bindings import TypedLoggerValueWrapper
+from omcore.logs.typed.tests.api import DEFAULT_TYPED_LOGGER_BINDINGS
+from omcore.logs.typed.tests.api import TypedLogger
+from omcore.logs.typed.types import DefaultTypedLoggerValue
+from omcore.logs.typed.types import TypedLoggerValue
 
 
 ##

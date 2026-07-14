@@ -2,8 +2,8 @@
 TODO:
  - substantial docstrings for what each common config maps to in backends
 """
-from omlish import lang
-from omlish import typedvalues as tv
+from omcore import lang
+from omcore import typedvalues as tv
 
 from ..types import Option
 from ..types import Output

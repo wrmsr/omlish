@@ -15,10 +15,10 @@ import warnings
 
 import yaml
 
-from omlish import check
-from omlish import lang
-from omlish.argparse import all as ap
-from omlish.logs import all as logs
+from omcore import check
+from omcore import lang
+from omcore.argparse import all as ap
+from omcore.logs import all as logs
 
 from ..cli import CliModule
 

@@ -18,7 +18,7 @@ import sys
 
 from rich.console import Console
 
-from omlish import lang
+from omcore import lang
 
 from ....diffs.parsing import parse_patch
 from .rendering import THEME

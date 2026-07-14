@@ -5,7 +5,7 @@ real scripted run (streaming, thinking, tools) must round-trip through the marsh
 """
 import pytest
 
-from omlish import marshal as msh
+from omcore import marshal as msh
 
 from ....backends.scripted.scripts import ChatScript
 from ....backends.scripted.scripts import ChatScriptTurn

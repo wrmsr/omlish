@@ -4,10 +4,10 @@ import os.path
 import typing as ta
 import unittest
 
-from omlish.lite.configs import load_config_file_obj
-from omlish.lite.inject import inj
-from omlish.lite.runtime import is_debugger_attached
-from omlish.logs.std.standard import configure_standard_logging
+from omcore.lite.configs import load_config_file_obj
+from omcore.lite.inject import inj
+from omcore.lite.runtime import is_debugger_attached
+from omcore.logs.std.standard import configure_standard_logging
 
 from ..configs import ServerConfig
 from ..inject import bind_server

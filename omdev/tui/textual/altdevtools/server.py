@@ -6,13 +6,13 @@ import typing as ta
 
 from textual.constants import DEVTOOLS_PORT
 
-from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
-from omlish.http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
-from omlish.http.pipelines.websockets.aggregators import IoPipelineWebsocketAggregator
-from omlish.http.pipelines.websockets.frames import IoPipelineWebsocketServerFrameDecoder
-from omlish.http.pipelines.websockets.frames import IoPipelineWebsocketServerFrameEncoder
-from omlish.http.pipelines.websockets.handshakes import IoPipelineWebsocketServerUpgradeHandler
-from omlish.io.pipelines.core import IoPipeline
+from omcore.http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
+from omcore.http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
+from omcore.http.pipelines.websockets.aggregators import IoPipelineWebsocketAggregator
+from omcore.http.pipelines.websockets.frames import IoPipelineWebsocketServerFrameDecoder
+from omcore.http.pipelines.websockets.frames import IoPipelineWebsocketServerFrameEncoder
+from omcore.http.pipelines.websockets.handshakes import IoPipelineWebsocketServerUpgradeHandler
+from omcore.io.pipelines.core import IoPipeline
 
 from .service import DevtoolsServerWebsocketHandler
 from .service import DevtoolsService

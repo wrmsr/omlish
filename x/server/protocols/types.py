@@ -1,6 +1,6 @@
 import abc
 
-from omlish import lang
+from omcore import lang
 
 from ..events import ProtocolEvent
 from ..events import ServerEvent

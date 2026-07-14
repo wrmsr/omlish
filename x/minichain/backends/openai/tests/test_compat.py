@@ -9,9 +9,9 @@ import typing as ta
 
 import pytest
 
-from omlish import check
-from omlish import marshal as msh
-from omlish.http import sse
+from omcore import check
+from omcore import marshal as msh
+from omcore.http import sse
 
 from .....backends.openai import protocol as pt
 from ....chat.messages import AiMessage

@@ -1,10 +1,10 @@
 import typing as ta
 
-from omlish import lang
-from omlish.inject.injector import AsyncInjector
-from omlish.inject.keys import Key
-from omlish.inject.scopes import SeededScope
-from omlish.inject.scopes import async_enter_seeded_scope
+from omcore import lang
+from omcore.inject.injector import AsyncInjector
+from omcore.inject.keys import Key
+from omcore.inject.scopes import SeededScope
+from omcore.inject.scopes import async_enter_seeded_scope
 
 
 if ta.TYPE_CHECKING:

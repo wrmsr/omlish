@@ -1,8 +1,8 @@
 """https://docs.anthropic.com/en/docs/build-with-claude/streaming#content-block-delta-types"""
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import dataclasses as dc
+from omcore import lang
 
 from ..types import Usage
 

@@ -4,9 +4,9 @@ import os.path
 import re
 import typing as ta
 
-from omlish.lite.cached import async_cached_nullary
-from omlish.lite.cached import cached_nullary
-from omlish.logs.modules import get_module_logger
+from omcore.lite.cached import async_cached_nullary
+from omcore.lite.cached import cached_nullary
+from omcore.logs.modules import get_module_logger
 
 from ..interp.venvs import InterpVenv
 from ..interp.venvs import InterpVenvRequirementsProcessor

@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import inject as inj
+from omcore import dataclasses as dc
+from omcore import inject as inj
 
 from ..registries.globals import register_type
 from .configs import ModuleConfig

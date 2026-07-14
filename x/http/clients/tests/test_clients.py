@@ -2,12 +2,12 @@ import contextlib
 
 import pytest
 
-from omlish.http.clients import default
-from omlish.http.clients.base import HttpClientError
-from omlish.http.clients.base import HttpClientRequest
-from omlish.http.clients.base import StatusHttpClientError
-from omlish.http.clients.middleware import MiddlewareHttpClient
-from omlish.http.clients.middleware import RedirectHandlingHttpClientMiddleware
+from omcore.http.clients import default
+from omcore.http.clients.base import HttpClientError
+from omcore.http.clients.base import HttpClientRequest
+from omcore.http.clients.base import StatusHttpClientError
+from omcore.http.clients.middleware import MiddlewareHttpClient
+from omcore.http.clients.middleware import RedirectHandlingHttpClientMiddleware
 
 from ..coro.sync import CoroHttpClient
 

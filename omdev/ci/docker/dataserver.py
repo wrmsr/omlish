@@ -6,16 +6,16 @@ import sys
 import threading
 import typing as ta
 
-from omlish.docker.ports import DockerPortRelay
-from omlish.http.simple.handlers import LoggingSimpleHttpHandler
-from omlish.http.simple.pipelines.sync import make_simple_http_server
-from omlish.http.simple.types import SimpleHttpHandler
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.contextmanagers import AsyncExitStacked
-from omlish.logs.protocols import LoggerLike
-from omlish.secrets.tempssl import generate_temp_localhost_ssl_cert
-from omlish.sockets.handlers.server import SocketHandlerServer
+from omcore.docker.ports import DockerPortRelay
+from omcore.http.simple.handlers import LoggingSimpleHttpHandler
+from omcore.http.simple.pipelines.sync import make_simple_http_server
+from omcore.http.simple.types import SimpleHttpHandler
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.contextmanagers import AsyncExitStacked
+from omcore.logs.protocols import LoggerLike
+from omcore.secrets.tempssl import generate_temp_localhost_ssl_cert
+from omcore.sockets.handlers.server import SocketHandlerServer
 
 from ...dataserver.http import DataServerSimpleHttpHandler
 from ...dataserver.server import DataServer

@@ -2,8 +2,8 @@ import ast
 import operator
 import typing as ta
 
-from omlish import check
-from omlish import dispatch
+from omcore import check
+from omcore import dispatch
 
 
 T = ta.TypeVar('T')

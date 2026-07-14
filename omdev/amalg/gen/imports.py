@@ -2,7 +2,7 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ...py.tokens import all as tks
 

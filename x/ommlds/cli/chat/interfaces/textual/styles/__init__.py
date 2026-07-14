@@ -1,6 +1,6 @@
 import io as _io
 
-from omlish import lang as _lang
+from omcore import lang as _lang
 
 
 ##

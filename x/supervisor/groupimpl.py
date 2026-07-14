@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007 UP045
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.typing import Func2
+from omcore.lite.check import check
+from omcore.lite.typing import Func2
 
 from .configs import ProcessConfig
 from .configs import ProcessGroupConfig

@@ -2,10 +2,10 @@ import os.path
 import tomllib
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import marshal as msh
-from omlish.argparse import all as argparse
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import marshal as msh
+from omcore.argparse import all as argparse
 
 from ....home.paths import get_home_paths
 from .app import IrcApp

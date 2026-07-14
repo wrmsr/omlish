@@ -1,5 +1,5 @@
-from omlish.lite.cached import cached_nullary
-from omlish.lite.inject import inj
+from omcore.lite.cached import cached_nullary
+from omcore.lite.inject import inj
 
 from .inject import bind_interp
 from .resolvers import InterpResolver

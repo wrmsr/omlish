@@ -44,8 +44,8 @@ import io
 import typing as ta
 import urllib.parse
 
-from omlish.lite.bytes import Bytes
-from omlish.lite.check import check
+from omcore.lite.bytes import Bytes
+from omcore.lite.check import check
 
 from ..io import CoroHttpIo
 from .errors import CoroHttpClientErrors

@@ -10,14 +10,14 @@ import os.path
 import shlex
 import typing as ta
 
-from omlish.asyncs.asyncio.subprocesses import asyncio_subprocesses
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.contextmanagers import AsyncExitStacked
-from omlish.lite.contextmanagers import adefer
-from omlish.lite.contextmanagers import defer
-from omlish.lite.json import json_dumps_pretty
-from omlish.os.temp import make_temp_file
+from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.contextmanagers import AsyncExitStacked
+from omcore.lite.contextmanagers import adefer
+from omcore.lite.contextmanagers import defer
+from omcore.lite.json import json_dumps_pretty
+from omcore.os.temp import make_temp_file
 
 from .shell import ShellCmd
 from .utils import read_yaml_file

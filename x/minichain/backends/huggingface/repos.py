@@ -3,7 +3,7 @@ TODO:
  - local-only check first
   - cat ~/.cache/.../models/.../refs/main -> c5bfd839cd4cda0e5a39a97e00218d9c56e468af
 """
-from omlish import lang
+from omcore import lang
 
 from ...models.configs import ModelRepo
 from ...models.repos.resolving import ModelRepoResolver

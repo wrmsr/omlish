@@ -5,8 +5,8 @@ import resource
 import typing as ta
 import warnings
 
-from omlish.lite.cached import cached_nullary
-from omlish.logs.modules import get_module_logger
+from omcore.lite.cached import cached_nullary
+from omcore.logs.modules import get_module_logger
 
 from .configs import ServerConfig
 from .setup import DaemonizeListeners

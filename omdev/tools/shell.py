@@ -1,9 +1,9 @@
 import shlex
 import typing as ta
 
-from omlish import check
-from omlish.argparse import all as ap
-from omlish.formats.json import all as json
+from omcore import check
+from omcore.argparse import all as ap
+from omcore.formats.json import all as json
 
 from ..cli.types import CliModule
 

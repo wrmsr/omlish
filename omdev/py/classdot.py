@@ -5,7 +5,7 @@ TODO:
 """
 import typing as ta
 
-from omlish.graphs import dot
+from omcore.graphs import dot
 
 
 ##

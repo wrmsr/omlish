@@ -1,9 +1,9 @@
 import re
 import typing as ta
 
-from omlish import lang
-from omlish.lang.casing import StringCasingError
-from omlish.marshal.api.naming import Naming
+from omcore import lang
+from omcore.lang.casing import StringCasingError
+from omcore.marshal.api.naming import Naming
 
 
 ##

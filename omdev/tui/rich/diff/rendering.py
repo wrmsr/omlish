@@ -31,7 +31,7 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
-from omlish import check
+from omcore import check
 
 from ....diffs.types import PatchSet
 from ._compat import _added_files

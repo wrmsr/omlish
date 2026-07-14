@@ -16,10 +16,10 @@ import typing as ta
 import urllib.parse
 import urllib.request
 
-from omlish import __about__
-from omlish import lang
-from omlish.argparse import all as ap
-from omlish.os.temp import temp_dir_context
+from omcore import __about__
+from omcore import lang
+from omcore.argparse import all as ap
+from omcore.os.temp import temp_dir_context
 
 from ..packaging.versions import Version
 from ..pip import get_root_dists

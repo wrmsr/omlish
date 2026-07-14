@@ -1,7 +1,7 @@
 import sys
 
-from omlish.diag import pydevd as pdu
-from omlish.logs import all as logs
+from omcore.diag import pydevd as pdu
+from omcore.logs import all as logs
 
 
 log = logs.get_module_logger(globals())

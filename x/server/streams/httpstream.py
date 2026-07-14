@@ -3,7 +3,7 @@ import time
 import typing as ta
 import urllib.parse
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from ..config import Config
 from ..events import Body

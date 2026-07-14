@@ -6,8 +6,8 @@ import typing as ta
 
 import pytest
 
-from omlish import check
-from omlish import inject as inj
+from omcore import check
+from omcore import inject as inj
 
 from ...backends.scripted.scripts import ChatScript
 from ...backends.scripted.scripts import ChatScriptTurn

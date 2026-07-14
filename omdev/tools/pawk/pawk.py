@@ -33,7 +33,7 @@ import sys
 import types
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ...cli import CliModule
 

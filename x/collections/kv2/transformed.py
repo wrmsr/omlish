@@ -1,7 +1,7 @@
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from .bases import FullKv
 from .bases import KvToKvFunc2

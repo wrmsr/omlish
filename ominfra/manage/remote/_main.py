@@ -8,15 +8,15 @@ import threading
 import time
 import typing as ta
 
-from omlish.asyncs.asyncio.streams import asyncio_open_stream_reader
-from omlish.asyncs.asyncio.streams import asyncio_open_stream_writer
-from omlish.lite.cached import cached_nullary
-from omlish.lite.check import check
-from omlish.lite.inject import Injector
-from omlish.lite.marshal import ObjMarshalerManager
-from omlish.lite.pycharm import pycharm_debug_connect
-from omlish.logs.modules import get_module_logger
-from omlish.os.deathsig import set_process_deathsig
+from omcore.asyncs.asyncio.streams import asyncio_open_stream_reader
+from omcore.asyncs.asyncio.streams import asyncio_open_stream_writer
+from omcore.lite.cached import cached_nullary
+from omcore.lite.check import check
+from omcore.lite.inject import Injector
+from omcore.lite.marshal import ObjMarshalerManager
+from omcore.lite.pycharm import pycharm_debug_connect
+from omcore.logs.modules import get_module_logger
+from omcore.os.deathsig import set_process_deathsig
 
 from ...pyremote import pyremote_bootstrap_finalize
 from ..bootstrap import MainBootstrap

@@ -39,9 +39,9 @@ import http.client
 import io
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.http.versions import HttpVersion
-from omlish.http.versions import HttpVersions
+from omcore.lite.abstract import Abstract
+from omcore.http.versions import HttpVersion
+from omcore.http.versions import HttpVersions
 
 
 T = ta.TypeVar('T')

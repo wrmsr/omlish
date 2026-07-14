@@ -1,4 +1,4 @@
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .... import minichain as mc
 from ...backends.configs import BackendConfig

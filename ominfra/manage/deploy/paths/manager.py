@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
+from omcore.lite.cached import cached_nullary
 
 from .owners import DeployPathOwner
 from .owners import DeployPathOwners

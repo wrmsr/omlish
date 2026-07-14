@@ -8,7 +8,7 @@ import contextlib
 import json
 import tarfile
 
-from omlish.lite.check import check
+from omcore.lite.check import check
 
 from ..utils import sha256_str
 

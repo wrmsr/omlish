@@ -2,8 +2,8 @@ import contextlib
 import gzip
 import io
 
-from omlish.testing import pytest as ptu
-from omlish.text.random import generate_random_text
+from omcore.testing import pytest as ptu
+from omcore.text.random import generate_random_text
 
 from ..trampoline import IoTrampoline
 from ..trampoline import ThreadIoTrampoline

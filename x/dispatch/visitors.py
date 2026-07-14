@@ -2,9 +2,9 @@ import typing as ta
 
 import pytest
 
-from omlish import check
-from omlish import dispatch
-from omlish import lang
+from omcore import check
+from omcore import dispatch
+from omcore import lang
 
 
 C = ta.TypeVar('C')

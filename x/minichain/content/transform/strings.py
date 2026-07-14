@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ..content import Content
 from ..emphasis import EmphasisContent

@@ -12,7 +12,7 @@ README) depends on reads being snapshots taken without intervening awaits.
 """
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from ...content.content import Content
 from .events import TimelineItemAppendedEvent

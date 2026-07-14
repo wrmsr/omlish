@@ -1,6 +1,6 @@
 import functools
 
-from omlish import inject as inj
+from omcore import inject as inj
 
 from .config import Config
 from .server import Server

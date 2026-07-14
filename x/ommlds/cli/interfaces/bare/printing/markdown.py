@@ -2,7 +2,7 @@ import typing as ta
 
 from omdev.tui import rich
 from omdev.tui.rich import textual as rich_tx
-from omlish import lang
+from omcore import lang
 
 from ..... import minichain as mc
 from ....content.strings import ContentStringifier

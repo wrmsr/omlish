@@ -6,8 +6,8 @@ import uuid
 
 import pytest
 
-from omlish import check
-from omlish import orm
+from omcore import check
+from omcore import orm
 
 from ....backends.scripted.scripts import ChatScript
 from ....backends.scripted.scripts import ChatScriptTurn

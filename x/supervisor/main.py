@@ -38,11 +38,11 @@ import itertools
 import os.path
 import typing as ta
 
-from omlish.lite.configs import load_config_file_obj
-from omlish.lite.inject import inj
-from omlish.lite.runtime import is_debugger_attached
-from omlish.logs.std.standard import configure_standard_logging
-from omlish.os.journald import journald_logging_handler_factory
+from omcore.lite.configs import load_config_file_obj
+from omcore.lite.inject import inj
+from omcore.lite.runtime import is_debugger_attached
+from omcore.logs.std.standard import configure_standard_logging
+from omcore.os.journald import journald_logging_handler_factory
 
 from .configs import ServerConfig
 from .inject import bind_server

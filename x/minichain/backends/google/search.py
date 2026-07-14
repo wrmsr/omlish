@@ -6,12 +6,12 @@ https://google.aip.dev/127
 import typing as ta
 import urllib.parse
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
-from omlish.formats.json import all as json
-from omlish.http import all as http
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import lang
+from omcore import marshal as msh
+from omcore.formats.json import all as json
+from omcore.http import all as http
 
 from ...search import SearchHit
 from ...search import SearchHits

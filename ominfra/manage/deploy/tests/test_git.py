@@ -2,7 +2,7 @@ import os.path
 import tempfile
 import unittest
 
-from omlish.os.atomics import TempDirAtomicPathSwapping
+from omcore.os.atomics import TempDirAtomicPathSwapping
 
 from ..git import DeployGitManager
 from ..git import DeployGitRepo

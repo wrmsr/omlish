@@ -9,8 +9,8 @@ TODO:
 import abc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.strings import snake_case
+from omcore.lite.abstract import Abstract
+from omcore.lite.strings import snake_case
 
 from ..types import Interp
 from ..types import InterpSpecifier

@@ -6,8 +6,8 @@ TODO:
 import typing as ta
 import uuid
 
-from omlish import inject as inj
-from omlish import orm
+from omcore import inject as inj
+from omcore import orm
 
 from ..... import minichain as mc
 from .configs import StateConfig

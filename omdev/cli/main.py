@@ -10,10 +10,10 @@ import runpy
 import sys
 import typing as ta
 
-from omlish import check
-from omlish.lite.cached import cached_nullary
-from omlish.manifests.globals import GlobalManifestLoader
-from omlish.manifests.loading import ManifestLoader
+from omcore import check
+from omcore.lite.cached import cached_nullary
+from omcore.manifests.globals import GlobalManifestLoader
+from omcore.manifests.loading import ManifestLoader
 
 from .types import CliCmd
 from .types import CliFunc

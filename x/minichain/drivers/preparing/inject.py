@@ -1,4 +1,4 @@
-from omlish import inject as inj
+from omcore import inject as inj
 
 from .simple import SimpleChatPreparer
 from .types import ChatPreparer

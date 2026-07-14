@@ -19,9 +19,9 @@ import shlex
 import typing as ta
 
 from omdev.home.secrets import load_secrets
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import check
+from omcore import dataclasses as dc
+from omcore import lang
 
 from .runners import CommandRunner
 from .runners import LocalCommandRunner

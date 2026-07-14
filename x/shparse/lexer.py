@@ -19,7 +19,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from .langs import LANG_BASH_LIKE
 from .langs import LANG_MIR_BSD_KORN

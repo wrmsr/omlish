@@ -8,7 +8,7 @@ import os
 import subprocess
 import sys
 
-from omlish.logs import all as logs
+from omcore.logs import all as logs
 
 from .errors import DistutilsExecError
 

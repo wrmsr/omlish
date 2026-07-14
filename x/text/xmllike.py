@@ -5,8 +5,8 @@ TODO:
 import io
 import typing as ta
 
-from omlish import lang
-from omlish.funcs.genmachine import GenMachine
+from omcore import lang
+from omcore.funcs.genmachine import GenMachine
 
 
 ##

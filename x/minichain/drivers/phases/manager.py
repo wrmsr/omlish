@@ -1,5 +1,5 @@
-from omlish import check
-from omlish import collections as col
+from omcore import check
+from omcore import collections as col
 
 from .types import Phase
 from .types import PhaseCallbacks

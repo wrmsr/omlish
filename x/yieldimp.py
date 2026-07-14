@@ -9,7 +9,7 @@ import sys
 import types
 import typing as ta
 
-from omlish.lang.imports.proxy import proxy_import
+from omcore.lang.imports.proxy import proxy_import
 
 
 if ta.TYPE_CHECKING:

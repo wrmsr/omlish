@@ -1,11 +1,11 @@
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import contextual as cxl
-from omlish import dataclasses as dc
-from omlish import lang
+from omcore import check
+from omcore import collections as col
+from omcore import contextual as cxl
+from omcore import dataclasses as dc
+from omcore import lang
 
 from ...tools.execution.catalog import ToolCatalogEntry
 from ...tools.fns import ToolFn

@@ -1,4 +1,4 @@
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from .ai.configs import AiConfig
 from .orm.configs import OrmConfig

@@ -1,9 +1,9 @@
 """
 https://github.com/WillKoehrsen/wikipedia-data-science/blob/master/notebooks/Downloading%20and%20Parsing%20Wikipedia%20Articles.ipynb
 """
-from omlish import marshal as msh
-from omlish.formats.json import all as json
-from omlish.testing import pytest as ptu
+from omcore import marshal as msh
+from omcore.formats.json import all as json
+from omcore.testing import pytest as ptu
 
 from .. import mfh
 from .data import WIKI_FILES

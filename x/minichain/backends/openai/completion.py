@@ -1,9 +1,9 @@
 import typing as ta
 
-from omlish import check
-from omlish import typedvalues as tv
-from omlish.formats.json import all as json
-from omlish.http import all as http
+from omcore import check
+from omcore import typedvalues as tv
+from omcore.formats.json import all as json
+from omcore.http import all as http
 
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse

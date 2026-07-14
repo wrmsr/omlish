@@ -2,7 +2,7 @@ import dataclasses as dc
 import re
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 from .converters import ValidationError
 from .exceptions import NoMatch

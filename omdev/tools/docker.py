@@ -17,16 +17,16 @@ import sys
 import threading
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish import marshal as msh
-from omlish.argparse import all as ap
-from omlish.concurrent import all as conc
-from omlish.docker import all as dck
-from omlish.docker.ns1 import build_docker_ns1_run_cmd
-from omlish.formats.json import all as json
-from omlish.formats.yaml import pyyaml
-from omlish.logs import all as logs
+from omcore import check
+from omcore import lang
+from omcore import marshal as msh
+from omcore.argparse import all as ap
+from omcore.concurrent import all as conc
+from omcore.docker import all as dck
+from omcore.docker.ns1 import build_docker_ns1_run_cmd
+from omcore.formats.json import all as json
+from omcore.formats.yaml import pyyaml
+from omcore.logs import all as logs
 
 from ..cli import CliModule
 

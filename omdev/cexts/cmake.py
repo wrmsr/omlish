@@ -38,9 +38,9 @@ import sys
 import sysconfig
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.logs import all as logs
+from omcore import check
+from omcore import lang
+from omcore.logs import all as logs
 
 from .. import cmake
 from .. import magic

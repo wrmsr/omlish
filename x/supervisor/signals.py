@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
 import signal
 
-from omlish.logs.modules import get_module_logger
+from omcore.logs.modules import get_module_logger
 
 from .group import ProcessGroupManager
 from .states import SupervisorState

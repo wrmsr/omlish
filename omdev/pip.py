@@ -4,7 +4,7 @@ import sys
 import typing as ta
 import urllib.request
 
-from omlish import check
+from omcore import check
 
 from .packaging.names import canonicalize_name
 from .packaging.requires import RequiresVariable

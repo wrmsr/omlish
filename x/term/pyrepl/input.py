@@ -30,8 +30,8 @@ import collections
 import typing as ta
 import unicodedata
 
-from omlish import check
-from omlish import lang
+from omcore import check
+from omcore import lang
 
 from .console import ConsoleEvent
 from .keymap import compile_keymap

@@ -6,7 +6,7 @@ https://github.com/adamritter/fastgron
 import json
 import typing as ta
 
-from omlish import check
+from omcore import check
 
 
 DOC = {

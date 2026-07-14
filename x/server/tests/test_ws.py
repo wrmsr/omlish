@@ -13,9 +13,9 @@ import anyio
 import pytest
 import wsproto
 
-from omlish import lang
-from omlish.asyncs.anyio import eof_to_empty as anyio_eof_to_empty
-from omlish.sockets.ports import get_available_port
+from omcore import lang
+from omcore.asyncs.anyio import eof_to_empty as anyio_eof_to_empty
+from omcore.sockets.ports import get_available_port
 
 from ..config import Config
 from ..default import serve

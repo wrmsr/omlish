@@ -42,10 +42,10 @@ import site
 import sys
 import typing as ta
 
-from omlish import cached
-from omlish import check
-from omlish import lang
-from omlish.logs import all as logs
+from omcore import cached
+from omcore import check
+from omcore import lang
+from omcore.logs import all as logs
 
 from . import compilers
 from . import errors

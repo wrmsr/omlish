@@ -1,7 +1,7 @@
 import io
 
-from omlish.lite.cached import cached_nullary
-from omlish.lite.resources import read_package_resource_text
+from omcore.lite.cached import cached_nullary
+from omcore.lite.resources import read_package_resource_text
 
 
 ##

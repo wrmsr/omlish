@@ -1,5 +1,5 @@
-from omlish import check
-from omlish import inject as inj
+from omcore import check
+from omcore import inject as inj
 
 from ...chat.messages import UserMessage
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform

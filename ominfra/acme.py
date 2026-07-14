@@ -56,7 +56,7 @@ import time
 import typing as ta
 import urllib.request
 
-from omlish import check
+from omcore import check
 
 
 ##

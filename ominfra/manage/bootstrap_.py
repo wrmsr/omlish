@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
-from omlish.lite.inject import Injector
-from omlish.lite.inject import inj
-from omlish.logs.std.standard import configure_standard_logging
+from omcore.lite.inject import Injector
+from omcore.lite.inject import inj
+from omcore.logs.std.standard import configure_standard_logging
 
 from .bootstrap import MainBootstrap
 from .inject import bind_main

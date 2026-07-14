@@ -1,6 +1,6 @@
-from omlish import inject as inj
-from omlish import lang
-from omlish import lifecycles as lc
+from omcore import inject as inj
+from omcore import lang
+from omcore import lifecycles as lc
 
 from .chat.configs import ChatConfig
 from .completion.configs import CompletionConfig

@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from omlish import check
+from omcore import check
 
 from .....backends.ollama import protocol as pt
 from ....chat.messages import AiMessage

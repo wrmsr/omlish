@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 import typing as ta
 
-from omlish.argparse.cli import ArgparseCli
-from omlish.argparse.parsers import argparse_arg
-from omlish.argparse.parsers import argparse_cmd
+from omcore.argparse.cli import ArgparseCli
+from omcore.argparse.parsers import argparse_arg
+from omcore.argparse.parsers import argparse_cmd
 
 from .find import find_magic_files
 from .find import find_magic_py_modules

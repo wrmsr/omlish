@@ -1,6 +1,6 @@
 import pytest
 
-from omlish.secrets.tests.harness import HarnessSecrets
+from omcore.secrets.tests.harness import HarnessSecrets
 
 from .....types.context import Context
 from .....types.messages import UserMessage

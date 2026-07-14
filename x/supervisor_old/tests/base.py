@@ -11,8 +11,8 @@ import time
 import typing as ta
 import unittest
 
-from omlish.lite.inject import inj
-from omlish.lite.marshal import unmarshal_obj
+from omcore.lite.inject import inj
+from omcore.lite.marshal import unmarshal_obj
 
 from ...configs import ServerConfig
 from ...configs import prepare_server_config

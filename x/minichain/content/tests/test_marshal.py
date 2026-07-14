@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from omlish import dataclasses as dc
-from omlish import marshal as msh
+from omcore import dataclasses as dc
+from omcore import marshal as msh
 
 from ...content.placeholders import ContentPlaceholder
 from ...content.placeholders import PlaceholderContent

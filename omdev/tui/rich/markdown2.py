@@ -1,7 +1,7 @@
 import abc
 import typing as ta
 
-from omlish import lang
+from omcore import lang
 
 from ...markdown.incparse import IncrementalMarkdownParser
 from ...markdown.tokens import flatten_tokens as _flatten_tokens

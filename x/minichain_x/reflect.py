@@ -6,8 +6,8 @@ import inspect
 import typing as ta
 
 from omdev.home.secrets import install_env_secrets
-from omlish import check
-from omlish import reflect as rfl
+from omcore import check
+from omcore import reflect as rfl
 from ommlds import minichain as mc
 
 

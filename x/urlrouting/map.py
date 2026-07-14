@@ -3,7 +3,7 @@ import threading
 import typing as ta
 import urllib.parse
 
-from omlish import check
+from omcore import check
 
 from .converters import DEFAULT_CONVERTERS
 from .exceptions import BadHost

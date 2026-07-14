@@ -2,10 +2,10 @@ import logging  # noqa
 
 import pytest  # noqa
 
-from omlish.concurrent.threadlets import GreenletThreadlets
-from omlish.concurrent.threadlets import Threadlets
-from omlish.logs import all as logs  # noqa
-from omlish.testing import pytest as ptu
+from omcore.concurrent.threadlets import GreenletThreadlets
+from omcore.concurrent.threadlets import Threadlets
+from omcore.logs import all as logs  # noqa
+from omcore.testing import pytest as ptu
 
 from ..real import RealThreadlets
 
