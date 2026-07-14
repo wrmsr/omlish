@@ -68,6 +68,11 @@ class TypeInfo(Symbol):
         '_runtime_object',
     )
 
+    __match_args__: ta.Final = (
+        'name',
+        'fullname',
+    )
+
     def __init__(
             self,
             name: str,
@@ -151,6 +156,11 @@ class TypeAlias(Symbol):
         '_alias_tvars',
         '_is_recursive',
         '_runtime_object',
+    )
+
+    __match_args__: ta.Final = (
+        'name',
+        'target',
     )
 
     def __init__(

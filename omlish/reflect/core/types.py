@@ -133,6 +133,11 @@ class TypeAliasType(Type):
         '_args',
     )
 
+    __match_args__: ta.Final = (
+        'alias',
+        'args',
+    )
+
     def __init__(
             self,
             alias: TypeAlias | None,
@@ -179,6 +184,10 @@ class TypeGuardedType(Type):
         '_type_guard',
     )
 
+    __match_args__: ta.Final = (
+        'type_guard',
+    )
+
     def __init__(self, type_guard: Type) -> None:
         super().__init__()
 
@@ -197,6 +206,11 @@ class AnnotatedType(Type):
     __slots__ = (
         '_item',
         '_metadata',
+    )
+
+    __match_args__: ta.Final = (
+        'item',
+        'metadata',
     )
 
     def __init__(
@@ -232,6 +246,10 @@ class RequiredType(Type):
         '_required',
     )
 
+    __match_args__: ta.Final = (
+        'item',
+    )
+
     def __init__(
             self,
             item: Type,
@@ -259,6 +277,10 @@ class RequiredType(Type):
 class ReadOnlyType(Type):
     __slots__ = (
         '_item',
+    )
+
+    __match_args__: ta.Final = (
+        'item',
     )
 
     def __init__(self, item: Type) -> None:
@@ -496,6 +518,11 @@ class UnboundType(ProperType):
         '_runtime_object',
     )
 
+    __match_args__: ta.Final = (
+        'name',
+        'args',
+    )
+
     def __init__(
             self,
             name: str,
@@ -537,6 +564,12 @@ class CallableArgument(ProperType):
         '_constructor',
     )
 
+    __match_args__: ta.Final = (
+        'typ',
+        'name',
+        'constructor',
+    )
+
     def __init__(
             self,
             typ: Type,
@@ -571,6 +604,10 @@ class TypeList(ProperType):
         '_items',
     )
 
+    __match_args__: ta.Final = (
+        'items',
+    )
+
     def __init__(self, items: ta.Sequence[Type]) -> None:
         super().__init__()
 
@@ -588,6 +625,10 @@ class TypeList(ProperType):
 class UnpackType(ProperType):
     __slots__ = (
         '_type',
+    )
+
+    __match_args__: ta.Final = (
+        'type',
     )
 
     def __init__(self, typ: Type) -> None:
@@ -622,6 +663,10 @@ _ANY_RUNTIME_TYPE: ta.Any = ta.Any
 class AnyType(ProperType):
     __slots__ = (
         '_type_of_any',
+    )
+
+    __match_args__: ta.Final = (
+        'type_of_any',
     )
 
     def __init__(self, type_of_any: TypeOfAny) -> None:
@@ -747,10 +792,15 @@ class Instance(ProperType):
         '_mro',
     )
 
+    __match_args__: ta.Final = (
+        'type',
+        'args',
+    )
+
     def __init__(
             self,
             typ: TypeInfo,
-            args: ta.Sequence[Type],
+            args: ta.Sequence[Type] | None = None,
             *,
             last_known_value: LiteralType | None = None,
             extra_attrs: ExtraAttrs | None = None,
@@ -758,7 +808,7 @@ class Instance(ProperType):
         super().__init__()
 
         self._type = typ
-        self._args = tuple(args)
+        self._args = tuple(args) if args is not None else ()
         self._last_known_value = last_known_value
         self._extra_attrs = extra_attrs
 
@@ -861,6 +911,12 @@ class Parameters(ProperType):
         '_arg_names',
     )
 
+    __match_args__: ta.Final = (
+        'arg_types',
+        'arg_kinds',
+        'arg_names',
+    )
+
     def __init__(
             self,
             arg_types: ta.Sequence[Type],
@@ -898,6 +954,13 @@ class CallableType(FunctionLike):
         '_ret_type',
         '_variables',
         '_is_ellipsis_args',
+    )
+
+    __match_args__: ta.Final = (
+        'arg_types',
+        'arg_kinds',
+        'arg_names',
+        'ret_type',
     )
 
     def __init__(
@@ -954,6 +1017,10 @@ class Overloaded(FunctionLike):
         '_items',
     )
 
+    __match_args__: ta.Final = (
+        'items',
+    )
+
     def __init__(self, items: ta.Sequence[CallableType]) -> None:
         if not items:
             raise ReflectionValueError('Overloaded requires at least one item')
@@ -975,6 +1042,11 @@ class TupleType(ProperType):
     __slots__ = (
         '_items',
         '_partial_fallback',
+    )
+
+    __match_args__: ta.Final = (
+        'items',
+        'partial_fallback',
     )
 
     def __init__(
@@ -1006,6 +1078,13 @@ class TypedDictType(ProperType):
         '_required_keys',
         '_readonly_keys',
         '_fallback',
+    )
+
+    __match_args__: ta.Final = (
+        'items',
+        'required_keys',
+        'readonly_keys',
+        'fallback',
     )
 
     def __init__(
@@ -1049,6 +1128,11 @@ class RawExpressionType(ProperType):
         '_base_type_name',
     )
 
+    __match_args__: ta.Final = (
+        'literal_value',
+        'base_type_name',
+    )
+
     def __init__(
             self,
             literal_value: LiteralValue | None,
@@ -1076,6 +1160,11 @@ class LiteralType(ProperType):
     __slots__ = (
         '_value',
         '_fallback',
+    )
+
+    __match_args__: ta.Final = (
+        'value',
+        'fallback',
     )
 
     def __init__(
@@ -1106,6 +1195,10 @@ class UnionType(ProperType):
         '_items',
         '_is_optional',
         '_strip_optional',
+    )
+
+    __match_args__: ta.Final = (
+        'items',
     )
 
     def __init__(self, items: ta.Sequence[Type]) -> None:
@@ -1158,6 +1251,12 @@ class PartialType(ProperType):
         '_value_type',
     )
 
+    __match_args__: ta.Final = (
+        'type',
+        'var',
+        'value_type',
+    )
+
     def __init__(
             self,
             typ: TypeInfo | None,
@@ -1207,6 +1306,10 @@ class TypeType(ProperType):
         '_item',
     )
 
+    __match_args__: ta.Final = (
+        'item',
+    )
+
     def __init__(self, item: Type) -> None:
         super().__init__()
 
@@ -1225,6 +1328,11 @@ class PlaceholderType(ProperType):
     __slots__ = (
         '_fullname',
         '_args',
+    )
+
+    __match_args__: ta.Final = (
+        'fullname',
+        'args',
     )
 
     def __init__(
