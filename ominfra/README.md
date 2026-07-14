@@ -19,8 +19,3 @@ Infrastructure and cloud code.
   ([amalg](https://github.com/wrmsr/omlish/blob/master/ominfra/scripts/manage.py)) - a remote system management tool,
   including a code deployment system. inspired by things like [mitogen](https://mitogen.networkgenomics.com/),
   [pyinfra](https://github.com/pyinfra-dev/pyinfra), [piku](https://github.com/piku/piku). uses pyremote.
-
-- **[supervisor](https://github.com/wrmsr/omlish/blob/master/ominfra/supervisor)**
-  ([amalg](https://github.com/wrmsr/omlish/blob/master/ominfra/scripts/supervisor.py)) - an overhauled,
-  [amalgamated](https://github.com/wrmsr/omlish/blob/master/omdev#amalgamation) fork of
-  [supervisor](https://github.com/Supervisor/supervisor)
