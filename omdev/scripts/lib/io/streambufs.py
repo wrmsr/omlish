@@ -1547,7 +1547,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 ##
 
 
-BaseByteStreamBufferBytesReaderAdapterPolicy = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+BaseByteStreamBufferBytesReaderAdapterPolicy = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     'raise',
     'return_partial',
     'fill',

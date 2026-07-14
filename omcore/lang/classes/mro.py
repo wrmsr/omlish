@@ -1,6 +1,6 @@
 """
-Note that this is similar to but different from `omlish.c3` - this is for validation and debugging of real. concrete,
-intended-to-be-final class bases, whereas `omlish.c3` is for computing mro of arbitrary otherwise unrelated types,
+Note that this is similar to but different from `omcore.c3` - this is for validation and debugging of real. concrete,
+intended-to-be-final class bases, whereas `omcore.c3` is for computing mro of arbitrary otherwise unrelated types,
 including virtual ABC's (primarily for dispatch-like code).
 """
 import typing as ta

@@ -208,7 +208,7 @@ class ManifestLoader:
 
     ##
 
-    ENTRY_POINT_GROUP: ta.ClassVar[str] = 'omlish.manifests'
+    ENTRY_POINT_GROUP: ta.ClassVar[str] = 'omcore.manifests'
 
     _discovered_packages: ta.ClassVar[ta.Optional[ta.Sequence[str]]] = None
 
@@ -439,7 +439,7 @@ class ManifestLoader:
             return None
         return t.read_text('utf-8')
 
-    MANIFESTS_FILE_NAME: ta.ClassVar[str] = '.omlish-manifests.json'
+    MANIFESTS_FILE_NAME: ta.ClassVar[str] = '.om-manifests.json'
 
     @classmethod
     def _read_package_raw_manifests(cls, package_name: str) -> ta.Optional[ta.Sequence[Manifest]]:

@@ -976,7 +976,7 @@ static int fixedmap_exec(PyObject* module) {
         return -1;
     }
 
-    PyObject *errors_module = PyImport_ImportModule("omlish.lang.errors");
+    PyObject *errors_module = PyImport_ImportModule("omcore.lang.errors");
     if (!errors_module) {
         return -1;
     }

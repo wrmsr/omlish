@@ -6,7 +6,6 @@ TODO:
   - uppercase
   - digits
   - symbols
- - move to omlish/secrets
  - argparse, CliCmd
 """
 import argparse

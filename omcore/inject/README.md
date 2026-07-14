@@ -22,7 +22,7 @@ The system is built around three core concepts:
 A `Key` identifies a dependency by its type and an optional tag for disambiguation:
 
 ```python
-from omlish import inject as inj
+from omcore import inject as inj
 
 # Simple key by type
 int_key = inj.as_key(int)

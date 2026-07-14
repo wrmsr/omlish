@@ -178,7 +178,7 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract, ta.Generic[BaseIoPipeli
             parsed_url.path,
             method=req.method_or_default,
             headers=HttpHeaders.of(req.headers_).update(
-                ('User-Agent', 'omlish-http-client/0.1'),
+                ('User-Agent', 'omcore-http-client/0.1'),
                 if_present='skip',
             ),
             body=data,

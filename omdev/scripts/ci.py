@@ -4576,7 +4576,7 @@ TODO:
 ##
 
 
-CanHttpHeaders = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+CanHttpHeaders = ta.Union[  # ta.TypeAlias  # om-amalg-typing-no-move
     'HttpHeaders',
 
     http.client.HTTPMessage,
@@ -4932,7 +4932,7 @@ class EncodingHttpParseErrorCode(enum.Enum):
     OBS_TEXT_IN_FIELD_VALUE = enum.auto()
 
 
-HttpParseErrorCode = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+HttpParseErrorCode = ta.Union[  # ta.TypeAlias  # om-amalg-typing-no-move
     StartLineHttpParseErrorCode,
     HeaderFieldHttpParseErrorCode,
     SemanticHeaderHttpParseErrorCode,
@@ -6758,7 +6758,7 @@ class IoPiplineHttpCompressorCoding(Abstract):
         raise NotImplementedError
 
 
-IoPiplineHttpCompressorCodings = ta.Mapping[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPiplineHttpCompressorCodings = ta.Mapping[  # ta.TypeAlias  # om-amalg-typing-no-move
     str,
     ta.Callable[[], IoPiplineHttpCompressorCoding],
 ]
@@ -6786,7 +6786,7 @@ class IoPiplineHttpDecompressorCoding(Abstract):
         raise NotImplementedError
 
 
-IoPiplineHttpDecompressorCodings = ta.Mapping[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPiplineHttpDecompressorCodings = ta.Mapping[  # ta.TypeAlias  # om-amalg-typing-no-move
     str,
     ta.Callable[[], IoPiplineHttpDecompressorCoding],
 ]
@@ -7119,7 +7119,7 @@ class IoPipelineHandlerRef(ta.Generic[T]):
         )
 
 
-IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlias  # om-amalg-typing-no-move  # noqa
 
 
 ##
@@ -7505,22 +7505,22 @@ class ShareableIoPipelineHandler(IoPipelineHandler, Abstract):
 ##
 
 
-IoPipelineDirection = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineDirection = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     'inbound',
     'outbound',
 ]
 
-IoPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     IoPipelineDirection,
     'duplex',
 ]
 
-IoPipelineUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineUpdate = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     'added',
     'removed',
 ]
 
-IoPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     'adding',
     'added',
     'removing',
@@ -7851,7 +7851,7 @@ class _IoPipelinePropagation:
 ##
 
 
-IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # om-amalg-typing-no-move
     [
         IoPipelineHandlerContext,
         IoPipelineDirection,
@@ -7861,7 +7861,7 @@ IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-mo
 ]
 
 
-IoPipelineMessageTapTuple = ta.Tuple[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineMessageTapTuple = ta.Tuple[  # ta.TypeAlias  # om-amalg-typing-no-move
     IoPipelineHandlerContext,
     IoPipelineDirection,
     ta.Any,
@@ -12347,7 +12347,7 @@ YamlKeywords.RESERVED_ENC_KEYWORD_MAP = {
 ##
 
 
-YamlReservedTagKeyword = str  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlReservedTagKeyword = str  # ta.TypeAlias  # om-amalg-typing-no-move
 
 
 class YamlReservedTagKeywords:
@@ -24477,7 +24477,7 @@ def yaml_normalize_path(path: str) -> str:
 
 
 # Option represents parser's option.
-YamlOption = ta.Callable[['YamlParser'], None]  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlOption = ta.Callable[['YamlParser'], None]  # ta.TypeAlias  # om-amalg-typing-no-move
 
 
 # AllowDuplicateMapKey allow the use of keys with the same name in the same map, but by default, this is not permitted.
@@ -25376,7 +25376,7 @@ def yaml_set_head_comment(cm: ta.Optional[CommentGroupYamlNode], value: YamlNode
 ##
 
 
-YamlParseMode = int  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlParseMode = int  # ta.TypeAlias  # om-amalg-typing-no-move
 
 YAML_PARSE_COMMENTS = YamlParseMode(1)  # parse comments and add them to AST
 
@@ -25414,7 +25414,7 @@ def yaml_parse(
 #
 
 
-YamlVersion = str  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlVersion = str  # ta.TypeAlias  # om-amalg-typing-no-move
 
 YAML10 = YamlVersion('1.0')
 YAML11 = YamlVersion('1.1')

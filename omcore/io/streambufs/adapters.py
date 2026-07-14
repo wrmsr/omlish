@@ -25,7 +25,7 @@ BoolOrAwaitableBool_co = ta.TypeVar('BoolOrAwaitableBool_co', bound=ta.Union[boo
 ##
 
 
-BaseByteStreamBufferBytesReaderAdapterPolicy = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+BaseByteStreamBufferBytesReaderAdapterPolicy = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     'raise',
     'return_partial',
     'fill',

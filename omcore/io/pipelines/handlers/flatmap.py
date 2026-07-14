@@ -18,7 +18,7 @@ from .fns import IoPipelineHandlerFns
 ##
 
 
-FlatMapIoPipelineHandlerFn = IoPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+FlatMapIoPipelineHandlerFn = IoPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # om-amalg-typing-no-move  # noqa
 
 
 class FlatMapIoPipelineHandlerFns(NamespaceClass):

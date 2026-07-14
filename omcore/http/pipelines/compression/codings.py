@@ -29,7 +29,7 @@ class IoPiplineHttpCompressorCoding(Abstract):
         raise NotImplementedError
 
 
-IoPiplineHttpCompressorCodings = ta.Mapping[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPiplineHttpCompressorCodings = ta.Mapping[  # ta.TypeAlias  # om-amalg-typing-no-move
     str,
     ta.Callable[[], IoPiplineHttpCompressorCoding],
 ]
@@ -57,7 +57,7 @@ class IoPiplineHttpDecompressorCoding(Abstract):
         raise NotImplementedError
 
 
-IoPiplineHttpDecompressorCodings = ta.Mapping[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPiplineHttpDecompressorCodings = ta.Mapping[  # ta.TypeAlias  # om-amalg-typing-no-move
     str,
     ta.Callable[[], IoPiplineHttpDecompressorCoding],
 ]

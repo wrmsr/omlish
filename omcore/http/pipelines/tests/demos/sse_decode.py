@@ -63,7 +63,7 @@ def demo_sync_http_sse() -> ta.List[ta.Any]:
 
 if __name__ == '__main__':
     # try:
-    #     __import__('omlish.check')
+    #     __import__('omcore.check')
     # except ImportError:
     #     pass
 

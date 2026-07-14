@@ -1,7 +1,7 @@
 # ruff: noqa: UP037
 """
 This file is considered part of the marshal api, and must be diligent about not importing too much like the rest of the
-api modules. Specifically, it can't eagerly import `omlish.dataclasses` (even though `dc.set_field_metadata` itself
+api modules. Specifically, it can't eagerly import `omcore.dataclasses` (even though `dc.set_field_metadata` itself
 tries to only lazily load heavy dataclass internals).
 """
 import typing as ta

@@ -1,5 +1,5 @@
 """
-As with `omlish.dataclasses._internals` this is a place for centralizing access to `typing` internals (which have a
+As with `omcore.dataclasses._internals` this is a place for centralizing access to `typing` internals (which have a
 history of changing significantly between python versions).
 """
 import typing as ta

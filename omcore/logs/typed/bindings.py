@@ -456,7 +456,7 @@ TYPED_LOGGER_BINDING_ITEM_TYPES: ta.Tuple[ta.Type[TypedLoggerBindingItem], ...] 
 ##
 
 
-CanTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+CanTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # om-amalg-typing-no-move
     TypedLoggerBindingItem,
     ta.Type[TypedLoggerValue],
     ta.Tuple[
@@ -469,7 +469,7 @@ CanTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
     None,
 ]
 
-CanChainTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+CanChainTypedLoggerBinding = ta.Union[  # ta.TypeAlias  # om-amalg-typing-no-move
     ChainTypedLoggerBindingItem,
     ta.Type[TypedLoggerValue],
     ta.Tuple[

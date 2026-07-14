@@ -21,7 +21,7 @@ StrOrBytes = ta.Union[str, bytes]  # ta.TypeAlias
 ##
 
 
-CanHttpHeaders = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+CanHttpHeaders = ta.Union[  # ta.TypeAlias  # om-amalg-typing-no-move
     'HttpHeaders',
 
     http.client.HTTPMessage,

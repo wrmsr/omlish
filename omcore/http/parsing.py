@@ -73,7 +73,7 @@ class EncodingHttpParseErrorCode(enum.Enum):
     OBS_TEXT_IN_FIELD_VALUE = enum.auto()
 
 
-HttpParseErrorCode = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+HttpParseErrorCode = ta.Union[  # ta.TypeAlias  # om-amalg-typing-no-move
     StartLineHttpParseErrorCode,
     HeaderFieldHttpParseErrorCode,
     SemanticHeaderHttpParseErrorCode,

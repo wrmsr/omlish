@@ -8,7 +8,7 @@ __revision__ = None
 class ProjectBase:
     name: str | None = None
     authors = [{'name': 'wrmsr'}]
-    urls = {'source': 'https://github.com/wrmsr/omlish'}
+    urls = {'source': 'https://github.com/wrmsr/omcore'}
     license = 'BSD-3-Clause'
     readme = 'README.md'
     requires_python = '>=3.14'
@@ -29,8 +29,8 @@ class ProjectBase:
 
 
 class Project(ProjectBase):
-    name = 'omlish'
-    description = 'omlish'
+    name = 'omcore'
+    description = 'omcore'
 
     #
 
@@ -138,7 +138,7 @@ class Project(ProjectBase):
     #
 
     entry_points = {
-        'omlish.manifests': {name: name},
+        'omcore.manifests': {name: name},
     }
 
 
@@ -171,7 +171,7 @@ class SetuptoolsBase:
             '*.abnf',
             '*.g4',
 
-            '.omlish-manifests.json',
+            '.om-manifests.json',
 
             'py.typed',
 

@@ -40,7 +40,7 @@ else:
 ##
 
 
-CANARY: contextvars.ContextVar[ta.Any] = contextvars.ContextVar('pytest-omlish-asyncs canary')
+CANARY: contextvars.ContextVar[ta.Any] = contextvars.ContextVar('pytest-omcore-asyncs canary')
 
 
 class NURSERY_FIXTURE_PLACEHOLDER:  # noqa

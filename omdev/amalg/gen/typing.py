@@ -11,7 +11,7 @@ from ...py.tokens import all as tks
 TYPE_ALIAS_COMMENT = '# ta.TypeAlias'
 NOQA_TYPE_ALIAS_COMMENT = TYPE_ALIAS_COMMENT + '  # noqa'
 
-NO_MOVE_COMMENT = '# omlish-amalg-typing-no-move'
+NO_MOVE_COMMENT = '# om-amalg-typing-no-move'
 
 
 @dc.dataclass(frozen=True, kw_only=True)

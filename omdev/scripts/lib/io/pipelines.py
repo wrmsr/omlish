@@ -1640,7 +1640,7 @@ class IoPipelineHandlerRef(ta.Generic[T]):
         )
 
 
-IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlias  # om-amalg-typing-no-move  # noqa
 
 
 ##
@@ -2026,22 +2026,22 @@ class ShareableIoPipelineHandler(IoPipelineHandler, Abstract):
 ##
 
 
-IoPipelineDirection = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineDirection = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     'inbound',
     'outbound',
 ]
 
-IoPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     IoPipelineDirection,
     'duplex',
 ]
 
-IoPipelineUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineUpdate = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     'added',
     'removed',
 ]
 
-IoPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # om-amalg-typing-no-move
     'adding',
     'added',
     'removing',
@@ -2372,7 +2372,7 @@ class _IoPipelinePropagation:
 ##
 
 
-IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # om-amalg-typing-no-move
     [
         IoPipelineHandlerContext,
         IoPipelineDirection,
@@ -2382,7 +2382,7 @@ IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-mo
 ]
 
 
-IoPipelineMessageTapTuple = ta.Tuple[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineMessageTapTuple = ta.Tuple[  # ta.TypeAlias  # om-amalg-typing-no-move
     IoPipelineHandlerContext,
     IoPipelineDirection,
     ta.Any,
@@ -5355,7 +5355,7 @@ class InboundBytesBufferingQueueIoPipelineHandler(
 ##
 
 
-FlatMapIoPipelineHandlerFn = IoPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+FlatMapIoPipelineHandlerFn = IoPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # om-amalg-typing-no-move  # noqa
 
 
 class FlatMapIoPipelineHandlerFns(NamespaceClass):

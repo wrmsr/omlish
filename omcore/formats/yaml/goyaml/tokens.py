@@ -291,7 +291,7 @@ YamlKeywords.RESERVED_ENC_KEYWORD_MAP = {
 ##
 
 
-YamlReservedTagKeyword = str  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlReservedTagKeyword = str  # ta.TypeAlias  # om-amalg-typing-no-move
 
 
 class YamlReservedTagKeywords:

@@ -1,6 +1,6 @@
 def test_marshal():
-    # from omlish.formats.json import all as json
-    # from omlish import marshal as msh
+    # from omcore.formats.json import all as json
+    # from omcore import marshal as msh
     #
     # msh.install_global_standard_factories(
     #     *msh.standard_polymorphism_factories(part_poly := msh.polymorphism_from_subclasses(Part)),

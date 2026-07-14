@@ -24,7 +24,7 @@ class CoroIoPipelineHandler(IoPipelineHandler, Abstract):
 
     @ta.final
     class _Runner:
-        """Analogous to `omlish.funcs.genmachine`."""
+        """Analogous to `omcore.funcs.genmachine`."""
 
         def __init__(self, initial: ta.Any) -> None:
             self._gen = initial

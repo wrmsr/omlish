@@ -40,7 +40,7 @@ def test_clients(cls, data):
         resp = cli.request(HttpClientRequest(
             f'https://httpbingo.org/{"post" if data else "get"}',
             'POST' if data is not None else 'GET',
-            headers={'User-Agent': 'omlish'},
+            headers={'User-Agent': 'omcore'},
             data=data,
         ))
         print(resp)
@@ -56,7 +56,7 @@ def test_clients_stream(cls, data, readall):
         with cli.stream_request(HttpClientRequest(
             'https://httpbingo.org/drip?duration=1&numbytes=10&code=200&delay=1',
             'POST' if data is not None else 'GET',
-            headers={'User-Agent': 'omlish'},
+            headers={'User-Agent': 'omcore'},
             data=data,
         )) as resp:
             print(resp)
@@ -81,7 +81,7 @@ def test_clients_error(cls):
         resp = cli.request(HttpClientRequest(
             'https://httpbingo.org/basic-auth/foo/bar',
             'POST' if data is not None else 'GET',
-            headers={'User-Agent': 'omlish'},
+            headers={'User-Agent': 'omcore'},
             data=data,
         ))
         print(resp)
@@ -98,7 +98,7 @@ def test_clients_error_check(cls):
                 HttpClientRequest(
                     'https://httpbingo.org/basic-auth/foo/bar',
                     'POST' if data is not None else 'GET',
-                    headers={'User-Agent': 'omlish'},
+                    headers={'User-Agent': 'omcore'},
                     data=data,
                 ),
                 check=True,
@@ -115,7 +115,7 @@ def test_clients_error_url(cls):
             cli.request(HttpClientRequest(
                 'https://foo.notarealtld/',
                 'POST' if data is not None else 'GET',
-                headers={'User-Agent': 'omlish'},
+                headers={'User-Agent': 'omcore'},
                 data=data,
             ))
 
@@ -128,7 +128,7 @@ def test_clients_redirect(cls, abs):  # noqa
         resp = cli.request(
             HttpClientRequest(
                 'https://httpbingo.org/absolute-redirect/3' if abs else 'https://httpbingo.org/redirect/3',
-                headers={'User-Agent': 'omlish'},
+                headers={'User-Agent': 'omcore'},
             ),
             check=True,
         )
@@ -145,7 +145,7 @@ def test_default(cls, data):
         resp = default.request(
             f'https://httpbingo.org/{"post" if data is not None else "get"}',
             'POST' if data is not None else 'GET',
-            headers={'User-Agent': 'omlish'},
+            headers={'User-Agent': 'omcore'},
             data=data,
             client=cli,
         )

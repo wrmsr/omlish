@@ -1,6 +1,6 @@
 """
 Manual benchmark comparing the reference and closure-compiled interpreter engines over the test corpora. Not run by
-pytest - invoke via `python -m omlish.text.abnf.tests.perf`.
+pytest - invoke via `python -m omcore.text.abnf.tests.perf`.
 """
 import os.path
 import time

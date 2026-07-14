@@ -64,7 +64,7 @@ async def test_clients(cls, data):
         resp = await cli.request(HttpClientRequest(
             f'https://httpbingo.org/{"post" if data else "get"}',
             'POST' if data is not None else 'GET',
-            headers={'User-Agent': 'omlish'},
+            headers={'User-Agent': 'omcore'},
             data=data,
         ))
         print(resp)
@@ -81,7 +81,7 @@ async def test_clients_stream(cls, data, readall):
         async with (await cli.stream_request(HttpClientRequest(
                 'https://httpbingo.org/drip?duration=1&numbytes=10&code=200&delay=1',
                 'POST' if data is not None else 'GET',
-                headers={'User-Agent': 'omlish'},
+                headers={'User-Agent': 'omcore'},
                 data=data,
         ))) as resp:
             print(resp)
@@ -107,7 +107,7 @@ async def test_clients_error(cls):
         resp = await cli.request(HttpClientRequest(
             'https://httpbingo.org/basic-auth/foo/bar',
             'POST' if data is not None else 'GET',
-            headers={'User-Agent': 'omlish'},
+            headers={'User-Agent': 'omcore'},
             data=data,
         ))
         print(resp)
@@ -125,7 +125,7 @@ async def test_clients_error_check(cls):
                 HttpClientRequest(
                     'https://httpbingo.org/basic-auth/foo/bar',
                     'POST' if data is not None else 'GET',
-                    headers={'User-Agent': 'omlish'},
+                    headers={'User-Agent': 'omcore'},
                     data=data,
                 ),
                 check=True,
@@ -143,7 +143,7 @@ async def test_clients_error_url(cls):
             await cli.request(HttpClientRequest(
                 'https://foo.notarealtld/',
                 'POST' if data is not None else 'GET',
-                headers={'User-Agent': 'omlish'},
+                headers={'User-Agent': 'omcore'},
                 data=data,
             ))
 
@@ -157,7 +157,7 @@ async def test_default(cls, data):
         resp = await default.async_request(
             f'https://httpbingo.org/{"post" if data is not None else "get"}',
             'POST' if data is not None else 'GET',
-            headers={'User-Agent': 'omlish'},
+            headers={'User-Agent': 'omcore'},
             data=data,
             client=cli,
         )

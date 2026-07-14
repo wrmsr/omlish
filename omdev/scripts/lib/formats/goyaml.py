@@ -1377,7 +1377,7 @@ YamlKeywords.RESERVED_ENC_KEYWORD_MAP = {
 ##
 
 
-YamlReservedTagKeyword = str  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlReservedTagKeyword = str  # ta.TypeAlias  # om-amalg-typing-no-move
 
 
 class YamlReservedTagKeywords:
@@ -6480,7 +6480,7 @@ def yaml_normalize_path(path: str) -> str:
 
 
 # Option represents parser's option.
-YamlOption = ta.Callable[['YamlParser'], None]  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlOption = ta.Callable[['YamlParser'], None]  # ta.TypeAlias  # om-amalg-typing-no-move
 
 
 # AllowDuplicateMapKey allow the use of keys with the same name in the same map, but by default, this is not permitted.
@@ -7379,7 +7379,7 @@ def yaml_set_head_comment(cm: ta.Optional[CommentGroupYamlNode], value: YamlNode
 ##
 
 
-YamlParseMode = int  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlParseMode = int  # ta.TypeAlias  # om-amalg-typing-no-move
 
 YAML_PARSE_COMMENTS = YamlParseMode(1)  # parse comments and add them to AST
 
@@ -7417,7 +7417,7 @@ def yaml_parse(
 #
 
 
-YamlVersion = str  # ta.TypeAlias  # omlish-amalg-typing-no-move
+YamlVersion = str  # ta.TypeAlias  # om-amalg-typing-no-move
 
 YAML10 = YamlVersion('1.0')
 YAML11 = YamlVersion('1.1')

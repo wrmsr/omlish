@@ -16,7 +16,7 @@ patterns like type-based dependency injection, configuration management, and opt
 The base abstract class for all typed values. Typed values are meant to be used as types-as-keys in collections.
 
 ```python
-from omlish import typedvalues as tv
+from omcore import typedvalues as tv
 
 class MyValue(tv.TypedValue):
     pass
@@ -25,7 +25,7 @@ class MyValue(tv.TypedValue):
 Their presence alone may be significant, but they usually have fields, and are frequently combined with `@dc.dataclass`:
 
 ```python
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 @dc.dataclass(frozen=True)
 class MyStringValue(tv.TypedValue):
@@ -45,7 +45,7 @@ An abstract class for typed values where only one instance per unique type famil
 immediately inheriting class becomes the "unique key" for all its descendants.
 
 ```python
-from omlish import typedvalues as tv
+from omcore import typedvalues as tv
 
 class ResponseFormat(tv.UniqueTypedValue):
     pass
@@ -65,7 +65,7 @@ A generic typed value wrapper for scalar values, inheriting from `dc.Box[T]`. Ac
 attribute.
 
 ```python
-from omlish import typedvalues as tv
+from omcore import typedvalues as tv
 
 class TopK(tv.ScalarTypedValue[int]):
     pass
@@ -79,7 +79,7 @@ print(top_k.v)  # 10
 Combines both `ScalarTypedValue` and `UniqueTypedValue` characteristics.
 
 ```python
-from omlish import typedvalues as tv
+from omcore import typedvalues as tv
 
 class Temperature(tv.UniqueScalarTypedValue[float]):
     pass
@@ -106,8 +106,8 @@ The main immutable collection class for managing typed values. It preserves inse
 access methods.
 
 ```python
-from omlish import dataclasses as dc
-from omlish import typedvalues as tv
+from omcore import dataclasses as dc
+from omcore import typedvalues as tv
 
 class TopK(tv.ScalarTypedValue[int], tv.UniqueTypedValue):
     pass
@@ -208,7 +208,7 @@ With override enabled, later unique values replace earlier ones while preserving
 A context manager for consuming typed values with validation that all values are processed.
 
 ```python
-from omlish import typedvalues as tv
+from omcore import typedvalues as tv
 
 opts = tv.TypedValues(
     TopK(10),
@@ -266,7 +266,7 @@ model.generate(**kwargs)
 #### `consume` Convenience Function
 
 ```python
-from omlish import typedvalues as tv
+from omcore import typedvalues as tv
 
 with tv.consume(TopK(10), Temperature(0.5)) as c:
     # Use consumer
@@ -283,7 +283,7 @@ interface.
 Custom accessor implementations can extend this to provide specialized views:
 
 ```python
-from omlish import typedvalues as tv
+from omcore import typedvalues as tv
 
 class MyAccessor(tv.TypedValuesAccessor[MyValueType]):
     def _typed_value_contains(self, cls):
@@ -304,8 +304,8 @@ class MyAccessor(tv.TypedValuesAccessor[MyValueType]):
 ### Configuration Management
 
 ```python
-from omlish import dataclasses as dc
-from omlish import typedvalues as tv
+from omcore import dataclasses as dc
+from omcore import typedvalues as tv
 
 class MaxRetries(tv.UniqueScalarTypedValue[int]):
     pass
@@ -330,8 +330,8 @@ timeout = config.get(Timeout, Timeout(60.0)).v  # 30.0
 ### Option Passing
 
 ```python
-from omlish import dataclasses as dc
-from omlish import typedvalues as tv
+from omcore import dataclasses as dc
+from omcore import typedvalues as tv
 
 class ChatOption(tv.TypedValue):
     pass
