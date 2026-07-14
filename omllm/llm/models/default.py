@@ -2,6 +2,7 @@ import typing as ta
 
 from omcore import lang
 
+from ..types.compat import OpenaiCompat
 from ..types.models import Model
 from ..types.models import ModelKey
 from ..types.options import Options
@@ -53,6 +54,9 @@ DEFAULT_MODELS: ta.Final[ta.Sequence[Model]] = [
         ),
         name='Claude Sonnet 5',
         backend='anthropic-messages',
+        compat=OpenaiCompat(
+            max_tokens_field='max_tokens',
+        ),
         http=Model.Http(
             base_url='https://api.anthropic.com/v1',
             extra_headers={

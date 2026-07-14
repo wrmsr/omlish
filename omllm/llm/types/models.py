@@ -4,6 +4,7 @@ from omcore import check
 from omcore import dataclasses as dc
 from omcore import lang
 
+from .compat import Compat
 from .options import Options
 
 
@@ -31,6 +32,10 @@ class Model:
     name: str | None = ''
 
     backend: str
+
+    #
+
+    compat: Compat | None = None
 
     #
 

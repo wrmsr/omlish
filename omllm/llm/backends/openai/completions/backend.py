@@ -4,6 +4,7 @@ from omcore.http import all as http
 from omcore.secrets import all as sec
 
 from ....types.backends import Backend
+from ....types.compat import OpenaiCompat
 from ....types.content import TextContent
 from ....types.context import Context
 from ....types.messages import AiMessage
@@ -32,6 +33,11 @@ class OpenaiCompletionsBackend(Backend):
         self._model_http = check.not_none(model.http)
         self._base_url = check.non_empty_str(self._model_http.base_url).rstrip('/')
 
+        if self._model.compat is not None:
+            self._compat = check.isinstance(self._model.compat, OpenaiCompat)
+        else:
+            self._compat = OpenaiCompat()
+
     @property
     def model(self) -> Model:
         return self._model
@@ -49,7 +55,7 @@ class OpenaiCompletionsBackend(Backend):
         }
 
         if effective_options.max_tokens is not None:
-            raw_request['max_tokens'] = effective_options.max_tokens
+            raw_request[self._compat.max_tokens_field or 'max_completion_tokens'] = effective_options.max_tokens
 
         #
 

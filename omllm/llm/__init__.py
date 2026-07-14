@@ -44,6 +44,12 @@ with _lang.auto_proxy_init(
         Backend,
     )
 
+    from .types.compat import (  # noqa
+        Compat,
+
+        OpenaiCompat,
+    )
+
     from .types.content import (  # noqa
         Content,
         ContentBuilder,
