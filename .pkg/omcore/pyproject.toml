@@ -162,7 +162,7 @@ exclude = [
     'AUTHORS',
 ]
 'omcore.cexts' = [
-    'include/omlish/*',
+    'include/omcore/*',
 ]
 'omcore.http.resources' = [
     '*',

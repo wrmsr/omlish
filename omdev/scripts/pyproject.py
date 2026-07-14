@@ -152,7 +152,7 @@ def __om_amalg__():  # noqa
             dict(path='../interp/providers/system.py', sha1='5b337476498d3187d4a8774f04f9e634f60972fb'),
             dict(path='../interp/pyenv/install.py', sha1='c2e2a6c9ebb36b1dd09482662bdafdb59c75ae81'),
             dict(path='../interp/uv/provider.py', sha1='fcb5939d4038b41c1a3e887feb10cfcb0924107c'),
-            dict(path='pkg.py', sha1='5b59953369322edd5b0bdf90ab211391f37cd303'),
+            dict(path='pkg.py', sha1='900546c5b6abdf8989417373b5946d81acacd362'),
             dict(path='../interp/providers/inject.py', sha1='558f0761ce1bd375136f9e733c8674895eec9e62'),
             dict(path='../interp/pyenv/provider.py', sha1='2d9ef6be0b9dd151361a6e8604a682fa74f9920c'),
             dict(path='../interp/uv/inject.py', sha1='86cc5b6b8fa88beaa9f468bf05c078f8af330a23'),
@@ -12072,7 +12072,7 @@ https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa25
 
 https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
-'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
+'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omcore'
 """  # noqa
 
 

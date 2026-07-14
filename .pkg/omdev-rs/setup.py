@@ -32,5 +32,9 @@ _patch_sdist()
 
 st.setup(
     rust_extensions=[
+        st_rs.RustExtension(
+            'omdev.rs._boilerplate',
+            path='omdev/rs/_boilerplate/Cargo.toml',
+        ),
     ],
 )
