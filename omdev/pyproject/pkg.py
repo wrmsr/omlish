@@ -90,6 +90,7 @@ class BasePyprojectPackageGenerator(Abstract):
 
     _GIT_IGNORE: ta.Sequence[str] = [
         '/*.egg-info/',
+        '/build',
         '/dist',
     ]
 
@@ -442,12 +443,13 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
                 pkg_suffix='-cext',
             ))
 
-        if self.build_specs().setuptools.get('mypyc'):
-            out.append(_PyprojectMypycPackageGenerator(
-                self._dir_name,
-                self._pkgs_root,
-                pkg_suffix='-mypyc',
-            ))
+        # FIXME:
+        # if self.build_specs().setuptools.get('mypyc'):
+        #     out.append(_PyprojectMypycPackageGenerator(
+        #         self._dir_name,
+        #         self._pkgs_root,
+        #         pkg_suffix='-mypyc',
+        #     ))
 
         if self.build_specs().setuptools.get('rs'):
             out.append(_PyprojectRsPackageGenerator(
@@ -617,10 +619,21 @@ class _PyprojectMypycPackageGenerator(_PyprojectExtensionPackageGenerator):
 
         #
 
+        prj['dependencies'] = [
+            *prj.get('dependencies', []),
+            'librt',
+        ]
+
+        #
+
         pyp_dct = {}
 
         pyp_dct['build-system'] = {
-            'requires': ['setuptools', 'mypyc'],
+            'requires': [
+                'setuptools',
+                'mypy',
+                f'{prj["name"]} == {prj["version"]}',
+            ],
             'build-backend': 'setuptools.build_meta',
         }
 
@@ -631,12 +644,12 @@ class _PyprojectMypycPackageGenerator(_PyprojectExtensionPackageGenerator):
 
         ext_dirs = sorted(self.find_mypyc_dirs())
 
-        pyp_dct['tool.setuptools.packages.find'] = {
-            'include': [
-                ext_dir.replace(os.sep, '.')
-                for ext_dir in ext_dirs
-            ],
-        }
+        # pyp_dct['tool.setuptools.packages.find'] = {
+        #     'include': [
+        #         ext_dir.replace(os.sep, '.')
+        #         for ext_dir in ext_dirs
+        #     ],
+        # }
 
         #
 

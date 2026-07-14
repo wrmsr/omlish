@@ -296,6 +296,15 @@ build-mypyc: venv
 		find "$$d" -name '*__mypyc.*.so' -maxdepth 1 | xargs -n1 -I % cp % ./ ; \
 	done
 
+# FIXME: fix build-mypyc
+.PHONY: build-reflect
+build-reflect: venv
+	${PYTHON} -mmypyc omcore/reflect/core/*.py
+
+.PHONY: clean-reflect
+clean-reflect:
+	rm omcore/reflect/core/*.so || true
+
 
 ## pre-commit
 
