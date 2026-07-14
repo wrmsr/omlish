@@ -15,6 +15,7 @@ from ..backend import OpenaiCompletionsBackend
 @pytest.mark.parametrize('model', [
     (ModelKey('openai', 'gpt-5.4-mini'), 'openai_api_key'),
     (ModelKey('groq', 'openai/gpt-oss-120b'), 'groq_api_key'),
+    (ModelKey('cerebras', 'gpt-oss-120b'), 'cerebras_api_key'),
 ])
 @pytest.mark.parametrize('max_tokens', [None, 1024])
 async def test_openai_backend(
