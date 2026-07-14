@@ -34,11 +34,11 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='09d620230085f2ec30d46bc47d392ca3f53879f5',
     cls_names=(
-        ('omlish.marshal.composite.iterables', 'IterableMarshaler'),
-        ('omlish.marshal.composite.maybes', 'MaybeMarshaler'),
-        ('omlish.marshal.composite.maybes', 'MaybeUnmarshaler'),
-        ('omlish.marshal.composite.optionals', 'OptionalMarshaler'),
-        ('omlish.marshal.composite.optionals', 'OptionalUnmarshaler'),
+        ('omcore.marshal.composite.iterables', 'IterableMarshaler'),
+        ('omcore.marshal.composite.maybes', 'MaybeMarshaler'),
+        ('omcore.marshal.composite.maybes', 'MaybeUnmarshaler'),
+        ('omcore.marshal.composite.optionals', 'OptionalMarshaler'),
+        ('omcore.marshal.composite.optionals', 'OptionalUnmarshaler'),
     ),
 )
 def _process_dataclass__09d620230085f2ec30d46bc47d392ca3f53879f5():
@@ -143,7 +143,7 @@ def _process_dataclass__09d620230085f2ec30d46bc47d392ca3f53879f5():
     ),
     plan_repr_sha1='213c17bea15f5fc2ebb3ba450b08965983b8bbd4',
     cls_names=(
-        ('omlish.marshal.composite.iterables', 'IterableUnmarshaler'),
+        ('omcore.marshal.composite.iterables', 'IterableUnmarshaler'),
     ),
 )
 def _process_dataclass__213c17bea15f5fc2ebb3ba450b08965983b8bbd4():
@@ -262,8 +262,8 @@ def _process_dataclass__213c17bea15f5fc2ebb3ba450b08965983b8bbd4():
     ),
     plan_repr_sha1='db516f58871ac378fdcad03183f2473027e52577',
     cls_names=(
-        ('omlish.marshal.composite.literals', 'LiteralMarshaler'),
-        ('omlish.marshal.composite.literals', 'LiteralUnmarshaler'),
+        ('omcore.marshal.composite.literals', 'LiteralMarshaler'),
+        ('omcore.marshal.composite.literals', 'LiteralUnmarshaler'),
     ),
 )
 def _process_dataclass__db516f58871ac378fdcad03183f2473027e52577():
@@ -373,7 +373,7 @@ def _process_dataclass__db516f58871ac378fdcad03183f2473027e52577():
     ),
     plan_repr_sha1='31b96e0288616218d19316ded67355ee33bc271d',
     cls_names=(
-        ('omlish.marshal.composite.mappings', 'MappingMarshaler'),
+        ('omcore.marshal.composite.mappings', 'MappingMarshaler'),
     ),
 )
 def _process_dataclass__31b96e0288616218d19316ded67355ee33bc271d():
@@ -489,7 +489,7 @@ def _process_dataclass__31b96e0288616218d19316ded67355ee33bc271d():
     ),
     plan_repr_sha1='92ad32c297e78f61b93d63b65d0e3da74a345a47',
     cls_names=(
-        ('omlish.marshal.composite.mappings', 'MappingUnmarshaler'),
+        ('omcore.marshal.composite.mappings', 'MappingUnmarshaler'),
     ),
 )
 def _process_dataclass__92ad32c297e78f61b93d63b65d0e3da74a345a47():
@@ -619,8 +619,8 @@ def _process_dataclass__92ad32c297e78f61b93d63b65d0e3da74a345a47():
     ),
     plan_repr_sha1='aa08307883613da816f90047c1bb03f6cdc155a2',
     cls_names=(
-        ('omlish.marshal.composite.unions.literals', 'LiteralUnionMarshaler'),
-        ('omlish.marshal.composite.unions.literals', 'LiteralUnionUnmarshaler'),
+        ('omcore.marshal.composite.unions.literals', 'LiteralUnionMarshaler'),
+        ('omcore.marshal.composite.unions.literals', 'LiteralUnionUnmarshaler'),
     ),
 )
 def _process_dataclass__aa08307883613da816f90047c1bb03f6cdc155a2():
@@ -738,8 +738,8 @@ def _process_dataclass__aa08307883613da816f90047c1bb03f6cdc155a2():
     ),
     plan_repr_sha1='f2f290d474e5d287d38623cbc2f347779aa70a7a',
     cls_names=(
-        ('omlish.marshal.composite.unions.primitives', 'PrimitiveUnionMarshaler'),
-        ('omlish.marshal.composite.unions.primitives', 'PrimitiveUnionUnmarshaler'),
+        ('omcore.marshal.composite.unions.primitives', 'PrimitiveUnionMarshaler'),
+        ('omcore.marshal.composite.unions.primitives', 'PrimitiveUnionUnmarshaler'),
     ),
 )
 def _process_dataclass__f2f290d474e5d287d38623cbc2f347779aa70a7a():
@@ -848,8 +848,8 @@ def _process_dataclass__f2f290d474e5d287d38623cbc2f347779aa70a7a():
     ),
     plan_repr_sha1='b5727e74a7047b8747632a1bea03a771a8a8aef4',
     cls_names=(
-        ('omlish.marshal.composite.unions.primitives', 'PrimitiveUnionMarshalerFactory'),
-        ('omlish.marshal.composite.unions.primitives', 'PrimitiveUnionUnmarshalerFactory'),
+        ('omcore.marshal.composite.unions.primitives', 'PrimitiveUnionMarshalerFactory'),
+        ('omcore.marshal.composite.unions.primitives', 'PrimitiveUnionUnmarshalerFactory'),
     ),
 )
 def _process_dataclass__b5727e74a7047b8747632a1bea03a771a8a8aef4():
@@ -952,7 +952,7 @@ def _process_dataclass__b5727e74a7047b8747632a1bea03a771a8a8aef4():
     ),
     plan_repr_sha1='481346cb31a24fcab5d409ddf1e4ae941f7cb769',
     cls_names=(
-        ('omlish.marshal.composite.wrapped', 'WrappedMarshaler'),
+        ('omcore.marshal.composite.wrapped', 'WrappedMarshaler'),
     ),
 )
 def _process_dataclass__481346cb31a24fcab5d409ddf1e4ae941f7cb769():
@@ -1063,7 +1063,7 @@ def _process_dataclass__481346cb31a24fcab5d409ddf1e4ae941f7cb769():
     ),
     plan_repr_sha1='9412a133cbc3c08550c26c6f21a5b8c6db14a745',
     cls_names=(
-        ('omlish.marshal.composite.wrapped', 'WrappedUnmarshaler'),
+        ('omcore.marshal.composite.wrapped', 'WrappedUnmarshaler'),
     ),
 )
 def _process_dataclass__9412a133cbc3c08550c26c6f21a5b8c6db14a745():
@@ -1170,7 +1170,7 @@ def _process_dataclass__9412a133cbc3c08550c26c6f21a5b8c6db14a745():
     ),
     plan_repr_sha1='e6957c47ca6b31e3b83f76bb6ac1af9334b2d996',
     cls_names=(
-        ('omlish.marshal.factories.lazyinit', '_AlreadyRunLazyInits'),
+        ('omcore.marshal.factories.lazyinit', '_AlreadyRunLazyInits'),
     ),
 )
 def _process_dataclass__e6957c47ca6b31e3b83f76bb6ac1af9334b2d996():
@@ -1254,7 +1254,7 @@ def _process_dataclass__e6957c47ca6b31e3b83f76bb6ac1af9334b2d996():
     ),
     plan_repr_sha1='ef0c7901a995a21254baa2c3025591e420390c6c',
     cls_names=(
-        ('omlish.marshal.factories.typecache', '_TypeCacheFactory._State'),
+        ('omcore.marshal.factories.typecache', '_TypeCacheFactory._State'),
     ),
 )
 def _process_dataclass__ef0c7901a995a21254baa2c3025591e420390c6c():
@@ -1351,7 +1351,7 @@ def _process_dataclass__ef0c7901a995a21254baa2c3025591e420390c6c():
     ),
     plan_repr_sha1='35f016ce203e8213abc42b9333cca4a0902d0a62',
     cls_names=(
-        ('omlish.marshal.objects.dataclasses', '_DataclassMarshalerBuilder'),
+        ('omcore.marshal.objects.dataclasses', '_DataclassMarshalerBuilder'),
     ),
 )
 def _process_dataclass__35f016ce203e8213abc42b9333cca4a0902d0a62():
@@ -1441,7 +1441,7 @@ def _process_dataclass__35f016ce203e8213abc42b9333cca4a0902d0a62():
     ),
     plan_repr_sha1='4bfadfa5296b12af16efea03373079c9e7c1a7e9',
     cls_names=(
-        ('omlish.marshal.objects.dataclasses', '_DataclassUnmarshalerBuilder'),
+        ('omcore.marshal.objects.dataclasses', '_DataclassUnmarshalerBuilder'),
     ),
 )
 def _process_dataclass__4bfadfa5296b12af16efea03373079c9e7c1a7e9():
@@ -1553,7 +1553,7 @@ def _process_dataclass__4bfadfa5296b12af16efea03373079c9e7c1a7e9():
     ),
     plan_repr_sha1='2acf7487ade791d943a3c00b3fc998dbcd14c628',
     cls_names=(
-        ('omlish.marshal.objects.infos', 'FieldInfo'),
+        ('omcore.marshal.objects.infos', 'FieldInfo'),
     ),
 )
 def _process_dataclass__2acf7487ade791d943a3c00b3fc998dbcd14c628():
@@ -1689,7 +1689,7 @@ def _process_dataclass__2acf7487ade791d943a3c00b3fc998dbcd14c628():
     ),
     plan_repr_sha1='d79af82ecd003199ceaa4594c2592f2dbb8ba386',
     cls_names=(
-        ('omlish.marshal.objects.infos', 'FieldInfos'),
+        ('omcore.marshal.objects.infos', 'FieldInfos'),
     ),
 )
 def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
@@ -1806,7 +1806,7 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
     ),
     plan_repr_sha1='938f9d4f2e651144784a7af849b82eaded6cdf98',
     cls_names=(
-        ('omlish.marshal.objects.marshal', 'ObjectMarshaler'),
+        ('omcore.marshal.objects.marshal', 'ObjectMarshaler'),
     ),
 )
 def _process_dataclass__938f9d4f2e651144784a7af849b82eaded6cdf98():
@@ -1937,8 +1937,8 @@ def _process_dataclass__938f9d4f2e651144784a7af849b82eaded6cdf98():
     ),
     plan_repr_sha1='1be8e124c66f00c82a764169ffbcb93f04b0b647',
     cls_names=(
-        ('omlish.marshal.objects.marshal', 'SimpleObjectMarshalerFactory'),
-        ('omlish.marshal.objects.unmarshal', 'SimpleObjectUnmarshalerFactory'),
+        ('omcore.marshal.objects.marshal', 'SimpleObjectMarshalerFactory'),
+        ('omcore.marshal.objects.unmarshal', 'SimpleObjectUnmarshalerFactory'),
     ),
 )
 def _process_dataclass__1be8e124c66f00c82a764169ffbcb93f04b0b647():
@@ -2078,7 +2078,7 @@ def _process_dataclass__1be8e124c66f00c82a764169ffbcb93f04b0b647():
     ),
     plan_repr_sha1='0e667fff73d5ed4dec2c0120263a2f14e79ca151',
     cls_names=(
-        ('omlish.marshal.objects.unmarshal', 'ObjectUnmarshaler'),
+        ('omcore.marshal.objects.unmarshal', 'ObjectUnmarshaler'),
     ),
 )
 def _process_dataclass__0e667fff73d5ed4dec2c0120263a2f14e79ca151():
@@ -2255,8 +2255,8 @@ def _process_dataclass__0e667fff73d5ed4dec2c0120263a2f14e79ca151():
     ),
     plan_repr_sha1='80e4754e128191455453bb4b6982aa8ba98818b7',
     cls_names=(
-        ('omlish.marshal.polymorphism.marshal', 'FieldPolymorphismMarshaler'),
-        ('omlish.marshal.polymorphism.unmarshal', 'FieldPolymorphismUnmarshaler'),
+        ('omcore.marshal.polymorphism.marshal', 'FieldPolymorphismMarshaler'),
+        ('omcore.marshal.polymorphism.unmarshal', 'FieldPolymorphismUnmarshaler'),
     ),
 )
 def _process_dataclass__80e4754e128191455453bb4b6982aa8ba98818b7():
@@ -2376,8 +2376,8 @@ def _process_dataclass__80e4754e128191455453bb4b6982aa8ba98818b7():
     ),
     plan_repr_sha1='80053702e92eaf973a535f396715f88b40d1bb5e',
     cls_names=(
-        ('omlish.marshal.polymorphism.marshal', 'PolymorphismMarshalerFactory'),
-        ('omlish.marshal.polymorphism.unmarshal', 'PolymorphismUnmarshalerFactory'),
+        ('omcore.marshal.polymorphism.marshal', 'PolymorphismMarshalerFactory'),
+        ('omcore.marshal.polymorphism.unmarshal', 'PolymorphismUnmarshalerFactory'),
     ),
 )
 def _process_dataclass__80053702e92eaf973a535f396715f88b40d1bb5e():
@@ -2489,8 +2489,8 @@ def _process_dataclass__80053702e92eaf973a535f396715f88b40d1bb5e():
     ),
     plan_repr_sha1='029e3b873ec8e37ed64107b36d9c83f6511951e8',
     cls_names=(
-        ('omlish.marshal.polymorphism.marshal', 'WrapperPolymorphismMarshaler'),
-        ('omlish.marshal.polymorphism.unmarshal', 'WrapperPolymorphismUnmarshaler'),
+        ('omcore.marshal.polymorphism.marshal', 'WrapperPolymorphismMarshaler'),
+        ('omcore.marshal.polymorphism.unmarshal', 'WrapperPolymorphismUnmarshaler'),
     ),
 )
 def _process_dataclass__029e3b873ec8e37ed64107b36d9c83f6511951e8():
@@ -2603,8 +2603,8 @@ def _process_dataclass__029e3b873ec8e37ed64107b36d9c83f6511951e8():
     ),
     plan_repr_sha1='73225bbefb3d219f926ce1e134e6d6b4da694f7b',
     cls_names=(
-        ('omlish.marshal.polymorphism.open', 'OpenPolymorphismMarshalerFactory'),
-        ('omlish.marshal.polymorphism.open', 'OpenPolymorphismUnmarshalerFactory'),
+        ('omcore.marshal.polymorphism.open', 'OpenPolymorphismMarshalerFactory'),
+        ('omcore.marshal.polymorphism.open', 'OpenPolymorphismUnmarshalerFactory'),
     ),
 )
 def _process_dataclass__73225bbefb3d219f926ce1e134e6d6b4da694f7b():
@@ -2712,7 +2712,7 @@ def _process_dataclass__73225bbefb3d219f926ce1e134e6d6b4da694f7b():
     ),
     plan_repr_sha1='e396848ab857a16f8651f7b98bb94eef27cb593f',
     cls_names=(
-        ('omlish.marshal.polymorphism.open', '_OpenPolymorphismBase._State'),
+        ('omcore.marshal.polymorphism.open', '_OpenPolymorphismBase._State'),
     ),
 )
 def _process_dataclass__e396848ab857a16f8651f7b98bb94eef27cb593f():
@@ -2782,13 +2782,13 @@ def _process_dataclass__e396848ab857a16f8651f7b98bb94eef27cb593f():
     ),
     plan_repr_sha1='5fb811b6a8837cb3b84359f812a39e560d257d5f',
     cls_names=(
-        ('omlish.marshal.singular.base64', 'Base64MarshalerUnmarshaler'),
-        ('omlish.marshal.singular.enums', 'EnumNameMarshaler'),
-        ('omlish.marshal.singular.enums', 'EnumNameUnmarshaler'),
-        ('omlish.marshal.singular.enums', 'EnumValueMarshaler'),
-        ('omlish.marshal.singular.enums', 'EnumValueUnmarshaler'),
-        ('omlish.marshal.singular.ipaddress', 'IpaddressUnmarshaler'),
-        ('omlish.marshal.singular.primitives', 'PrimitiveMarshalerUnmarshaler'),
+        ('omcore.marshal.singular.base64', 'Base64MarshalerUnmarshaler'),
+        ('omcore.marshal.singular.enums', 'EnumNameMarshaler'),
+        ('omcore.marshal.singular.enums', 'EnumNameUnmarshaler'),
+        ('omcore.marshal.singular.enums', 'EnumValueMarshaler'),
+        ('omcore.marshal.singular.enums', 'EnumValueUnmarshaler'),
+        ('omcore.marshal.singular.ipaddress', 'IpaddressUnmarshaler'),
+        ('omcore.marshal.singular.primitives', 'PrimitiveMarshalerUnmarshaler'),
     ),
 )
 def _process_dataclass__5fb811b6a8837cb3b84359f812a39e560d257d5f():
@@ -2890,7 +2890,7 @@ def _process_dataclass__5fb811b6a8837cb3b84359f812a39e560d257d5f():
     ),
     plan_repr_sha1='68d97e2dd90f34262544e299fb586b11104657a3',
     cls_names=(
-        ('omlish.marshal.singular.datetimes', 'DatetimeMarshaler'),
+        ('omcore.marshal.singular.datetimes', 'DatetimeMarshaler'),
     ),
 )
 def _process_dataclass__68d97e2dd90f34262544e299fb586b11104657a3():
@@ -3004,7 +3004,7 @@ def _process_dataclass__68d97e2dd90f34262544e299fb586b11104657a3():
     ),
     plan_repr_sha1='30fca7692a17c304ded88562c547a6b9cb240b0a',
     cls_names=(
-        ('omlish.marshal.singular.datetimes', 'DatetimeUnmarshaler'),
+        ('omcore.marshal.singular.datetimes', 'DatetimeUnmarshaler'),
     ),
 )
 def _process_dataclass__30fca7692a17c304ded88562c547a6b9cb240b0a():
@@ -3121,8 +3121,8 @@ def _process_dataclass__30fca7692a17c304ded88562c547a6b9cb240b0a():
     ),
     plan_repr_sha1='cc49596cff10466f74e464b29b5a5fb2c14aceba',
     cls_names=(
-        ('omlish.marshal.singular.enums', 'EnumMarshalerFactory'),
-        ('omlish.marshal.singular.enums', 'EnumUnmarshalerFactory'),
+        ('omcore.marshal.singular.enums', 'EnumMarshalerFactory'),
+        ('omcore.marshal.singular.enums', 'EnumUnmarshalerFactory'),
     ),
 )
 def _process_dataclass__cc49596cff10466f74e464b29b5a5fb2c14aceba():
@@ -3222,7 +3222,7 @@ def _process_dataclass__cc49596cff10466f74e464b29b5a5fb2c14aceba():
     ),
     plan_repr_sha1='7514673b39883258db895b0031e644b486721b54',
     cls_names=(
-        ('omlish.marshal.trivial.const', 'ConstMarshaler'),
+        ('omcore.marshal.trivial.const', 'ConstMarshaler'),
     ),
 )
 def _process_dataclass__7514673b39883258db895b0031e644b486721b54():
@@ -3321,7 +3321,7 @@ def _process_dataclass__7514673b39883258db895b0031e644b486721b54():
     ),
     plan_repr_sha1='37002af3789015126a65b87e9ad1aa0682d05068',
     cls_names=(
-        ('omlish.marshal.trivial.const', 'ConstUnmarshaler'),
+        ('omcore.marshal.trivial.const', 'ConstUnmarshaler'),
     ),
 )
 def _process_dataclass__37002af3789015126a65b87e9ad1aa0682d05068():

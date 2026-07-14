@@ -2,7 +2,7 @@
 # ruff: noqa: UP006 UP007
 """
 TODO:
- - move to omlish.text
+ - move to omcore.text
 """
 import dataclasses as dc
 import itertools

@@ -12,7 +12,7 @@ what we do instead.
 ## Goals
 
 - **Pure Python.** No native extensions, no compiled deps.
-- **Zero runtime dependencies** except the `omlish` stdlib (which is already installed and is the only thing
+- **Zero runtime dependencies** except the `omcore` stdlib (which is already installed and is the only thing
   the embedding project lets us depend on).
 - **Event-driven / stream-native.** This is the load-bearing design constraint. The parser must accept input
   in arbitrary chunks (mid-line, mid-word) and emit incremental output as soon as it is structurally final,

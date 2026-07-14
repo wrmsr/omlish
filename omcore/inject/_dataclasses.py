@@ -42,7 +42,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='46c59d586838c9ad0bfaea00944f56523114cba1',
     cls_names=(
-        ('omlish.inject.bindings', 'Binding'),
+        ('omcore.inject.bindings', 'Binding'),
     ),
 )
 def _process_dataclass__46c59d586838c9ad0bfaea00944f56523114cba1():
@@ -178,7 +178,7 @@ def _process_dataclass__46c59d586838c9ad0bfaea00944f56523114cba1():
     ),
     plan_repr_sha1='c45a09634b0e2a6fa1c4c76e2f691964112b0ddd',
     cls_names=(
-        ('omlish.inject.eagers', 'Eager'),
+        ('omcore.inject.eagers', 'Eager'),
     ),
 )
 def _process_dataclass__c45a09634b0e2a6fa1c4c76e2f691964112b0ddd():
@@ -303,7 +303,7 @@ def _process_dataclass__c45a09634b0e2a6fa1c4c76e2f691964112b0ddd():
     ),
     plan_repr_sha1='20c0436b77a328557ecfbe556539d09e7a50f7bd',
     cls_names=(
-        ('omlish.inject.elements', 'Elements'),
+        ('omcore.inject.elements', 'Elements'),
     ),
 )
 def _process_dataclass__20c0436b77a328557ecfbe556539d09e7a50f7bd():
@@ -418,10 +418,10 @@ def _process_dataclass__20c0436b77a328557ecfbe556539d09e7a50f7bd():
     ),
     plan_repr_sha1='54394c5ebd85aa173d2f60f20fae81b348f6cb9d',
     cls_names=(
-        ('omlish.inject.errors', 'BaseKeyError'),
-        ('omlish.inject.errors', 'ConflictingKeyError'),
-        ('omlish.inject.errors', 'CyclicDependencyError'),
-        ('omlish.inject.errors', 'UnboundKeyError'),
+        ('omcore.inject.errors', 'BaseKeyError'),
+        ('omcore.inject.errors', 'ConflictingKeyError'),
+        ('omcore.inject.errors', 'CyclicDependencyError'),
+        ('omcore.inject.errors', 'UnboundKeyError'),
     ),
 )
 def _process_dataclass__54394c5ebd85aa173d2f60f20fae81b348f6cb9d():
@@ -503,9 +503,9 @@ def _process_dataclass__54394c5ebd85aa173d2f60f20fae81b348f6cb9d():
     ),
     plan_repr_sha1='d43eaf7e550de17fc6936c19e4e5aa545c8a93d8',
     cls_names=(
-        ('omlish.inject.errors', 'ScopeAlreadyOpenError'),
-        ('omlish.inject.errors', 'ScopeError'),
-        ('omlish.inject.errors', 'ScopeNotOpenError'),
+        ('omcore.inject.errors', 'ScopeAlreadyOpenError'),
+        ('omcore.inject.errors', 'ScopeError'),
+        ('omcore.inject.errors', 'ScopeNotOpenError'),
     ),
 )
 def _process_dataclass__d43eaf7e550de17fc6936c19e4e5aa545c8a93d8():
@@ -573,7 +573,7 @@ def _process_dataclass__d43eaf7e550de17fc6936c19e4e5aa545c8a93d8():
     ),
     plan_repr_sha1='1a1c1b0c2f2ad1d4b7f67f6c870a5eb6e37e231c',
     cls_names=(
-        ('omlish.inject.helpers.constfn', 'ConstFn'),
+        ('omcore.inject.helpers.constfn', 'ConstFn'),
     ),
 )
 def _process_dataclass__1a1c1b0c2f2ad1d4b7f67f6c870a5eb6e37e231c():
@@ -659,7 +659,7 @@ def _process_dataclass__1a1c1b0c2f2ad1d4b7f67f6c870a5eb6e37e231c():
     ),
     plan_repr_sha1='5cb76e85fd58b7b06dd5593254d86e557222901c',
     cls_names=(
-        ('omlish.inject.helpers.id', 'Id'),
+        ('omcore.inject.helpers.id', 'Id'),
     ),
 )
 def _process_dataclass__5cb76e85fd58b7b06dd5593254d86e557222901c():
@@ -785,8 +785,8 @@ def _process_dataclass__5cb76e85fd58b7b06dd5593254d86e557222901c():
     ),
     plan_repr_sha1='c726b62427445e76234a6a472593ae91ca8d6457',
     cls_names=(
-        ('omlish.inject.helpers.multis', 'ItemsBinderHelper._ItemTag'),
-        ('omlish.inject.helpers.wrappers', 'WrapperBinderHelper._Root'),
+        ('omcore.inject.helpers.multis', 'ItemsBinderHelper._ItemTag'),
+        ('omcore.inject.helpers.wrappers', 'WrapperBinderHelper._Root'),
     ),
 )
 def _process_dataclass__c726b62427445e76234a6a472593ae91ca8d6457():
@@ -850,7 +850,7 @@ def _process_dataclass__c726b62427445e76234a6a472593ae91ca8d6457():
     ),
     plan_repr_sha1='c4cee7449949f8c11b10dcaf6b91f62f28a6fd18',
     cls_names=(
-        ('omlish.inject.helpers.multis', 'ItemsBinderHelper._ItemsBox'),
+        ('omcore.inject.helpers.multis', 'ItemsBinderHelper._ItemsBox'),
     ),
 )
 def _process_dataclass__c4cee7449949f8c11b10dcaf6b91f62f28a6fd18():
@@ -934,7 +934,7 @@ def _process_dataclass__c4cee7449949f8c11b10dcaf6b91f62f28a6fd18():
     ),
     plan_repr_sha1='5e1bef09da6295e8de9fe8f2ffad3a1a4e70d5a3',
     cls_names=(
-        ('omlish.inject.helpers.wrappers', 'WrapperBinderHelper._Level'),
+        ('omcore.inject.helpers.wrappers', 'WrapperBinderHelper._Level'),
     ),
 )
 def _process_dataclass__5e1bef09da6295e8de9fe8f2ffad3a1a4e70d5a3():
@@ -1050,7 +1050,7 @@ def _process_dataclass__5e1bef09da6295e8de9fe8f2ffad3a1a4e70d5a3():
     ),
     plan_repr_sha1='3ea053d1a1090718f9d29a7824558f2ca9a77e31',
     cls_names=(
-        ('omlish.inject.impl.bindings', 'BindingImpl'),
+        ('omcore.inject.impl.bindings', 'BindingImpl'),
     ),
 )
 def _process_dataclass__3ea053d1a1090718f9d29a7824558f2ca9a77e31():
@@ -1151,7 +1151,7 @@ def _process_dataclass__3ea053d1a1090718f9d29a7824558f2ca9a77e31():
     ),
     plan_repr_sha1='23940adf5b02820a6f9975e06728e5b58b744320',
     cls_names=(
-        ('omlish.inject.impl.multis', 'MapProviderImpl'),
+        ('omcore.inject.impl.multis', 'MapProviderImpl'),
     ),
 )
 def _process_dataclass__23940adf5b02820a6f9975e06728e5b58b744320():
@@ -1232,7 +1232,7 @@ def _process_dataclass__23940adf5b02820a6f9975e06728e5b58b744320():
     ),
     plan_repr_sha1='b721abb54732f14a7bceaf230a932d37b1a8ee48',
     cls_names=(
-        ('omlish.inject.impl.multis', 'SetProviderImpl'),
+        ('omcore.inject.impl.multis', 'SetProviderImpl'),
     ),
 )
 def _process_dataclass__b721abb54732f14a7bceaf230a932d37b1a8ee48():
@@ -1315,7 +1315,7 @@ def _process_dataclass__b721abb54732f14a7bceaf230a932d37b1a8ee48():
     ),
     plan_repr_sha1='a0f40dc1d602e06fadec23a1aa53c8d57356f22f',
     cls_names=(
-        ('omlish.inject.impl.privates', 'ExposedPrivateProviderImpl'),
+        ('omcore.inject.impl.privates', 'ExposedPrivateProviderImpl'),
     ),
 )
 def _process_dataclass__a0f40dc1d602e06fadec23a1aa53c8d57356f22f():
@@ -1378,7 +1378,7 @@ def _process_dataclass__a0f40dc1d602e06fadec23a1aa53c8d57356f22f():
     ),
     plan_repr_sha1='0f6ba4c593adbc50913cf38fc7c075e91843dbde',
     cls_names=(
-        ('omlish.inject.impl.privates', 'PrivateInfo'),
+        ('omcore.inject.impl.privates', 'PrivateInfo'),
     ),
 )
 def _process_dataclass__0f6ba4c593adbc50913cf38fc7c075e91843dbde():
@@ -1486,7 +1486,7 @@ def _process_dataclass__0f6ba4c593adbc50913cf38fc7c075e91843dbde():
     ),
     plan_repr_sha1='c5f6a36b3a0205325ea2602947f4888237a21382',
     cls_names=(
-        ('omlish.inject.impl.privates', 'PrivateInjectorId'),
+        ('omcore.inject.impl.privates', 'PrivateInjectorId'),
     ),
 )
 def _process_dataclass__c5f6a36b3a0205325ea2602947f4888237a21382():
@@ -1587,7 +1587,7 @@ def _process_dataclass__c5f6a36b3a0205325ea2602947f4888237a21382():
     ),
     plan_repr_sha1='bbf0fd5802ba5ae35dd7ebcd29d05cb860a10674',
     cls_names=(
-        ('omlish.inject.impl.privates', 'PrivateInjectorProviderImpl'),
+        ('omcore.inject.impl.privates', 'PrivateInjectorProviderImpl'),
     ),
 )
 def _process_dataclass__bbf0fd5802ba5ae35dd7ebcd29d05cb860a10674():
@@ -1649,8 +1649,8 @@ def _process_dataclass__bbf0fd5802ba5ae35dd7ebcd29d05cb860a10674():
     ),
     plan_repr_sha1='fd0f4351f533bc90a8c6f24973004fcc1931cf0d',
     cls_names=(
-        ('omlish.inject.impl.providers', 'AsyncCallableProviderImpl'),
-        ('omlish.inject.impl.providers', 'CallableProviderImpl'),
+        ('omcore.inject.impl.providers', 'AsyncCallableProviderImpl'),
+        ('omcore.inject.impl.providers', 'CallableProviderImpl'),
     ),
 )
 def _process_dataclass__fd0f4351f533bc90a8c6f24973004fcc1931cf0d():
@@ -1737,9 +1737,9 @@ def _process_dataclass__fd0f4351f533bc90a8c6f24973004fcc1931cf0d():
     ),
     plan_repr_sha1='365eedd17dff52bfa369a9578066fd43141c41fd',
     cls_names=(
-        ('omlish.inject.impl.providers', 'ConstProviderImpl'),
-        ('omlish.inject.impl.providers', 'LinkProviderImpl'),
-        ('omlish.inject.impl.scopes', 'ScopeSeededProviderImpl'),
+        ('omcore.inject.impl.providers', 'ConstProviderImpl'),
+        ('omcore.inject.impl.providers', 'LinkProviderImpl'),
+        ('omcore.inject.impl.scopes', 'ScopeSeededProviderImpl'),
     ),
 )
 def _process_dataclass__365eedd17dff52bfa369a9578066fd43141c41fd():
@@ -1820,7 +1820,7 @@ def _process_dataclass__365eedd17dff52bfa369a9578066fd43141c41fd():
     ),
     plan_repr_sha1='8e1f31f368d04d4784c49dcc2d91408279e36285',
     cls_names=(
-        ('omlish.inject.impl.providers', 'InternalProvider'),
+        ('omcore.inject.impl.providers', 'InternalProvider'),
     ),
 )
 def _process_dataclass__8e1f31f368d04d4784c49dcc2d91408279e36285():
@@ -1905,7 +1905,7 @@ def _process_dataclass__8e1f31f368d04d4784c49dcc2d91408279e36285():
     ),
     plan_repr_sha1='61f34069d7091014f66ca9e1c1d27dbbc1a4e03f',
     cls_names=(
-        ('omlish.inject.impl.scopes', 'SeededScopeImpl.State'),
+        ('omcore.inject.impl.scopes', 'SeededScopeImpl.State'),
     ),
 )
 def _process_dataclass__61f34069d7091014f66ca9e1c1d27dbbc1a4e03f():
@@ -2023,7 +2023,7 @@ def _process_dataclass__61f34069d7091014f66ca9e1c1d27dbbc1a4e03f():
     ),
     plan_repr_sha1='b979bbe6ca7a161e5e2fe6604bcea68e06fc59c8',
     cls_names=(
-        ('omlish.inject.inspect', 'Kwarg'),
+        ('omcore.inject.inspect', 'Kwarg'),
     ),
 )
 def _process_dataclass__b979bbe6ca7a161e5e2fe6604bcea68e06fc59c8():
@@ -2151,7 +2151,7 @@ def _process_dataclass__b979bbe6ca7a161e5e2fe6604bcea68e06fc59c8():
     ),
     plan_repr_sha1='ec85913f6431e41be518686dc3e52259fa455ed0',
     cls_names=(
-        ('omlish.inject.inspect', 'Kwargs'),
+        ('omcore.inject.inspect', 'Kwargs'),
     ),
 )
 def _process_dataclass__ec85913f6431e41be518686dc3e52259fa455ed0():
@@ -2267,7 +2267,7 @@ def _process_dataclass__ec85913f6431e41be518686dc3e52259fa455ed0():
     ),
     plan_repr_sha1='f2793a7065e1cafc84c6ee922ea605627889fb75',
     cls_names=(
-        ('omlish.inject.inspect', 'KwargsTarget'),
+        ('omcore.inject.inspect', 'KwargsTarget'),
     ),
 )
 def _process_dataclass__f2793a7065e1cafc84c6ee922ea605627889fb75():
@@ -2386,7 +2386,7 @@ def _process_dataclass__f2793a7065e1cafc84c6ee922ea605627889fb75():
     ),
     plan_repr_sha1='f17c52a259b66c9f11a806f00836fd49793a69a9',
     cls_names=(
-        ('omlish.inject.keys', 'Key'),
+        ('omcore.inject.keys', 'Key'),
     ),
 )
 def _process_dataclass__f17c52a259b66c9f11a806f00836fd49793a69a9():
@@ -2496,7 +2496,7 @@ def _process_dataclass__f17c52a259b66c9f11a806f00836fd49793a69a9():
     ),
     plan_repr_sha1='01ca4dd7c51876d086eb4230f400151c659e0842',
     cls_names=(
-        ('omlish.inject.listeners', 'ProvisionListenerBinding'),
+        ('omcore.inject.listeners', 'ProvisionListenerBinding'),
     ),
 )
 def _process_dataclass__01ca4dd7c51876d086eb4230f400151c659e0842():
@@ -2612,7 +2612,7 @@ def _process_dataclass__01ca4dd7c51876d086eb4230f400151c659e0842():
     ),
     plan_repr_sha1='6ed12b80942097addba0fe978453312450cdf8d9',
     cls_names=(
-        ('omlish.inject.multis', 'MapBinding'),
+        ('omcore.inject.multis', 'MapBinding'),
     ),
 )
 def _process_dataclass__6ed12b80942097addba0fe978453312450cdf8d9():
@@ -2749,8 +2749,8 @@ def _process_dataclass__6ed12b80942097addba0fe978453312450cdf8d9():
     ),
     plan_repr_sha1='864a29bd231d03e4f0141a4dc7872a66df50771d',
     cls_names=(
-        ('omlish.inject.multis', 'MapProvider'),
-        ('omlish.inject.multis', 'SetProvider'),
+        ('omcore.inject.multis', 'MapProvider'),
+        ('omcore.inject.multis', 'SetProvider'),
     ),
 )
 def _process_dataclass__864a29bd231d03e4f0141a4dc7872a66df50771d():
@@ -2871,7 +2871,7 @@ def _process_dataclass__864a29bd231d03e4f0141a4dc7872a66df50771d():
     ),
     plan_repr_sha1='1ba38fd546769fabc04fa41bd279c7fcbbad22f2',
     cls_names=(
-        ('omlish.inject.multis', 'SetBinding'),
+        ('omcore.inject.multis', 'SetBinding'),
     ),
 )
 def _process_dataclass__1ba38fd546769fabc04fa41bd279c7fcbbad22f2():
@@ -3000,8 +3000,8 @@ def _process_dataclass__1ba38fd546769fabc04fa41bd279c7fcbbad22f2():
     ),
     plan_repr_sha1='d1633dcd9bb962f0e548a4a63b764b808cdac621',
     cls_names=(
-        ('omlish.inject.origins', 'Origin'),
-        ('omlish.inject.origins', 'Origins'),
+        ('omcore.inject.origins', 'Origin'),
+        ('omcore.inject.origins', 'Origins'),
     ),
 )
 def _process_dataclass__d1633dcd9bb962f0e548a4a63b764b808cdac621():
@@ -3113,7 +3113,7 @@ def _process_dataclass__d1633dcd9bb962f0e548a4a63b764b808cdac621():
     ),
     plan_repr_sha1='c35199aac6d207aea4ae186fa99b44f431914e53',
     cls_names=(
-        ('omlish.inject.overrides', 'Overrides'),
+        ('omcore.inject.overrides', 'Overrides'),
     ),
 )
 def _process_dataclass__c35199aac6d207aea4ae186fa99b44f431914e53():
@@ -3235,7 +3235,7 @@ def _process_dataclass__c35199aac6d207aea4ae186fa99b44f431914e53():
     ),
     plan_repr_sha1='95e8d2726657f6c6d0abe6bace53f80710e3d314',
     cls_names=(
-        ('omlish.inject.privates', 'Expose'),
+        ('omcore.inject.privates', 'Expose'),
     ),
 )
 def _process_dataclass__95e8d2726657f6c6d0abe6bace53f80710e3d314():
@@ -3347,7 +3347,7 @@ def _process_dataclass__95e8d2726657f6c6d0abe6bace53f80710e3d314():
     ),
     plan_repr_sha1='8b45b0d38754c357aabee0be30419e40d1746bc4',
     cls_names=(
-        ('omlish.inject.privates', 'Private'),
+        ('omcore.inject.privates', 'Private'),
     ),
 )
 def _process_dataclass__8b45b0d38754c357aabee0be30419e40d1746bc4():
@@ -3459,8 +3459,8 @@ def _process_dataclass__8b45b0d38754c357aabee0be30419e40d1746bc4():
     ),
     plan_repr_sha1='465d8361a14bec38d3a20f2ef3aaeaed5cd23067',
     cls_names=(
-        ('omlish.inject.providers', 'AsyncFnProvider'),
-        ('omlish.inject.providers', 'FnProvider'),
+        ('omcore.inject.providers', 'AsyncFnProvider'),
+        ('omcore.inject.providers', 'FnProvider'),
     ),
 )
 def _process_dataclass__465d8361a14bec38d3a20f2ef3aaeaed5cd23067():
@@ -3577,7 +3577,7 @@ def _process_dataclass__465d8361a14bec38d3a20f2ef3aaeaed5cd23067():
     ),
     plan_repr_sha1='454972cdb0715dc22365cb0a504288ac36355c45',
     cls_names=(
-        ('omlish.inject.providers', 'ConstProvider'),
+        ('omcore.inject.providers', 'ConstProvider'),
     ),
 )
 def _process_dataclass__454972cdb0715dc22365cb0a504288ac36355c45():
@@ -3686,7 +3686,7 @@ def _process_dataclass__454972cdb0715dc22365cb0a504288ac36355c45():
     ),
     plan_repr_sha1='310f8fbacb05af68e1c4c6c6f947aabbfa4eee3c',
     cls_names=(
-        ('omlish.inject.providers', 'CtorProvider'),
+        ('omcore.inject.providers', 'CtorProvider'),
     ),
 )
 def _process_dataclass__310f8fbacb05af68e1c4c6c6f947aabbfa4eee3c():
@@ -3804,7 +3804,7 @@ def _process_dataclass__310f8fbacb05af68e1c4c6c6f947aabbfa4eee3c():
     ),
     plan_repr_sha1='399a0f677e522382f8e81b442490afcfdd485c6a',
     cls_names=(
-        ('omlish.inject.providers', 'LinkProvider'),
+        ('omcore.inject.providers', 'LinkProvider'),
     ),
 )
 def _process_dataclass__399a0f677e522382f8e81b442490afcfdd485c6a():
@@ -3915,7 +3915,7 @@ def _process_dataclass__399a0f677e522382f8e81b442490afcfdd485c6a():
     ),
     plan_repr_sha1='a01535be51a62c3aedc3529e0204c6135d8d9e99',
     cls_names=(
-        ('omlish.inject.scopes', 'ScopeBinding'),
+        ('omcore.inject.scopes', 'ScopeBinding'),
     ),
 )
 def _process_dataclass__a01535be51a62c3aedc3529e0204c6135d8d9e99():
@@ -4030,7 +4030,7 @@ def _process_dataclass__a01535be51a62c3aedc3529e0204c6135d8d9e99():
     ),
     plan_repr_sha1='67e893f944c9f60c3bb7298d6024e3f17b097447',
     cls_names=(
-        ('omlish.inject.scopes', 'ScopeSeededProvider'),
+        ('omcore.inject.scopes', 'ScopeSeededProvider'),
     ),
 )
 def _process_dataclass__67e893f944c9f60c3bb7298d6024e3f17b097447():
@@ -4151,7 +4151,7 @@ def _process_dataclass__67e893f944c9f60c3bb7298d6024e3f17b097447():
     ),
     plan_repr_sha1='e3da1b32863a0a4aca9ff268877a77ad5d6dd328',
     cls_names=(
-        ('omlish.inject.scopes', 'SeededScope'),
+        ('omcore.inject.scopes', 'SeededScope'),
     ),
 )
 def _process_dataclass__e3da1b32863a0a4aca9ff268877a77ad5d6dd328():

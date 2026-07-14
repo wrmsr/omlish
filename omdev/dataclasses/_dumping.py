@@ -40,13 +40,13 @@ def __om_amalg__():  # noqa
         src_files=[
             dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../omcore/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
+            dict(path='../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
             dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
             dict(path='../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../omcore/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
-            dict(path='dumping.py', sha1='3a116abfd0a6c5abc2e2ad3f2ff48ce8c114ac07'),
+            dict(path='../../omcore/lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
+            dict(path='dumping.py', sha1='f385a4502d279cf76e4a2bd69efac82881117e57'),
         ],
     )
 

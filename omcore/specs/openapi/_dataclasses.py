@@ -37,7 +37,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='08a1aac3841bbd823cbf8591aab4858462242e0f',
     cls_names=(
-        ('omlish.specs.openapi._marshal', '_ReferenceUnionMarshaler'),
+        ('omcore.specs.openapi._marshal', '_ReferenceUnionMarshaler'),
     ),
 )
 def _process_dataclass__08a1aac3841bbd823cbf8591aab4858462242e0f():
@@ -147,7 +147,7 @@ def _process_dataclass__08a1aac3841bbd823cbf8591aab4858462242e0f():
     ),
     plan_repr_sha1='d095992190a4bef8c406f60182977cf8f1f41efa',
     cls_names=(
-        ('omlish.specs.openapi._marshal', '_ReferenceUnionUnmarshaler'),
+        ('omcore.specs.openapi._marshal', '_ReferenceUnionUnmarshaler'),
     ),
 )
 def _process_dataclass__d095992190a4bef8c406f60182977cf8f1f41efa():
@@ -257,7 +257,7 @@ def _process_dataclass__d095992190a4bef8c406f60182977cf8f1f41efa():
     ),
     plan_repr_sha1='719544153ed0b35a74b1651553003d3b354700f1',
     cls_names=(
-        ('omlish.specs.openapi._marshal', '_SchemaMarshaler'),
+        ('omcore.specs.openapi._marshal', '_SchemaMarshaler'),
     ),
 )
 def _process_dataclass__719544153ed0b35a74b1651553003d3b354700f1():
@@ -367,7 +367,7 @@ def _process_dataclass__719544153ed0b35a74b1651553003d3b354700f1():
     ),
     plan_repr_sha1='11262894e09b3b420a70ca6beeca90e3128bc4d9',
     cls_names=(
-        ('omlish.specs.openapi._marshal', '_SchemaUnmarshaler'),
+        ('omcore.specs.openapi._marshal', '_SchemaUnmarshaler'),
     ),
 )
 def _process_dataclass__11262894e09b3b420a70ca6beeca90e3128bc4d9():
@@ -507,7 +507,7 @@ def _process_dataclass__11262894e09b3b420a70ca6beeca90e3128bc4d9():
     ),
     plan_repr_sha1='70b15f8a60ca2e32dc7fec02c618641cd0243175',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Components'),
+        ('omcore.specs.openapi.openapi', 'Components'),
     ),
 )
 def _process_dataclass__70b15f8a60ca2e32dc7fec02c618641cd0243175():
@@ -706,7 +706,7 @@ def _process_dataclass__70b15f8a60ca2e32dc7fec02c618641cd0243175():
     ),
     plan_repr_sha1='d4a541cb97da82c217d4aeb1a3c99ba233c59794',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Contact'),
+        ('omcore.specs.openapi.openapi', 'Contact'),
     ),
 )
 def _process_dataclass__d4a541cb97da82c217d4aeb1a3c99ba233c59794():
@@ -833,7 +833,7 @@ def _process_dataclass__d4a541cb97da82c217d4aeb1a3c99ba233c59794():
     ),
     plan_repr_sha1='3d1a4171d606ce3a412ee1a299e055a625b5930f',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Discriminator'),
+        ('omcore.specs.openapi.openapi', 'Discriminator'),
     ),
 )
 def _process_dataclass__3d1a4171d606ce3a412ee1a299e055a625b5930f():
@@ -959,7 +959,7 @@ def _process_dataclass__3d1a4171d606ce3a412ee1a299e055a625b5930f():
     ),
     plan_repr_sha1='188ab7478374634cc437c58cd5e05b336158064f',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Encoding'),
+        ('omcore.specs.openapi.openapi', 'Encoding'),
     ),
 )
 def _process_dataclass__188ab7478374634cc437c58cd5e05b336158064f():
@@ -1113,7 +1113,7 @@ def _process_dataclass__188ab7478374634cc437c58cd5e05b336158064f():
     ),
     plan_repr_sha1='3255469da9b4c7981b4f6c4f6a90ccbf555db3eb',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Example'),
+        ('omcore.specs.openapi.openapi', 'Example'),
     ),
 )
 def _process_dataclass__3255469da9b4c7981b4f6c4f6a90ccbf555db3eb():
@@ -1249,7 +1249,7 @@ def _process_dataclass__3255469da9b4c7981b4f6c4f6a90ccbf555db3eb():
     ),
     plan_repr_sha1='92c624435fbcbab9682c66aa9a03c714fb8df108',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'ExternalDocumentation'),
+        ('omcore.specs.openapi.openapi', 'ExternalDocumentation'),
     ),
 )
 def _process_dataclass__92c624435fbcbab9682c66aa9a03c714fb8df108():
@@ -1361,7 +1361,7 @@ def _process_dataclass__92c624435fbcbab9682c66aa9a03c714fb8df108():
     ),
     plan_repr_sha1='513a3812c33c8abe4d63e23623cf6ca96da920c9',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Header'),
+        ('omcore.specs.openapi.openapi', 'Header'),
     ),
 )
 def _process_dataclass__513a3812c33c8abe4d63e23623cf6ca96da920c9():
@@ -1483,7 +1483,7 @@ def _process_dataclass__513a3812c33c8abe4d63e23623cf6ca96da920c9():
     ),
     plan_repr_sha1='5f1e1eec066ba3cbccd2ca9c47c2b2efe9f82729',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Info'),
+        ('omcore.specs.openapi.openapi', 'Info'),
     ),
 )
 def _process_dataclass__5f1e1eec066ba3cbccd2ca9c47c2b2efe9f82729():
@@ -1650,7 +1650,7 @@ def _process_dataclass__5f1e1eec066ba3cbccd2ca9c47c2b2efe9f82729():
     ),
     plan_repr_sha1='87af0c109e49bcc4ab83b6b35870077c91033b7f',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'License'),
+        ('omcore.specs.openapi.openapi', 'License'),
     ),
 )
 def _process_dataclass__87af0c109e49bcc4ab83b6b35870077c91033b7f():
@@ -1790,7 +1790,7 @@ def _process_dataclass__87af0c109e49bcc4ab83b6b35870077c91033b7f():
     ),
     plan_repr_sha1='68f380551d5fcf6a7b62539649fb8a049f38e6a8',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Link'),
+        ('omcore.specs.openapi.openapi', 'Link'),
     ),
 )
 def _process_dataclass__68f380551d5fcf6a7b62539649fb8a049f38e6a8():
@@ -1953,7 +1953,7 @@ def _process_dataclass__68f380551d5fcf6a7b62539649fb8a049f38e6a8():
     ),
     plan_repr_sha1='0c0080dfcfaf4cc95b55cdf6b5b5909bc1125e15',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'MediaType'),
+        ('omcore.specs.openapi.openapi', 'MediaType'),
     ),
 )
 def _process_dataclass__0c0080dfcfaf4cc95b55cdf6b5b5909bc1125e15():
@@ -2096,7 +2096,7 @@ def _process_dataclass__0c0080dfcfaf4cc95b55cdf6b5b5909bc1125e15():
     ),
     plan_repr_sha1='f66d1979aaf6ccb54ddc86ecad04e787f2d5b154',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'OauthFlow'),
+        ('omcore.specs.openapi.openapi', 'OauthFlow'),
     ),
 )
 def _process_dataclass__f66d1979aaf6ccb54ddc86ecad04e787f2d5b154():
@@ -2238,7 +2238,7 @@ def _process_dataclass__f66d1979aaf6ccb54ddc86ecad04e787f2d5b154():
     ),
     plan_repr_sha1='c2628e645062ee631a5099d82bc8fbbcd320b6c0',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'OauthFlows'),
+        ('omcore.specs.openapi.openapi', 'OauthFlows'),
     ),
 )
 def _process_dataclass__c2628e645062ee631a5099d82bc8fbbcd320b6c0():
@@ -2405,7 +2405,7 @@ def _process_dataclass__c2628e645062ee631a5099d82bc8fbbcd320b6c0():
     ),
     plan_repr_sha1='005124240f699ee17389834eb8ae96f50e1bc933',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Openapi'),
+        ('omcore.specs.openapi.openapi', 'Openapi'),
     ),
 )
 def _process_dataclass__005124240f699ee17389834eb8ae96f50e1bc933():
@@ -2650,7 +2650,7 @@ def _process_dataclass__005124240f699ee17389834eb8ae96f50e1bc933():
     ),
     plan_repr_sha1='8ee4073aac44214f307f150371e41de5d524aa9d',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Operation'),
+        ('omcore.specs.openapi.openapi', 'Operation'),
     ),
 )
 def _process_dataclass__8ee4073aac44214f307f150371e41de5d524aa9d():
@@ -2881,7 +2881,7 @@ def _process_dataclass__8ee4073aac44214f307f150371e41de5d524aa9d():
     ),
     plan_repr_sha1='413190da51b24ddc1aa6c3e244090f3d38971a03',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Parameter'),
+        ('omcore.specs.openapi.openapi', 'Parameter'),
     ),
 )
 def _process_dataclass__413190da51b24ddc1aa6c3e244090f3d38971a03():
@@ -3060,7 +3060,7 @@ def _process_dataclass__413190da51b24ddc1aa6c3e244090f3d38971a03():
     ),
     plan_repr_sha1='245ffee6800cd0e12fb4c9b9d49d44fbce1db4b3',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'ParameterCommon'),
+        ('omcore.specs.openapi.openapi', 'ParameterCommon'),
     ),
 )
 def _process_dataclass__245ffee6800cd0e12fb4c9b9d49d44fbce1db4b3():
@@ -3372,7 +3372,7 @@ def _process_dataclass__245ffee6800cd0e12fb4c9b9d49d44fbce1db4b3():
     ),
     plan_repr_sha1='eddcd6e3715fc20c3fab37afd67aa30033d225fb',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'PathItem'),
+        ('omcore.specs.openapi.openapi', 'PathItem'),
     ),
 )
 def _process_dataclass__eddcd6e3715fc20c3fab37afd67aa30033d225fb():
@@ -3602,7 +3602,7 @@ def _process_dataclass__eddcd6e3715fc20c3fab37afd67aa30033d225fb():
     ),
     plan_repr_sha1='3670b9ebea893cec23429f0248849b2585df602b',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Reference'),
+        ('omcore.specs.openapi.openapi', 'Reference'),
     ),
 )
 def _process_dataclass__3670b9ebea893cec23429f0248849b2585df602b():
@@ -3731,7 +3731,7 @@ def _process_dataclass__3670b9ebea893cec23429f0248849b2585df602b():
     ),
     plan_repr_sha1='4d7b50c4830d77baf175395781b487267d8cc483',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'RequestBody'),
+        ('omcore.specs.openapi.openapi', 'RequestBody'),
     ),
 )
 def _process_dataclass__4d7b50c4830d77baf175395781b487267d8cc483():
@@ -3863,7 +3863,7 @@ def _process_dataclass__4d7b50c4830d77baf175395781b487267d8cc483():
     ),
     plan_repr_sha1='ba1130aff126463fd8f758d0ad559b5d4d40de0c',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Response'),
+        ('omcore.specs.openapi.openapi', 'Response'),
     ),
 )
 def _process_dataclass__ba1130aff126463fd8f758d0ad559b5d4d40de0c():
@@ -4009,7 +4009,7 @@ def _process_dataclass__ba1130aff126463fd8f758d0ad559b5d4d40de0c():
     ),
     plan_repr_sha1='9dfacb9a92daa4820108c7c6b2beff0e8e7c7896',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Schema'),
+        ('omcore.specs.openapi.openapi', 'Schema'),
     ),
 )
 def _process_dataclass__9dfacb9a92daa4820108c7c6b2beff0e8e7c7896():
@@ -4175,7 +4175,7 @@ def _process_dataclass__9dfacb9a92daa4820108c7c6b2beff0e8e7c7896():
     ),
     plan_repr_sha1='8d8e79ef7f961f4f87613951588263cba38367cd',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'SecurityScheme'),
+        ('omcore.specs.openapi.openapi', 'SecurityScheme'),
     ),
 )
 def _process_dataclass__8d8e79ef7f961f4f87613951588263cba38367cd():
@@ -4353,7 +4353,7 @@ def _process_dataclass__8d8e79ef7f961f4f87613951588263cba38367cd():
     ),
     plan_repr_sha1='0d8ff939993b09e0048474b6080b9fc212767363',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Server'),
+        ('omcore.specs.openapi.openapi', 'Server'),
     ),
 )
 def _process_dataclass__0d8ff939993b09e0048474b6080b9fc212767363():
@@ -4482,7 +4482,7 @@ def _process_dataclass__0d8ff939993b09e0048474b6080b9fc212767363():
     ),
     plan_repr_sha1='ed700960cbf73cb2c74eff6586b4e17b28ce3e64',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'ServerVariable'),
+        ('omcore.specs.openapi.openapi', 'ServerVariable'),
     ),
 )
 def _process_dataclass__ed700960cbf73cb2c74eff6586b4e17b28ce3e64():
@@ -4611,7 +4611,7 @@ def _process_dataclass__ed700960cbf73cb2c74eff6586b4e17b28ce3e64():
     ),
     plan_repr_sha1='403f654c39247dc017aa2d5c3ad151dcdf42f5c9',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Tag'),
+        ('omcore.specs.openapi.openapi', 'Tag'),
     ),
 )
 def _process_dataclass__403f654c39247dc017aa2d5c3ad151dcdf42f5c9():
@@ -4747,7 +4747,7 @@ def _process_dataclass__403f654c39247dc017aa2d5c3ad151dcdf42f5c9():
     ),
     plan_repr_sha1='c7656e6ca8a63c0cf248f48ba702df7d8aac96c5',
     cls_names=(
-        ('omlish.specs.openapi.openapi', 'Xml'),
+        ('omcore.specs.openapi.openapi', 'Xml'),
     ),
 )
 def _process_dataclass__c7656e6ca8a63c0cf248f48ba702df7d8aac96c5():
@@ -4893,7 +4893,7 @@ def _process_dataclass__c7656e6ca8a63c0cf248f48ba702df7d8aac96c5():
     ),
     plan_repr_sha1='f767b80f010435f6c60531699ee12edc74460b24',
     cls_names=(
-        ('omlish.specs.openapi.tools.jsonschema', 'OpenapiJsonschema'),
+        ('omcore.specs.openapi.tools.jsonschema', 'OpenapiJsonschema'),
     ),
 )
 def _process_dataclass__f767b80f010435f6c60531699ee12edc74460b24():
@@ -5004,7 +5004,7 @@ def _process_dataclass__f767b80f010435f6c60531699ee12edc74460b24():
     ),
     plan_repr_sha1='28fa5f38326ee968867cdcb54e7cf587c1102899',
     cls_names=(
-        ('omlish.specs.openapi.tools.jsonschema', '_NamedSchema'),
+        ('omcore.specs.openapi.tools.jsonschema', '_NamedSchema'),
     ),
 )
 def _process_dataclass__28fa5f38326ee968867cdcb54e7cf587c1102899():

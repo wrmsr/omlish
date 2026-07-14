@@ -4,12 +4,12 @@
 # import typing as ta
 # import uuid
 #
-# from omlish import check
-# from omlish import lang
-# from omlish import sql
-# from omlish.asyncs import anyio as anu
-# from omlish.logs import all as logs
-# from omlish.sql import alchemy as sau
+# from omcore import check
+# from omcore import lang
+# from omcore import sql
+# from omcore.asyncs import anyio as anu
+# from omcore.logs import all as logs
+# from omcore.sql import alchemy as sau
 #
 # from .models import Nodes
 # from .models import setup_db

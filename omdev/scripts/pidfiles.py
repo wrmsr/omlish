@@ -3,7 +3,7 @@
 # @om-lite
 # @om-script
 # @om-generated
-# @om-amalg-output ../../omlish/os/pidfiles/cli.py
+# @om-amalg-output ../../omcore/os/pidfiles/cli.py
 # @om-git-diff-omit
 # ruff: noqa: PYI034 UP006 UP007 UP036 UP037 UP045
 """
@@ -50,7 +50,7 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
@@ -61,25 +61,25 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
             dict(path='../../lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
-            dict(path='../../logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
-            dict(path='pidfile.py', sha1='4fedbf087d874b8f9b612cf0707ac82feb88deaa'),
-            dict(path='../signals.py', sha1='0e05e92da535e84b6fef8ca7e3f3c9b3fd313710'),
-            dict(path='../../argparse/parsers.py', sha1='51044d7b7d1b1ca27173be2d3c007d574827a188'),
-            dict(path='../../lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
+            dict(path='../../logs/levels.py', sha1='bd87ff6a281e361cbab4f205802187b2080044e6'),
+            dict(path='pidfile.py', sha1='1082f109ec1272d7c281707b9620ae6a9a241a9f'),
+            dict(path='../signals.py', sha1='03690b977dc4ef5545ee4279c0016a9c11f21f92'),
+            dict(path='../../argparse/parsers.py', sha1='46321356fbfd17d94eeb0347e86eb042a9333d37'),
+            dict(path='../../lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
             dict(path='../../lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
             dict(path='../../lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
-            dict(path='../../logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='../../argparse/cli.py', sha1='aef500dd2d8f5a65c4c04ede11355ac8eb513f2e'),
+            dict(path='../../logs/protocols.py', sha1='2e13388c65699c4aa89f32b78be8496b94fc40bb'),
+            dict(path='../../argparse/cli.py', sha1='cbfc5b8a9863db3e643df46f268937cbba65b126'),
             dict(path='../../lite/args.py', sha1='ae96b0baeb376617a63c0e64632ab2c5ff4171a8'),
-            dict(path='../../subprocesses/run.py', sha1='9b7e1265cd59c58d30d8915f96ba84f80797ef42'),
-            dict(path='../../subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../../diag/cmds/lslocks.py', sha1='b1e09c9374f9007cb19c2c5009937e7d2f4c0a7b'),
-            dict(path='../../diag/cmds/lsof.py', sha1='0a58d3c05ce0038690ce8c5b64dd96e7b21b5853'),
-            dict(path='../../subprocesses/base.py', sha1='483de755e9d090d8cae5a774e232e0965ea5713e'),
-            dict(path='../../subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
-            dict(path='pinning.py', sha1='6f12d3300f89a2265a8df9602c70a11e485e7231'),
-            dict(path='cli.py', sha1='5da3992cb0abb547f43f909c2d7c9092bb536f8a'),
+            dict(path='../../subprocesses/run.py', sha1='425596d73f3b5cbe1ab936718c77e39a88283350'),
+            dict(path='../../subprocesses/wrap.py', sha1='12d94dc2357951cd0fed1c50a46817d30d628927'),
+            dict(path='../../diag/cmds/lslocks.py', sha1='46725d80fd8e016d2d13a4b5c1ad1352b982841e'),
+            dict(path='../../diag/cmds/lsof.py', sha1='cdb2aaaed6f7c6fbddbd8cc165fd82c1f8f2ebb3'),
+            dict(path='../../subprocesses/base.py', sha1='902de24f7135858a9f539fab378cacb96f5cc672'),
+            dict(path='../../subprocesses/sync.py', sha1='df383531e888c4652a285defb522dd90ce916b6a'),
+            dict(path='pinning.py', sha1='436eb3fc76ae7106605c8c26de60e36899ad0b8a'),
+            dict(path='cli.py', sha1='fb926284e3a92c28573c91a69295ea8d99f6f134'),
         ],
     )
 

@@ -38,7 +38,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='5ae94c3ed2c354e407c4c2dafde59484b9d0ac88',
     cls_names=(
-        ('omlish.sql.api.asquery', 'AsQueryContext'),
+        ('omcore.sql.api.asquery', 'AsQueryContext'),
     ),
 )
 def _process_dataclass__5ae94c3ed2c354e407c4c2dafde59484b9d0ac88():
@@ -155,7 +155,7 @@ def _process_dataclass__5ae94c3ed2c354e407c4c2dafde59484b9d0ac88():
     ),
     plan_repr_sha1='6e6d18636070554815585022cec70aa6f15ef9a9',
     cls_names=(
-        ('omlish.sql.api.columns', 'Column'),
+        ('omcore.sql.api.columns', 'Column'),
     ),
 )
 def _process_dataclass__6e6d18636070554815585022cec70aa6f15ef9a9():
@@ -274,7 +274,7 @@ def _process_dataclass__6e6d18636070554815585022cec70aa6f15ef9a9():
     ),
     plan_repr_sha1='27b7ef913853316df2ddbd85bfa36f10e967641c',
     cls_names=(
-        ('omlish.sql.api.queries', 'ManyParams'),
+        ('omcore.sql.api.queries', 'ManyParams'),
     ),
 )
 def _process_dataclass__27b7ef913853316df2ddbd85bfa36f10e967641c():
@@ -369,7 +369,7 @@ def _process_dataclass__27b7ef913853316df2ddbd85bfa36f10e967641c():
     ),
     plan_repr_sha1='63c05de795f82e8dacde3eceff4abc81b79a0bee',
     cls_names=(
-        ('omlish.sql.api.queries', 'NoParams'),
+        ('omcore.sql.api.queries', 'NoParams'),
     ),
 )
 def _process_dataclass__63c05de795f82e8dacde3eceff4abc81b79a0bee():
@@ -446,7 +446,7 @@ def _process_dataclass__63c05de795f82e8dacde3eceff4abc81b79a0bee():
     ),
     plan_repr_sha1='d03cdfffda7bb99085bfaa4380f5c6f32b0f0e5e',
     cls_names=(
-        ('omlish.sql.api.queries', 'Query'),
+        ('omcore.sql.api.queries', 'Query'),
     ),
 )
 def _process_dataclass__d03cdfffda7bb99085bfaa4380f5c6f32b0f0e5e():
@@ -560,7 +560,7 @@ def _process_dataclass__d03cdfffda7bb99085bfaa4380f5c6f32b0f0e5e():
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
     cls_names=(
-        ('omlish.sql.api.queries', 'QueryParams'),
+        ('omcore.sql.api.queries', 'QueryParams'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -639,7 +639,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
     ),
     plan_repr_sha1='a7abe5eeac180c2c591f3d3a53805368068716bd',
     cls_names=(
-        ('omlish.sql.api.queries', 'RowParams'),
+        ('omcore.sql.api.queries', 'RowParams'),
     ),
 )
 def _process_dataclass__a7abe5eeac180c2c591f3d3a53805368068716bd():
@@ -742,7 +742,7 @@ def _process_dataclass__a7abe5eeac180c2c591f3d3a53805368068716bd():
     ),
     plan_repr_sha1='afba95cc077e24ab1876f8a8bb8cea66aee709a9',
     cls_names=(
-        ('omlish.sql.api.rows', 'Row'),
+        ('omcore.sql.api.rows', 'Row'),
     ),
 )
 def _process_dataclass__afba95cc077e24ab1876f8a8bb8cea66aee709a9():

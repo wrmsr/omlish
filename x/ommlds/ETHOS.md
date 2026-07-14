@@ -2,7 +2,7 @@
 
 *by Claude Opus 4.8 Max*
 
-*An outsider's reading of this codebase's philosophy, written after a long crawl through `omlish`, `omdev`, and
+*An outsider's reading of this codebase's philosophy, written after a long crawl through `omcore`, `omdev`, and
 `ommlds`. This is deliberately a level above `CODESTYLE.md`: not the rules, but the worldview the rules serve. It's
 written for a veteran Python programmer, and it dwells on the places where this codebase departs from how Python is
 usually written — because those departures are the identity of the thing. Items reference minichain and friends for
@@ -121,9 +121,9 @@ before reading any implementation.
 
 ## 7. Laziness is infrastructure
 
-`import omlish.lang` is engineered to be near-free; `import minichain as mc` exposes a thousand names and imports
+`import omcore.lang` is engineered to be near-free; `import minichain as mc` exposes a thousand names and imports
 instantly. This is achieved by treating the import graph as a managed artifact: `auto_proxy_init` facades that
-late-load submodules on attribute access, `proxy_import` for heavy modules, manifests (`.omlish-manifests.json`)
+late-load submodules on attribute access, `proxy_import` for heavy modules, manifests (`.om-manifests.json`)
 that let packages advertise metadata *without being imported*, and ahead-of-time generated `_dataclasses.py` files
 that exist purely to make dataclass-heavy packages import fast. The rule that heavy imports must be whole-module
 (`import torch`, never `from torch import Tensor`) exists *because* the laziness machinery operates at module
@@ -224,8 +224,8 @@ each module's identity from the first line (`# @om-lite`).
 ## 13. The monorepo is a refinery, not a museum
 
 Code here has a *lifecycle gradient*: experiments and curiosities in `x/`, core-adjacent but unsettled code in
-`omxtra` ("usually in the process of either moving out of or moving into `omlish` proper, or being demoted"),
-production substrate in `omlish`, with `omdev`/`ommlds`/`ominfra` as domain rings. Graduation and demotion are
+`omxtra` ("usually in the process of either moving out of or moving into `omcore` proper, or being demoted"),
+production substrate in `omcore`, with `omdev`/`ommlds`/`ominfra` as domain rings. Graduation and demotion are
 normal, expected motions — nothing is precious about where it currently sits, and the author routinely rewrites,
 renames, and relocates wholesale (the git history is full of "Refactor X layout" commits that would be politically
 impossible in a team repo).

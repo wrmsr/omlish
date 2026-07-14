@@ -574,7 +574,7 @@ Three layers:
    expected. One pytest function per example, parameterized.
 3. **Streaming equivalence tests** — `tests/test_streaming/`. For each fixture in (2), feed the
    input as N random chunkings and assert the concatenated committed stream equals the oneshot
-   parse output. Hypothesis is a nice fit but `omlish` doesn't include it; we'll use a small
+   parse output. Hypothesis is a nice fit but `omcore` doesn't include it; we'll use a small
    deterministic chunker plus a random one seeded per test.
 
 Spec fixture files we port (in order, milestone-aligned):

@@ -4,13 +4,13 @@ TODO:
 """
 import typing as ta
 
-from omdev.git.magic import GIT_DIFF_OMIT_MAGIC_COMMENT
-from omdev.py.srcheaders import get_py_header_lines
-from omdev.tools.git.messages import GitMessageGenerator
 from omcore import check
 from omcore import lang
 from omcore.http import all as http
 from omcore.subprocesses.sync import subprocesses
+from omdev.git.magic import GIT_DIFF_OMIT_MAGIC_COMMENT
+from omdev.py.srcheaders import get_py_header_lines
+from omdev.tools.git.messages import GitMessageGenerator
 
 
 with lang.auto_proxy_import(globals()):
@@ -44,7 +44,7 @@ class LlmGitMessageGenerator(GitMessageGenerator):
 
     # TODO: configurable
     DEFAULT_EXCLUDES: ta.ClassVar[ta.Sequence[str]] = [
-        '**/.omlish-manifests.json',
+        '**/.om-manifests.json',
         '**/_antlr/*',
     ]
 

@@ -5,11 +5,11 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omlish'
+name = 'omcore'
 authors = [
     {name = 'wrmsr'},
 ]
-urls = {source = 'https://github.com/wrmsr/omlish'}
+urls = {source = 'https://github.com/wrmsr/omcore'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
@@ -22,7 +22,7 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.14',
 ]
-description = 'omlish'
+description = 'omcore'
 
 [project.optional-dependencies]
 all = [
@@ -129,14 +129,14 @@ plus = [
 ]
 
 [project.entry-points]
-'omlish.manifests' = {omlish = 'omlish'}
+'omcore.manifests' = {omcore = 'omcore'}
 
 [tool.setuptools]
 
 [tool.setuptools.packages.find]
 include = [
-    'omlish',
-    'omlish.*',
+    'omcore',
+    'omcore.*',
 ]
 exclude = [
     '*.tests',
@@ -152,7 +152,7 @@ exclude = [
     '*.hh',
     '*.abnf',
     '*.g4',
-    '.omlish-manifests.json',
+    '.om-manifests.json',
     'py.typed',
     '*.md',
     'README',
@@ -161,17 +161,17 @@ exclude = [
     'LICENSE.txt',
     'AUTHORS',
 ]
-'omlish.cexts' = [
+'omcore.cexts' = [
     'include/omlish/*',
 ]
-'omlish.http.resources' = [
+'omcore.http.resources' = [
     '*',
 ]
-'omlish.specs.jsonschema' = [
+'omcore.specs.jsonschema' = [
     'schemas/*',
     'schemas/draft202012/*',
     'schemas/draft202012/vocabularies/*',
 ]
-'omlish.text.abnf' = [
+'omcore.text.abnf' = [
     'docs/*',
 ]

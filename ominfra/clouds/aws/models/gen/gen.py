@@ -310,7 +310,7 @@ class ModelGen:
         '# @om-generated',
         'import typing as _ta  # noqa',
         '',
-        'from omlish import dataclasses as _dc  # noqa',
+        'from omcore import dataclasses as _dc  # noqa',
         '',
         'from ... import base as _base  # noqa',
         '',

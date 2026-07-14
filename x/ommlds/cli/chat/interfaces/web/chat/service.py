@@ -15,7 +15,7 @@ class ServiceChatStreamer:
         async def outer() -> ta.Any:
             llm = mc.registry_new(mc.ChatChoicesStreamService, 'openai')
 
-            # FIXME: leaks obviously lol, see omlish/resources/managers.py toplevel todo's
+            # FIXME: leaks obviously lol, see omcore/resources/managers.py toplevel todo's
             async with (await llm.invoke(mc.ChatChoicesStreamRequest(chat))).v as st_resp:
                 async def inner() -> ta.Any:
                     async for o in st_resp:

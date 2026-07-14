@@ -10,10 +10,10 @@ import functools
 import os.path
 import typing as ta
 
-from omdev.git.shallow import GitShallowCloner
 from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omcore.lite.cached import async_cached_nullary
 from omcore.lite.check import check
+from omdev.git.shallow import GitShallowCloner
 
 from .paths.owners import SingleDirDeployPathOwner
 from .specs import DeployGitRepo
@@ -152,7 +152,7 @@ class DeployGitManager(SingleDirDeployPathOwner):
                 auto_commit=True,
                 make_dirs=True,
         ) as dst_swap:
-            tdn = '.omlish-git-shallow-clone'
+            tdn = '.om-git-shallow-clone'
 
             for cmd in GitShallowCloner(
                     base_dir=dst_swap.tmp_path,

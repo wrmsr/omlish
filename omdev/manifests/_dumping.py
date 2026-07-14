@@ -43,8 +43,8 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
-            dict(path='../../omcore/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
-            dict(path='dumping.py', sha1='49acd06fdcc3427f4a255fea295d7042bb655a13'),
+            dict(path='../../omcore/lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
+            dict(path='dumping.py', sha1='4837c54c1019dcb85fbfaa8086f5efb98025358a'),
         ],
     )
 

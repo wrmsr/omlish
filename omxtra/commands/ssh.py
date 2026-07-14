@@ -18,10 +18,10 @@ import contextlib
 import shlex
 import typing as ta
 
-from omdev.home.secrets import load_secrets
 from omcore import check
 from omcore import dataclasses as dc
 from omcore import lang
+from omdev.home.secrets import load_secrets
 
 from .runners import CommandRunner
 from .runners import LocalCommandRunner

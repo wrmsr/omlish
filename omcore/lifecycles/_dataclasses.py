@@ -49,8 +49,8 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='d177836dcedc950662bdf1c8a8d52e05fc91c5c7',
     cls_names=(
-        ('omlish.lifecycles.base', 'CallbackAsyncLifecycle'),
-        ('omlish.lifecycles.base', 'CallbackLifecycle'),
+        ('omcore.lifecycles.base', 'CallbackAsyncLifecycle'),
+        ('omcore.lifecycles.base', 'CallbackLifecycle'),
     ),
 )
 def _process_dataclass__d177836dcedc950662bdf1c8a8d52e05fc91c5c7():
@@ -188,8 +188,8 @@ def _process_dataclass__d177836dcedc950662bdf1c8a8d52e05fc91c5c7():
     ),
     plan_repr_sha1='375fd7fd537e2cfb878109217fe4c57607b10510',
     cls_names=(
-        ('omlish.lifecycles.base', '_AsyncToSyncLifecycle'),
-        ('omlish.lifecycles.base', '_SyncToAsyncLifecycle'),
+        ('omcore.lifecycles.base', '_AsyncToSyncLifecycle'),
+        ('omcore.lifecycles.base', '_SyncToAsyncLifecycle'),
     ),
 )
 def _process_dataclass__375fd7fd537e2cfb878109217fe4c57607b10510():
@@ -289,8 +289,8 @@ def _process_dataclass__375fd7fd537e2cfb878109217fe4c57607b10510():
     ),
     plan_repr_sha1='80a0a85b19250d1d39ff826c429bd05f9be201e1',
     cls_names=(
-        ('omlish.lifecycles.contextmanagers', 'AsyncContextManagerLifecycle'),
-        ('omlish.lifecycles.contextmanagers', 'ContextManagerLifecycle'),
+        ('omcore.lifecycles.contextmanagers', 'AsyncContextManagerLifecycle'),
+        ('omcore.lifecycles.contextmanagers', 'ContextManagerLifecycle'),
     ),
 )
 def _process_dataclass__80a0a85b19250d1d39ff826c429bd05f9be201e1():
@@ -395,7 +395,7 @@ def _process_dataclass__80a0a85b19250d1d39ff826c429bd05f9be201e1():
     ),
     plan_repr_sha1='b3f39a9348415b6ae3908bd546728de8b2b6d308',
     cls_names=(
-        ('omlish.lifecycles.injection', '_LifecycleRegistrar.Dep'),
+        ('omcore.lifecycles.injection', '_LifecycleRegistrar.Dep'),
     ),
 )
 def _process_dataclass__b3f39a9348415b6ae3908bd546728de8b2b6d308():
@@ -514,7 +514,7 @@ def _process_dataclass__b3f39a9348415b6ae3908bd546728de8b2b6d308():
     ),
     plan_repr_sha1='56c73a66344b180e8ef52aca8500185dd538bf10',
     cls_names=(
-        ('omlish.lifecycles.injection', '_LifecycleRegistrar.State'),
+        ('omcore.lifecycles.injection', '_LifecycleRegistrar.State'),
     ),
 )
 def _process_dataclass__56c73a66344b180e8ef52aca8500185dd538bf10():
@@ -626,8 +626,8 @@ def _process_dataclass__56c73a66344b180e8ef52aca8500185dd538bf10():
     ),
     plan_repr_sha1='32f5b8178dfdf24f4db24e8d8cd63ebd10bf83f3',
     cls_names=(
-        ('omlish.lifecycles.managed', 'AsyncLifecycleManaged._Lifecycle'),
-        ('omlish.lifecycles.managed', 'LifecycleManaged._Lifecycle'),
+        ('omcore.lifecycles.managed', 'AsyncLifecycleManaged._Lifecycle'),
+        ('omcore.lifecycles.managed', 'LifecycleManaged._Lifecycle'),
     ),
 )
 def _process_dataclass__32f5b8178dfdf24f4db24e8d8cd63ebd10bf83f3():
@@ -733,7 +733,7 @@ def _process_dataclass__32f5b8178dfdf24f4db24e8d8cd63ebd10bf83f3():
     ),
     plan_repr_sha1='440e63ab60e5c95ef453ad0e63ffc0977bb48371',
     cls_names=(
-        ('omlish.lifecycles.manager', 'LifecycleManagerEntry'),
+        ('omcore.lifecycles.manager', 'LifecycleManagerEntry'),
     ),
 )
 def _process_dataclass__440e63ab60e5c95ef453ad0e63ffc0977bb48371():
@@ -839,7 +839,7 @@ def _process_dataclass__440e63ab60e5c95ef453ad0e63ffc0977bb48371():
     ),
     plan_repr_sha1='6c47afef6781ac6bd88758815660ccbfefe8540e',
     cls_names=(
-        ('omlish.lifecycles.states', 'LifecycleState'),
+        ('omcore.lifecycles.states', 'LifecycleState'),
     ),
 )
 def _process_dataclass__6c47afef6781ac6bd88758815660ccbfefe8540e():
@@ -943,7 +943,7 @@ def _process_dataclass__6c47afef6781ac6bd88758815660ccbfefe8540e():
     ),
     plan_repr_sha1='ebef99260c9b05bfd28fc9433dcc32af80493f10',
     cls_names=(
-        ('omlish.lifecycles.transitions', 'LifecycleTransition'),
+        ('omcore.lifecycles.transitions', 'LifecycleTransition'),
     ),
 )
 def _process_dataclass__ebef99260c9b05bfd28fc9433dcc32af80493f10():

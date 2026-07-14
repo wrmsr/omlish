@@ -49,12 +49,12 @@ from ..concurrent import threadlets
 if ta.TYPE_CHECKING:
     import asyncio
 
-    from omlish.asyncs import anyio as aiu
+    from omcore.asyncs import anyio as aiu
 
 else:
     asyncio = lang.proxy_import('asyncio')
 
-    aiu = lang.proxy_import('omlish.asyncs.anyio')
+    aiu = lang.proxy_import('omcore.asyncs.anyio')
 
 
 T = ta.TypeVar('T')

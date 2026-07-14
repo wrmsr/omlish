@@ -23,7 +23,7 @@ torch==2.13.0
 torchvision==0.28.0
 # torchcodec==0.7.0
 
-diffusers==0.39.0  # @omlish-venv !14t !14dt !15t
+diffusers==0.39.0  # @om-venv !14t !14dt !15t
 
 scipy==1.18.0
 scikit-learn==1.9.0

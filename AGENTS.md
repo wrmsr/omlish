@@ -6,8 +6,8 @@
 
 ### DO-NOTS
 
-- Do NOT remove an `@omlish-lite` marker from a source file if one is present. If the file is marked as lite, it is used
-  in a lite context, and must remain lite-compatible.
+- Do NOT remove an `@om-lite` marker from a source file if one is present. If the file is marked as lite, it is used in
+  a lite context, and must remain lite-compatible.
 - Do NOT forget the **blank line** after a class or function docstring. For example, do NOT do this:
   ```python
   class MyClass:
@@ -53,6 +53,6 @@
     necessary before a git commit.
 - Before committing, run `make fix gen check` and ensure that succeeds, then rerun relevant pytests and ensure they
   pass.
-- As mentioned in `CODESTYLE.md` C/C++ extensions should have a `// @omlish-cext` header line, and otherwise need no
+- As mentioned in `CODESTYLE.md` C/C++ extensions should have a `// @om-cext` header line, and otherwise need no
   additional manual build wiring. After adding a new extension source file, run `make gen` to add it to the build, then
   run `make build-cext` to build them in-place. It is not necessary to `make gen` after every source file modification.

@@ -35,7 +35,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='9e4d7c79a5e41688346efa43025f741f934babc3',
     cls_names=(
-        ('omlish.sql.queries._marshal', 'LowerEnumMarshaler'),
+        ('omcore.sql.queries._marshal', 'LowerEnumMarshaler'),
     ),
 )
 def _process_dataclass__9e4d7c79a5e41688346efa43025f741f934babc3():
@@ -139,7 +139,7 @@ def _process_dataclass__9e4d7c79a5e41688346efa43025f741f934babc3():
     ),
     plan_repr_sha1='8611a731548bd71bcbde73a887e568c9a927cdb8',
     cls_names=(
-        ('omlish.sql.queries._marshal', 'OpMarshalerUnmarshaler'),
+        ('omcore.sql.queries._marshal', 'OpMarshalerUnmarshaler'),
     ),
 )
 def _process_dataclass__8611a731548bd71bcbde73a887e568c9a927cdb8():
@@ -257,7 +257,7 @@ def _process_dataclass__8611a731548bd71bcbde73a887e568c9a927cdb8():
     ),
     plan_repr_sha1='8f03d57078e52af00e4c9c0c0fad71b6c0a11d6f',
     cls_names=(
-        ('omlish.sql.queries.adapters', 'Adapter'),
+        ('omcore.sql.queries.adapters', 'Adapter'),
     ),
 )
 def _process_dataclass__8f03d57078e52af00e4c9c0c0fad71b6c0a11d6f():
@@ -377,15 +377,15 @@ def _process_dataclass__8f03d57078e52af00e4c9c0c0fad71b6c0a11d6f():
     ),
     plan_repr_sha1='e7ac46d5699937da7ac00d1b1d3ab0e79226ba6a',
     cls_names=(
-        ('omlish.sql.queries.base', 'Node'),
-        ('omlish.sql.queries.exprs', 'Expr'),
-        ('omlish.sql.queries.keywords', 'Keyword'),
-        ('omlish.sql.queries.keywords', 'Star'),
-        ('omlish.sql.queries.relations', 'Relation'),
-        ('omlish.sql.queries.selects', 'AllSelectItem'),
-        ('omlish.sql.queries.selects', 'SelectItem'),
-        ('omlish.sql.queries.stmts', 'ExprStmt'),
-        ('omlish.sql.queries.stmts', 'Stmt'),
+        ('omcore.sql.queries.base', 'Node'),
+        ('omcore.sql.queries.exprs', 'Expr'),
+        ('omcore.sql.queries.keywords', 'Keyword'),
+        ('omcore.sql.queries.keywords', 'Star'),
+        ('omcore.sql.queries.relations', 'Relation'),
+        ('omcore.sql.queries.selects', 'AllSelectItem'),
+        ('omcore.sql.queries.selects', 'SelectItem'),
+        ('omcore.sql.queries.stmts', 'ExprStmt'),
+        ('omcore.sql.queries.stmts', 'Stmt'),
     ),
 )
 def _process_dataclass__e7ac46d5699937da7ac00d1b1d3ab0e79226ba6a():
@@ -460,7 +460,7 @@ def _process_dataclass__e7ac46d5699937da7ac00d1b1d3ab0e79226ba6a():
     ),
     plan_repr_sha1='b8c8a3ae58179edee1955035e0736f0a17b6c999',
     cls_names=(
-        ('omlish.sql.queries.base', 'Node._Fields'),
+        ('omcore.sql.queries.base', 'Node._Fields'),
     ),
 )
 def _process_dataclass__b8c8a3ae58179edee1955035e0736f0a17b6c999():
@@ -576,7 +576,7 @@ def _process_dataclass__b8c8a3ae58179edee1955035e0736f0a17b6c999():
     ),
     plan_repr_sha1='63f8f88e5a70521d583838faae244bbdb653b9ea',
     cls_names=(
-        ('omlish.sql.queries.binary', 'Binary'),
+        ('omcore.sql.queries.binary', 'Binary'),
     ),
 )
 def _process_dataclass__63f8f88e5a70521d583838faae244bbdb653b9ea():
@@ -674,8 +674,8 @@ def _process_dataclass__63f8f88e5a70521d583838faae244bbdb653b9ea():
     ),
     plan_repr_sha1='03395a73e5848238cfd3d56817eee44e61539d59',
     cls_names=(
-        ('omlish.sql.queries.binary', 'BinaryOp'),
-        ('omlish.sql.queries.unary', 'UnaryOp'),
+        ('omcore.sql.queries.binary', 'BinaryOp'),
+        ('omcore.sql.queries.unary', 'UnaryOp'),
     ),
 )
 def _process_dataclass__03395a73e5848238cfd3d56817eee44e61539d59():
@@ -769,7 +769,7 @@ def _process_dataclass__03395a73e5848238cfd3d56817eee44e61539d59():
     ),
     plan_repr_sha1='f9ef84b81ab983ceb07ac83ee96caf3b85138ab7',
     cls_names=(
-        ('omlish.sql.queries.deletes', 'Delete'),
+        ('omcore.sql.queries.deletes', 'Delete'),
     ),
 )
 def _process_dataclass__f9ef84b81ab983ceb07ac83ee96caf3b85138ab7():
@@ -865,7 +865,7 @@ def _process_dataclass__f9ef84b81ab983ceb07ac83ee96caf3b85138ab7():
     ),
     plan_repr_sha1='c1ea5ee83a5a052663bfe80e9c01607d559b1406',
     cls_names=(
-        ('omlish.sql.queries.exprs', 'Literal'),
+        ('omcore.sql.queries.exprs', 'Literal'),
     ),
 )
 def _process_dataclass__c1ea5ee83a5a052663bfe80e9c01607d559b1406():
@@ -952,7 +952,7 @@ def _process_dataclass__c1ea5ee83a5a052663bfe80e9c01607d559b1406():
     ),
     plan_repr_sha1='f27defbd34b1c1b4991139ab5577379dd109657f',
     cls_names=(
-        ('omlish.sql.queries.exprs', 'NameExpr'),
+        ('omcore.sql.queries.exprs', 'NameExpr'),
     ),
 )
 def _process_dataclass__f27defbd34b1c1b4991139ab5577379dd109657f():
@@ -1039,7 +1039,7 @@ def _process_dataclass__f27defbd34b1c1b4991139ab5577379dd109657f():
     ),
     plan_repr_sha1='5d70b1e70ab35fa9bb3d99658dcd0f5231c19284',
     cls_names=(
-        ('omlish.sql.queries.exprs', 'ParamExpr'),
+        ('omcore.sql.queries.exprs', 'ParamExpr'),
     ),
 )
 def _process_dataclass__5d70b1e70ab35fa9bb3d99658dcd0f5231c19284():
@@ -1130,7 +1130,7 @@ def _process_dataclass__5d70b1e70ab35fa9bb3d99658dcd0f5231c19284():
     ),
     plan_repr_sha1='c1e8f109b3559d019b8282b53a37b52de4c4df85',
     cls_names=(
-        ('omlish.sql.queries.funcs', 'Func'),
+        ('omcore.sql.queries.funcs', 'Func'),
     ),
 )
 def _process_dataclass__c1e8f109b3559d019b8282b53a37b52de4c4df85():
@@ -1228,9 +1228,9 @@ def _process_dataclass__c1e8f109b3559d019b8282b53a37b52de4c4df85():
     ),
     plan_repr_sha1='2de74e3f3fd0bdfa3ce205dae3e0c8e501e402b8',
     cls_names=(
-        ('omlish.sql.queries.idents', 'Ident'),
-        ('omlish.sql.queries.selects', 'SelectExpr'),
-        ('omlish.sql.queries.selects', 'SelectRelation'),
+        ('omcore.sql.queries.idents', 'Ident'),
+        ('omcore.sql.queries.selects', 'SelectExpr'),
+        ('omcore.sql.queries.selects', 'SelectRelation'),
     ),
 )
 def _process_dataclass__2de74e3f3fd0bdfa3ce205dae3e0c8e501e402b8():
@@ -1323,7 +1323,7 @@ def _process_dataclass__2de74e3f3fd0bdfa3ce205dae3e0c8e501e402b8():
     ),
     plan_repr_sha1='6227e6bc1c06f76ecd7903a2cacb41abcf70fe66',
     cls_names=(
-        ('omlish.sql.queries.inserts', 'Insert'),
+        ('omcore.sql.queries.inserts', 'Insert'),
     ),
 )
 def _process_dataclass__6227e6bc1c06f76ecd7903a2cacb41abcf70fe66():
@@ -1424,7 +1424,7 @@ def _process_dataclass__6227e6bc1c06f76ecd7903a2cacb41abcf70fe66():
     ),
     plan_repr_sha1='a2d26634979782a1294ffc26f9d212489f1dddb2',
     cls_names=(
-        ('omlish.sql.queries.inserts', 'Values'),
+        ('omcore.sql.queries.inserts', 'Values'),
     ),
 )
 def _process_dataclass__a2d26634979782a1294ffc26f9d212489f1dddb2():
@@ -1513,7 +1513,7 @@ def _process_dataclass__a2d26634979782a1294ffc26f9d212489f1dddb2():
     ),
     plan_repr_sha1='bd9ef41fa5cfbd6c9e65b2e25959a41415b18102',
     cls_names=(
-        ('omlish.sql.queries.keywords', 'LiteralKeyword'),
+        ('omcore.sql.queries.keywords', 'LiteralKeyword'),
     ),
 )
 def _process_dataclass__bd9ef41fa5cfbd6c9e65b2e25959a41415b18102():
@@ -1605,7 +1605,7 @@ def _process_dataclass__bd9ef41fa5cfbd6c9e65b2e25959a41415b18102():
     ),
     plan_repr_sha1='f24b88c9598c5c3c5f46c01ad47544252b69e653',
     cls_names=(
-        ('omlish.sql.queries.multi', 'Multi'),
+        ('omcore.sql.queries.multi', 'Multi'),
     ),
 )
 def _process_dataclass__f24b88c9598c5c3c5f46c01ad47544252b69e653():
@@ -1709,7 +1709,7 @@ def _process_dataclass__f24b88c9598c5c3c5f46c01ad47544252b69e653():
     ),
     plan_repr_sha1='7a6be768651873d9ab8a5e0c13df76d66899aa14',
     cls_names=(
-        ('omlish.sql.queries.names', 'Name'),
+        ('omcore.sql.queries.names', 'Name'),
     ),
 )
 def _process_dataclass__7a6be768651873d9ab8a5e0c13df76d66899aa14():
@@ -1793,7 +1793,7 @@ def _process_dataclass__7a6be768651873d9ab8a5e0c13df76d66899aa14():
     ),
     plan_repr_sha1='97c6d2c139b3e6117df6ff1b1518893a288e097b',
     cls_names=(
-        ('omlish.sql.queries.params', 'Param'),
+        ('omcore.sql.queries.params', 'Param'),
     ),
 )
 def _process_dataclass__97c6d2c139b3e6117df6ff1b1518893a288e097b():
@@ -1883,7 +1883,7 @@ def _process_dataclass__97c6d2c139b3e6117df6ff1b1518893a288e097b():
     ),
     plan_repr_sha1='881ca45ca5bfe15a46c9e905723db869413af558',
     cls_names=(
-        ('omlish.sql.queries.relations', 'Join'),
+        ('omcore.sql.queries.relations', 'Join'),
     ),
 )
 def _process_dataclass__881ca45ca5bfe15a46c9e905723db869413af558():
@@ -1994,7 +1994,7 @@ def _process_dataclass__881ca45ca5bfe15a46c9e905723db869413af558():
     ),
     plan_repr_sha1='62406300012bfb955e28c42e734bd2e6431977a2',
     cls_names=(
-        ('omlish.sql.queries.relations', 'Table'),
+        ('omcore.sql.queries.relations', 'Table'),
     ),
 )
 def _process_dataclass__62406300012bfb955e28c42e734bd2e6431977a2():
@@ -2093,7 +2093,7 @@ def _process_dataclass__62406300012bfb955e28c42e734bd2e6431977a2():
     ),
     plan_repr_sha1='b85d1650dd57c9d13fd8a64133c352d4ce32e764',
     cls_names=(
-        ('omlish.sql.queries.rendering', 'RenderedQuery'),
+        ('omcore.sql.queries.rendering', 'RenderedQuery'),
     ),
 )
 def _process_dataclass__b85d1650dd57c9d13fd8a64133c352d4ce32e764():
@@ -2216,7 +2216,7 @@ def _process_dataclass__b85d1650dd57c9d13fd8a64133c352d4ce32e764():
     ),
     plan_repr_sha1='b542b89b72ac814c1d9957ee7db4c65176821ea4',
     cls_names=(
-        ('omlish.sql.queries.rendering', 'RenderedQueryParts'),
+        ('omcore.sql.queries.rendering', 'RenderedQueryParts'),
     ),
 )
 def _process_dataclass__b542b89b72ac814c1d9957ee7db4c65176821ea4():
@@ -2339,7 +2339,7 @@ def _process_dataclass__b542b89b72ac814c1d9957ee7db4c65176821ea4():
     ),
     plan_repr_sha1='37329a1a9079e19e80c5c65b47a92c28aec1b006',
     cls_names=(
-        ('omlish.sql.queries.selects', 'ExprSelectItem'),
+        ('omcore.sql.queries.selects', 'ExprSelectItem'),
     ),
 )
 def _process_dataclass__37329a1a9079e19e80c5c65b47a92c28aec1b006():
@@ -2442,7 +2442,7 @@ def _process_dataclass__37329a1a9079e19e80c5c65b47a92c28aec1b006():
     ),
     plan_repr_sha1='21935ac05be913f6babd9a0b3e9aafa4e132b1f7',
     cls_names=(
-        ('omlish.sql.queries.selects', 'Select'),
+        ('omcore.sql.queries.selects', 'Select'),
     ),
 )
 def _process_dataclass__21935ac05be913f6babd9a0b3e9aafa4e132b1f7():
@@ -2552,7 +2552,7 @@ def _process_dataclass__21935ac05be913f6babd9a0b3e9aafa4e132b1f7():
     ),
     plan_repr_sha1='760d5eca56bfa89591b390dd743518d191e78f9a',
     cls_names=(
-        ('omlish.sql.queries.unary', 'Unary'),
+        ('omcore.sql.queries.unary', 'Unary'),
     ),
 )
 def _process_dataclass__760d5eca56bfa89591b390dd743518d191e78f9a():
@@ -2649,7 +2649,7 @@ def _process_dataclass__760d5eca56bfa89591b390dd743518d191e78f9a():
     ),
     plan_repr_sha1='8d880f8c43b5a9cc39657cdacce5bf45e5178c2d',
     cls_names=(
-        ('omlish.sql.queries.unions', 'Union'),
+        ('omcore.sql.queries.unions', 'Union'),
     ),
 )
 def _process_dataclass__8d880f8c43b5a9cc39657cdacce5bf45e5178c2d():
@@ -2749,7 +2749,7 @@ def _process_dataclass__8d880f8c43b5a9cc39657cdacce5bf45e5178c2d():
     ),
     plan_repr_sha1='2e50d4b86a5cd9323eed41529cc4ba9d0dc1aee3',
     cls_names=(
-        ('omlish.sql.queries.updates', 'Field'),
+        ('omcore.sql.queries.updates', 'Field'),
     ),
 )
 def _process_dataclass__2e50d4b86a5cd9323eed41529cc4ba9d0dc1aee3():
@@ -2843,7 +2843,7 @@ def _process_dataclass__2e50d4b86a5cd9323eed41529cc4ba9d0dc1aee3():
     ),
     plan_repr_sha1='7e0e049a846197c10dd6eaa0088bb0cfa339c375',
     cls_names=(
-        ('omlish.sql.queries.updates', 'Fields'),
+        ('omcore.sql.queries.updates', 'Fields'),
     ),
 )
 def _process_dataclass__7e0e049a846197c10dd6eaa0088bb0cfa339c375():
@@ -2938,7 +2938,7 @@ def _process_dataclass__7e0e049a846197c10dd6eaa0088bb0cfa339c375():
     ),
     plan_repr_sha1='9c646a3db706ba806d4b2a21f48f3ee6c0c47996',
     cls_names=(
-        ('omlish.sql.queries.updates', 'Update'),
+        ('omcore.sql.queries.updates', 'Update'),
     ),
 )
 def _process_dataclass__9c646a3db706ba806d4b2a21f48f3ee6c0c47996():

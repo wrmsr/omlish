@@ -10,7 +10,7 @@ TODO:
  - can this run externally? or not? what does it have to import?
   - has to import manifest classes, but not modules with manifest magics
  - !! can make lite / amalg / embeddable with 'manifest base class markers':
-  - rather than issubclass(cls, ModAttrManifest), can do if cls.__omlish_manifest_class__ == 'mod_attr'
+  - rather than issubclass(cls, ModAttrManifest), can do if cls.__om_manifest_class__ == 'mod_attr'
    - reject unknowns
    - can analyze statically
 
@@ -19,7 +19,7 @@ See (entry_points):
  - https://docs.pytest.org/en/7.1.x/how-to/writing_plugins.html#setuptools-entry-points
  - https://packaging.python.org/en/latest/specifications/entry-points/
  - https://packaging.python.org/en/latest/guides/creating-and-discovering-plugins/
- - [project.entry-points.omlish-manifests] \n omdev = omdev
+ - [project.entry-points.omcore-manifests] \n omdev = omdev
 """
 import asyncio
 import collections

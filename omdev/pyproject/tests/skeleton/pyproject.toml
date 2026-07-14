@@ -13,8 +13,8 @@ name = 'omdevthing'
 
 ##
 
-[tool.omlish.pyproject.srcs]
+[tool.om.pyproject.srcs]
 main = ['omdevthing']
 
-[tool.omlish.pyproject.venvs]
+[tool.o.pyproject.venvs]
 default = { interp = '3.13.6', requires = ['-rrequirements-dev.txt'], srcs = ['@main'] }

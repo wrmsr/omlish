@@ -13,12 +13,12 @@ from ..concurrent import threadlets as tls
 if ta.TYPE_CHECKING:
     import threading
 
-    from omlish.io import pyio  # noqa
+    from omcore.io import pyio  # noqa
 
 else:
     threading = lang.proxy_import('threading')
 
-    pyio = lang.proxy_import('omlish.io.pyio')
+    pyio = lang.proxy_import('omcore.io.pyio')
 
 
 T = ta.TypeVar('T')

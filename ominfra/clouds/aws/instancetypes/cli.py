@@ -2,12 +2,12 @@ import bz2
 import os.path
 import typing as ta
 
-from omdev.home.secrets import load_secrets
 from omcore import lang
 from omcore import marshal as msh
 from omcore.argparse import all as ap
 from omcore.formats.json import all as json
 from omcore.secrets import all as sec
+from omdev.home.secrets import load_secrets
 
 from .cache import load_instance_types
 

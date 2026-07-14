@@ -4,7 +4,7 @@ A pure-Python, streaming-first markdown parser modeled on the Rust
 [`pulldown-cmark`](https://github.com/pulldown-cmark/pulldown-cmark) crate.
 
 - Pure Python — no native extensions, no compiled dependencies.
-- Zero runtime deps outside the `omlish` stdlib.
+- Zero runtime deps outside the `omcore` stdlib.
 - Event-driven, with a `StreamingParser` that accepts chunked input and exposes both a committed (append-only,
   immutable) and tentative (replaceable) event stream — designed for live-rendering LLM TUIs without "safety reparse at
   end" passes.

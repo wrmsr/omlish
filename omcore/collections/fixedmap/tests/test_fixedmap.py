@@ -11,9 +11,10 @@ class _BaseFixedMapTests:
     _impl = None
 
     @pytest.fixture(scope='class', autouse=True)
-    def class_setup_teardown(self):
+    @classmethod
+    def class_setup_teardown(cls):
         old_impl = fixedmap._impl  # noqa
-        fixedmap._impl = self._impl  # noqa
+        fixedmap._impl = cls._impl  # noqa
         yield
         fixedmap._impl = old_impl  # noqa
 

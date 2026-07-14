@@ -98,9 +98,9 @@ def test_backend_strings():
         ),
     )
 """
-# from omlish import check
-# from omlish import marshal as msh
-# from omlish.formats.json import all as json5
+# from omcore import check
+# from omcore import marshal as msh
+# from omcore.formats.json import all as json5
 #
 # from .types import BackendSpec
 # from .types import ModelBackendSpec

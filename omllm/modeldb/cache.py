@@ -6,7 +6,7 @@ from omcore.formats.json import all as json
 
 
 with lang.auto_proxy_import(globals()):
-    from omlish import marshal as msh
+    from omcore import marshal as msh
 
     from . import types
 

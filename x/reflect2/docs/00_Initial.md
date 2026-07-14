@@ -29,7 +29,7 @@ The repo contains three important references:
 
 - `mypy/`: mypy 2.1.0 as the source of truth. The checked-out version reports `__version__ = "2.1.0"`.
 - `_mypydistill_old/`: an older manual distillation attempt. It already contains many copied or pared-down mypy modules, including `types`, `type_visitor`, `subtypes`, `meet`, `join`, `constraints`, `solve`, and tests.
-- `_reflect/`: the current runtime reflection implementation from `omlish`. It is smaller, pragmatic, runtime-oriented, and already handles many modern `typing` objects, but it lacks the deeper type-system machinery this project wants.
+- `_reflect/`: the current runtime reflection implementation from `omcore`. It is smaller, pragmatic, runtime-oriented, and already handles many modern `typing` objects, but it lacks the deeper type-system machinery this project wants.
 
 ## Initial Findings
 

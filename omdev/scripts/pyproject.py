@@ -83,92 +83,119 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
+            dict(path='../../omcore/formats/toml/parser.py', sha1='e2562aaa4d8bf0a3bee0e96e38908bc2f060b41a'),
+            dict(path='../../omcore/formats/toml/writer.py', sha1='0091ad73e098694861c006960c6b7b7bf07a7b69'),
+            dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../omcore/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
+            dict(path='../../omcore/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
+            dict(path='../../omcore/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
+            dict(path='../../omcore/lite/injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
+            dict(path='../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
+            dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
+            dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../omcore/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
+            dict(path='../../omcore/logs/levels.py', sha1='bd87ff6a281e361cbab4f205802187b2080044e6'),
+            dict(path='../../omcore/logs/std/filters.py', sha1='3ec3856ade50561f99ce9463f54737ab1126d410'),
+            dict(path='../../omcore/logs/std/proxy.py', sha1='98c8cad9f65c6b76349bcde830a2e9770108a52a'),
+            dict(path='../../omcore/logs/warnings.py', sha1='03e6c5d0c4c25b51cdd225c029e652cdf741a51a'),
             dict(path='../magic/magic.py', sha1='16a7598eac927e7994d78b9f851dd6cd1fce34c9'),
             dict(path='../magic/prepare.py', sha1='a9b6bd7408d86a52fab7aae2c522032fb251cb8e'),
-            dict(path='../magic/styles.py', sha1='60fc56d089669eaad72c5c134b91bc69d4bc107e'),
-            dict(path='../packaging/versions.py', sha1='d515a54dd7fa27a9fd4d8c8617e5a21a3c12ea1e'),
-            dict(path='../packaging/wheelfile.py', sha1='59294a1111983eed63b0bd64c2330b712d1919db'),
-            dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
-            dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
-            dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omlish/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
-            dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
-            dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
-            dict(path='../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
-            dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
-            dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
-            dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
-            dict(path='../../omlish/logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
-            dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
-            dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
-            dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='../cexts/magic.py', sha1='4e5ce6732454f75c9dd27352959708d8fa7b1666'),
+            dict(path='../magic/styles.py', sha1='124aea52808fae5f67c74e5104aea6184073fdac'),
+            dict(path='../packaging/versions.py', sha1='cd6a636f9944f3c8b410c40a5212b538cc7f4200'),
+            dict(path='../packaging/wheelfile.py', sha1='8b3e08f9e0fde948dbce730d5aba5be718fe10e1'),
+            dict(path='../../omcore/argparse/parsers.py', sha1='46321356fbfd17d94eeb0347e86eb042a9333d37'),
+            dict(path='../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
+            dict(path='../../omcore/lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
+            dict(path='../../omcore/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
+            dict(path='../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
+            dict(path='../../omcore/lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
+            dict(path='../../omcore/logs/infos.py', sha1='c6a4599ad727fbee7c3d8eb1bce80846f8106079'),
+            dict(path='../../omcore/logs/metrics/base.py', sha1='38429b7e804533da9a1dd356cf563ac4cff82aa2'),
+            dict(path='../../omcore/logs/protocols.py', sha1='2e13388c65699c4aa89f32b78be8496b94fc40bb'),
+            dict(path='../cexts/magic.py', sha1='e632fa8f62e600bfefdd239ab24d1b424bfff335'),
             dict(path='../magic/find.py', sha1='436228a9cf1d8bab6b9234d09f72913b0960382f'),
-            dict(path='../packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
-            dict(path='versions.py', sha1='eb6579b9ea2bcee5f71e1af1e430429112f7fc8d'),
-            dict(path='../../omlish/argparse/parsers.py', sha1='51044d7b7d1b1ca27173be2d3c007d574827a188'),
-            dict(path='../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
-            dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
-            dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../omlish/lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
-            dict(path='../../omlish/logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
-            dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
-            dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
+            dict(path='../packaging/specifiers.py', sha1='d1a6a73c198a9266a605234efeb8bef2b940eeb5'),
+            dict(path='versions.py', sha1='eea4eada65f1366c6576a00441035b707233f98b'),
+            dict(path='../../omcore/argparse/cli.py', sha1='cbfc5b8a9863db3e643df46f268937cbba65b126'),
+            dict(path='../../omcore/asyncs/asyncio/timeouts.py', sha1='cfde8108f1128ceea3502c77eefb015fb43a6239'),
+            dict(path='../../omcore/lite/inject.py', sha1='8136e16e99019cf01fc18a4b87d0fa1a9d55e23f'),
+            dict(path='../../omcore/logs/contexts.py', sha1='529adb527492309bf8cde342271ac6ea2ebbf8a1'),
+            dict(path='../../omcore/logs/std/json.py', sha1='d1ff35ac871de63efec2b64ae5c63e63d295a8d5'),
+            dict(path='../../omcore/subprocesses/run.py', sha1='425596d73f3b5cbe1ab936718c77e39a88283350'),
+            dict(path='../../omcore/subprocesses/wrap.py', sha1='12d94dc2357951cd0fed1c50a46817d30d628927'),
             dict(path='../interp/types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
-            dict(path='../packaging/requires.py', sha1='0c34cc4044c4da386622bcd83b9c770e894266dd'),
-            dict(path='../../omlish/argparse/cli.py', sha1='aef500dd2d8f5a65c4c04ede11355ac8eb513f2e'),
-            dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
-            dict(path='../../omlish/lite/inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
-            dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
-            dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='../../omlish/subprocesses/run.py', sha1='9b7e1265cd59c58d30d8915f96ba84f80797ef42'),
-            dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../interp/providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
-            dict(path='../../omlish/logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
-            dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
-            dict(path='../../omlish/subprocesses/base.py', sha1='483de755e9d090d8cae5a774e232e0965ea5713e'),
+            dict(path='../packaging/requires.py', sha1='12f757af4032385d34af1a46aaf42ad55f7e52cf'),
+            dict(path='../../omcore/logs/base.py', sha1='4195705c64f3ec1c4263c2c76c63351d9dacdd5c'),
+            dict(path='../../omcore/logs/std/records.py', sha1='fb1e2d887248cc24b0463156836d9965a06c8ab6'),
+            dict(path='../../omcore/logs/std/standard.py', sha1='223e3cba0f2854c5093fb60d6cef2f27b80c193c'),
+            dict(path='../../omcore/subprocesses/base.py', sha1='902de24f7135858a9f539fab378cacb96f5cc672'),
+            dict(path='../interp/providers/base.py', sha1='bb952ac8a8c2ceeac41a777753a1a4e60439f3d4'),
+            dict(path='../../omcore/logs/asyncs.py', sha1='6b444494a0512f7b7ea2c93be5c4a9868deb7251'),
+            dict(path='../../omcore/logs/std/loggers.py', sha1='144a96b3b190a5641f3b7cc2656d6ffa4e45b5a9'),
+            dict(path='../../omcore/subprocesses/asyncs.py', sha1='8d428af73220f793d2c0e93f5c9966fac9474246'),
+            dict(path='../../omcore/subprocesses/sync.py', sha1='df383531e888c4652a285defb522dd90ce916b6a'),
             dict(path='../interp/resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
-            dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
-            dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
-            dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
-            dict(path='../git/revisions.py', sha1='a26b5afa568313e034b6b2d3a5d2dd0b065979d4'),
-            dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
-            dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='../interp/inspect.py', sha1='d13c4cd18388ef68cff8edcd1af1a28da2234f4f'),
-            dict(path='../interp/pyenv/pyenv.py', sha1='d1f6e657c671c1b1a5b0e627284df656fe2d10d3'),
-            dict(path='../interp/uv/uv.py', sha1='8c6515cd6755efab3972da92a285e94ccb255515'),
-            dict(path='../packaging/revisions.py', sha1='9ba90e4a93b1bfcc93f6ca65dbaaf38f79929677'),
-            dict(path='reqs.py', sha1='65ac743653c455a5015a1a0ce2317ee5372a0c7c'),
-            dict(path='../interp/providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
-            dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
-            dict(path='../interp/pyenv/install.py', sha1='72fe61d3db273f9885530c464cc6b16d9dd5eee0'),
-            dict(path='../interp/uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
-            dict(path='pkg.py', sha1='59f3ae6da9a4a8a59914eb5e9fc6eb380c13398f'),
-            dict(path='../interp/providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
-            dict(path='../interp/pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
-            dict(path='../interp/uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
-            dict(path='../interp/pyenv/inject.py', sha1='b8fb68f5a7cae86c70fe1bad6c29a8b2dfc985c3'),
-            dict(path='../interp/inject.py', sha1='b039abbadf0b096d2724182af2e0ebda2a230852'),
-            dict(path='../interp/default.py', sha1='a799969a0d3f4b57538587b13ceb08f6334ebc16'),
-            dict(path='../interp/venvs.py', sha1='9ba8f2c3131d7d519d5cf36ca69b75f9c6fe2b27'),
-            dict(path='configs.py', sha1='d2a324772cff23b10a7ba0037703f9938a9cff12'),
-            dict(path='venvs.py', sha1='9f1935171017aeb802da56e14d7f41d632a7aa25'),
-            dict(path='cli.py', sha1='978864f41f5434c56a000052512213182f1576cb'),
+            dict(path='../../omcore/asyncs/asyncio/subprocesses.py', sha1='901e82ac03fb6ce967728a715f1785e6e591ff8b'),
+            dict(path='../../omcore/logs/modules.py', sha1='b51c2d4396854b515d29cee17f906d5cc47eb7f2'),
+            dict(path='../git/revisions.py', sha1='726030bbd5851b3e8699d2652ba1a3e1c380c51c'),
+            dict(path='../interp/inspect.py', sha1='121c6c547bd359ca436cb14886a081bb7762a032'),
+            dict(path='../interp/pyenv/pyenv.py', sha1='8c3d0fee72f4e52d2c48beb51cd223f555dfdc87'),
+            dict(path='../interp/uv/uv.py', sha1='1239cb13aad6669a638fdc2c390442a8588460b2'),
+            dict(path='../packaging/revisions.py', sha1='2f7c4cfc56449e5b133286f87bc5b321f561a646'),
+            dict(path='reqs.py', sha1='84d0b7f517a9146c1283fc80f810bb413e48b954'),
+            dict(path='../interp/providers/running.py', sha1='90e9d89b4c20897644f2ee4f8b30d1632f6cfa07'),
+            dict(path='../interp/providers/system.py', sha1='5b337476498d3187d4a8774f04f9e634f60972fb'),
+            dict(path='../interp/pyenv/install.py', sha1='c2e2a6c9ebb36b1dd09482662bdafdb59c75ae81'),
+            dict(path='../interp/uv/provider.py', sha1='fcb5939d4038b41c1a3e887feb10cfcb0924107c'),
+            dict(path='pkg.py', sha1='1d993bc007192ca957230f1062703a0b50d03fa4'),
+            dict(path='../interp/providers/inject.py', sha1='558f0761ce1bd375136f9e733c8674895eec9e62'),
+            dict(path='../interp/pyenv/provider.py', sha1='2d9ef6be0b9dd151361a6e8604a682fa74f9920c'),
+            dict(path='../interp/uv/inject.py', sha1='86cc5b6b8fa88beaa9f468bf05c078f8af330a23'),
+            dict(path='../interp/pyenv/inject.py', sha1='1fe5f906720082a73332f98199e3dd1b2dccd67b'),
+            dict(path='../interp/inject.py', sha1='1bb2d07e46745fcd0126aee0a5ad5ab75b407143'),
+            dict(path='../interp/default.py', sha1='7ea7b7d7aa191aedd4716f3616ca0d07a4a3d875'),
+            dict(path='../interp/venvs.py', sha1='9042c733bff897c3390b1886de115f1bbaaaa9d0'),
+            dict(path='configs.py', sha1='dc7dcc956ee65c4cfab61a604933f86890f05b67'),
+            dict(path='venvs.py', sha1='d705aa16add6ab3cf901af31b3547c697e1543a0'),
+            dict(path='cli.py', sha1='fcac5604f3613b1b1b382a27f2f6e9402a149f11'),
         ],
     )
 
 
 ########################################
 
+
+# ../../omcore/formats/toml/parser.py
+TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
+TomlKey = ta.Tuple[str, ...]  # ta.TypeAlias
+TomlPos = int  # ta.TypeAlias
+
+# ../../omcore/lite/abstract.py
+T = ta.TypeVar('T')
+
+# ../../omcore/lite/cached.py
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+
+# ../../omcore/lite/check.py
+SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
+CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
+CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
+CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
+CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
+CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
+
+# ../../omcore/lite/typing.py
+A0 = ta.TypeVar('A0')
+A1 = ta.TypeVar('A1')
+A2 = ta.TypeVar('A2')
+
+# ../../omcore/logs/levels.py
+LogLevel = int  # ta.TypeAlias
 
 # ../packaging/versions.py
 VersionLocalType = ta.Tuple[ta.Union[int, str], ...]  # ta.TypeAlias
@@ -178,827 +205,53 @@ VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalTy
 VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # ta.TypeAlias  # noqa
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]  # ta.TypeAlias
 
-# ../../omlish/formats/toml/parser.py
-TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
-TomlKey = ta.Tuple[str, ...]  # ta.TypeAlias
-TomlPos = int  # ta.TypeAlias
-
-# ../../omlish/lite/abstract.py
-T = ta.TypeVar('T')
-
-# ../../omlish/lite/cached.py
-CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
-
-# ../../omlish/lite/check.py
-SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
-CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
-CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
-CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
-CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
-CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
-
-# ../../omlish/lite/typing.py
-A0 = ta.TypeVar('A0')
-A1 = ta.TypeVar('A1')
-A2 = ta.TypeVar('A2')
-
-# ../../omlish/logs/levels.py
-LogLevel = int  # ta.TypeAlias
-
-# ../packaging/specifiers.py
-UnparsedVersion = ta.Union['Version', str]  # ta.TypeAlias
-UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
-CallableVersionOperator = ta.Callable[['Version', str], bool]  # ta.TypeAlias
-
-# ../../omlish/argparse/parsers.py
+# ../../omcore/argparse/parsers.py
 ArgparseCmdFn = ta.Callable[[], ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]]  # ta.TypeAlias
 
-# ../../omlish/lite/json.py
+# ../../omcore/lite/json.py
 JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
-# ../../omlish/lite/maybes.py
+# ../../omcore/lite/maybes.py
 U = ta.TypeVar('U')
 
-# ../../omlish/lite/timeouts.py
+# ../../omcore/lite/timeouts.py
 TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', float, int, bool, None]  # ta.TypeAlias  # noqa
 
-# ../../omlish/logs/infos.py
+# ../../omcore/logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
 LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
 LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
 LoggingContextInfo = ta.Any  # ta.TypeAlias
 
-# ../packaging/requires.py
-RequiresMarkerVar = ta.Union['RequiresVariable', 'RequiresValue']  # ta.TypeAlias
-RequiresMarkerAtom = ta.Union['RequiresMarkerItem', ta.Sequence['RequiresMarkerAtom']]  # ta.TypeAlias
-RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', 'RequiresMarkerAtom', str]]  # ta.TypeAlias
+# ../packaging/specifiers.py
+UnparsedVersion = ta.Union['Version', str]  # ta.TypeAlias
+UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
+CallableVersionOperator = ta.Callable[['Version', str], bool]  # ta.TypeAlias
 
-# ../../omlish/asyncs/asyncio/timeouts.py
+# ../../omcore/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
-# ../../omlish/lite/inject.py
+# ../../omcore/lite/inject.py
 InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]  # ta.TypeAlias
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']  # ta.TypeAlias
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # ta.TypeAlias
 
-# ../../omlish/logs/contexts.py
+# ../../omcore/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
 
-# ../../omlish/subprocesses/base.py
+# ../packaging/requires.py
+RequiresMarkerVar = ta.Union['RequiresVariable', 'RequiresValue']  # ta.TypeAlias
+RequiresMarkerAtom = ta.Union['RequiresMarkerItem', ta.Sequence['RequiresMarkerAtom']]  # ta.TypeAlias
+RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', 'RequiresMarkerAtom', str]]  # ta.TypeAlias
+
+# ../../omcore/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
 ########################################
-# ../../magic/magic.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Magic:
-    key: str
-
-    file: ta.Optional[str]
-
-    start_line: int
-    end_line: int
-
-    body: str
-
-    prepared: ta.Any
-
-
-########################################
-# ../../magic/prepare.py
-
-
-##
-
-
-class MagicPrepareError(Exception):
-    pass
-
-
-def py_compile_magic_preparer(src: str) -> ta.Any:
-    try:
-        prepared = compile(f'({src})', '<magic>', 'eval')
-    except SyntaxError:
-        raise MagicPrepareError  # noqa
-    return prepared
-
-
-def py_eval_magic_preparer(src: str) -> ta.Any:
-    code = py_compile_magic_preparer(src)
-    return eval(code)  # noqa
-
-
-def json_magic_preparer(src: str) -> ta.Any:
-    try:
-        prepared = json.loads(src)
-    except json.JSONDecodeError:
-        raise MagicPrepareError  # noqa
-    return prepared
-
-
-########################################
-# ../../magic/styles.py
-
-
-##
-
-
-MAGIC_KEY_PREFIX = '@om-'
-
-
-@dc.dataclass(frozen=True)
-class MagicStyle:
-    name: str
-
-    exts: ta.FrozenSet[str] = frozenset()
-
-    key_prefix: str = MAGIC_KEY_PREFIX
-
-    line_prefix: ta.Optional[str] = None
-    block_prefix_suffix: ta.Optional[ta.Tuple[str, str]] = None
-
-
-PY_MAGIC_STYLE = MagicStyle(
-    name='py',
-    exts=frozenset([
-        'py',
-    ]),
-    line_prefix='# ',
-)
-
-
-C_MAGIC_STYLE = MagicStyle(
-    name='c',
-    exts=frozenset([
-        'c',
-        'cc',
-        'cpp',
-        'cu',
-    ]),
-    line_prefix='// ',
-    block_prefix_suffix=('/* ', '*/'),
-)
-
-
-########################################
-# ../../packaging/versions.py
-# Copyright (c) Donald Stufft and individual contributors.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-# following conditions are met:
-#
-#     1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
-#        following disclaimer.
-#
-#     2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-#        following disclaimer in the documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. This file is dual licensed under the terms of the
-# Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
-# details.
-# https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-
-
-##
-
-
-class InfinityVersionType:
-    def __repr__(self) -> str:
-        return 'Infinity'
-
-    def __hash__(self) -> int:
-        return hash(repr(self))
-
-    def __lt__(self, other: object) -> bool:
-        return False
-
-    def __le__(self, other: object) -> bool:
-        return False
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, self.__class__)
-
-    def __gt__(self, other: object) -> bool:
-        return True
-
-    def __ge__(self, other: object) -> bool:
-        return True
-
-    def __neg__(self: object) -> 'NegativeInfinityVersionType':
-        return NegativeInfinityVersion
-
-
-InfinityVersion = InfinityVersionType()
-
-
-class NegativeInfinityVersionType:
-    def __repr__(self) -> str:
-        return '-Infinity'
-
-    def __hash__(self) -> int:
-        return hash(repr(self))
-
-    def __lt__(self, other: object) -> bool:
-        return True
-
-    def __le__(self, other: object) -> bool:
-        return True
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, self.__class__)
-
-    def __gt__(self, other: object) -> bool:
-        return False
-
-    def __ge__(self, other: object) -> bool:
-        return False
-
-    def __neg__(self: object) -> InfinityVersionType:
-        return InfinityVersion
-
-
-NegativeInfinityVersion = NegativeInfinityVersionType()
-
-
-##
-
-
-class _Version(ta.NamedTuple):
-    epoch: int
-    release: ta.Tuple[int, ...]
-    dev: ta.Optional[ta.Tuple[str, int]]
-    pre: ta.Optional[ta.Tuple[str, int]]
-    post: ta.Optional[ta.Tuple[str, int]]
-    local: ta.Optional[VersionLocalType]
-
-
-class InvalidVersion(ValueError):  # noqa
-    pass
-
-
-class _BaseVersion:
-    _key: ta.Tuple[ta.Any, ...]
-
-    def __hash__(self) -> int:
-        return hash(self._key)
-
-    def __lt__(self, other: '_BaseVersion') -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key < other._key
-
-    def __le__(self, other: '_BaseVersion') -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key <= other._key
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key == other._key
-
-    def __ge__(self, other: '_BaseVersion') -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key >= other._key
-
-    def __gt__(self, other: '_BaseVersion') -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key > other._key
-
-    def __ne__(self, other: object) -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key != other._key
-
-
-_VERSION_PATTERN = r"""
-    v?
-    (?:
-        (?:(?P<epoch>[0-9]+)!)?
-        (?P<release>[0-9]+(?:\.[0-9]+)*)
-        (?P<pre>
-            [-_\.]?
-            (?P<pre_l>alpha|a|beta|b|preview|pre|c|rc)
-            [-_\.]?
-            (?P<pre_n>[0-9]+)?
-        )?
-        (?P<post>
-            (?:-(?P<post_n1>[0-9]+))
-            |
-            (?:
-                [-_\.]?
-                (?P<post_l>post|rev|r)
-                [-_\.]?
-                (?P<post_n2>[0-9]+)?
-            )
-        )?
-        (?P<dev>
-            [-_\.]?
-            (?P<dev_l>dev)
-            [-_\.]?
-            (?P<dev_n>[0-9]+)?
-        )?
-    )
-    (?:\+(?P<local>[a-z0-9]+(?:[-_\.][a-z0-9]+)*))?
-"""
-
-VERSION_PATTERN = _VERSION_PATTERN
-
-
-class Version(_BaseVersion):
-    _regex = re.compile(r'^\s*' + VERSION_PATTERN + r'\s*$', re.VERBOSE | re.IGNORECASE)
-    _key: VersionCmpKey
-
-    def __init__(self, version: str) -> None:
-        match = self._regex.search(version)
-        if not match:
-            raise InvalidVersion(f"Invalid version: '{version}'")
-
-        self._version = _Version(
-            epoch=int(match.group('epoch')) if match.group('epoch') else 0,
-            release=tuple(int(i) for i in match.group('release').split('.')),
-            pre=_parse_letter_version(match.group('pre_l'), match.group('pre_n')),
-            post=_parse_letter_version(match.group('post_l'), match.group('post_n1') or match.group('post_n2')),
-            dev=_parse_letter_version(match.group('dev_l'), match.group('dev_n')),
-            local=_parse_local_version(match.group('local')),
-        )
-
-        self._key = _version_cmpkey(
-            self._version.epoch,
-            self._version.release,
-            self._version.pre,
-            self._version.post,
-            self._version.dev,
-            self._version.local,
-        )
-
-    def __repr__(self) -> str:
-        return f"<Version('{self}')>"
-
-    def __str__(self) -> str:
-        parts = []
-
-        if self.epoch != 0:
-            parts.append(f'{self.epoch}!')
-
-        parts.append('.'.join(str(x) for x in self.release))
-
-        if self.pre is not None:
-            parts.append(''.join(str(x) for x in self.pre))
-
-        if self.post is not None:
-            parts.append(f'.post{self.post}')
-
-        if self.dev is not None:
-            parts.append(f'.dev{self.dev}')
-
-        if self.local is not None:
-            parts.append(f'+{self.local}')
-
-        return ''.join(parts)
-
-    @property
-    def epoch(self) -> int:
-        return self._version.epoch
-
-    @property
-    def release(self) -> ta.Tuple[int, ...]:
-        return self._version.release
-
-    @property
-    def pre(self) -> ta.Optional[ta.Tuple[str, int]]:
-        return self._version.pre
-
-    @property
-    def post(self) -> ta.Optional[int]:
-        return self._version.post[1] if self._version.post else None
-
-    @property
-    def dev(self) -> ta.Optional[int]:
-        return self._version.dev[1] if self._version.dev else None
-
-    @property
-    def local(self) -> ta.Optional[str]:
-        if self._version.local:
-            return '.'.join(str(x) for x in self._version.local)
-        else:
-            return None
-
-    @property
-    def public(self) -> str:
-        return str(self).split('+', 1)[0]
-
-    @property
-    def base_version(self) -> str:
-        parts = []
-
-        if self.epoch != 0:
-            parts.append(f'{self.epoch}!')
-
-        parts.append('.'.join(str(x) for x in self.release))
-
-        return ''.join(parts)
-
-    @property
-    def is_prerelease(self) -> bool:
-        return self.dev is not None or self.pre is not None
-
-    @property
-    def is_postrelease(self) -> bool:
-        return self.post is not None
-
-    @property
-    def is_devrelease(self) -> bool:
-        return self.dev is not None
-
-    @property
-    def major(self) -> int:
-        return self.release[0] if len(self.release) >= 1 else 0
-
-    @property
-    def minor(self) -> int:
-        return self.release[1] if len(self.release) >= 2 else 0
-
-    @property
-    def micro(self) -> int:
-        return self.release[2] if len(self.release) >= 3 else 0
-
-
-def _parse_letter_version(
-        letter: ta.Optional[str],
-        number: ta.Union[str, bytes, ta.SupportsInt, None],
-) -> ta.Optional[ta.Tuple[str, int]]:
-    if letter:
-        if number is None:
-            number = 0
-
-        letter = letter.lower()
-        if letter == 'alpha':
-            letter = 'a'
-        elif letter == 'beta':
-            letter = 'b'
-        elif letter in ['c', 'pre', 'preview']:
-            letter = 'rc'
-        elif letter in ['rev', 'r']:
-            letter = 'post'
-
-        return letter, int(number)
-    if not letter and number:
-        letter = 'post'
-        return letter, int(number)
-
-    return None
-
-
-_local_version_separators = re.compile(r'[\._-]')
-
-
-def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[VersionLocalType]:
-    if local is not None:
-        return tuple(
-            part.lower() if not part.isdigit() else int(part)
-            for part in _local_version_separators.split(local)
-        )
-    return None
-
-
-def _version_cmpkey(
-    epoch: int,
-    release: ta.Tuple[int, ...],
-    pre: ta.Optional[ta.Tuple[str, int]],
-    post: ta.Optional[ta.Tuple[str, int]],
-    dev: ta.Optional[ta.Tuple[str, int]],
-    local: ta.Optional[VersionLocalType],
-) -> VersionCmpKey:
-    _release = tuple(reversed(list(itertools.dropwhile(lambda x: x == 0, reversed(release)))))
-
-    if pre is None and post is None and dev is not None:
-        _pre: VersionCmpPrePostDevType = NegativeInfinityVersion
-    elif pre is None:
-        _pre = InfinityVersion
-    else:
-        _pre = pre
-
-    if post is None:
-        _post: VersionCmpPrePostDevType = NegativeInfinityVersion
-    else:
-        _post = post
-
-    if dev is None:
-        _dev: VersionCmpPrePostDevType = InfinityVersion
-    else:
-        _dev = dev
-
-    if local is None:
-        _local: VersionCmpLocalType = NegativeInfinityVersion
-    else:
-        _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinityVersion, i) for i in local)
-
-    return epoch, _release, _pre, _post, _dev, _local
-
-
-##
-
-
-def canonicalize_version(
-        version: ta.Union[Version, str],
-        *,
-        strip_trailing_zero: bool = True,
-) -> str:
-    if isinstance(version, str):
-        try:
-            parsed = Version(version)
-        except InvalidVersion:
-            return version
-    else:
-        parsed = version
-
-    parts = []
-
-    if parsed.epoch != 0:
-        parts.append(f'{parsed.epoch}!')
-
-    release_segment = '.'.join(str(x) for x in parsed.release)
-    if strip_trailing_zero:
-        release_segment = re.sub(r'(\.0)+$', '', release_segment)
-    parts.append(release_segment)
-
-    if parsed.pre is not None:
-        parts.append(''.join(str(x) for x in parsed.pre))
-
-    if parsed.post is not None:
-        parts.append(f'.post{parsed.post}')
-
-    if parsed.dev is not None:
-        parts.append(f'.dev{parsed.dev}')
-
-    if parsed.local is not None:
-        parts.append(f'+{parsed.local}')
-
-    return ''.join(parts)
-
-
-########################################
-# ../../packaging/wheelfile.py
-# MIT License
-#
-# Copyright (c) 2012 Daniel Holth <dholth@fastmail.fm> and contributors
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
-# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
-# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
-# persons to whom the Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
-# Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# https://github.com/pypa/wheel/blob/7bb46d7727e6e89fe56b3c78297b3af2672bbbe2/src/wheel/wheelfile.py
-
-
-##
-
-
-class WheelError(Exception):
-    pass
-
-
-# Non-greedy matching of an optional build number may be too clever (more invalid wheel filenames will match). Separate
-# regex for .dist-info?
-WHEEL_INFO_RE = re.compile(
-    r'^'
-    r'(?P<namever>(?P<name>[^\s-]+?)-(?P<ver>[^\s-]+?))'
-    r'(-(?P<build>\d[^\s-]*))?-'
-    r'(?P<pyver>[^\s-]+?)-'
-    r'(?P<abi>[^\s-]+?)-'
-    r'(?P<plat>\S+)'
-    r'\.whl$',
-    re.VERBOSE,
-)
-
-
-class WheelFile(zipfile.ZipFile):
-    """
-    A ZipFile derivative class that also reads SHA-256 hashes from .dist-info/RECORD and checks any read files against
-    those.
-    """
-
-    _default_algorithm = hashlib.sha256
-
-    def __init__(
-            self,
-            file: str,
-            mode: str = 'r',  # ta.Literal["r", "w", "x", "a"]
-            compression: int = zipfile.ZIP_DEFLATED,
-    ) -> None:
-        basename = os.path.basename(file)
-        self.parsed_filename = WHEEL_INFO_RE.match(basename)
-        if not basename.endswith('.whl') or self.parsed_filename is None:
-            raise WheelError(f'Bad wheel filename {basename!r}')
-
-        super().__init__(  # type: ignore
-            file,
-            mode,
-            compression=compression,
-            allowZip64=True,
-        )
-
-        self.dist_info_path = '{}.dist-info'.format(self.parsed_filename.group('namever'))
-        self.record_path = self.dist_info_path + '/RECORD'
-        self._file_hashes: ta.Dict[str, ta.Union[ta.Tuple[None, None], ta.Tuple[int, bytes]]] = {}
-        self._file_sizes: ta.Dict[str, int] = {}
-
-        if mode == 'r':
-            # Ignore RECORD and any embedded wheel signatures
-            self._file_hashes[self.record_path] = None, None
-            self._file_hashes[self.record_path + '.jws'] = None, None
-            self._file_hashes[self.record_path + '.p7s'] = None, None
-
-            # Fill in the expected hashes by reading them from RECORD
-            try:
-                record = self.open(self.record_path)
-            except KeyError:
-                raise WheelError(f'Missing {self.record_path} file') from None
-
-            with record:
-                for line in csv.reader(io.TextIOWrapper(record, newline='', encoding='utf-8')):
-                    path, hash_sum, size = line
-                    if not hash_sum:
-                        continue
-
-                    algorithm, hash_sum = hash_sum.split('=')
-                    try:
-                        hashlib.new(algorithm)
-                    except ValueError:
-                        raise WheelError(f'Unsupported hash algorithm: {algorithm}') from None
-
-                    if algorithm.lower() in {'md5', 'sha1'}:
-                        raise WheelError(f'Weak hash algorithm ({algorithm}) is not permitted by PEP 427')
-
-                    self._file_hashes[path] = (  # type: ignore
-                        algorithm,
-                        self._urlsafe_b64decode(hash_sum.encode('ascii')),
-                    )
-
-    @staticmethod
-    def _urlsafe_b64encode(data: bytes) -> bytes:
-        """urlsafe_b64encode without padding"""
-
-        return base64.urlsafe_b64encode(data).rstrip(b'=')
-
-    @staticmethod
-    def _urlsafe_b64decode(data: bytes) -> bytes:
-        """urlsafe_b64decode without padding"""
-
-        pad = b'=' * (4 - (len(data) & 3))
-        return base64.urlsafe_b64decode(data + pad)
-
-    def open(  # type: ignore  # noqa
-            self,
-            name_or_info: ta.Union[str, zipfile.ZipInfo],
-            mode: ta.Literal['r', 'w'] = 'r',
-            pwd: ta.Optional[bytes] = None,
-    ) -> ta.IO[bytes]:
-        def _update_crc(newdata: bytes) -> None:
-            eof = ef._eof  # type: ignore  # noqa
-            update_crc_orig(newdata)
-            running_hash.update(newdata)
-            if eof and running_hash.digest() != expected_hash:
-                raise WheelError(f"Hash mismatch for file '{ef_name}'")
-
-        ef_name = name_or_info.filename if isinstance(name_or_info, zipfile.ZipInfo) else name_or_info
-        if (
-                mode == 'r'
-                and not ef_name.endswith('/')
-                and ef_name not in self._file_hashes
-        ):
-            raise WheelError(f"No hash found for file '{ef_name}'")
-
-        ef = super().open(name_or_info, mode, pwd)  # noqa
-        if mode == 'r' and not ef_name.endswith('/'):
-            algorithm, expected_hash = self._file_hashes[ef_name]
-            if expected_hash is not None:
-                # Monkey patch the _update_crc method to also check for the hash from RECORD
-                running_hash = hashlib.new(algorithm)  # type: ignore
-                update_crc_orig, ef._update_crc = ef._update_crc, _update_crc  # type: ignore  # noqa
-
-        return ef
-
-    def write_files(self, base_dir: str) -> None:
-        deferred: list[tuple[str, str]] = []
-        for root, dirnames, filenames in os.walk(base_dir):
-            # Sort the directory names so that `os.walk` will walk them in a defined order on the next iteration.
-            dirnames.sort()
-            for name in sorted(filenames):
-                path = os.path.normpath(os.path.join(root, name))
-                if os.path.isfile(path):
-                    arcname = os.path.relpath(path, base_dir).replace(os.path.sep, '/')
-                    if arcname == self.record_path:
-                        pass
-                    elif root.endswith('.dist-info'):
-                        deferred.append((path, arcname))
-                    else:
-                        self.write(path, arcname)
-
-        deferred.sort()
-        for path, arcname in deferred:
-            self.write(path, arcname)
-
-    def write(  # type: ignore  # noqa
-            self,
-            filename: str,
-            arcname: ta.Optional[str] = None,
-            compress_type: ta.Optional[int] = None,
-    ) -> None:
-        with open(filename, 'rb') as f:
-            st = os.fstat(f.fileno())
-            data = f.read()
-
-        zinfo = zipfile.ZipInfo(
-            arcname or filename,
-            date_time=self._get_zipinfo_datetime(st.st_mtime),
-        )
-        zinfo.external_attr = (stat.S_IMODE(st.st_mode) | stat.S_IFMT(st.st_mode)) << 16
-        zinfo.compress_type = compress_type or self.compression
-        self.writestr(zinfo, data, compress_type)
-
-    _MINIMUM_TIMESTAMP = 315532800  # 1980-01-01 00:00:00 UTC
-
-    @classmethod
-    def _get_zipinfo_datetime(cls, timestamp: ta.Optional[float] = None) -> ta.Any:
-        # Some applications need reproducible .whl files, but they can't do this without forcing the timestamp of the
-        # individual ZipInfo objects. See issue #143.
-        timestamp = int(os.environ.get('SOURCE_DATE_EPOCH', timestamp or time.time()))
-        timestamp = max(timestamp, cls._MINIMUM_TIMESTAMP)
-        return time.gmtime(timestamp)[0:6]
-
-    def writestr(  # type: ignore  # noqa
-            self,
-            zinfo_or_arcname: ta.Union[str, zipfile.ZipInfo],
-            data: ta.Any,  # SizedBuffer | str,
-            compress_type: ta.Optional[int] = None,
-    ) -> None:
-        if isinstance(zinfo_or_arcname, str):
-            zinfo_or_arcname = zipfile.ZipInfo(
-                zinfo_or_arcname,
-                date_time=self._get_zipinfo_datetime(),
-            )
-            zinfo_or_arcname.compress_type = self.compression
-            zinfo_or_arcname.external_attr = (0o664 | stat.S_IFREG) << 16
-
-        if isinstance(data, str):
-            data = data.encode('utf-8')
-
-        super().writestr(zinfo_or_arcname, data, compress_type)
-        fname = (
-            zinfo_or_arcname.filename
-            if isinstance(zinfo_or_arcname, zipfile.ZipInfo)
-            else zinfo_or_arcname
-        )
-        if fname != self.record_path:
-            hash_ = self._default_algorithm(data)  # type: ignore
-            self._file_hashes[fname] = (  # type: ignore
-                hash_.name,
-                self._urlsafe_b64encode(hash_.digest()).decode('ascii'),
-            )
-            self._file_sizes[fname] = len(data)
-
-    def close(self) -> None:
-        # Write RECORD
-        if self.fp is not None and self.mode == 'w' and self._file_hashes:
-            data = io.StringIO()
-            writer = csv.writer(data, delimiter=',', quotechar='"', lineterminator='\n')
-            writer.writerows((
-                (fname, algorithm + '=' + hash_, self._file_sizes[fname])  # type: ignore
-                for fname, (algorithm, hash_) in self._file_hashes.items()
-            ))
-            writer.writerow((format(self.record_path), '', ''))
-            self.writestr(self.record_path, data.getvalue())
-
-        super().close()
-
-
-########################################
-# ../../../omlish/formats/toml/parser.py
+# ../../../omcore/formats/toml/parser.py
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2021 Taneli Hukkinen
 # Licensed to PSF under a Contributor Agreement.
@@ -1923,7 +1176,7 @@ class TomlParser:
 
 
 ########################################
-# ../../../omlish/formats/toml/writer.py
+# ../../../omcore/formats/toml/writer.py
 
 
 ##
@@ -2050,7 +1303,7 @@ class TomlWriter:
 
 
 ########################################
-# ../../../omlish/lite/abstract.py
+# ../../../omcore/lite/abstract.py
 
 
 ##
@@ -2197,7 +1450,7 @@ class Abstract:
 
 
 ########################################
-# ../../../omlish/lite/asyncs.py
+# ../../../omcore/lite/asyncs.py
 
 
 ##
@@ -2341,7 +1594,7 @@ as_async_context_manager = SyncToAsyncContextManager
 
 
 ########################################
-# ../../../omlish/lite/cached.py
+# ../../../omcore/lite/cached.py
 
 
 ##
@@ -2454,7 +1707,7 @@ globals()['cached_property'] = _cached_property
 
 
 ########################################
-# ../../../omlish/lite/check.py
+# ../../../omcore/lite/check.py
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
@@ -3034,7 +2287,7 @@ check = Checks()
 
 
 ########################################
-# ../../../omlish/lite/dataclasses.py
+# ../../../omcore/lite/dataclasses.py
 
 
 ##
@@ -3295,7 +2548,7 @@ def dataclass_field_required(name: str) -> ta.Callable[[], ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/injectinspect.py
+# ../../../omcore/lite/injectinspect.py
 
 
 ##
@@ -3385,7 +2638,7 @@ def injection_inspect(obj: ta.Any) -> InjectionInspection:
 
 
 ########################################
-# ../../../omlish/lite/io.py
+# ../../../omcore/lite/io.py
 
 
 ##
@@ -3400,7 +2653,7 @@ class FnWriter:
 
 
 ########################################
-# ../../../omlish/lite/objects.py
+# ../../../omcore/lite/objects.py
 
 
 ##
@@ -3480,7 +2733,7 @@ def dir_dict(o: ta.Any) -> ta.Dict[str, ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/reflect.py
+# ../../../omcore/lite/reflect.py
 
 
 ##
@@ -3569,7 +2822,7 @@ def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/strings.py
+# ../../../omcore/lite/strings.py
 
 
 ##
@@ -3658,7 +2911,7 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../omlish/lite/typing.py
+# ../../../omcore/lite/typing.py
 
 
 ##
@@ -3770,7 +3023,7 @@ class CanFloat(ta.Protocol):
 
 
 ########################################
-# ../../../omlish/logs/levels.py
+# ../../../omcore/logs/levels.py
 
 
 ##
@@ -3869,7 +3122,7 @@ NamedLogLevel._CACHE.update({i: NamedLogLevel(i) for i in NamedLogLevel._NAMES_B
 
 
 ########################################
-# ../../../omlish/logs/std/filters.py
+# ../../../omcore/logs/std/filters.py
 
 
 ##
@@ -3886,7 +3139,7 @@ class TidLoggingFilter(logging.Filter):
 
 
 ########################################
-# ../../../omlish/logs/std/proxy.py
+# ../../../omcore/logs/std/proxy.py
 
 
 ##
@@ -3989,7 +3242,7 @@ class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
 
 
 ########################################
-# ../../../omlish/logs/warnings.py
+# ../../../omcore/logs/warnings.py
 
 
 ##
@@ -3997,6 +3250,2904 @@ class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
 
 class LoggingSetupWarning(Warning):
     pass
+
+
+########################################
+# ../../magic/magic.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Magic:
+    key: str
+
+    file: ta.Optional[str]
+
+    start_line: int
+    end_line: int
+
+    body: str
+
+    prepared: ta.Any
+
+
+########################################
+# ../../magic/prepare.py
+
+
+##
+
+
+class MagicPrepareError(Exception):
+    pass
+
+
+def py_compile_magic_preparer(src: str) -> ta.Any:
+    try:
+        prepared = compile(f'({src})', '<magic>', 'eval')
+    except SyntaxError:
+        raise MagicPrepareError  # noqa
+    return prepared
+
+
+def py_eval_magic_preparer(src: str) -> ta.Any:
+    code = py_compile_magic_preparer(src)
+    return eval(code)  # noqa
+
+
+def json_magic_preparer(src: str) -> ta.Any:
+    try:
+        prepared = json.loads(src)
+    except json.JSONDecodeError:
+        raise MagicPrepareError  # noqa
+    return prepared
+
+
+########################################
+# ../../magic/styles.py
+
+
+##
+
+
+MAGIC_KEY_PREFIX = '@om-'
+
+
+@dc.dataclass(frozen=True)
+class MagicStyle:
+    name: str
+
+    exts: ta.FrozenSet[str] = frozenset()
+
+    key_prefix: str = MAGIC_KEY_PREFIX
+
+    line_prefix: ta.Optional[str] = None
+    block_prefix_suffix: ta.Optional[ta.Tuple[str, str]] = None
+
+
+PY_MAGIC_STYLE = MagicStyle(
+    name='py',
+    exts=frozenset([
+        'py',
+    ]),
+    line_prefix='# ',
+)
+
+
+C_MAGIC_STYLE = MagicStyle(
+    name='c',
+    exts=frozenset([
+        'c',
+        'cc',
+        'cpp',
+        'cu',
+    ]),
+    line_prefix='// ',
+    block_prefix_suffix=('/* ', '*/'),
+)
+
+
+########################################
+# ../../packaging/versions.py
+# Copyright (c) Donald Stufft and individual contributors.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#
+#     1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+#        following disclaimer.
+#
+#     2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+#        following disclaimer in the documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. This file is dual licensed under the terms of the
+# Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
+# details.
+# https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
+
+
+##
+
+
+class InfinityVersionType:
+    def __repr__(self) -> str:
+        return 'Infinity'
+
+    def __hash__(self) -> int:
+        return hash(repr(self))
+
+    def __lt__(self, other: object) -> bool:
+        return False
+
+    def __le__(self, other: object) -> bool:
+        return False
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, self.__class__)
+
+    def __gt__(self, other: object) -> bool:
+        return True
+
+    def __ge__(self, other: object) -> bool:
+        return True
+
+    def __neg__(self: object) -> 'NegativeInfinityVersionType':
+        return NegativeInfinityVersion
+
+
+InfinityVersion = InfinityVersionType()
+
+
+class NegativeInfinityVersionType:
+    def __repr__(self) -> str:
+        return '-Infinity'
+
+    def __hash__(self) -> int:
+        return hash(repr(self))
+
+    def __lt__(self, other: object) -> bool:
+        return True
+
+    def __le__(self, other: object) -> bool:
+        return True
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, self.__class__)
+
+    def __gt__(self, other: object) -> bool:
+        return False
+
+    def __ge__(self, other: object) -> bool:
+        return False
+
+    def __neg__(self: object) -> InfinityVersionType:
+        return InfinityVersion
+
+
+NegativeInfinityVersion = NegativeInfinityVersionType()
+
+
+##
+
+
+class _Version(ta.NamedTuple):
+    epoch: int
+    release: ta.Tuple[int, ...]
+    dev: ta.Optional[ta.Tuple[str, int]]
+    pre: ta.Optional[ta.Tuple[str, int]]
+    post: ta.Optional[ta.Tuple[str, int]]
+    local: ta.Optional[VersionLocalType]
+
+
+class InvalidVersion(ValueError):  # noqa
+    pass
+
+
+class _BaseVersion:
+    _key: ta.Tuple[ta.Any, ...]
+
+    def __hash__(self) -> int:
+        return hash(self._key)
+
+    def __lt__(self, other: '_BaseVersion') -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key < other._key
+
+    def __le__(self, other: '_BaseVersion') -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key <= other._key
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key == other._key
+
+    def __ge__(self, other: '_BaseVersion') -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key >= other._key
+
+    def __gt__(self, other: '_BaseVersion') -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key > other._key
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key != other._key
+
+
+_VERSION_PATTERN = r"""
+    v?
+    (?:
+        (?:(?P<epoch>[0-9]+)!)?
+        (?P<release>[0-9]+(?:\.[0-9]+)*)
+        (?P<pre>
+            [-_\.]?
+            (?P<pre_l>alpha|a|beta|b|preview|pre|c|rc)
+            [-_\.]?
+            (?P<pre_n>[0-9]+)?
+        )?
+        (?P<post>
+            (?:-(?P<post_n1>[0-9]+))
+            |
+            (?:
+                [-_\.]?
+                (?P<post_l>post|rev|r)
+                [-_\.]?
+                (?P<post_n2>[0-9]+)?
+            )
+        )?
+        (?P<dev>
+            [-_\.]?
+            (?P<dev_l>dev)
+            [-_\.]?
+            (?P<dev_n>[0-9]+)?
+        )?
+    )
+    (?:\+(?P<local>[a-z0-9]+(?:[-_\.][a-z0-9]+)*))?
+"""
+
+VERSION_PATTERN = _VERSION_PATTERN
+
+
+class Version(_BaseVersion):
+    _regex = re.compile(r'^\s*' + VERSION_PATTERN + r'\s*$', re.VERBOSE | re.IGNORECASE)
+    _key: VersionCmpKey
+
+    def __init__(self, version: str) -> None:
+        match = self._regex.search(version)
+        if not match:
+            raise InvalidVersion(f"Invalid version: '{version}'")
+
+        self._version = _Version(
+            epoch=int(match.group('epoch')) if match.group('epoch') else 0,
+            release=tuple(int(i) for i in match.group('release').split('.')),
+            pre=_parse_letter_version(match.group('pre_l'), match.group('pre_n')),
+            post=_parse_letter_version(match.group('post_l'), match.group('post_n1') or match.group('post_n2')),
+            dev=_parse_letter_version(match.group('dev_l'), match.group('dev_n')),
+            local=_parse_local_version(match.group('local')),
+        )
+
+        self._key = _version_cmpkey(
+            self._version.epoch,
+            self._version.release,
+            self._version.pre,
+            self._version.post,
+            self._version.dev,
+            self._version.local,
+        )
+
+    def __repr__(self) -> str:
+        return f"<Version('{self}')>"
+
+    def __str__(self) -> str:
+        parts = []
+
+        if self.epoch != 0:
+            parts.append(f'{self.epoch}!')
+
+        parts.append('.'.join(str(x) for x in self.release))
+
+        if self.pre is not None:
+            parts.append(''.join(str(x) for x in self.pre))
+
+        if self.post is not None:
+            parts.append(f'.post{self.post}')
+
+        if self.dev is not None:
+            parts.append(f'.dev{self.dev}')
+
+        if self.local is not None:
+            parts.append(f'+{self.local}')
+
+        return ''.join(parts)
+
+    @property
+    def epoch(self) -> int:
+        return self._version.epoch
+
+    @property
+    def release(self) -> ta.Tuple[int, ...]:
+        return self._version.release
+
+    @property
+    def pre(self) -> ta.Optional[ta.Tuple[str, int]]:
+        return self._version.pre
+
+    @property
+    def post(self) -> ta.Optional[int]:
+        return self._version.post[1] if self._version.post else None
+
+    @property
+    def dev(self) -> ta.Optional[int]:
+        return self._version.dev[1] if self._version.dev else None
+
+    @property
+    def local(self) -> ta.Optional[str]:
+        if self._version.local:
+            return '.'.join(str(x) for x in self._version.local)
+        else:
+            return None
+
+    @property
+    def public(self) -> str:
+        return str(self).split('+', 1)[0]
+
+    @property
+    def base_version(self) -> str:
+        parts = []
+
+        if self.epoch != 0:
+            parts.append(f'{self.epoch}!')
+
+        parts.append('.'.join(str(x) for x in self.release))
+
+        return ''.join(parts)
+
+    @property
+    def is_prerelease(self) -> bool:
+        return self.dev is not None or self.pre is not None
+
+    @property
+    def is_postrelease(self) -> bool:
+        return self.post is not None
+
+    @property
+    def is_devrelease(self) -> bool:
+        return self.dev is not None
+
+    @property
+    def major(self) -> int:
+        return self.release[0] if len(self.release) >= 1 else 0
+
+    @property
+    def minor(self) -> int:
+        return self.release[1] if len(self.release) >= 2 else 0
+
+    @property
+    def micro(self) -> int:
+        return self.release[2] if len(self.release) >= 3 else 0
+
+
+def _parse_letter_version(
+        letter: ta.Optional[str],
+        number: ta.Union[str, bytes, ta.SupportsInt, None],
+) -> ta.Optional[ta.Tuple[str, int]]:
+    if letter:
+        if number is None:
+            number = 0
+
+        letter = letter.lower()
+        if letter == 'alpha':
+            letter = 'a'
+        elif letter == 'beta':
+            letter = 'b'
+        elif letter in ['c', 'pre', 'preview']:
+            letter = 'rc'
+        elif letter in ['rev', 'r']:
+            letter = 'post'
+
+        return letter, int(number)
+    if not letter and number:
+        letter = 'post'
+        return letter, int(number)
+
+    return None
+
+
+_local_version_separators = re.compile(r'[\._-]')
+
+
+def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[VersionLocalType]:
+    if local is not None:
+        return tuple(
+            part.lower() if not part.isdigit() else int(part)
+            for part in _local_version_separators.split(local)
+        )
+    return None
+
+
+def _version_cmpkey(
+    epoch: int,
+    release: ta.Tuple[int, ...],
+    pre: ta.Optional[ta.Tuple[str, int]],
+    post: ta.Optional[ta.Tuple[str, int]],
+    dev: ta.Optional[ta.Tuple[str, int]],
+    local: ta.Optional[VersionLocalType],
+) -> VersionCmpKey:
+    _release = tuple(reversed(list(itertools.dropwhile(lambda x: x == 0, reversed(release)))))
+
+    if pre is None and post is None and dev is not None:
+        _pre: VersionCmpPrePostDevType = NegativeInfinityVersion
+    elif pre is None:
+        _pre = InfinityVersion
+    else:
+        _pre = pre
+
+    if post is None:
+        _post: VersionCmpPrePostDevType = NegativeInfinityVersion
+    else:
+        _post = post
+
+    if dev is None:
+        _dev: VersionCmpPrePostDevType = InfinityVersion
+    else:
+        _dev = dev
+
+    if local is None:
+        _local: VersionCmpLocalType = NegativeInfinityVersion
+    else:
+        _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinityVersion, i) for i in local)
+
+    return epoch, _release, _pre, _post, _dev, _local
+
+
+##
+
+
+def canonicalize_version(
+        version: ta.Union[Version, str],
+        *,
+        strip_trailing_zero: bool = True,
+) -> str:
+    if isinstance(version, str):
+        try:
+            parsed = Version(version)
+        except InvalidVersion:
+            return version
+    else:
+        parsed = version
+
+    parts = []
+
+    if parsed.epoch != 0:
+        parts.append(f'{parsed.epoch}!')
+
+    release_segment = '.'.join(str(x) for x in parsed.release)
+    if strip_trailing_zero:
+        release_segment = re.sub(r'(\.0)+$', '', release_segment)
+    parts.append(release_segment)
+
+    if parsed.pre is not None:
+        parts.append(''.join(str(x) for x in parsed.pre))
+
+    if parsed.post is not None:
+        parts.append(f'.post{parsed.post}')
+
+    if parsed.dev is not None:
+        parts.append(f'.dev{parsed.dev}')
+
+    if parsed.local is not None:
+        parts.append(f'+{parsed.local}')
+
+    return ''.join(parts)
+
+
+########################################
+# ../../packaging/wheelfile.py
+# MIT License
+#
+# Copyright (c) 2012 Daniel Holth <dholth@fastmail.fm> and contributors
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# https://github.com/pypa/wheel/blob/7bb46d7727e6e89fe56b3c78297b3af2672bbbe2/src/wheel/wheelfile.py
+
+
+##
+
+
+class WheelError(Exception):
+    pass
+
+
+# Non-greedy matching of an optional build number may be too clever (more invalid wheel filenames will match). Separate
+# regex for .dist-info?
+WHEEL_INFO_RE = re.compile(
+    r'^'
+    r'(?P<namever>(?P<name>[^\s-]+?)-(?P<ver>[^\s-]+?))'
+    r'(-(?P<build>\d[^\s-]*))?-'
+    r'(?P<pyver>[^\s-]+?)-'
+    r'(?P<abi>[^\s-]+?)-'
+    r'(?P<plat>\S+)'
+    r'\.whl$',
+    re.VERBOSE,
+)
+
+
+class WheelFile(zipfile.ZipFile):
+    """
+    A ZipFile derivative class that also reads SHA-256 hashes from .dist-info/RECORD and checks any read files against
+    those.
+    """
+
+    _default_algorithm = hashlib.sha256
+
+    def __init__(
+            self,
+            file: str,
+            mode: str = 'r',  # ta.Literal["r", "w", "x", "a"]
+            compression: int = zipfile.ZIP_DEFLATED,
+    ) -> None:
+        basename = os.path.basename(file)
+        self.parsed_filename = WHEEL_INFO_RE.match(basename)
+        if not basename.endswith('.whl') or self.parsed_filename is None:
+            raise WheelError(f'Bad wheel filename {basename!r}')
+
+        super().__init__(  # type: ignore
+            file,
+            mode,
+            compression=compression,
+            allowZip64=True,
+        )
+
+        self.dist_info_path = '{}.dist-info'.format(self.parsed_filename.group('namever'))
+        self.record_path = self.dist_info_path + '/RECORD'
+        self._file_hashes: ta.Dict[str, ta.Union[ta.Tuple[None, None], ta.Tuple[int, bytes]]] = {}
+        self._file_sizes: ta.Dict[str, int] = {}
+
+        if mode == 'r':
+            # Ignore RECORD and any embedded wheel signatures
+            self._file_hashes[self.record_path] = None, None
+            self._file_hashes[self.record_path + '.jws'] = None, None
+            self._file_hashes[self.record_path + '.p7s'] = None, None
+
+            # Fill in the expected hashes by reading them from RECORD
+            try:
+                record = self.open(self.record_path)
+            except KeyError:
+                raise WheelError(f'Missing {self.record_path} file') from None
+
+            with record:
+                for line in csv.reader(io.TextIOWrapper(record, newline='', encoding='utf-8')):
+                    path, hash_sum, size = line
+                    if not hash_sum:
+                        continue
+
+                    algorithm, hash_sum = hash_sum.split('=')
+                    try:
+                        hashlib.new(algorithm)
+                    except ValueError:
+                        raise WheelError(f'Unsupported hash algorithm: {algorithm}') from None
+
+                    if algorithm.lower() in {'md5', 'sha1'}:
+                        raise WheelError(f'Weak hash algorithm ({algorithm}) is not permitted by PEP 427')
+
+                    self._file_hashes[path] = (  # type: ignore
+                        algorithm,
+                        self._urlsafe_b64decode(hash_sum.encode('ascii')),
+                    )
+
+    @staticmethod
+    def _urlsafe_b64encode(data: bytes) -> bytes:
+        """urlsafe_b64encode without padding"""
+
+        return base64.urlsafe_b64encode(data).rstrip(b'=')
+
+    @staticmethod
+    def _urlsafe_b64decode(data: bytes) -> bytes:
+        """urlsafe_b64decode without padding"""
+
+        pad = b'=' * (4 - (len(data) & 3))
+        return base64.urlsafe_b64decode(data + pad)
+
+    def open(  # type: ignore  # noqa
+            self,
+            name_or_info: ta.Union[str, zipfile.ZipInfo],
+            mode: ta.Literal['r', 'w'] = 'r',
+            pwd: ta.Optional[bytes] = None,
+    ) -> ta.IO[bytes]:
+        def _update_crc(newdata: bytes) -> None:
+            eof = ef._eof  # type: ignore  # noqa
+            update_crc_orig(newdata)
+            running_hash.update(newdata)
+            if eof and running_hash.digest() != expected_hash:
+                raise WheelError(f"Hash mismatch for file '{ef_name}'")
+
+        ef_name = name_or_info.filename if isinstance(name_or_info, zipfile.ZipInfo) else name_or_info
+        if (
+                mode == 'r'
+                and not ef_name.endswith('/')
+                and ef_name not in self._file_hashes
+        ):
+            raise WheelError(f"No hash found for file '{ef_name}'")
+
+        ef = super().open(name_or_info, mode, pwd)  # noqa
+        if mode == 'r' and not ef_name.endswith('/'):
+            algorithm, expected_hash = self._file_hashes[ef_name]
+            if expected_hash is not None:
+                # Monkey patch the _update_crc method to also check for the hash from RECORD
+                running_hash = hashlib.new(algorithm)  # type: ignore
+                update_crc_orig, ef._update_crc = ef._update_crc, _update_crc  # type: ignore  # noqa
+
+        return ef
+
+    def write_files(self, base_dir: str) -> None:
+        deferred: list[tuple[str, str]] = []
+        for root, dirnames, filenames in os.walk(base_dir):
+            # Sort the directory names so that `os.walk` will walk them in a defined order on the next iteration.
+            dirnames.sort()
+            for name in sorted(filenames):
+                path = os.path.normpath(os.path.join(root, name))
+                if os.path.isfile(path):
+                    arcname = os.path.relpath(path, base_dir).replace(os.path.sep, '/')
+                    if arcname == self.record_path:
+                        pass
+                    elif root.endswith('.dist-info'):
+                        deferred.append((path, arcname))
+                    else:
+                        self.write(path, arcname)
+
+        deferred.sort()
+        for path, arcname in deferred:
+            self.write(path, arcname)
+
+    def write(  # type: ignore  # noqa
+            self,
+            filename: str,
+            arcname: ta.Optional[str] = None,
+            compress_type: ta.Optional[int] = None,
+    ) -> None:
+        with open(filename, 'rb') as f:
+            st = os.fstat(f.fileno())
+            data = f.read()
+
+        zinfo = zipfile.ZipInfo(
+            arcname or filename,
+            date_time=self._get_zipinfo_datetime(st.st_mtime),
+        )
+        zinfo.external_attr = (stat.S_IMODE(st.st_mode) | stat.S_IFMT(st.st_mode)) << 16
+        zinfo.compress_type = compress_type or self.compression
+        self.writestr(zinfo, data, compress_type)
+
+    _MINIMUM_TIMESTAMP = 315532800  # 1980-01-01 00:00:00 UTC
+
+    @classmethod
+    def _get_zipinfo_datetime(cls, timestamp: ta.Optional[float] = None) -> ta.Any:
+        # Some applications need reproducible .whl files, but they can't do this without forcing the timestamp of the
+        # individual ZipInfo objects. See issue #143.
+        timestamp = int(os.environ.get('SOURCE_DATE_EPOCH', timestamp or time.time()))
+        timestamp = max(timestamp, cls._MINIMUM_TIMESTAMP)
+        return time.gmtime(timestamp)[0:6]
+
+    def writestr(  # type: ignore  # noqa
+            self,
+            zinfo_or_arcname: ta.Union[str, zipfile.ZipInfo],
+            data: ta.Any,  # SizedBuffer | str,
+            compress_type: ta.Optional[int] = None,
+    ) -> None:
+        if isinstance(zinfo_or_arcname, str):
+            zinfo_or_arcname = zipfile.ZipInfo(
+                zinfo_or_arcname,
+                date_time=self._get_zipinfo_datetime(),
+            )
+            zinfo_or_arcname.compress_type = self.compression
+            zinfo_or_arcname.external_attr = (0o664 | stat.S_IFREG) << 16
+
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+
+        super().writestr(zinfo_or_arcname, data, compress_type)
+        fname = (
+            zinfo_or_arcname.filename
+            if isinstance(zinfo_or_arcname, zipfile.ZipInfo)
+            else zinfo_or_arcname
+        )
+        if fname != self.record_path:
+            hash_ = self._default_algorithm(data)  # type: ignore
+            self._file_hashes[fname] = (  # type: ignore
+                hash_.name,
+                self._urlsafe_b64encode(hash_.digest()).decode('ascii'),
+            )
+            self._file_sizes[fname] = len(data)
+
+    def close(self) -> None:
+        # Write RECORD
+        if self.fp is not None and self.mode == 'w' and self._file_hashes:
+            data = io.StringIO()
+            writer = csv.writer(data, delimiter=',', quotechar='"', lineterminator='\n')
+            writer.writerows((
+                (fname, algorithm + '=' + hash_, self._file_sizes[fname])  # type: ignore
+                for fname, (algorithm, hash_) in self._file_hashes.items()
+            ))
+            writer.writerow((format(self.record_path), '', ''))
+            self.writestr(self.record_path, data.getvalue())
+
+        super().close()
+
+
+########################################
+# ../../../omcore/argparse/parsers.py
+
+
+##
+
+
+@dc.dataclass(eq=False)
+class ArgparseArg:
+    args: ta.Sequence[ta.Any]
+    kwargs: ta.Mapping[str, ta.Any]
+    group: ta.Optional[str] = None
+    dest: ta.Optional[str] = None
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return getattr(instance.args, self.dest)  # type: ignore
+
+
+def argparse_arg(*args, **kwargs) -> ArgparseArg:
+    return ArgparseArg(
+        args=args,
+        group=kwargs.pop('group', None),
+        kwargs=kwargs,
+    )
+
+
+def argparse_arg_(*args, **kwargs) -> ta.Any:
+    return argparse_arg(*args, **kwargs)
+
+
+#
+
+
+@dc.dataclass(eq=False)
+class ArgparseCmd:
+    name: str
+    fn: ArgparseCmdFn
+    args: ta.Sequence[ArgparseArg] = ()  # noqa
+
+    # _: dc.KW_ONLY
+
+    aliases: ta.Optional[ta.Sequence[str]] = None
+    parent: ta.Optional['ArgparseCmd'] = None
+    accepts_unknown: bool = False
+    default: bool = False
+
+    no_help: bool = False
+
+    def __post_init__(self) -> None:
+        def check_name(s: str) -> None:
+            check.isinstance(s, str)
+            check.not_in('_', s)
+            check.not_empty(s)
+
+        check_name(self.name)
+        check.arg(callable(self.fn))
+        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
+
+        check.not_isinstance(self.aliases, str)
+        for a in self.aliases or []:
+            check_name(a)
+        check.isinstance(self.parent, (ArgparseCmd, type(None)))
+        check.isinstance(self.accepts_unknown, bool)
+
+        functools.update_wrapper(self, self.fn)
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return dc.replace(self, fn=self.fn.__get__(instance, owner))  # noqa
+
+    def __call__(self, *args, **kwargs) -> ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]:
+        return self.fn(*args, **kwargs)
+
+
+def argparse_cmd(
+        *args: ArgparseArg,
+        name: ta.Optional[str] = None,
+
+        aliases: ta.Optional[ta.Iterable[str]] = None,
+        parent: ta.Optional[ArgparseCmd] = None,
+        accepts_unknown: bool = False,
+        default: bool = False,
+
+        no_help: bool = False,
+) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
+    for arg in args:
+        check.isinstance(arg, ArgparseArg)
+    check.isinstance(name, (str, type(None)))
+
+    check.isinstance(parent, (ArgparseCmd, type(None)))
+    check.not_isinstance(aliases, str)
+    check.isinstance(default, bool)
+
+    def inner(fn):
+        return ArgparseCmd(
+            (name if name is not None else fn.__name__).replace('_', '-'),
+            fn,
+            args,
+
+            aliases=tuple(aliases) if aliases is not None else None,
+            parent=parent,
+            accepts_unknown=accepts_unknown,
+            default=default,
+
+            no_help=no_help,
+        )
+
+    return inner
+
+
+##
+
+
+def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
+    if ann is str:
+        return {}
+    elif ann is int:
+        return {'type': int}
+    elif ann is bool:
+        return {'action': 'store_true'}
+    elif ann is list:
+        return {'action': 'append'}
+    elif is_optional_alias(ann):
+        return _get_argparse_arg_ann_kwargs(get_optional_alias_arg(ann))
+    else:
+        raise TypeError(ann)
+
+
+class _ArgparseParserClassAnnotationBox:
+    def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
+        super().__init__()
+
+        self.__annotations__ = annotations  # type: ignore
+
+
+def configure_argparse_parser_class_parser(
+        cls: type,
+        parser: ta.Optional[argparse.ArgumentParser] = None,
+) -> argparse.ArgumentParser:
+    ns = cls.__dict__
+    objs = {}
+    mro = cls.__mro__[::-1]
+    for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
+        bseen = set()  # type: ignore
+        for k, v in bns.items():
+            if isinstance(v, (ArgparseCmd, ArgparseArg)):
+                check.not_in(v, bseen)
+                bseen.add(v)
+                objs[k] = v
+            elif k in objs:
+                del [k]
+
+    #
+
+    anns = ta.get_type_hints(_ArgparseParserClassAnnotationBox({
+        **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
+        **ns.get('__annotations__', {}),
+    }), globalns=ns.get('__globals__', {}))
+
+    #
+
+    if parser is None:
+        parser = argparse.ArgumentParser()
+
+    #
+
+    subparsers = parser.add_subparsers()
+
+    default_cmd: ta.Optional[ArgparseCmd] = None
+
+    for att, obj in objs.items():
+        if isinstance(obj, ArgparseCmd):
+            if obj.parent is not None:
+                raise NotImplementedError
+
+            if obj.default:
+                if default_cmd:
+                    raise TypeError(f'Already have a default command: {default_cmd}, {obj}')
+                default_cmd = obj
+
+            for cn in [obj.name, *(obj.aliases or [])]:
+                subparser = subparsers.add_parser(
+                    cn,
+                    **(dict(add_help=False) if obj.no_help else {}),  # type: ignore[arg-type]
+                )
+
+                for arg in (obj.args or []):
+                    if (
+                            len(arg.args) == 1 and
+                            isinstance(arg.args[0], str) and
+                            not (n := check.isinstance(arg.args[0], str)).startswith('-') and
+                            'metavar' not in arg.kwargs
+                    ):
+                        subparser.add_argument(
+                            n.replace('-', '_'),
+                            **arg.kwargs,
+                            metavar=n,
+                        )
+                    else:
+                        subparser.add_argument(*arg.args, **arg.kwargs)
+
+                subparser.set_defaults(_cmd=obj)
+
+        elif isinstance(obj, ArgparseArg):
+            if obj.group is not None:
+                # FIXME: add_argument_group
+                raise NotImplementedError
+
+            if att in anns:
+                ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
+                obj.kwargs = {**ann_kwargs, **obj.kwargs}
+
+            if not obj.dest:
+                if 'dest' in obj.kwargs:
+                    obj.dest = obj.kwargs['dest']
+                else:
+                    obj.dest = obj.kwargs['dest'] = att  # type: ignore
+
+            parser.add_argument(*obj.args, **obj.kwargs)
+
+        else:
+            raise TypeError(obj)
+
+    if default_cmd is not None:
+        parser.set_defaults(_cmd=default_cmd)
+
+    return parser
+
+
+##
+
+
+class ArgparseParserClass(Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        ns = cls.__dict__
+
+        if '_parser' in ns:
+            parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
+        else:
+            parser = argparse.ArgumentParser()
+
+        configure_argparse_parser_class_parser(cls, parser)
+
+        setattr(cls, '_parser', parser)
+
+    #
+
+    _parser: ta.ClassVar[argparse.ArgumentParser]
+
+    @classmethod
+    def get_parser(cls) -> argparse.ArgumentParser:
+        return cls._parser
+
+
+########################################
+# ../../../omcore/lite/json.py
+
+
+##
+
+
+JSON_PRETTY_INDENT = 2
+
+JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=JSON_PRETTY_INDENT,
+)
+
+json_dump_pretty: ta.Callable[..., None] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)
+json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
+
+
+##
+
+
+JSON_COMPACT_SEPARATORS = (',', ':')
+
+JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=None,
+    separators=JSON_COMPACT_SEPARATORS,
+)
+
+json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
+json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+##
+
+
+JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': JSON_PRETTY_KWARGS,
+    'compact': JSON_COMPACT_KWARGS,
+    None: {},
+}
+
+
+##
+
+
+def json_dump(
+        obj: ta.Any,
+        fp: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    json.dump(
+        obj,
+        fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dump_encode(
+        obj: ta.Any,
+        fp: ta.Any,
+        encoding: str = 'utf-8',
+        *,
+        errors: str = 'strict',
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    def write(s: str) -> int:
+        fp.write(s.encode(encoding, errors))
+        return len(s)
+
+    json.dump(
+        obj,
+        FnWriter(write),
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dumps(
+        obj: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> str:
+    return json.dumps(
+        obj,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+########################################
+# ../../../omcore/lite/marshal.py
+"""
+TODO:
+ - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
+ - Options.sequence_cls = list, mapping_cls = dict, ... - def with_mutable_containers() -> Options
+"""
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ObjMarshalOptions:
+    raw_bytes: bool = False
+    non_strict_fields: bool = False
+
+
+class ObjMarshaler(Abstract):
+    @abc.abstractmethod
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        raise NotImplementedError
+
+
+class NopObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return o
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return o
+
+
+class ProxyObjMarshaler(ObjMarshaler):
+    def __init__(self, m: ta.Optional[ObjMarshaler] = None) -> None:
+        super().__init__()
+
+        self._m = m
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return check.not_none(self._m).marshal(o, ctx)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return check.not_none(self._m).unmarshal(o, ctx)
+
+
+class CastObjMarshaler(ObjMarshaler):
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return o
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self._ty(o)
+
+
+class DynamicObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return ctx.manager.marshal_obj(o, opts=ctx.options)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return o
+
+
+class Base64ObjMarshaler(ObjMarshaler):
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return base64.b64encode(o).decode('ascii')
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self._ty(base64.b64decode(o))
+
+
+class BytesSwitchedObjMarshaler(ObjMarshaler):
+    def __init__(self, m: ObjMarshaler) -> None:
+        super().__init__()
+
+        self._m = m
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if ctx.options.raw_bytes:
+            return o
+        return self._m.marshal(o, ctx)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if ctx.options.raw_bytes:
+            return o
+        return self._m.unmarshal(o, ctx)
+
+
+class EnumObjMarshaler(ObjMarshaler):
+    def __init__(self, ty: type) -> None:
+        super().__init__()
+
+        self._ty = ty
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return o.name
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self._ty.__members__[o]  # type: ignore
+
+
+class OptionalObjMarshaler(ObjMarshaler):
+    def __init__(self, item: ObjMarshaler) -> None:
+        super().__init__()
+
+        self._item = item
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if o is None:
+            return None
+        return self._item.marshal(o, ctx)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if o is None:
+            return None
+        return self._item.unmarshal(o, ctx)
+
+
+class PrimitiveUnionObjMarshaler(ObjMarshaler):
+    def __init__(
+            self,
+            pt: ta.Tuple[type, ...],
+            x: ta.Optional[ObjMarshaler] = None,
+    ) -> None:
+        super().__init__()
+
+        self._pt = pt
+        self._x = x
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if isinstance(o, self._pt):
+            return o
+        elif self._x is not None:
+            return self._x.marshal(o, ctx)
+        else:
+            raise TypeError(o)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if isinstance(o, self._pt):
+            return o
+        elif self._x is not None:
+            return self._x.unmarshal(o, ctx)
+        else:
+            raise TypeError(o)
+
+
+class LiteralObjMarshaler(ObjMarshaler):
+    def __init__(
+            self,
+            item: ObjMarshaler,
+            vs: frozenset,
+    ) -> None:
+        super().__init__()
+
+        self._item = item
+        self._vs = vs
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self._item.marshal(check.in_(o, self._vs), ctx)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return check.in_(self._item.unmarshal(o, ctx), self._vs)
+
+
+class MappingObjMarshaler(ObjMarshaler):
+    def __init__(
+            self,
+            ty: type,
+            km: ObjMarshaler,
+            vm: ObjMarshaler,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._km = km
+        self._vm = vm
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return {self._km.marshal(k, ctx): self._vm.marshal(v, ctx) for k, v in o.items()}
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self._ty((self._km.unmarshal(k, ctx), self._vm.unmarshal(v, ctx)) for k, v in o.items())
+
+
+class IterableObjMarshaler(ObjMarshaler):
+    def __init__(
+            self,
+            ty: type,
+            item: ObjMarshaler,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._item = item
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return [self._item.marshal(e, ctx) for e in o]
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self._ty(self._item.unmarshal(e, ctx) for e in o)
+
+
+class FieldsObjMarshaler(ObjMarshaler):
+    @dc.dataclass(frozen=True)
+    class Field:
+        att: str
+        key: str
+        m: ObjMarshaler
+
+        omit_if_none: bool = False
+
+    def __init__(
+            self,
+            ty: type,
+            fs: ta.Sequence[Field],
+            *,
+            non_strict: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._fs = fs
+        self._non_strict = non_strict
+
+        fs_by_att: dict = {}
+        fs_by_key: dict = {}
+        for f in self._fs:
+            check.not_in(check.non_empty_str(f.att), fs_by_att)
+            check.not_in(check.non_empty_str(f.key), fs_by_key)
+            fs_by_att[f.att] = f
+            fs_by_key[f.key] = f
+
+        self._fs_by_att: ta.Mapping[str, FieldsObjMarshaler.Field] = fs_by_att
+        self._fs_by_key: ta.Mapping[str, FieldsObjMarshaler.Field] = fs_by_key
+
+    @property
+    def ty(self) -> type:
+        return self._ty
+
+    @property
+    def fs(self) -> ta.Sequence[Field]:
+        return self._fs
+
+    #
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        d = {}
+        for f in self._fs:
+            mv = f.m.marshal(getattr(o, f.att), ctx)
+            if mv is None and f.omit_if_none:
+                continue
+            d[f.key] = mv
+        return d
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        kw = {}
+        for k, v in o.items():
+            if (f := self._fs_by_key.get(k)) is None:
+                if not (self._non_strict or ctx.options.non_strict_fields):
+                    raise KeyError(k)
+                continue
+            kw[f.att] = f.m.unmarshal(v, ctx)
+        return self._ty(**kw)
+
+
+class SingleFieldObjMarshaler(ObjMarshaler):
+    def __init__(
+            self,
+            ty: type,
+            fld: str,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+        self._fld = fld
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return getattr(o, self._fld)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self._ty(**{self._fld: o})
+
+
+class PolymorphicObjMarshaler(ObjMarshaler):
+    class Impl(ta.NamedTuple):
+        ty: type
+        tag: str
+        m: ObjMarshaler
+
+    def __init__(
+            self,
+            impls_by_ty: ta.Mapping[type, Impl],
+            impls_by_tag: ta.Mapping[str, Impl],
+    ) -> None:
+        super().__init__()
+
+        self._impls_by_ty = impls_by_ty
+        self._impls_by_tag = impls_by_tag
+
+    @classmethod
+    def of(cls, impls: ta.Iterable[Impl]) -> 'PolymorphicObjMarshaler':
+        return cls(
+            {i.ty: i for i in impls},
+            {i.tag: i for i in impls},
+        )
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        impl = self._impls_by_ty[type(o)]
+        return {impl.tag: impl.m.marshal(o, ctx)}
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        [(t, v)] = o.items()
+        impl = self._impls_by_tag[t]
+        return impl.m.unmarshal(v, ctx)
+
+
+class DatetimeObjMarshaler(ObjMarshaler):
+    def __init__(
+            self,
+            ty: type,
+    ) -> None:
+        super().__init__()
+
+        self._ty = ty
+
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return o.isoformat()
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return self._ty.fromisoformat(o)  # type: ignore
+
+
+class DecimalObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return str(check.isinstance(o, decimal.Decimal))
+
+    def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return decimal.Decimal(check.isinstance(v, str))
+
+
+class FractionObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        fr = check.isinstance(o, fractions.Fraction)
+        return [fr.numerator, fr.denominator]
+
+    def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        num, denom = check.isinstance(v, list)
+        return fractions.Fraction(num, denom)
+
+
+class UuidObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return str(o)
+
+    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        return uuid.UUID(o)
+
+
+##
+
+
+_DEFAULT_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
+    **{t: NopObjMarshaler() for t in (type(None),)},
+    **{t: CastObjMarshaler(t) for t in (int, float, str, bool)},
+    **{t: BytesSwitchedObjMarshaler(Base64ObjMarshaler(t)) for t in (bytes, bytearray)},
+    **{t: IterableObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
+    **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
+
+    **{t: DynamicObjMarshaler() for t in (ta.Any, object)},
+
+    **{t: DatetimeObjMarshaler(t) for t in (datetime.date, datetime.time, datetime.datetime)},
+    decimal.Decimal: DecimalObjMarshaler(),
+    fractions.Fraction: FractionObjMarshaler(),
+    uuid.UUID: UuidObjMarshaler(),
+}
+
+_OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
+    **{t: t for t in (dict,)},
+    **{t: dict for t in (collections.abc.Mapping, collections.abc.MutableMapping)},  # noqa
+}
+
+_OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
+    **{t: t for t in (list, tuple, set, frozenset)},
+    collections.abc.Set: frozenset,
+    collections.abc.MutableSet: set,
+    collections.abc.Sequence: tuple,
+    collections.abc.MutableSequence: list,
+}
+
+_OBJ_MARSHALER_PRIMITIVE_TYPES: ta.Set[type] = {
+    int,
+    float,
+    bool,
+    str,
+}
+
+
+##
+
+
+_REGISTERED_OBJ_MARSHALERS_BY_TYPE: ta.MutableMapping[type, ObjMarshaler] = weakref.WeakKeyDictionary()
+
+
+def register_type_obj_marshaler(ty: type, om: ObjMarshaler) -> None:
+    _REGISTERED_OBJ_MARSHALERS_BY_TYPE[ty] = om
+
+
+def register_single_field_type_obj_marshaler(fld, ty=None):
+    def inner(ty):  # noqa
+        register_type_obj_marshaler(ty, SingleFieldObjMarshaler(ty, fld))
+        return ty
+
+    if ty is not None:
+        return inner(ty)
+    else:
+        return inner
+
+
+##
+
+
+class ObjMarshalerFieldMetadata:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+
+class OBJ_MARSHALER_FIELD_KEY(ObjMarshalerFieldMetadata):  # noqa
+    pass
+
+
+class OBJ_MARSHALER_OMIT_IF_NONE(ObjMarshalerFieldMetadata):  # noqa
+    pass
+
+
+##
+
+
+class ObjMarshalerManager(Abstract):
+    @abc.abstractmethod
+    def make_obj_marshaler(
+            self,
+            ty: ta.Any,
+            rec: ta.Callable[[ta.Any], ObjMarshaler],
+            *,
+            non_strict_fields: bool = False,
+    ) -> ObjMarshaler:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def set_obj_marshaler(
+            self,
+            ty: ta.Any,
+            m: ObjMarshaler,
+            *,
+            override: bool = False,
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_obj_marshaler(
+            self,
+            ty: ta.Any,
+            *,
+            no_cache: bool = False,
+            **kwargs: ta.Any,
+    ) -> ObjMarshaler:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':
+        raise NotImplementedError
+
+    #
+
+    def marshal_obj(
+            self,
+            o: ta.Any,
+            ty: ta.Any = None,
+            opts: ta.Optional[ObjMarshalOptions] = None,
+    ) -> ta.Any:
+        m = self.get_obj_marshaler(ty if ty is not None else type(o))
+        return m.marshal(o, self.make_context(opts))
+
+    def unmarshal_obj(
+            self,
+            o: ta.Any,
+            ty: ta.Union[ta.Type[T], ta.Any],
+            opts: ta.Optional[ObjMarshalOptions] = None,
+    ) -> T:
+        m = self.get_obj_marshaler(ty)
+        return m.unmarshal(o, self.make_context(opts))
+
+    def roundtrip_obj(
+            self,
+            o: ta.Any,
+            ty: ta.Any = None,
+            opts: ta.Optional[ObjMarshalOptions] = None,
+    ) -> ta.Any:
+        if ty is None:
+            ty = type(o)
+        m: ta.Any = self.marshal_obj(o, ty, opts)
+        u: ta.Any = self.unmarshal_obj(m, ty, opts)
+        return u
+
+
+#
+
+
+class ObjMarshalerManagerImpl(ObjMarshalerManager):
+    def __init__(
+            self,
+            *,
+            default_options: ObjMarshalOptions = ObjMarshalOptions(),
+
+            default_obj_marshalers: ta.Dict[ta.Any, ObjMarshaler] = _DEFAULT_OBJ_MARSHALERS,  # noqa
+            generic_mapping_types: ta.Dict[ta.Any, type] = _OBJ_MARSHALER_GENERIC_MAPPING_TYPES,  # noqa
+            generic_iterable_types: ta.Dict[ta.Any, type] = _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES,  # noqa
+
+            registered_obj_marshalers: ta.Mapping[type, ObjMarshaler] = _REGISTERED_OBJ_MARSHALERS_BY_TYPE,
+    ) -> None:
+        super().__init__()
+
+        self._default_options = default_options
+
+        self._obj_marshalers = dict(default_obj_marshalers)
+        self._generic_mapping_types = generic_mapping_types
+        self._generic_iterable_types = generic_iterable_types
+        self._registered_obj_marshalers = registered_obj_marshalers
+
+        self._lock = threading.RLock()
+        self._marshalers: ta.Dict[ta.Any, ObjMarshaler] = dict(_DEFAULT_OBJ_MARSHALERS)
+        self._proxies: ta.Dict[ta.Any, ProxyObjMarshaler] = {}
+
+    #
+
+    @classmethod
+    def _is_abstract(cls, ty: type) -> bool:
+        return abc.ABC in ty.__bases__ or Abstract in ty.__bases__
+
+    #
+
+    def make_obj_marshaler(
+            self,
+            ty: ta.Any,
+            rec: ta.Callable[[ta.Any], ObjMarshaler],
+            *,
+            non_strict_fields: bool = False,
+    ) -> ObjMarshaler:
+        if isinstance(ty, type):
+            if (reg := self._registered_obj_marshalers.get(ty)) is not None:
+                return reg
+
+            if self._is_abstract(ty):
+                tn = ty.__name__
+                impls: ta.List[ta.Tuple[type, str]] = [  # type: ignore[var-annotated]
+                    (ity, ity.__name__)
+                    for ity in deep_subclasses(ty)
+                    if not self._is_abstract(ity)
+                ]
+
+                if all(itn.endswith(tn) for _, itn in impls):
+                    impls = [
+                        (ity, snake_case(itn[:-len(tn)]))
+                        for ity, itn in impls
+                    ]
+
+                dupe_tns = sorted(
+                    dn
+                    for dn, dc in collections.Counter(itn for _, itn in impls).items()
+                    if dc > 1
+                )
+                if dupe_tns:
+                    raise KeyError(f'Duplicate impl names for {ty}: {dupe_tns}')
+
+                return PolymorphicObjMarshaler.of([
+                    PolymorphicObjMarshaler.Impl(
+                        ity,
+                        itn,
+                        rec(ity),
+                    )
+                    for ity, itn in impls
+                ])
+
+            if issubclass(ty, enum.Enum):
+                return EnumObjMarshaler(ty)
+
+            if dc.is_dataclass(ty):
+                return FieldsObjMarshaler(
+                    ty,
+                    [
+                        FieldsObjMarshaler.Field(
+                            att=f.name,
+                            key=check.non_empty_str(fk),
+                            m=rec(f.type),
+                            omit_if_none=check.isinstance(f.metadata.get(OBJ_MARSHALER_OMIT_IF_NONE, False), bool),
+                        )
+                        for f in dc.fields(ty)
+                        if (fk := f.metadata.get(OBJ_MARSHALER_FIELD_KEY, f.name)) is not None
+                    ],
+                    non_strict=non_strict_fields,
+                )
+
+            if issubclass(ty, tuple) and hasattr(ty, '_fields'):
+                return FieldsObjMarshaler(
+                    ty,
+                    [
+                        FieldsObjMarshaler.Field(
+                            att=p.name,
+                            key=p.name,
+                            m=rec(p.annotation),
+                        )
+                        for p in inspect.signature(ty).parameters.values()
+                    ],
+                    non_strict=non_strict_fields,
+                )
+
+        if is_new_type(ty):
+            return rec(get_new_type_supertype(ty))
+
+        if is_literal_type(ty):
+            lvs = frozenset(get_literal_type_args(ty))
+            if None in lvs:
+                is_opt = True
+                lvs -= frozenset([None])
+            else:
+                is_opt = False
+            lty = check.single(set(map(type, lvs)))
+            lm: ObjMarshaler = LiteralObjMarshaler(rec(lty), lvs)
+            if is_opt:
+                lm = OptionalObjMarshaler(lm)
+            return lm
+
+        if is_generic_alias(ty):
+            try:
+                mt = self._generic_mapping_types[ta.get_origin(ty)]
+            except KeyError:
+                pass
+            else:
+                k, v = ta.get_args(ty)
+                return MappingObjMarshaler(mt, rec(k), rec(v))
+
+            try:
+                st = self._generic_iterable_types[ta.get_origin(ty)]
+            except KeyError:
+                pass
+            else:
+                [e] = ta.get_args(ty)
+                return IterableObjMarshaler(st, rec(e))
+
+        if is_union_alias(ty):
+            uts = frozenset(ta.get_args(ty))
+            if None in uts or type(None) in uts:
+                is_opt = True
+                uts = frozenset(ut for ut in uts if ut not in (None, type(None)))
+            else:
+                is_opt = False
+
+            um: ObjMarshaler
+            if not uts:
+                raise TypeError(ty)
+            elif len(uts) == 1:
+                um = rec(check.single(uts))
+            else:
+                pt = tuple({ut for ut in uts if ut in _OBJ_MARSHALER_PRIMITIVE_TYPES})
+                np_uts = {ut for ut in uts if ut not in _OBJ_MARSHALER_PRIMITIVE_TYPES}
+                if not np_uts:
+                    um = PrimitiveUnionObjMarshaler(pt)
+                elif len(np_uts) == 1:
+                    um = PrimitiveUnionObjMarshaler(pt, x=rec(check.single(np_uts)))
+                else:
+                    raise TypeError(ty)
+
+            if is_opt:
+                um = OptionalObjMarshaler(um)
+            return um
+
+        raise TypeError(ty)
+
+    #
+
+    def set_obj_marshaler(
+            self,
+            ty: ta.Any,
+            m: ObjMarshaler,
+            *,
+            override: bool = False,
+    ) -> None:
+        with self._lock:
+            if not override and ty in self._obj_marshalers:
+                raise KeyError(ty)
+            self._obj_marshalers[ty] = m
+
+    def get_obj_marshaler(
+            self,
+            ty: ta.Any,
+            *,
+            no_cache: bool = False,
+            **kwargs: ta.Any,
+    ) -> ObjMarshaler:
+        with self._lock:
+            if not no_cache:
+                try:
+                    return self._obj_marshalers[ty]
+                except KeyError:
+                    pass
+
+            try:
+                return self._proxies[ty]
+            except KeyError:
+                pass
+
+            rec = functools.partial(
+                self.get_obj_marshaler,
+                no_cache=no_cache,
+                **kwargs,
+            )
+
+            p = ProxyObjMarshaler()
+            self._proxies[ty] = p
+            try:
+                m = self.make_obj_marshaler(ty, rec, **kwargs)
+            finally:
+                del self._proxies[ty]
+            p._m = m  # noqa
+
+            if not no_cache:
+                self._obj_marshalers[ty] = m
+            return m
+
+    def make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':
+        return ObjMarshalContext(
+            options=opts or self._default_options,
+            manager=self,
+        )
+
+
+def new_obj_marshaler_manager(**kwargs: ta.Any) -> ObjMarshalerManager:
+    return ObjMarshalerManagerImpl(**kwargs)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ObjMarshalContext:
+    options: ObjMarshalOptions
+    manager: ObjMarshalerManager
+
+
+##
+
+
+OBJ_MARSHALER_MANAGER = new_obj_marshaler_manager()
+
+set_obj_marshaler = OBJ_MARSHALER_MANAGER.set_obj_marshaler
+get_obj_marshaler = OBJ_MARSHALER_MANAGER.get_obj_marshaler
+
+marshal_obj = OBJ_MARSHALER_MANAGER.marshal_obj
+unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
+
+
+########################################
+# ../../../omcore/lite/maybes.py
+
+
+##
+
+
+@functools.total_ordering
+class Maybe(ta.Generic[T]):
+    class ValueNotPresentError(BaseException):
+        pass
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def present(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def must(self) -> T:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def __repr__(self) -> str:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __hash__(self) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __eq__(self, other) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __lt__(self, other) -> bool:
+        raise NotImplementedError
+
+    #
+
+    @ta.final
+    def __ne__(self, other):
+        return not (self == other)
+
+    @ta.final
+    def __iter__(self) -> ta.Iterator[T]:
+        if self.present:
+            yield self.must()
+
+    @ta.final
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError
+
+    #
+
+    @ta.final
+    def if_present(self, consumer: ta.Callable[[T], None]) -> None:
+        if self.present:
+            consumer(self.must())
+
+    @ta.final
+    def filter(self, predicate: ta.Callable[[T], bool]) -> 'Maybe[T]':
+        if self.present and predicate(self.must()):
+            return self
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def map(self, mapper: ta.Callable[[T], U]) -> 'Maybe[U]':
+        if self.present:
+            return Maybe.just(mapper(self.must()))
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def flat_map(self, mapper: ta.Callable[[T], 'Maybe[U]']) -> 'Maybe[U]':
+        if self.present:
+            if not isinstance(v := mapper(self.must()), Maybe):
+                raise TypeError(v)
+            return v
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def or_else(self, other: ta.Union[T, U]) -> ta.Union[T, U]:
+        if self.present:
+            return self.must()
+        else:
+            return other
+
+    @ta.final
+    def or_none(self) -> ta.Optional[T]:
+        if self.present:
+            return self.must()
+        else:
+            return None
+
+    @ta.final
+    def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:
+        if self.present:
+            return self.must()
+        else:
+            return supplier()
+
+    @ta.final
+    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
+        if self.present:
+            return self.must()
+        else:
+            raise exception_supplier()
+
+    #
+
+    @classmethod
+    def of_optional(cls, v: ta.Optional[T]) -> 'Maybe[T]':
+        if v is not None:
+            return cls.just(v)
+        else:
+            return cls.empty()
+
+    @classmethod
+    def just(cls, v: T) -> 'Maybe[T]':
+        return _JustMaybe(v)
+
+    _empty: ta.ClassVar['Maybe']
+
+    @classmethod
+    def empty(cls) -> 'Maybe[T]':
+        return Maybe._empty
+
+
+##
+
+
+class _Maybe(Maybe[T], Abstract):
+    def __lt__(self, other):
+        if not isinstance(other, _Maybe):
+            return NotImplemented
+        sp = self.present
+        op = other.present
+        if self.present and other.present:
+            return self.must() < other.must()
+        else:
+            return op and not sp
+
+
+@ta.final
+class _JustMaybe(_Maybe[T]):
+    __slots__ = ('_v', '_hash')
+
+    def __init__(self, v: T) -> None:
+        self._v = v
+
+    @property
+    def present(self) -> bool:
+        return True
+
+    def must(self) -> T:
+        return self._v
+
+    #
+
+    def __repr__(self) -> str:
+        return f'just({self._v!r})'
+
+    _hash: int
+
+    def __hash__(self) -> int:
+        try:
+            return self._hash
+        except AttributeError:
+            pass
+        h = self._hash = hash((_JustMaybe, self._v))
+        return h
+
+    def __eq__(self, other):
+        return (
+            self.__class__ is other.__class__ and
+            self._v == other._v  # noqa
+        )
+
+
+@ta.final
+class _EmptyMaybe(_Maybe[T]):
+    __slots__ = ()
+
+    @property
+    def present(self) -> bool:
+        return False
+
+    def must(self) -> T:
+        raise Maybe.ValueNotPresentError
+
+    #
+
+    def __repr__(self) -> str:
+        return 'empty()'
+
+    def __hash__(self) -> int:
+        return hash(_EmptyMaybe)
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__
+
+
+Maybe._empty = _EmptyMaybe()  # noqa
+
+
+##
+
+
+setattr(Maybe, 'just', _JustMaybe)  # noqa
+setattr(Maybe, 'empty', functools.partial(operator.attrgetter('_empty'), Maybe))
+
+
+########################################
+# ../../../omcore/lite/runtime.py
+
+
+##
+
+
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
+
+
+LITE_REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_lite_runtime_version() -> None:
+    if sys.version_info < LITE_REQUIRED_PYTHON_VERSION:
+        raise OSError(f'Requires python {LITE_REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
+# ../../../omcore/lite/timeouts.py
+"""
+TODO:
+ - Event (/ Predicate)
+"""
+
+
+##
+
+
+class Timeout(Abstract):
+    @property
+    @abc.abstractmethod
+    def can_expire(self) -> bool:
+        """Indicates whether or not this timeout will ever expire."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def expired(self) -> bool:
+        """Return whether or not this timeout has expired."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def remaining(self) -> float:
+        """Returns the time (in seconds) remaining until the timeout expires. May be negative and/or infinite."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __call__(self) -> float:
+        """Returns the time (in seconds) remaining until the timeout expires, or raises if the timeout has expired."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def or_(self, o: ta.Any) -> ta.Any:
+        """Evaluates time remaining via remaining() if this timeout can expire, otherwise returns `o`."""
+
+        raise NotImplementedError
+
+    #
+
+    @classmethod
+    def _now(cls) -> float:
+        return time.monotonic()
+
+    #
+
+    class DEFAULT:  # Noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    class _NOT_SPECIFIED:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    @classmethod
+    def of(
+            cls,
+            obj: TimeoutLike,
+            default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
+    ) -> 'Timeout':
+        if isinstance(obj, bool):
+            if obj:
+                obj = Timeout.DEFAULT
+            else:
+                obj = None
+
+        if obj is None:
+            return InfiniteTimeout()
+
+        if isinstance(obj, Timeout):
+            return obj
+
+        if isinstance(obj, (float, int)):
+            return DeadlineTimeout(cls._now() + obj)
+
+        # if isinstance(obj, CanInt):
+        #     return DeadlineTimeout(cls._now() + int(obj))
+
+        if isinstance(obj, CanFloat):
+            return DeadlineTimeout(cls._now() + float(obj))
+
+        if isinstance(obj, ta.Iterable):
+            return CompositeTimeout(*[Timeout.of(c) for c in obj])
+
+        if obj is Timeout.DEFAULT:
+            if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
+                raise RuntimeError('Must specify a default timeout')
+
+            else:
+                return Timeout.of(default)  # type: ignore[arg-type]
+
+        raise TypeError(obj)
+
+    @classmethod
+    def of_deadline(cls, deadline: float) -> 'DeadlineTimeout':
+        return DeadlineTimeout(deadline)
+
+    @classmethod
+    def of_predicate(cls, expired_fn: ta.Callable[[], bool]) -> 'PredicateTimeout':
+        return PredicateTimeout(expired_fn)
+
+
+class DeadlineTimeout(Timeout):
+    def __init__(
+            self,
+            deadline: float,
+            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
+    ) -> None:
+        super().__init__()
+
+        self.deadline = deadline
+        self.exc = exc
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.deadline!r}, {self.exc!r})'
+
+    @property
+    def can_expire(self) -> bool:
+        return True
+
+    def expired(self) -> bool:
+        return not (self.remaining() > 0)
+
+    def remaining(self) -> float:
+        return self.deadline - self._now()
+
+    def __call__(self) -> float:
+        if (rem := self.remaining()) > 0:
+            return rem
+        raise self.exc
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        return self()
+
+
+class InfiniteTimeout(Timeout):
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}()'
+
+    @property
+    def can_expire(self) -> bool:
+        return False
+
+    def expired(self) -> bool:
+        return False
+
+    def remaining(self) -> float:
+        return float('inf')
+
+    def __call__(self) -> float:
+        return float('inf')
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        return o
+
+
+class CompositeTimeout(Timeout):
+    def __init__(self, *children: Timeout) -> None:
+        super().__init__()
+
+        self.children = children
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.children!r})'
+
+    @property
+    def can_expire(self) -> bool:
+        return any(c.can_expire for c in self.children)
+
+    def expired(self) -> bool:
+        return any(c.expired() for c in self.children)
+
+    def remaining(self) -> float:
+        return min(c.remaining() for c in self.children)
+
+    def __call__(self) -> float:
+        return min(c() for c in self.children)
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        if self.can_expire:
+            return self()
+        return o
+
+
+class PredicateTimeout(Timeout):
+    def __init__(
+            self,
+            expired_fn: ta.Callable[[], bool],
+            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
+    ) -> None:
+        super().__init__()
+
+        self.expired_fn = expired_fn
+        self.exc = exc
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.expired_fn!r}, {self.exc!r})'
+
+    @property
+    def can_expire(self) -> bool:
+        return True
+
+    def expired(self) -> bool:
+        return self.expired_fn()
+
+    def remaining(self) -> float:
+        return float('inf')
+
+    def __call__(self) -> float:
+        if not self.expired_fn():
+            return float('inf')
+        raise self.exc
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        return self()
+
+
+########################################
+# ../../../omcore/logs/infos.py
+"""
+TODO:
+ - remove redundant info fields only present for std adaptation (Level.name, ...)
+"""
+
+
+##
+
+
+def logging_context_info(cls):
+    return cls
+
+
+@ta.final
+class LoggingContextInfos:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
+    @logging_context_info
+    @ta.final
+    class Name(ta.NamedTuple):
+        name: str
+
+    @logging_context_info
+    @ta.final
+    class Level(ta.NamedTuple):
+        level: NamedLogLevel
+        name: str
+
+        @classmethod
+        def build(cls, level: int) -> 'LoggingContextInfos.Level':
+            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # noqa
+            return cls(
+                level=nl,
+                name=logging.getLevelName(nl),
+            )
+
+    @logging_context_info
+    @ta.final
+    class Msg(ta.NamedTuple):
+        msg: str
+        args: ta.Union[tuple, ta.Mapping[ta.Any, ta.Any], None]
+
+        @classmethod
+        def build(
+                cls,
+                msg: ta.Union[str, tuple, LoggingMsgFn],
+                *args: ta.Any,
+        ) -> 'LoggingContextInfos.Msg':
+            s: str
+            a: ta.Any
+
+            if callable(msg):
+                if args:
+                    raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
+                x = msg()
+                if isinstance(x, str):
+                    s, a = x, ()
+                elif isinstance(x, tuple):
+                    if x:
+                        s, a = x[0], x[1:]
+                    else:
+                        s, a = '', ()
+                else:
+                    raise TypeError(x)
+
+            elif isinstance(msg, tuple):
+                if args:
+                    raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
+                if msg:
+                    s, a = msg[0], msg[1:]
+                else:
+                    s, a = '', ()
+
+            elif isinstance(msg, str):
+                s, a = msg, args
+
+            else:
+                raise TypeError(msg)
+
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307  # noqa
+            if a and len(a) == 1 and isinstance(a[0], collections.abc.Mapping) and a[0]:
+                a = a[0]
+
+            return cls(
+                msg=s,
+                args=a,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Extra(ta.NamedTuple):
+        extra: ta.Mapping[ta.Any, ta.Any]
+
+    @logging_context_info
+    @ta.final
+    class Time(ta.NamedTuple):
+        ns: int
+        secs: float
+        msecs: float
+        relative_secs: float
+
+        @classmethod
+        def get_std_start_ns(cls) -> int:
+            x: ta.Any = logging._startTime  # type: ignore[attr-defined]  # noqa
+
+            # Before 3.13.0b1 this will be `time.time()`, a float of seconds. After that, it will be `time.time_ns()`,
+            # an int.
+            #
+            # See:
+            #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+            #
+            if isinstance(x, float):
+                return int(x * 1e9)
+            else:
+                return x
+
+        @classmethod
+        def build(
+                cls,
+                ns: int,
+                *,
+                start_ns: ta.Optional[int] = None,
+        ) -> 'LoggingContextInfos.Time':
+            # https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+            secs = ns / 1e9  # ns to float seconds
+
+            # Get the number of whole milliseconds (0-999) in the fractional part of seconds.
+            # Eg: 1_677_903_920_999_998_503 ns --> 999_998_503 ns--> 999 ms
+            # Convert to float by adding 0.0 for historical reasons. See gh-89047
+            msecs = (ns % 1_000_000_000) // 1_000_000 + 0.0
+
+            # https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+            if msecs == 999.0 and int(secs) != ns // 1_000_000_000:
+                # ns -> sec conversion can round up, e.g:
+                # 1_677_903_920_999_999_900 ns --> 1_677_903_921.0 sec
+                msecs = 0.0
+
+            if start_ns is None:
+                start_ns = cls.get_std_start_ns()
+            relative_secs = (ns - start_ns) / 1e6
+
+            return cls(
+                ns=ns,
+                secs=secs,
+                msecs=msecs,
+                relative_secs=relative_secs,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Exc(ta.NamedTuple):
+        info: LoggingExcInfo
+        info_tuple: LoggingExcInfoTuple
+
+        @classmethod
+        def build(
+                cls,
+                arg: LoggingExcInfoArg = False,
+        ) -> ta.Optional['LoggingContextInfos.Exc']:
+            if arg is True:
+                sys_exc_info = sys.exc_info()
+                if sys_exc_info[0] is not None:
+                    arg = sys_exc_info
+                else:
+                    arg = None
+            elif arg is False:
+                arg = None
+            if arg is None:
+                return None
+
+            info: LoggingExcInfo = arg
+            if isinstance(info, BaseException):
+                info_tuple: LoggingExcInfoTuple = (type(info), info, info.__traceback__)  # noqa
+            else:
+                info_tuple = info
+
+            return cls(
+                info=info,
+                info_tuple=info_tuple,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Caller(ta.NamedTuple):
+        file_path: str
+        line_no: int
+        func_name: str
+        stack_info: ta.Optional[str]
+
+        @classmethod
+        def is_internal_frame(cls, frame: types.FrameType) -> bool:
+            file_path = os.path.normcase(frame.f_code.co_filename)
+
+            # Yes, really.
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L204  # noqa
+            # https://github.com/python/cpython/commit/5ca6d7469be53960843df39bb900e9c3359f127f
+            if 'importlib' in file_path and '_bootstrap' in file_path:
+                return True
+
+            return False
+
+        @classmethod
+        def find_frame(cls, stack_offset: int = 0) -> ta.Optional[types.FrameType]:
+            f: ta.Optional[types.FrameType] = sys._getframe(2 + stack_offset)  # noqa
+
+            while f is not None:
+                # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful,
+                # manual stack_offset management.
+                if hasattr(f, 'f_code'):
+                    return f
+
+                f = f.f_back
+
+            return None
+
+        @classmethod
+        def build(
+                cls,
+                stack_offset: int = 0,
+                *,
+                stack_info: bool = False,
+        ) -> ta.Optional['LoggingContextInfos.Caller']:
+            if (f := cls.find_frame(stack_offset + 1)) is None:
+                return None
+
+            # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
+            sinfo = None
+            if stack_info:
+                sio = io.StringIO()
+                traceback.print_stack(f, file=sio)
+                sinfo = sio.getvalue()
+                sio.close()
+                if sinfo[-1] == '\n':
+                    sinfo = sinfo[:-1]
+
+            return cls(
+                file_path=f.f_code.co_filename,
+                line_no=f.f_lineno or 0,
+                func_name=f.f_code.co_name,
+                stack_info=sinfo,
+            )
+
+    @logging_context_info
+    @ta.final
+    class SourceFile(ta.NamedTuple):
+        file_name: str
+        module: str
+
+        @classmethod
+        def build(cls, caller_file_path: ta.Optional[str]) -> ta.Optional['LoggingContextInfos.SourceFile']:
+            if caller_file_path is None:
+                return None
+
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L331-L336  # noqa
+            try:
+                file_name = os.path.basename(caller_file_path)
+                module = os.path.splitext(file_name)[0]
+            except (TypeError, ValueError, AttributeError):
+                return None
+
+            return cls(
+                file_name=file_name,
+                module=module,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Thread(ta.NamedTuple):
+        ident: int
+        native_id: ta.Optional[int]
+        name: str
+
+        @classmethod
+        def build(cls) -> 'LoggingContextInfos.Thread':
+            return cls(
+                ident=threading.get_ident(),
+                native_id=threading.get_native_id() if hasattr(threading, 'get_native_id') else None,
+                name=threading.current_thread().name,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Process(ta.NamedTuple):
+        pid: int
+
+        @classmethod
+        def build(cls) -> 'LoggingContextInfos.Process':
+            return cls(
+                pid=os.getpid(),
+            )
+
+    @logging_context_info
+    @ta.final
+    class Multiprocessing(ta.NamedTuple):
+        process_name: str
+
+        @classmethod
+        def build(cls) -> ta.Optional['LoggingContextInfos.Multiprocessing']:
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L355-L364  # noqa
+            if (mp := sys.modules.get('multiprocessing')) is None:
+                return None
+
+            return cls(
+                process_name=mp.current_process().name,
+            )
+
+    @logging_context_info
+    @ta.final
+    class AsyncioTask(ta.NamedTuple):
+        name: str
+
+        @classmethod
+        def build(cls) -> ta.Optional['LoggingContextInfos.AsyncioTask']:
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L372-L377  # noqa
+            if (asyncio := sys.modules.get('asyncio')) is None:
+                return None
+
+            try:
+                task = asyncio.current_task()
+            except Exception:  # noqa
+                return None
+
+            if task is None:
+                return None
+
+            return cls(
+                name=task.get_name(),  # Always non-None
+            )
+
+
+##
+
+
+class UnexpectedLoggingStartTimeWarning(LoggingSetupWarning):
+    pass
+
+
+def _check_logging_start_time() -> None:
+    if (x := LoggingContextInfos.Time.get_std_start_ns()) < (t := time.time()):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unexpected logging start time detected: '
+            f'get_std_start_ns={x}, '
+            f'time.time()={t}',
+            UnexpectedLoggingStartTimeWarning,
+        )
+
+
+_check_logging_start_time()
+
+
+########################################
+# ../../../omcore/logs/metrics/base.py
+
+
+##
+
+
+class LoggerMetricUnit(Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            mut = LOGGER_METRIC_UNIT_TYPES
+        except NameError:
+            pass
+        else:
+            bcs = [bc for bc in mut if issubclass(cls, bc)]
+            if len(bcs) != 1:
+                raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mut}, got {bcs}.')
+
+        try:
+            mtc = LoggerMetric
+        except NameError:
+            pass
+        else:
+            if issubclass(cls, mtc):
+                mp = cls.__mro__.index(mtc)
+                mup = cls.__mro__.index(LoggerMetricUnit)
+                if mup > mp:
+                    raise TypeError(f'{cls.__name__} must have Metric before MetricUnit in its MRO.')
+
+
+class CountLoggerMetricUnit(LoggerMetricUnit):
+    @classmethod
+    def default_value(cls) -> ta.Optional[float]:
+        return 1
+
+
+class RatioLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+class SecondsLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+class BytesLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
+    CountLoggerMetricUnit,
+    RatioLoggerMetricUnit,
+    SecondsLoggerMetricUnit,
+    BytesLoggerMetricUnit,
+)
+
+
+##
+
+
+class LoggerMetricTag(Abstract):
+    pass
+
+
+##
+
+
+class LoggerMetric(Abstract):
+    @ta.final
+    def __init__(self, value: ta.Optional[float] = None, *tags: LoggerMetricTag) -> None:
+        if value is None:
+            value = self.default_value()
+        if value is None:
+            raise ValueError(f'{type(self).__name__} has no default value.')
+
+        self.__value = value
+        self.__tags = tags
+
+    @property
+    def value(self) -> float:
+        return self.__value
+
+    @classmethod
+    def default_value(cls) -> ta.Optional[float]:
+        return None
+
+    @property
+    def tags(self) -> ta.Sequence[LoggerMetricTag]:
+        return self.__tags
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.value!r}, {", ".join(map(repr, self.tags))})'
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            mtt = LOGGER_METRIC_TYPES
+        except NameError:
+            pass
+        else:
+            bcs = [bc for bc in mtt if issubclass(cls, bc)]
+            if Abstract in cls.__bases__:
+                if len(bcs) > 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of at most one of {mtt}, got {bcs}.')
+            else:
+                if len(bcs) != 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
+
+        # if Abstract not in cls.__bases__ and not issubclass(cls, LoggerMetricUnit):
+        #     raise TypeError(f'{cls.__name__} must be a subclass of LoggerMetricUnit.')
+
+
+class CounterLoggerMetric(CountLoggerMetricUnit, LoggerMetric, Abstract):
+    pass
+
+
+class GaugeLoggerMetric(LoggerMetric, Abstract):
+    pass
+
+
+class HistogramLoggerMetric(LoggerMetric, Abstract):
+    pass
+
+
+LOGGER_METRIC_TYPES: ta.Tuple[ta.Type[LoggerMetric], ...] = (
+    CounterLoggerMetric,
+    GaugeLoggerMetric,
+    HistogramLoggerMetric,
+)
+
+
+##
+
+
+class AnyLoggerMetricCollector(Abstract, ta.Generic[T]):
+    @ta.final
+    def metric(self, m: LoggerMetric) -> T:
+        return self._metric(m)
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> T:
+        raise NotImplementedError
+
+
+class LoggerMetricCollector(AnyLoggerMetricCollector[None], Abstract):
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> None:
+        raise NotImplementedError
+
+
+class AsyncLoggerMetricCollector(AnyLoggerMetricCollector[ta.Awaitable[None]], Abstract):
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class AnyNopLoggerMetricCollector(AnyLoggerMetricCollector[T], Abstract):
+    pass
+
+
+class NopLoggerMetricCollector(AnyNopLoggerMetricCollector[None], LoggerMetricCollector):
+    @ta.final
+    def _metric(self, m: LoggerMetric) -> None:
+        pass
+
+
+class AsyncNopLoggerMetricCollector(AnyNopLoggerMetricCollector[ta.Awaitable[None]], AsyncLoggerMetricCollector):
+    @ta.final
+    async def _metric(self, m: LoggerMetric) -> None:
+        pass
+
+
+########################################
+# ../../../omcore/logs/protocols.py
+
+
+##
+
+
+@ta.runtime_checkable
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
 
 
 ########################################
@@ -4775,2748 +6926,7 @@ class VersionsFile:
 
 
 ########################################
-# ../../../omlish/argparse/parsers.py
-
-
-##
-
-
-@dc.dataclass(eq=False)
-class ArgparseArg:
-    args: ta.Sequence[ta.Any]
-    kwargs: ta.Mapping[str, ta.Any]
-    group: ta.Optional[str] = None
-    dest: ta.Optional[str] = None
-
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        return getattr(instance.args, self.dest)  # type: ignore
-
-
-def argparse_arg(*args, **kwargs) -> ArgparseArg:
-    return ArgparseArg(
-        args=args,
-        group=kwargs.pop('group', None),
-        kwargs=kwargs,
-    )
-
-
-def argparse_arg_(*args, **kwargs) -> ta.Any:
-    return argparse_arg(*args, **kwargs)
-
-
-#
-
-
-@dc.dataclass(eq=False)
-class ArgparseCmd:
-    name: str
-    fn: ArgparseCmdFn
-    args: ta.Sequence[ArgparseArg] = ()  # noqa
-
-    # _: dc.KW_ONLY
-
-    aliases: ta.Optional[ta.Sequence[str]] = None
-    parent: ta.Optional['ArgparseCmd'] = None
-    accepts_unknown: bool = False
-    default: bool = False
-
-    no_help: bool = False
-
-    def __post_init__(self) -> None:
-        def check_name(s: str) -> None:
-            check.isinstance(s, str)
-            check.not_in('_', s)
-            check.not_empty(s)
-
-        check_name(self.name)
-        check.arg(callable(self.fn))
-        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
-
-        check.not_isinstance(self.aliases, str)
-        for a in self.aliases or []:
-            check_name(a)
-        check.isinstance(self.parent, (ArgparseCmd, type(None)))
-        check.isinstance(self.accepts_unknown, bool)
-
-        functools.update_wrapper(self, self.fn)
-
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        return dc.replace(self, fn=self.fn.__get__(instance, owner))  # noqa
-
-    def __call__(self, *args, **kwargs) -> ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]:
-        return self.fn(*args, **kwargs)
-
-
-def argparse_cmd(
-        *args: ArgparseArg,
-        name: ta.Optional[str] = None,
-
-        aliases: ta.Optional[ta.Iterable[str]] = None,
-        parent: ta.Optional[ArgparseCmd] = None,
-        accepts_unknown: bool = False,
-        default: bool = False,
-
-        no_help: bool = False,
-) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
-    for arg in args:
-        check.isinstance(arg, ArgparseArg)
-    check.isinstance(name, (str, type(None)))
-
-    check.isinstance(parent, (ArgparseCmd, type(None)))
-    check.not_isinstance(aliases, str)
-    check.isinstance(default, bool)
-
-    def inner(fn):
-        return ArgparseCmd(
-            (name if name is not None else fn.__name__).replace('_', '-'),
-            fn,
-            args,
-
-            aliases=tuple(aliases) if aliases is not None else None,
-            parent=parent,
-            accepts_unknown=accepts_unknown,
-            default=default,
-
-            no_help=no_help,
-        )
-
-    return inner
-
-
-##
-
-
-def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
-    if ann is str:
-        return {}
-    elif ann is int:
-        return {'type': int}
-    elif ann is bool:
-        return {'action': 'store_true'}
-    elif ann is list:
-        return {'action': 'append'}
-    elif is_optional_alias(ann):
-        return _get_argparse_arg_ann_kwargs(get_optional_alias_arg(ann))
-    else:
-        raise TypeError(ann)
-
-
-class _ArgparseParserClassAnnotationBox:
-    def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
-        super().__init__()
-
-        self.__annotations__ = annotations  # type: ignore
-
-
-def configure_argparse_parser_class_parser(
-        cls: type,
-        parser: ta.Optional[argparse.ArgumentParser] = None,
-) -> argparse.ArgumentParser:
-    ns = cls.__dict__
-    objs = {}
-    mro = cls.__mro__[::-1]
-    for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
-        bseen = set()  # type: ignore
-        for k, v in bns.items():
-            if isinstance(v, (ArgparseCmd, ArgparseArg)):
-                check.not_in(v, bseen)
-                bseen.add(v)
-                objs[k] = v
-            elif k in objs:
-                del [k]
-
-    #
-
-    anns = ta.get_type_hints(_ArgparseParserClassAnnotationBox({
-        **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
-        **ns.get('__annotations__', {}),
-    }), globalns=ns.get('__globals__', {}))
-
-    #
-
-    if parser is None:
-        parser = argparse.ArgumentParser()
-
-    #
-
-    subparsers = parser.add_subparsers()
-
-    default_cmd: ta.Optional[ArgparseCmd] = None
-
-    for att, obj in objs.items():
-        if isinstance(obj, ArgparseCmd):
-            if obj.parent is not None:
-                raise NotImplementedError
-
-            if obj.default:
-                if default_cmd:
-                    raise TypeError(f'Already have a default command: {default_cmd}, {obj}')
-                default_cmd = obj
-
-            for cn in [obj.name, *(obj.aliases or [])]:
-                subparser = subparsers.add_parser(
-                    cn,
-                    **(dict(add_help=False) if obj.no_help else {}),  # type: ignore[arg-type]
-                )
-
-                for arg in (obj.args or []):
-                    if (
-                            len(arg.args) == 1 and
-                            isinstance(arg.args[0], str) and
-                            not (n := check.isinstance(arg.args[0], str)).startswith('-') and
-                            'metavar' not in arg.kwargs
-                    ):
-                        subparser.add_argument(
-                            n.replace('-', '_'),
-                            **arg.kwargs,
-                            metavar=n,
-                        )
-                    else:
-                        subparser.add_argument(*arg.args, **arg.kwargs)
-
-                subparser.set_defaults(_cmd=obj)
-
-        elif isinstance(obj, ArgparseArg):
-            if obj.group is not None:
-                # FIXME: add_argument_group
-                raise NotImplementedError
-
-            if att in anns:
-                ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
-                obj.kwargs = {**ann_kwargs, **obj.kwargs}
-
-            if not obj.dest:
-                if 'dest' in obj.kwargs:
-                    obj.dest = obj.kwargs['dest']
-                else:
-                    obj.dest = obj.kwargs['dest'] = att  # type: ignore
-
-            parser.add_argument(*obj.args, **obj.kwargs)
-
-        else:
-            raise TypeError(obj)
-
-    if default_cmd is not None:
-        parser.set_defaults(_cmd=default_cmd)
-
-    return parser
-
-
-##
-
-
-class ArgparseParserClass(Abstract):
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        ns = cls.__dict__
-
-        if '_parser' in ns:
-            parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
-        else:
-            parser = argparse.ArgumentParser()
-
-        configure_argparse_parser_class_parser(cls, parser)
-
-        setattr(cls, '_parser', parser)
-
-    #
-
-    _parser: ta.ClassVar[argparse.ArgumentParser]
-
-    @classmethod
-    def get_parser(cls) -> argparse.ArgumentParser:
-        return cls._parser
-
-
-########################################
-# ../../../omlish/lite/json.py
-
-
-##
-
-
-JSON_PRETTY_INDENT = 2
-
-JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=JSON_PRETTY_INDENT,
-)
-
-json_dump_pretty: ta.Callable[..., None] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)
-json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
-
-
-##
-
-
-JSON_COMPACT_SEPARATORS = (',', ':')
-
-JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=None,
-    separators=JSON_COMPACT_SEPARATORS,
-)
-
-json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
-json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
-
-
-##
-
-
-JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
-    'pretty': JSON_PRETTY_KWARGS,
-    'compact': JSON_COMPACT_KWARGS,
-    None: {},
-}
-
-
-##
-
-
-def json_dump(
-        obj: ta.Any,
-        fp: ta.Any,
-        *,
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> None:
-    json.dump(
-        obj,
-        fp,
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
-
-
-def json_dump_encode(
-        obj: ta.Any,
-        fp: ta.Any,
-        encoding: str = 'utf-8',
-        *,
-        errors: str = 'strict',
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> None:
-    def write(s: str) -> int:
-        fp.write(s.encode(encoding, errors))
-        return len(s)
-
-    json.dump(
-        obj,
-        FnWriter(write),
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
-
-
-def json_dumps(
-        obj: ta.Any,
-        *,
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> str:
-    return json.dumps(
-        obj,
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
-
-
-########################################
-# ../../../omlish/lite/marshal.py
-"""
-TODO:
- - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
- - Options.sequence_cls = list, mapping_cls = dict, ... - def with_mutable_containers() -> Options
-"""
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ObjMarshalOptions:
-    raw_bytes: bool = False
-    non_strict_fields: bool = False
-
-
-class ObjMarshaler(Abstract):
-    @abc.abstractmethod
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        raise NotImplementedError
-
-
-class NopObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return o
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return o
-
-
-class ProxyObjMarshaler(ObjMarshaler):
-    def __init__(self, m: ta.Optional[ObjMarshaler] = None) -> None:
-        super().__init__()
-
-        self._m = m
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.not_none(self._m).marshal(o, ctx)
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.not_none(self._m).unmarshal(o, ctx)
-
-
-class CastObjMarshaler(ObjMarshaler):
-    def __init__(self, ty: type) -> None:
-        super().__init__()
-
-        self._ty = ty
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return o
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self._ty(o)
-
-
-class DynamicObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return ctx.manager.marshal_obj(o, opts=ctx.options)
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return o
-
-
-class Base64ObjMarshaler(ObjMarshaler):
-    def __init__(self, ty: type) -> None:
-        super().__init__()
-
-        self._ty = ty
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return base64.b64encode(o).decode('ascii')
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self._ty(base64.b64decode(o))
-
-
-class BytesSwitchedObjMarshaler(ObjMarshaler):
-    def __init__(self, m: ObjMarshaler) -> None:
-        super().__init__()
-
-        self._m = m
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if ctx.options.raw_bytes:
-            return o
-        return self._m.marshal(o, ctx)
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if ctx.options.raw_bytes:
-            return o
-        return self._m.unmarshal(o, ctx)
-
-
-class EnumObjMarshaler(ObjMarshaler):
-    def __init__(self, ty: type) -> None:
-        super().__init__()
-
-        self._ty = ty
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return o.name
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self._ty.__members__[o]  # type: ignore
-
-
-class OptionalObjMarshaler(ObjMarshaler):
-    def __init__(self, item: ObjMarshaler) -> None:
-        super().__init__()
-
-        self._item = item
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if o is None:
-            return None
-        return self._item.marshal(o, ctx)
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if o is None:
-            return None
-        return self._item.unmarshal(o, ctx)
-
-
-class PrimitiveUnionObjMarshaler(ObjMarshaler):
-    def __init__(
-            self,
-            pt: ta.Tuple[type, ...],
-            x: ta.Optional[ObjMarshaler] = None,
-    ) -> None:
-        super().__init__()
-
-        self._pt = pt
-        self._x = x
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if isinstance(o, self._pt):
-            return o
-        elif self._x is not None:
-            return self._x.marshal(o, ctx)
-        else:
-            raise TypeError(o)
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        if isinstance(o, self._pt):
-            return o
-        elif self._x is not None:
-            return self._x.unmarshal(o, ctx)
-        else:
-            raise TypeError(o)
-
-
-class LiteralObjMarshaler(ObjMarshaler):
-    def __init__(
-            self,
-            item: ObjMarshaler,
-            vs: frozenset,
-    ) -> None:
-        super().__init__()
-
-        self._item = item
-        self._vs = vs
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self._item.marshal(check.in_(o, self._vs), ctx)
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return check.in_(self._item.unmarshal(o, ctx), self._vs)
-
-
-class MappingObjMarshaler(ObjMarshaler):
-    def __init__(
-            self,
-            ty: type,
-            km: ObjMarshaler,
-            vm: ObjMarshaler,
-    ) -> None:
-        super().__init__()
-
-        self._ty = ty
-        self._km = km
-        self._vm = vm
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return {self._km.marshal(k, ctx): self._vm.marshal(v, ctx) for k, v in o.items()}
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self._ty((self._km.unmarshal(k, ctx), self._vm.unmarshal(v, ctx)) for k, v in o.items())
-
-
-class IterableObjMarshaler(ObjMarshaler):
-    def __init__(
-            self,
-            ty: type,
-            item: ObjMarshaler,
-    ) -> None:
-        super().__init__()
-
-        self._ty = ty
-        self._item = item
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return [self._item.marshal(e, ctx) for e in o]
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self._ty(self._item.unmarshal(e, ctx) for e in o)
-
-
-class FieldsObjMarshaler(ObjMarshaler):
-    @dc.dataclass(frozen=True)
-    class Field:
-        att: str
-        key: str
-        m: ObjMarshaler
-
-        omit_if_none: bool = False
-
-    def __init__(
-            self,
-            ty: type,
-            fs: ta.Sequence[Field],
-            *,
-            non_strict: bool = False,
-    ) -> None:
-        super().__init__()
-
-        self._ty = ty
-        self._fs = fs
-        self._non_strict = non_strict
-
-        fs_by_att: dict = {}
-        fs_by_key: dict = {}
-        for f in self._fs:
-            check.not_in(check.non_empty_str(f.att), fs_by_att)
-            check.not_in(check.non_empty_str(f.key), fs_by_key)
-            fs_by_att[f.att] = f
-            fs_by_key[f.key] = f
-
-        self._fs_by_att: ta.Mapping[str, FieldsObjMarshaler.Field] = fs_by_att
-        self._fs_by_key: ta.Mapping[str, FieldsObjMarshaler.Field] = fs_by_key
-
-    @property
-    def ty(self) -> type:
-        return self._ty
-
-    @property
-    def fs(self) -> ta.Sequence[Field]:
-        return self._fs
-
-    #
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        d = {}
-        for f in self._fs:
-            mv = f.m.marshal(getattr(o, f.att), ctx)
-            if mv is None and f.omit_if_none:
-                continue
-            d[f.key] = mv
-        return d
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        kw = {}
-        for k, v in o.items():
-            if (f := self._fs_by_key.get(k)) is None:
-                if not (self._non_strict or ctx.options.non_strict_fields):
-                    raise KeyError(k)
-                continue
-            kw[f.att] = f.m.unmarshal(v, ctx)
-        return self._ty(**kw)
-
-
-class SingleFieldObjMarshaler(ObjMarshaler):
-    def __init__(
-            self,
-            ty: type,
-            fld: str,
-    ) -> None:
-        super().__init__()
-
-        self._ty = ty
-        self._fld = fld
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return getattr(o, self._fld)
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self._ty(**{self._fld: o})
-
-
-class PolymorphicObjMarshaler(ObjMarshaler):
-    class Impl(ta.NamedTuple):
-        ty: type
-        tag: str
-        m: ObjMarshaler
-
-    def __init__(
-            self,
-            impls_by_ty: ta.Mapping[type, Impl],
-            impls_by_tag: ta.Mapping[str, Impl],
-    ) -> None:
-        super().__init__()
-
-        self._impls_by_ty = impls_by_ty
-        self._impls_by_tag = impls_by_tag
-
-    @classmethod
-    def of(cls, impls: ta.Iterable[Impl]) -> 'PolymorphicObjMarshaler':
-        return cls(
-            {i.ty: i for i in impls},
-            {i.tag: i for i in impls},
-        )
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        impl = self._impls_by_ty[type(o)]
-        return {impl.tag: impl.m.marshal(o, ctx)}
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        [(t, v)] = o.items()
-        impl = self._impls_by_tag[t]
-        return impl.m.unmarshal(v, ctx)
-
-
-class DatetimeObjMarshaler(ObjMarshaler):
-    def __init__(
-            self,
-            ty: type,
-    ) -> None:
-        super().__init__()
-
-        self._ty = ty
-
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return o.isoformat()
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return self._ty.fromisoformat(o)  # type: ignore
-
-
-class DecimalObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return str(check.isinstance(o, decimal.Decimal))
-
-    def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return decimal.Decimal(check.isinstance(v, str))
-
-
-class FractionObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        fr = check.isinstance(o, fractions.Fraction)
-        return [fr.numerator, fr.denominator]
-
-    def unmarshal(self, v: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        num, denom = check.isinstance(v, list)
-        return fractions.Fraction(num, denom)
-
-
-class UuidObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return str(o)
-
-    def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
-        return uuid.UUID(o)
-
-
-##
-
-
-_DEFAULT_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
-    **{t: NopObjMarshaler() for t in (type(None),)},
-    **{t: CastObjMarshaler(t) for t in (int, float, str, bool)},
-    **{t: BytesSwitchedObjMarshaler(Base64ObjMarshaler(t)) for t in (bytes, bytearray)},
-    **{t: IterableObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
-    **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
-
-    **{t: DynamicObjMarshaler() for t in (ta.Any, object)},
-
-    **{t: DatetimeObjMarshaler(t) for t in (datetime.date, datetime.time, datetime.datetime)},
-    decimal.Decimal: DecimalObjMarshaler(),
-    fractions.Fraction: FractionObjMarshaler(),
-    uuid.UUID: UuidObjMarshaler(),
-}
-
-_OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
-    **{t: t for t in (dict,)},
-    **{t: dict for t in (collections.abc.Mapping, collections.abc.MutableMapping)},  # noqa
-}
-
-_OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
-    **{t: t for t in (list, tuple, set, frozenset)},
-    collections.abc.Set: frozenset,
-    collections.abc.MutableSet: set,
-    collections.abc.Sequence: tuple,
-    collections.abc.MutableSequence: list,
-}
-
-_OBJ_MARSHALER_PRIMITIVE_TYPES: ta.Set[type] = {
-    int,
-    float,
-    bool,
-    str,
-}
-
-
-##
-
-
-_REGISTERED_OBJ_MARSHALERS_BY_TYPE: ta.MutableMapping[type, ObjMarshaler] = weakref.WeakKeyDictionary()
-
-
-def register_type_obj_marshaler(ty: type, om: ObjMarshaler) -> None:
-    _REGISTERED_OBJ_MARSHALERS_BY_TYPE[ty] = om
-
-
-def register_single_field_type_obj_marshaler(fld, ty=None):
-    def inner(ty):  # noqa
-        register_type_obj_marshaler(ty, SingleFieldObjMarshaler(ty, fld))
-        return ty
-
-    if ty is not None:
-        return inner(ty)
-    else:
-        return inner
-
-
-##
-
-
-class ObjMarshalerFieldMetadata:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-
-class OBJ_MARSHALER_FIELD_KEY(ObjMarshalerFieldMetadata):  # noqa
-    pass
-
-
-class OBJ_MARSHALER_OMIT_IF_NONE(ObjMarshalerFieldMetadata):  # noqa
-    pass
-
-
-##
-
-
-class ObjMarshalerManager(Abstract):
-    @abc.abstractmethod
-    def make_obj_marshaler(
-            self,
-            ty: ta.Any,
-            rec: ta.Callable[[ta.Any], ObjMarshaler],
-            *,
-            non_strict_fields: bool = False,
-    ) -> ObjMarshaler:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def set_obj_marshaler(
-            self,
-            ty: ta.Any,
-            m: ObjMarshaler,
-            *,
-            override: bool = False,
-    ) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_obj_marshaler(
-            self,
-            ty: ta.Any,
-            *,
-            no_cache: bool = False,
-            **kwargs: ta.Any,
-    ) -> ObjMarshaler:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':
-        raise NotImplementedError
-
-    #
-
-    def marshal_obj(
-            self,
-            o: ta.Any,
-            ty: ta.Any = None,
-            opts: ta.Optional[ObjMarshalOptions] = None,
-    ) -> ta.Any:
-        m = self.get_obj_marshaler(ty if ty is not None else type(o))
-        return m.marshal(o, self.make_context(opts))
-
-    def unmarshal_obj(
-            self,
-            o: ta.Any,
-            ty: ta.Union[ta.Type[T], ta.Any],
-            opts: ta.Optional[ObjMarshalOptions] = None,
-    ) -> T:
-        m = self.get_obj_marshaler(ty)
-        return m.unmarshal(o, self.make_context(opts))
-
-    def roundtrip_obj(
-            self,
-            o: ta.Any,
-            ty: ta.Any = None,
-            opts: ta.Optional[ObjMarshalOptions] = None,
-    ) -> ta.Any:
-        if ty is None:
-            ty = type(o)
-        m: ta.Any = self.marshal_obj(o, ty, opts)
-        u: ta.Any = self.unmarshal_obj(m, ty, opts)
-        return u
-
-
-#
-
-
-class ObjMarshalerManagerImpl(ObjMarshalerManager):
-    def __init__(
-            self,
-            *,
-            default_options: ObjMarshalOptions = ObjMarshalOptions(),
-
-            default_obj_marshalers: ta.Dict[ta.Any, ObjMarshaler] = _DEFAULT_OBJ_MARSHALERS,  # noqa
-            generic_mapping_types: ta.Dict[ta.Any, type] = _OBJ_MARSHALER_GENERIC_MAPPING_TYPES,  # noqa
-            generic_iterable_types: ta.Dict[ta.Any, type] = _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES,  # noqa
-
-            registered_obj_marshalers: ta.Mapping[type, ObjMarshaler] = _REGISTERED_OBJ_MARSHALERS_BY_TYPE,
-    ) -> None:
-        super().__init__()
-
-        self._default_options = default_options
-
-        self._obj_marshalers = dict(default_obj_marshalers)
-        self._generic_mapping_types = generic_mapping_types
-        self._generic_iterable_types = generic_iterable_types
-        self._registered_obj_marshalers = registered_obj_marshalers
-
-        self._lock = threading.RLock()
-        self._marshalers: ta.Dict[ta.Any, ObjMarshaler] = dict(_DEFAULT_OBJ_MARSHALERS)
-        self._proxies: ta.Dict[ta.Any, ProxyObjMarshaler] = {}
-
-    #
-
-    @classmethod
-    def _is_abstract(cls, ty: type) -> bool:
-        return abc.ABC in ty.__bases__ or Abstract in ty.__bases__
-
-    #
-
-    def make_obj_marshaler(
-            self,
-            ty: ta.Any,
-            rec: ta.Callable[[ta.Any], ObjMarshaler],
-            *,
-            non_strict_fields: bool = False,
-    ) -> ObjMarshaler:
-        if isinstance(ty, type):
-            if (reg := self._registered_obj_marshalers.get(ty)) is not None:
-                return reg
-
-            if self._is_abstract(ty):
-                tn = ty.__name__
-                impls: ta.List[ta.Tuple[type, str]] = [  # type: ignore[var-annotated]
-                    (ity, ity.__name__)
-                    for ity in deep_subclasses(ty)
-                    if not self._is_abstract(ity)
-                ]
-
-                if all(itn.endswith(tn) for _, itn in impls):
-                    impls = [
-                        (ity, snake_case(itn[:-len(tn)]))
-                        for ity, itn in impls
-                    ]
-
-                dupe_tns = sorted(
-                    dn
-                    for dn, dc in collections.Counter(itn for _, itn in impls).items()
-                    if dc > 1
-                )
-                if dupe_tns:
-                    raise KeyError(f'Duplicate impl names for {ty}: {dupe_tns}')
-
-                return PolymorphicObjMarshaler.of([
-                    PolymorphicObjMarshaler.Impl(
-                        ity,
-                        itn,
-                        rec(ity),
-                    )
-                    for ity, itn in impls
-                ])
-
-            if issubclass(ty, enum.Enum):
-                return EnumObjMarshaler(ty)
-
-            if dc.is_dataclass(ty):
-                return FieldsObjMarshaler(
-                    ty,
-                    [
-                        FieldsObjMarshaler.Field(
-                            att=f.name,
-                            key=check.non_empty_str(fk),
-                            m=rec(f.type),
-                            omit_if_none=check.isinstance(f.metadata.get(OBJ_MARSHALER_OMIT_IF_NONE, False), bool),
-                        )
-                        for f in dc.fields(ty)
-                        if (fk := f.metadata.get(OBJ_MARSHALER_FIELD_KEY, f.name)) is not None
-                    ],
-                    non_strict=non_strict_fields,
-                )
-
-            if issubclass(ty, tuple) and hasattr(ty, '_fields'):
-                return FieldsObjMarshaler(
-                    ty,
-                    [
-                        FieldsObjMarshaler.Field(
-                            att=p.name,
-                            key=p.name,
-                            m=rec(p.annotation),
-                        )
-                        for p in inspect.signature(ty).parameters.values()
-                    ],
-                    non_strict=non_strict_fields,
-                )
-
-        if is_new_type(ty):
-            return rec(get_new_type_supertype(ty))
-
-        if is_literal_type(ty):
-            lvs = frozenset(get_literal_type_args(ty))
-            if None in lvs:
-                is_opt = True
-                lvs -= frozenset([None])
-            else:
-                is_opt = False
-            lty = check.single(set(map(type, lvs)))
-            lm: ObjMarshaler = LiteralObjMarshaler(rec(lty), lvs)
-            if is_opt:
-                lm = OptionalObjMarshaler(lm)
-            return lm
-
-        if is_generic_alias(ty):
-            try:
-                mt = self._generic_mapping_types[ta.get_origin(ty)]
-            except KeyError:
-                pass
-            else:
-                k, v = ta.get_args(ty)
-                return MappingObjMarshaler(mt, rec(k), rec(v))
-
-            try:
-                st = self._generic_iterable_types[ta.get_origin(ty)]
-            except KeyError:
-                pass
-            else:
-                [e] = ta.get_args(ty)
-                return IterableObjMarshaler(st, rec(e))
-
-        if is_union_alias(ty):
-            uts = frozenset(ta.get_args(ty))
-            if None in uts or type(None) in uts:
-                is_opt = True
-                uts = frozenset(ut for ut in uts if ut not in (None, type(None)))
-            else:
-                is_opt = False
-
-            um: ObjMarshaler
-            if not uts:
-                raise TypeError(ty)
-            elif len(uts) == 1:
-                um = rec(check.single(uts))
-            else:
-                pt = tuple({ut for ut in uts if ut in _OBJ_MARSHALER_PRIMITIVE_TYPES})
-                np_uts = {ut for ut in uts if ut not in _OBJ_MARSHALER_PRIMITIVE_TYPES}
-                if not np_uts:
-                    um = PrimitiveUnionObjMarshaler(pt)
-                elif len(np_uts) == 1:
-                    um = PrimitiveUnionObjMarshaler(pt, x=rec(check.single(np_uts)))
-                else:
-                    raise TypeError(ty)
-
-            if is_opt:
-                um = OptionalObjMarshaler(um)
-            return um
-
-        raise TypeError(ty)
-
-    #
-
-    def set_obj_marshaler(
-            self,
-            ty: ta.Any,
-            m: ObjMarshaler,
-            *,
-            override: bool = False,
-    ) -> None:
-        with self._lock:
-            if not override and ty in self._obj_marshalers:
-                raise KeyError(ty)
-            self._obj_marshalers[ty] = m
-
-    def get_obj_marshaler(
-            self,
-            ty: ta.Any,
-            *,
-            no_cache: bool = False,
-            **kwargs: ta.Any,
-    ) -> ObjMarshaler:
-        with self._lock:
-            if not no_cache:
-                try:
-                    return self._obj_marshalers[ty]
-                except KeyError:
-                    pass
-
-            try:
-                return self._proxies[ty]
-            except KeyError:
-                pass
-
-            rec = functools.partial(
-                self.get_obj_marshaler,
-                no_cache=no_cache,
-                **kwargs,
-            )
-
-            p = ProxyObjMarshaler()
-            self._proxies[ty] = p
-            try:
-                m = self.make_obj_marshaler(ty, rec, **kwargs)
-            finally:
-                del self._proxies[ty]
-            p._m = m  # noqa
-
-            if not no_cache:
-                self._obj_marshalers[ty] = m
-            return m
-
-    def make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':
-        return ObjMarshalContext(
-            options=opts or self._default_options,
-            manager=self,
-        )
-
-
-def new_obj_marshaler_manager(**kwargs: ta.Any) -> ObjMarshalerManager:
-    return ObjMarshalerManagerImpl(**kwargs)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ObjMarshalContext:
-    options: ObjMarshalOptions
-    manager: ObjMarshalerManager
-
-
-##
-
-
-OBJ_MARSHALER_MANAGER = new_obj_marshaler_manager()
-
-set_obj_marshaler = OBJ_MARSHALER_MANAGER.set_obj_marshaler
-get_obj_marshaler = OBJ_MARSHALER_MANAGER.get_obj_marshaler
-
-marshal_obj = OBJ_MARSHALER_MANAGER.marshal_obj
-unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
-
-
-########################################
-# ../../../omlish/lite/maybes.py
-
-
-##
-
-
-@functools.total_ordering
-class Maybe(ta.Generic[T]):
-    class ValueNotPresentError(BaseException):
-        pass
-
-    #
-
-    @property
-    @abc.abstractmethod
-    def present(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def must(self) -> T:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def __repr__(self) -> str:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __hash__(self) -> int:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __eq__(self, other) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __lt__(self, other) -> bool:
-        raise NotImplementedError
-
-    #
-
-    @ta.final
-    def __ne__(self, other):
-        return not (self == other)
-
-    @ta.final
-    def __iter__(self) -> ta.Iterator[T]:
-        if self.present:
-            yield self.must()
-
-    @ta.final
-    def __bool__(self) -> ta.NoReturn:
-        raise TypeError
-
-    #
-
-    @ta.final
-    def if_present(self, consumer: ta.Callable[[T], None]) -> None:
-        if self.present:
-            consumer(self.must())
-
-    @ta.final
-    def filter(self, predicate: ta.Callable[[T], bool]) -> 'Maybe[T]':
-        if self.present and predicate(self.must()):
-            return self
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def map(self, mapper: ta.Callable[[T], U]) -> 'Maybe[U]':
-        if self.present:
-            return Maybe.just(mapper(self.must()))
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def flat_map(self, mapper: ta.Callable[[T], 'Maybe[U]']) -> 'Maybe[U]':
-        if self.present:
-            if not isinstance(v := mapper(self.must()), Maybe):
-                raise TypeError(v)
-            return v
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def or_else(self, other: ta.Union[T, U]) -> ta.Union[T, U]:
-        if self.present:
-            return self.must()
-        else:
-            return other
-
-    @ta.final
-    def or_none(self) -> ta.Optional[T]:
-        if self.present:
-            return self.must()
-        else:
-            return None
-
-    @ta.final
-    def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:
-        if self.present:
-            return self.must()
-        else:
-            return supplier()
-
-    @ta.final
-    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
-        if self.present:
-            return self.must()
-        else:
-            raise exception_supplier()
-
-    #
-
-    @classmethod
-    def of_optional(cls, v: ta.Optional[T]) -> 'Maybe[T]':
-        if v is not None:
-            return cls.just(v)
-        else:
-            return cls.empty()
-
-    @classmethod
-    def just(cls, v: T) -> 'Maybe[T]':
-        return _JustMaybe(v)
-
-    _empty: ta.ClassVar['Maybe']
-
-    @classmethod
-    def empty(cls) -> 'Maybe[T]':
-        return Maybe._empty
-
-
-##
-
-
-class _Maybe(Maybe[T], Abstract):
-    def __lt__(self, other):
-        if not isinstance(other, _Maybe):
-            return NotImplemented
-        sp = self.present
-        op = other.present
-        if self.present and other.present:
-            return self.must() < other.must()
-        else:
-            return op and not sp
-
-
-@ta.final
-class _JustMaybe(_Maybe[T]):
-    __slots__ = ('_v', '_hash')
-
-    def __init__(self, v: T) -> None:
-        self._v = v
-
-    @property
-    def present(self) -> bool:
-        return True
-
-    def must(self) -> T:
-        return self._v
-
-    #
-
-    def __repr__(self) -> str:
-        return f'just({self._v!r})'
-
-    _hash: int
-
-    def __hash__(self) -> int:
-        try:
-            return self._hash
-        except AttributeError:
-            pass
-        h = self._hash = hash((_JustMaybe, self._v))
-        return h
-
-    def __eq__(self, other):
-        return (
-            self.__class__ is other.__class__ and
-            self._v == other._v  # noqa
-        )
-
-
-@ta.final
-class _EmptyMaybe(_Maybe[T]):
-    __slots__ = ()
-
-    @property
-    def present(self) -> bool:
-        return False
-
-    def must(self) -> T:
-        raise Maybe.ValueNotPresentError
-
-    #
-
-    def __repr__(self) -> str:
-        return 'empty()'
-
-    def __hash__(self) -> int:
-        return hash(_EmptyMaybe)
-
-    def __eq__(self, other):
-        return self.__class__ is other.__class__
-
-
-Maybe._empty = _EmptyMaybe()  # noqa
-
-
-##
-
-
-setattr(Maybe, 'just', _JustMaybe)  # noqa
-setattr(Maybe, 'empty', functools.partial(operator.attrgetter('_empty'), Maybe))
-
-
-########################################
-# ../../../omlish/lite/runtime.py
-
-
-##
-
-
-@cached_nullary
-def is_debugger_attached() -> bool:
-    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
-
-
-LITE_REQUIRED_PYTHON_VERSION = (3, 8)
-
-
-def check_lite_runtime_version() -> None:
-    if sys.version_info < LITE_REQUIRED_PYTHON_VERSION:
-        raise OSError(f'Requires python {LITE_REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
-
-
-########################################
-# ../../../omlish/lite/timeouts.py
-"""
-TODO:
- - Event (/ Predicate)
-"""
-
-
-##
-
-
-class Timeout(Abstract):
-    @property
-    @abc.abstractmethod
-    def can_expire(self) -> bool:
-        """Indicates whether or not this timeout will ever expire."""
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def expired(self) -> bool:
-        """Return whether or not this timeout has expired."""
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def remaining(self) -> float:
-        """Returns the time (in seconds) remaining until the timeout expires. May be negative and/or infinite."""
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __call__(self) -> float:
-        """Returns the time (in seconds) remaining until the timeout expires, or raises if the timeout has expired."""
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def or_(self, o: ta.Any) -> ta.Any:
-        """Evaluates time remaining via remaining() if this timeout can expire, otherwise returns `o`."""
-
-        raise NotImplementedError
-
-    #
-
-    @classmethod
-    def _now(cls) -> float:
-        return time.monotonic()
-
-    #
-
-    class DEFAULT:  # Noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    class _NOT_SPECIFIED:  # noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    @classmethod
-    def of(
-            cls,
-            obj: TimeoutLike,
-            default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
-    ) -> 'Timeout':
-        if isinstance(obj, bool):
-            if obj:
-                obj = Timeout.DEFAULT
-            else:
-                obj = None
-
-        if obj is None:
-            return InfiniteTimeout()
-
-        if isinstance(obj, Timeout):
-            return obj
-
-        if isinstance(obj, (float, int)):
-            return DeadlineTimeout(cls._now() + obj)
-
-        # if isinstance(obj, CanInt):
-        #     return DeadlineTimeout(cls._now() + int(obj))
-
-        if isinstance(obj, CanFloat):
-            return DeadlineTimeout(cls._now() + float(obj))
-
-        if isinstance(obj, ta.Iterable):
-            return CompositeTimeout(*[Timeout.of(c) for c in obj])
-
-        if obj is Timeout.DEFAULT:
-            if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
-                raise RuntimeError('Must specify a default timeout')
-
-            else:
-                return Timeout.of(default)  # type: ignore[arg-type]
-
-        raise TypeError(obj)
-
-    @classmethod
-    def of_deadline(cls, deadline: float) -> 'DeadlineTimeout':
-        return DeadlineTimeout(deadline)
-
-    @classmethod
-    def of_predicate(cls, expired_fn: ta.Callable[[], bool]) -> 'PredicateTimeout':
-        return PredicateTimeout(expired_fn)
-
-
-class DeadlineTimeout(Timeout):
-    def __init__(
-            self,
-            deadline: float,
-            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
-    ) -> None:
-        super().__init__()
-
-        self.deadline = deadline
-        self.exc = exc
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.deadline!r}, {self.exc!r})'
-
-    @property
-    def can_expire(self) -> bool:
-        return True
-
-    def expired(self) -> bool:
-        return not (self.remaining() > 0)
-
-    def remaining(self) -> float:
-        return self.deadline - self._now()
-
-    def __call__(self) -> float:
-        if (rem := self.remaining()) > 0:
-            return rem
-        raise self.exc
-
-    def or_(self, o: ta.Any) -> ta.Any:
-        return self()
-
-
-class InfiniteTimeout(Timeout):
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}()'
-
-    @property
-    def can_expire(self) -> bool:
-        return False
-
-    def expired(self) -> bool:
-        return False
-
-    def remaining(self) -> float:
-        return float('inf')
-
-    def __call__(self) -> float:
-        return float('inf')
-
-    def or_(self, o: ta.Any) -> ta.Any:
-        return o
-
-
-class CompositeTimeout(Timeout):
-    def __init__(self, *children: Timeout) -> None:
-        super().__init__()
-
-        self.children = children
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.children!r})'
-
-    @property
-    def can_expire(self) -> bool:
-        return any(c.can_expire for c in self.children)
-
-    def expired(self) -> bool:
-        return any(c.expired() for c in self.children)
-
-    def remaining(self) -> float:
-        return min(c.remaining() for c in self.children)
-
-    def __call__(self) -> float:
-        return min(c() for c in self.children)
-
-    def or_(self, o: ta.Any) -> ta.Any:
-        if self.can_expire:
-            return self()
-        return o
-
-
-class PredicateTimeout(Timeout):
-    def __init__(
-            self,
-            expired_fn: ta.Callable[[], bool],
-            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
-    ) -> None:
-        super().__init__()
-
-        self.expired_fn = expired_fn
-        self.exc = exc
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.expired_fn!r}, {self.exc!r})'
-
-    @property
-    def can_expire(self) -> bool:
-        return True
-
-    def expired(self) -> bool:
-        return self.expired_fn()
-
-    def remaining(self) -> float:
-        return float('inf')
-
-    def __call__(self) -> float:
-        if not self.expired_fn():
-            return float('inf')
-        raise self.exc
-
-    def or_(self, o: ta.Any) -> ta.Any:
-        return self()
-
-
-########################################
-# ../../../omlish/logs/infos.py
-"""
-TODO:
- - remove redundant info fields only present for std adaptation (Level.name, ...)
-"""
-
-
-##
-
-
-def logging_context_info(cls):
-    return cls
-
-
-@ta.final
-class LoggingContextInfos:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    #
-
-    @logging_context_info
-    @ta.final
-    class Name(ta.NamedTuple):
-        name: str
-
-    @logging_context_info
-    @ta.final
-    class Level(ta.NamedTuple):
-        level: NamedLogLevel
-        name: str
-
-        @classmethod
-        def build(cls, level: int) -> 'LoggingContextInfos.Level':
-            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # noqa
-            return cls(
-                level=nl,
-                name=logging.getLevelName(nl),
-            )
-
-    @logging_context_info
-    @ta.final
-    class Msg(ta.NamedTuple):
-        msg: str
-        args: ta.Union[tuple, ta.Mapping[ta.Any, ta.Any], None]
-
-        @classmethod
-        def build(
-                cls,
-                msg: ta.Union[str, tuple, LoggingMsgFn],
-                *args: ta.Any,
-        ) -> 'LoggingContextInfos.Msg':
-            s: str
-            a: ta.Any
-
-            if callable(msg):
-                if args:
-                    raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
-                x = msg()
-                if isinstance(x, str):
-                    s, a = x, ()
-                elif isinstance(x, tuple):
-                    if x:
-                        s, a = x[0], x[1:]
-                    else:
-                        s, a = '', ()
-                else:
-                    raise TypeError(x)
-
-            elif isinstance(msg, tuple):
-                if args:
-                    raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
-                if msg:
-                    s, a = msg[0], msg[1:]
-                else:
-                    s, a = '', ()
-
-            elif isinstance(msg, str):
-                s, a = msg, args
-
-            else:
-                raise TypeError(msg)
-
-            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307  # noqa
-            if a and len(a) == 1 and isinstance(a[0], collections.abc.Mapping) and a[0]:
-                a = a[0]
-
-            return cls(
-                msg=s,
-                args=a,
-            )
-
-    @logging_context_info
-    @ta.final
-    class Extra(ta.NamedTuple):
-        extra: ta.Mapping[ta.Any, ta.Any]
-
-    @logging_context_info
-    @ta.final
-    class Time(ta.NamedTuple):
-        ns: int
-        secs: float
-        msecs: float
-        relative_secs: float
-
-        @classmethod
-        def get_std_start_ns(cls) -> int:
-            x: ta.Any = logging._startTime  # type: ignore[attr-defined]  # noqa
-
-            # Before 3.13.0b1 this will be `time.time()`, a float of seconds. After that, it will be `time.time_ns()`,
-            # an int.
-            #
-            # See:
-            #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
-            #
-            if isinstance(x, float):
-                return int(x * 1e9)
-            else:
-                return x
-
-        @classmethod
-        def build(
-                cls,
-                ns: int,
-                *,
-                start_ns: ta.Optional[int] = None,
-        ) -> 'LoggingContextInfos.Time':
-            # https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
-            secs = ns / 1e9  # ns to float seconds
-
-            # Get the number of whole milliseconds (0-999) in the fractional part of seconds.
-            # Eg: 1_677_903_920_999_998_503 ns --> 999_998_503 ns--> 999 ms
-            # Convert to float by adding 0.0 for historical reasons. See gh-89047
-            msecs = (ns % 1_000_000_000) // 1_000_000 + 0.0
-
-            # https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
-            if msecs == 999.0 and int(secs) != ns // 1_000_000_000:
-                # ns -> sec conversion can round up, e.g:
-                # 1_677_903_920_999_999_900 ns --> 1_677_903_921.0 sec
-                msecs = 0.0
-
-            if start_ns is None:
-                start_ns = cls.get_std_start_ns()
-            relative_secs = (ns - start_ns) / 1e6
-
-            return cls(
-                ns=ns,
-                secs=secs,
-                msecs=msecs,
-                relative_secs=relative_secs,
-            )
-
-    @logging_context_info
-    @ta.final
-    class Exc(ta.NamedTuple):
-        info: LoggingExcInfo
-        info_tuple: LoggingExcInfoTuple
-
-        @classmethod
-        def build(
-                cls,
-                arg: LoggingExcInfoArg = False,
-        ) -> ta.Optional['LoggingContextInfos.Exc']:
-            if arg is True:
-                sys_exc_info = sys.exc_info()
-                if sys_exc_info[0] is not None:
-                    arg = sys_exc_info
-                else:
-                    arg = None
-            elif arg is False:
-                arg = None
-            if arg is None:
-                return None
-
-            info: LoggingExcInfo = arg
-            if isinstance(info, BaseException):
-                info_tuple: LoggingExcInfoTuple = (type(info), info, info.__traceback__)  # noqa
-            else:
-                info_tuple = info
-
-            return cls(
-                info=info,
-                info_tuple=info_tuple,
-            )
-
-    @logging_context_info
-    @ta.final
-    class Caller(ta.NamedTuple):
-        file_path: str
-        line_no: int
-        func_name: str
-        stack_info: ta.Optional[str]
-
-        @classmethod
-        def is_internal_frame(cls, frame: types.FrameType) -> bool:
-            file_path = os.path.normcase(frame.f_code.co_filename)
-
-            # Yes, really.
-            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L204  # noqa
-            # https://github.com/python/cpython/commit/5ca6d7469be53960843df39bb900e9c3359f127f
-            if 'importlib' in file_path and '_bootstrap' in file_path:
-                return True
-
-            return False
-
-        @classmethod
-        def find_frame(cls, stack_offset: int = 0) -> ta.Optional[types.FrameType]:
-            f: ta.Optional[types.FrameType] = sys._getframe(2 + stack_offset)  # noqa
-
-            while f is not None:
-                # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful,
-                # manual stack_offset management.
-                if hasattr(f, 'f_code'):
-                    return f
-
-                f = f.f_back
-
-            return None
-
-        @classmethod
-        def build(
-                cls,
-                stack_offset: int = 0,
-                *,
-                stack_info: bool = False,
-        ) -> ta.Optional['LoggingContextInfos.Caller']:
-            if (f := cls.find_frame(stack_offset + 1)) is None:
-                return None
-
-            # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
-            sinfo = None
-            if stack_info:
-                sio = io.StringIO()
-                traceback.print_stack(f, file=sio)
-                sinfo = sio.getvalue()
-                sio.close()
-                if sinfo[-1] == '\n':
-                    sinfo = sinfo[:-1]
-
-            return cls(
-                file_path=f.f_code.co_filename,
-                line_no=f.f_lineno or 0,
-                func_name=f.f_code.co_name,
-                stack_info=sinfo,
-            )
-
-    @logging_context_info
-    @ta.final
-    class SourceFile(ta.NamedTuple):
-        file_name: str
-        module: str
-
-        @classmethod
-        def build(cls, caller_file_path: ta.Optional[str]) -> ta.Optional['LoggingContextInfos.SourceFile']:
-            if caller_file_path is None:
-                return None
-
-            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L331-L336  # noqa
-            try:
-                file_name = os.path.basename(caller_file_path)
-                module = os.path.splitext(file_name)[0]
-            except (TypeError, ValueError, AttributeError):
-                return None
-
-            return cls(
-                file_name=file_name,
-                module=module,
-            )
-
-    @logging_context_info
-    @ta.final
-    class Thread(ta.NamedTuple):
-        ident: int
-        native_id: ta.Optional[int]
-        name: str
-
-        @classmethod
-        def build(cls) -> 'LoggingContextInfos.Thread':
-            return cls(
-                ident=threading.get_ident(),
-                native_id=threading.get_native_id() if hasattr(threading, 'get_native_id') else None,
-                name=threading.current_thread().name,
-            )
-
-    @logging_context_info
-    @ta.final
-    class Process(ta.NamedTuple):
-        pid: int
-
-        @classmethod
-        def build(cls) -> 'LoggingContextInfos.Process':
-            return cls(
-                pid=os.getpid(),
-            )
-
-    @logging_context_info
-    @ta.final
-    class Multiprocessing(ta.NamedTuple):
-        process_name: str
-
-        @classmethod
-        def build(cls) -> ta.Optional['LoggingContextInfos.Multiprocessing']:
-            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L355-L364  # noqa
-            if (mp := sys.modules.get('multiprocessing')) is None:
-                return None
-
-            return cls(
-                process_name=mp.current_process().name,
-            )
-
-    @logging_context_info
-    @ta.final
-    class AsyncioTask(ta.NamedTuple):
-        name: str
-
-        @classmethod
-        def build(cls) -> ta.Optional['LoggingContextInfos.AsyncioTask']:
-            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L372-L377  # noqa
-            if (asyncio := sys.modules.get('asyncio')) is None:
-                return None
-
-            try:
-                task = asyncio.current_task()
-            except Exception:  # noqa
-                return None
-
-            if task is None:
-                return None
-
-            return cls(
-                name=task.get_name(),  # Always non-None
-            )
-
-
-##
-
-
-class UnexpectedLoggingStartTimeWarning(LoggingSetupWarning):
-    pass
-
-
-def _check_logging_start_time() -> None:
-    if (x := LoggingContextInfos.Time.get_std_start_ns()) < (t := time.time()):
-        import warnings  # noqa
-
-        warnings.warn(
-            f'Unexpected logging start time detected: '
-            f'get_std_start_ns={x}, '
-            f'time.time()={t}',
-            UnexpectedLoggingStartTimeWarning,
-        )
-
-
-_check_logging_start_time()
-
-
-########################################
-# ../../../omlish/logs/metrics/base.py
-
-
-##
-
-
-class LoggerMetricUnit(Abstract):
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        try:
-            mut = LOGGER_METRIC_UNIT_TYPES
-        except NameError:
-            pass
-        else:
-            bcs = [bc for bc in mut if issubclass(cls, bc)]
-            if len(bcs) != 1:
-                raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mut}, got {bcs}.')
-
-        try:
-            mtc = LoggerMetric
-        except NameError:
-            pass
-        else:
-            if issubclass(cls, mtc):
-                mp = cls.__mro__.index(mtc)
-                mup = cls.__mro__.index(LoggerMetricUnit)
-                if mup > mp:
-                    raise TypeError(f'{cls.__name__} must have Metric before MetricUnit in its MRO.')
-
-
-class CountLoggerMetricUnit(LoggerMetricUnit):
-    @classmethod
-    def default_value(cls) -> ta.Optional[float]:
-        return 1
-
-
-class RatioLoggerMetricUnit(LoggerMetricUnit):
-    pass
-
-
-class SecondsLoggerMetricUnit(LoggerMetricUnit):
-    pass
-
-
-class BytesLoggerMetricUnit(LoggerMetricUnit):
-    pass
-
-
-LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
-    CountLoggerMetricUnit,
-    RatioLoggerMetricUnit,
-    SecondsLoggerMetricUnit,
-    BytesLoggerMetricUnit,
-)
-
-
-##
-
-
-class LoggerMetricTag(Abstract):
-    pass
-
-
-##
-
-
-class LoggerMetric(Abstract):
-    @ta.final
-    def __init__(self, value: ta.Optional[float] = None, *tags: LoggerMetricTag) -> None:
-        if value is None:
-            value = self.default_value()
-        if value is None:
-            raise ValueError(f'{type(self).__name__} has no default value.')
-
-        self.__value = value
-        self.__tags = tags
-
-    @property
-    def value(self) -> float:
-        return self.__value
-
-    @classmethod
-    def default_value(cls) -> ta.Optional[float]:
-        return None
-
-    @property
-    def tags(self) -> ta.Sequence[LoggerMetricTag]:
-        return self.__tags
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.value!r}, {", ".join(map(repr, self.tags))})'
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        try:
-            mtt = LOGGER_METRIC_TYPES
-        except NameError:
-            pass
-        else:
-            bcs = [bc for bc in mtt if issubclass(cls, bc)]
-            if Abstract in cls.__bases__:
-                if len(bcs) > 1:
-                    raise TypeError(f'{cls.__name__} must be a subclass of at most one of {mtt}, got {bcs}.')
-            else:
-                if len(bcs) != 1:
-                    raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
-
-        # if Abstract not in cls.__bases__ and not issubclass(cls, LoggerMetricUnit):
-        #     raise TypeError(f'{cls.__name__} must be a subclass of LoggerMetricUnit.')
-
-
-class CounterLoggerMetric(CountLoggerMetricUnit, LoggerMetric, Abstract):
-    pass
-
-
-class GaugeLoggerMetric(LoggerMetric, Abstract):
-    pass
-
-
-class HistogramLoggerMetric(LoggerMetric, Abstract):
-    pass
-
-
-LOGGER_METRIC_TYPES: ta.Tuple[ta.Type[LoggerMetric], ...] = (
-    CounterLoggerMetric,
-    GaugeLoggerMetric,
-    HistogramLoggerMetric,
-)
-
-
-##
-
-
-class AnyLoggerMetricCollector(Abstract, ta.Generic[T]):
-    @ta.final
-    def metric(self, m: LoggerMetric) -> T:
-        return self._metric(m)
-
-    @abc.abstractmethod
-    def _metric(self, m: LoggerMetric) -> T:
-        raise NotImplementedError
-
-
-class LoggerMetricCollector(AnyLoggerMetricCollector[None], Abstract):
-    @abc.abstractmethod
-    def _metric(self, m: LoggerMetric) -> None:
-        raise NotImplementedError
-
-
-class AsyncLoggerMetricCollector(AnyLoggerMetricCollector[ta.Awaitable[None]], Abstract):
-    @abc.abstractmethod
-    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-##
-
-
-class AnyNopLoggerMetricCollector(AnyLoggerMetricCollector[T], Abstract):
-    pass
-
-
-class NopLoggerMetricCollector(AnyNopLoggerMetricCollector[None], LoggerMetricCollector):
-    @ta.final
-    def _metric(self, m: LoggerMetric) -> None:
-        pass
-
-
-class AsyncNopLoggerMetricCollector(AnyNopLoggerMetricCollector[ta.Awaitable[None]], AsyncLoggerMetricCollector):
-    @ta.final
-    async def _metric(self, m: LoggerMetric) -> None:
-        pass
-
-
-########################################
-# ../../../omlish/logs/protocols.py
-
-
-##
-
-
-@ta.runtime_checkable
-class LoggerLike(ta.Protocol):
-    """Satisfied by both our Logger and stdlib logging.Logger."""
-
-    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
-
-    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
-
-    #
-
-    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-
-########################################
-# ../../interp/types.py
-
-
-##
-
-
-# See https://peps.python.org/pep-3149/
-INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
-    ('debug', 'd'),
-    ('threaded', 't'),
-])
-
-INTERP_OPT_ATTRS_BY_GLYPH: ta.Mapping[str, str] = collections.OrderedDict(
-    (g, a) for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items()
-)
-
-
-@dc.dataclass(frozen=True)
-class InterpOpts:
-    threaded: bool = False
-    debug: bool = False
-
-    def __str__(self) -> str:
-        return ''.join(g for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items() if getattr(self, a))
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpOpts':
-        return cls(**{INTERP_OPT_ATTRS_BY_GLYPH[g]: True for g in s})
-
-    @classmethod
-    def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
-        kw = {}
-        while s and (a := INTERP_OPT_ATTRS_BY_GLYPH.get(s[-1])):
-            s, kw[a] = s[:-1], True
-        return s, cls(**kw)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class InterpVersion:
-    version: Version
-    opts: InterpOpts
-
-    def __str__(self) -> str:
-        return str(self.version) + str(self.opts)
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpVersion':
-        s, o = InterpOpts.parse_suffix(s)
-        v = Version(s)
-        return cls(
-            version=v,
-            opts=o,
-        )
-
-    @classmethod
-    def try_parse(cls, s: str) -> ta.Optional['InterpVersion']:
-        try:
-            return cls.parse(s)
-        except (KeyError, InvalidVersion):
-            return None
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class InterpSpecifier:
-    specifier: Specifier
-    opts: InterpOpts
-
-    def __str__(self) -> str:
-        return str(self.specifier) + str(self.opts)
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpSpecifier':
-        s, o = InterpOpts.parse_suffix(s)
-        if not any(s.startswith(o) for o in Specifier.OPERATORS):
-            if s.count('.') < 2:
-                s = '~=' + s + '.0'
-            else:
-                s = '==' + s
-        return cls(
-            specifier=Specifier(s),
-            opts=o,
-        )
-
-    def contains(self, iv: InterpVersion) -> bool:
-        return self.specifier.contains(iv.version) and self.opts == iv.opts
-
-    def __contains__(self, iv: InterpVersion) -> bool:
-        return self.contains(iv)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Interp:
-    exe: str
-    version: InterpVersion
-
-
-########################################
-# ../../packaging/requires.py
-# Copyright (c) Donald Stufft and individual contributors.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-# following conditions are met:
-#
-#     1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
-#        following disclaimer.
-#
-#     2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-#        following disclaimer in the documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. This file is dual licensed under the terms of the
-# Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
-# details.
-# https://github.com/pypa/packaging/blob/cf2cbe2aec28f87c6228a6fb136c27931c9af407/src/packaging/_parser.py#L65
-
-
-##
-
-
-@dc.dataclass()
-class RequiresToken:
-    name: str
-    text: str
-    position: int
-
-
-class RequiresParserSyntaxError(Exception):
-    def __init__(
-        self,
-        message: str,
-        *,
-        source: str,
-        span: ta.Tuple[int, int],
-    ) -> None:
-        self.span = span
-        self.message = message
-        self.source = source
-
-        super().__init__()
-
-    def __str__(self) -> str:
-        marker = ' ' * self.span[0] + '~' * (self.span[1] - self.span[0]) + '^'
-        return '\n    '.join([self.message, self.source, marker])
-
-
-REQUIRES_DEFAULT_RULES: ta.Dict[str, ta.Union[str, ta.Pattern[str]]] = {
-    'LEFT_PARENTHESIS': r'\(',
-    'RIGHT_PARENTHESIS': r'\)',
-    'LEFT_BRACKET': r'\[',
-    'RIGHT_BRACKET': r'\]',
-    'SEMICOLON': r';',
-    'COMMA': r',',
-    'QUOTED_STRING': re.compile(
-        r"""
-            (
-                ('[^']*')
-                |
-                ("[^"]*")
-            )
-        """,
-        re.VERBOSE,
-    ),
-    'OP': r'(===|==|~=|!=|<=|>=|<|>)',
-    'BOOLOP': r'\b(or|and)\b',
-    'IN': r'\bin\b',
-    'NOT': r'\bnot\b',
-    'VARIABLE': re.compile(
-        r"""
-            \b(
-                python_version
-                |python_full_version
-                |os[._]name
-                |sys[._]platform
-                |platform_(release|system)
-                |platform[._](version|machine|python_implementation)
-                |python_implementation
-                |implementation_(name|version)
-                |extra
-            )\b
-        """,
-        re.VERBOSE,
-    ),
-    'SPECIFIER': re.compile(
-        Specifier._operator_regex_str + Specifier._version_regex_str,  # noqa
-        re.VERBOSE | re.IGNORECASE,
-    ),
-    'AT': r'\@',
-    'URL': r'[^ \t]+',
-    'IDENTIFIER': r'\b[a-zA-Z0-9][a-zA-Z0-9._-]*\b',
-    'VERSION_PREFIX_TRAIL': r'\.\*',
-    'VERSION_LOCAL_LABEL_TRAIL': r'\+[a-z0-9]+(?:[-_\.][a-z0-9]+)*',
-    'WS': r'[ \t]+',
-    'END': r'$',
-}
-
-
-class RequiresTokenizer:
-    def __init__(
-        self,
-        source: str,
-        *,
-        rules: ta.Dict[str, ta.Union[str, ta.Pattern[str]]],
-    ) -> None:
-        super().__init__()
-
-        self.source = source
-        self.rules: ta.Dict[str, ta.Pattern[str]] = {name: re.compile(pattern) for name, pattern in rules.items()}
-        self.next_token: ta.Optional[RequiresToken] = None
-        self.position = 0
-
-    def consume(self, name: str) -> None:
-        if self.check(name):
-            self.read()
-
-    def check(self, name: str, *, peek: bool = False) -> bool:
-        check.state(self.next_token is None, f'Cannot check for {name!r}, already have {self.next_token!r}')
-        check.state(name in self.rules, f'Unknown token name: {name!r}')
-
-        expression = self.rules[name]
-
-        match = expression.match(self.source, self.position)
-        if match is None:
-            return False
-        if not peek:
-            self.next_token = RequiresToken(name, match[0], self.position)
-        return True
-
-    def expect(self, name: str, *, expected: str) -> RequiresToken:
-        if not self.check(name):
-            raise self.raise_syntax_error(f'Expected {expected}')
-        return self.read()
-
-    def read(self) -> RequiresToken:
-        token = self.next_token
-        check.state(token is not None)
-
-        self.position += len(check.not_none(token).text)
-        self.next_token = None
-
-        return check.not_none(token)
-
-    def raise_syntax_error(
-        self,
-        message: str,
-        *,
-        span_start: ta.Optional[int] = None,
-        span_end: ta.Optional[int] = None,
-    ) -> ta.NoReturn:
-        span = (
-            self.position if span_start is None else span_start,
-            self.position if span_end is None else span_end,
-        )
-        raise RequiresParserSyntaxError(
-            message,
-            source=self.source,
-            span=span,
-        )
-
-    @contextlib.contextmanager
-    def enclosing_tokens(self, open_token: str, close_token: str, *, around: str) -> ta.Iterator[None]:
-        if self.check(open_token):
-            open_position = self.position
-            self.read()
-        else:
-            open_position = None
-
-        yield
-
-        if open_position is None:
-            return
-
-        if not self.check(close_token):
-            self.raise_syntax_error(
-                f'Expected matching {close_token} for {open_token}, after {around}',
-                span_start=open_position,
-            )
-
-        self.read()
-
-
-@dc.dataclass(frozen=True)
-class RequiresNode:
-    value: str
-
-    def __str__(self) -> str:
-        return self.value
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}('{self}')>"
-
-    def serialize(self) -> str:
-        raise NotImplementedError
-
-
-@dc.dataclass(frozen=True)
-class RequiresVariable(RequiresNode):
-    def serialize(self) -> str:
-        return str(self)
-
-
-@dc.dataclass(frozen=True)
-class RequiresValue(RequiresNode):
-    def serialize(self) -> str:
-        return f'"{self}"'
-
-
-@dc.dataclass(frozen=True)
-class RequiresOp(RequiresNode):
-    def serialize(self) -> str:
-        return str(self)
-
-
-class RequiresMarkerItem(ta.NamedTuple):
-    l: ta.Union[RequiresVariable, RequiresValue]
-    op: RequiresOp
-    r: ta.Union[RequiresVariable, RequiresValue]
-
-
-@install_dataclass_cache_hash()
-@dc.dataclass(frozen=True)
-class ParsedRequirement:
-    name: str
-    url: str
-    extras: ta.List[str]
-    specifier: str
-    marker: ta.Optional[RequiresMarkerList]
-
-
-def parse_requirement(source: str) -> ParsedRequirement:
-    return _parse_requirement(RequiresTokenizer(source, rules=REQUIRES_DEFAULT_RULES))
-
-
-def _parse_requirement(tokenizer: RequiresTokenizer) -> ParsedRequirement:
-    tokenizer.consume('WS')
-
-    name_token = tokenizer.expect('IDENTIFIER', expected='package name at the start of dependency specifier')
-    name = name_token.text
-    tokenizer.consume('WS')
-
-    extras = _parse_requires_extras(tokenizer)
-    tokenizer.consume('WS')
-
-    url, specifier, marker = _parse_requirement_details(tokenizer)
-    tokenizer.expect('END', expected='end of dependency specifier')
-
-    return ParsedRequirement(name, url, extras, specifier, marker)
-
-
-def _parse_requirement_details(tokenizer: RequiresTokenizer) -> ta.Tuple[str, str, ta.Optional[RequiresMarkerList]]:
-    specifier = ''
-    url = ''
-    marker = None
-
-    if tokenizer.check('AT'):
-        tokenizer.read()
-        tokenizer.consume('WS')
-
-        url_start = tokenizer.position
-        url = tokenizer.expect('URL', expected='URL after @').text
-        if tokenizer.check('END', peek=True):
-            return (url, specifier, marker)
-
-        tokenizer.expect('WS', expected='whitespace after URL')
-
-        # The input might end after whitespace.
-        if tokenizer.check('END', peek=True):
-            return (url, specifier, marker)
-
-        marker = _parse_requirement_marker(
-            tokenizer, span_start=url_start, after='URL and whitespace',
-        )
-    else:
-        specifier_start = tokenizer.position
-        specifier = _parse_requires_specifier(tokenizer)
-        tokenizer.consume('WS')
-
-        if tokenizer.check('END', peek=True):
-            return (url, specifier, marker)
-
-        marker = _parse_requirement_marker(
-            tokenizer,
-            span_start=specifier_start,
-            after=(
-                'version specifier'
-                if specifier
-                else 'name and no valid version specifier'
-            ),
-        )
-
-    return (url, specifier, marker)
-
-
-def _parse_requirement_marker(
-    tokenizer: RequiresTokenizer, *, span_start: int, after: str,
-) -> RequiresMarkerList:
-    if not tokenizer.check('SEMICOLON'):
-        tokenizer.raise_syntax_error(
-            f'Expected end or semicolon (after {after})',
-            span_start=span_start,
-        )
-    tokenizer.read()
-
-    marker = _parse_requires_marker(tokenizer)
-    tokenizer.consume('WS')
-
-    return marker
-
-
-def _parse_requires_extras(tokenizer: RequiresTokenizer) -> ta.List[str]:
-    if not tokenizer.check('LEFT_BRACKET', peek=True):
-        return []
-
-    with tokenizer.enclosing_tokens(
-        'LEFT_BRACKET',
-        'RIGHT_BRACKET',
-        around='extras',
-    ):
-        tokenizer.consume('WS')
-        extras = _parse_requires_extras_list(tokenizer)
-        tokenizer.consume('WS')
-
-    return extras
-
-
-def _parse_requires_extras_list(tokenizer: RequiresTokenizer) -> ta.List[str]:
-    extras: ta.List[str] = []
-
-    if not tokenizer.check('IDENTIFIER'):
-        return extras
-
-    extras.append(tokenizer.read().text)
-
-    while True:
-        tokenizer.consume('WS')
-        if tokenizer.check('IDENTIFIER', peek=True):
-            tokenizer.raise_syntax_error('Expected comma between extra names')
-        elif not tokenizer.check('COMMA'):
-            break
-
-        tokenizer.read()
-        tokenizer.consume('WS')
-
-        extra_token = tokenizer.expect('IDENTIFIER', expected='extra name after comma')
-        extras.append(extra_token.text)
-
-    return extras
-
-
-def _parse_requires_specifier(tokenizer: RequiresTokenizer) -> str:
-    with tokenizer.enclosing_tokens(
-        'LEFT_PARENTHESIS',
-        'RIGHT_PARENTHESIS',
-        around='version specifier',
-    ):
-        tokenizer.consume('WS')
-        parsed_specifiers = _parse_requires_version_many(tokenizer)
-        tokenizer.consume('WS')
-
-    return parsed_specifiers
-
-
-def _parse_requires_version_many(tokenizer: RequiresTokenizer) -> str:
-    parsed_specifiers = ''
-    while tokenizer.check('SPECIFIER'):
-        span_start = tokenizer.position
-        parsed_specifiers += tokenizer.read().text
-        if tokenizer.check('VERSION_PREFIX_TRAIL', peek=True):
-            tokenizer.raise_syntax_error(
-                '.* suffix can only be used with `==` or `!=` operators',
-                span_start=span_start,
-                span_end=tokenizer.position + 1,
-            )
-        if tokenizer.check('VERSION_LOCAL_LABEL_TRAIL', peek=True):
-            tokenizer.raise_syntax_error(
-                'Local version label can only be used with `==` or `!=` operators',
-                span_start=span_start,
-                span_end=tokenizer.position,
-            )
-        tokenizer.consume('WS')
-        if not tokenizer.check('COMMA'):
-            break
-        parsed_specifiers += tokenizer.read().text
-        tokenizer.consume('WS')
-
-    return parsed_specifiers
-
-
-def parse_requires_marker(source: str) -> RequiresMarkerList:
-    return _parse_requires_full_marker(RequiresTokenizer(source, rules=REQUIRES_DEFAULT_RULES))
-
-
-def _parse_requires_full_marker(tokenizer: RequiresTokenizer) -> RequiresMarkerList:
-    retval = _parse_requires_marker(tokenizer)
-    tokenizer.expect('END', expected='end of marker expression')
-    return retval
-
-
-def _parse_requires_marker(tokenizer: RequiresTokenizer) -> RequiresMarkerList:
-    expression = [_parse_requires_marker_atom(tokenizer)]
-    while tokenizer.check('BOOLOP'):
-        token = tokenizer.read()
-        expr_right = _parse_requires_marker_atom(tokenizer)
-        expression.extend((token.text, expr_right))
-    return expression
-
-
-def _parse_requires_marker_atom(tokenizer: RequiresTokenizer) -> RequiresMarkerAtom:
-    tokenizer.consume('WS')
-    if tokenizer.check('LEFT_PARENTHESIS', peek=True):
-        with tokenizer.enclosing_tokens(
-            'LEFT_PARENTHESIS',
-            'RIGHT_PARENTHESIS',
-            around='marker expression',
-        ):
-            tokenizer.consume('WS')
-            marker: RequiresMarkerAtom = _parse_requires_marker(tokenizer)
-            tokenizer.consume('WS')
-    else:
-        marker = _parse_requires_marker_item(tokenizer)
-    tokenizer.consume('WS')
-    return marker
-
-
-def _parse_requires_marker_item(tokenizer: RequiresTokenizer) -> RequiresMarkerItem:
-    tokenizer.consume('WS')
-    marker_var_left = _parse_requires_marker_var(tokenizer)
-    tokenizer.consume('WS')
-    marker_op = _parse_requires_marker_op(tokenizer)
-    tokenizer.consume('WS')
-    marker_var_right = _parse_requires_marker_var(tokenizer)
-    tokenizer.consume('WS')
-    return RequiresMarkerItem(marker_var_left, marker_op, marker_var_right)
-
-
-def _parse_requires_marker_var(tokenizer: RequiresTokenizer) -> RequiresMarkerVar:
-    if tokenizer.check('VARIABLE'):
-        return process_requires_env_var(tokenizer.read().text.replace('.', '_'))
-    elif tokenizer.check('QUOTED_STRING'):
-        return process_requires_python_str(tokenizer.read().text)
-    else:
-        tokenizer.raise_syntax_error(message='Expected a marker variable or quoted string')
-        raise RuntimeError  # noqa
-
-
-def process_requires_env_var(env_var: str) -> RequiresVariable:
-    if env_var in ('platform_python_implementation', 'python_implementation'):
-        return RequiresVariable('platform_python_implementation')
-    else:
-        return RequiresVariable(env_var)
-
-
-def process_requires_python_str(python_str: str) -> RequiresValue:
-    value = ast.literal_eval(python_str)
-    return RequiresValue(str(value))
-
-
-def _parse_requires_marker_op(tokenizer: RequiresTokenizer) -> RequiresOp:
-    if tokenizer.check('IN'):
-        tokenizer.read()
-        return RequiresOp('in')
-    elif tokenizer.check('NOT'):
-        tokenizer.read()
-        tokenizer.expect('WS', expected="whitespace after 'not'")
-        tokenizer.expect('IN', expected="'in' after 'not'")
-        return RequiresOp('not in')
-    elif tokenizer.check('OP'):
-        return RequiresOp(tokenizer.read().text)
-    else:
-        return tokenizer.raise_syntax_error(
-            'Expected marker operator, one of '
-            '<=, <, !=, ==, >=, >, ~=, ===, in, not in',
-        )
-
-
-########################################
-# ../../../omlish/argparse/cli.py
+# ../../../omcore/argparse/cli.py
 """
 FIXME:
  - exit_on_error lol
@@ -7620,7 +7030,7 @@ class ArgparseCli(ArgparseParserClass, Abstract):
 
 
 ########################################
-# ../../../omlish/asyncs/asyncio/timeouts.py
+# ../../../omcore/asyncs/asyncio/timeouts.py
 
 
 ##
@@ -7636,7 +7046,7 @@ def asyncio_maybe_timeout(
 
 
 ########################################
-# ../../../omlish/lite/inject.py
+# ../../../omcore/lite/inject.py
 
 
 ###
@@ -8654,7 +8064,7 @@ inj = InjectionApi()
 
 
 ########################################
-# ../../../omlish/logs/contexts.py
+# ../../../omcore/logs/contexts.py
 
 
 ##
@@ -8817,7 +8227,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
 
 ########################################
-# ../../../omlish/logs/std/json.py
+# ../../../omcore/logs/std/json.py
 """
 TODO:
  - translate json keys
@@ -8874,7 +8284,7 @@ class JsonLoggingFormatter(logging.Formatter):
 
 
 ########################################
-# ../../../omlish/subprocesses/run.py
+# ../../../omcore/subprocesses/run.py
 
 
 ##
@@ -9005,7 +8415,7 @@ class SubprocessRunnable(Abstract, ta.Generic[T]):
 
 
 ########################################
-# ../../../omlish/subprocesses/wrap.py
+# ../../../omcore/subprocesses/wrap.py
 """
 This bypasses debuggers attaching to spawned subprocess children that look like python processes. See:
 
@@ -9031,52 +8441,597 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 ########################################
-# ../../interp/providers/base.py
-"""
-TODO:
- - backends
-  - local builds
-  - deadsnakes?
-  - uv
- - loose versions
-"""
+# ../../interp/types.py
 
 
 ##
 
 
-class InterpProvider(Abstract):
-    name: ta.ClassVar[str]
+# See https://peps.python.org/pep-3149/
+INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
+    ('debug', 'd'),
+    ('threaded', 't'),
+])
 
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        if Abstract not in cls.__bases__ and 'name' not in cls.__dict__:
-            sfx = 'InterpProvider'
-            if not cls.__name__.endswith(sfx):
-                raise NameError(cls)
-            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
-
-    @abc.abstractmethod
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
-        raise NotImplementedError
-
-    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return []
-
-    async def install_version(self, version: InterpVersion) -> Interp:
-        raise TypeError
+INTERP_OPT_ATTRS_BY_GLYPH: ta.Mapping[str, str] = collections.OrderedDict(
+    (g, a) for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items()
+)
 
 
-InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
+@dc.dataclass(frozen=True)
+class InterpOpts:
+    threaded: bool = False
+    debug: bool = False
+
+    def __str__(self) -> str:
+        return ''.join(g for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items() if getattr(self, a))
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpOpts':
+        return cls(**{INTERP_OPT_ATTRS_BY_GLYPH[g]: True for g in s})
+
+    @classmethod
+    def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
+        kw = {}
+        while s and (a := INTERP_OPT_ATTRS_BY_GLYPH.get(s[-1])):
+            s, kw[a] = s[:-1], True
+        return s, cls(**kw)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpVersion:
+    version: Version
+    opts: InterpOpts
+
+    def __str__(self) -> str:
+        return str(self.version) + str(self.opts)
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpVersion':
+        s, o = InterpOpts.parse_suffix(s)
+        v = Version(s)
+        return cls(
+            version=v,
+            opts=o,
+        )
+
+    @classmethod
+    def try_parse(cls, s: str) -> ta.Optional['InterpVersion']:
+        try:
+            return cls.parse(s)
+        except (KeyError, InvalidVersion):
+            return None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpSpecifier:
+    specifier: Specifier
+    opts: InterpOpts
+
+    def __str__(self) -> str:
+        return str(self.specifier) + str(self.opts)
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpSpecifier':
+        s, o = InterpOpts.parse_suffix(s)
+        if not any(s.startswith(o) for o in Specifier.OPERATORS):
+            if s.count('.') < 2:
+                s = '~=' + s + '.0'
+            else:
+                s = '==' + s
+        return cls(
+            specifier=Specifier(s),
+            opts=o,
+        )
+
+    def contains(self, iv: InterpVersion) -> bool:
+        return self.specifier.contains(iv.version) and self.opts == iv.opts
+
+    def __contains__(self, iv: InterpVersion) -> bool:
+        return self.contains(iv)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Interp:
+    exe: str
+    version: InterpVersion
 
 
 ########################################
-# ../../../omlish/logs/base.py
+# ../../packaging/requires.py
+# Copyright (c) Donald Stufft and individual contributors.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#
+#     1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+#        following disclaimer.
+#
+#     2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+#        following disclaimer in the documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. This file is dual licensed under the terms of the
+# Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
+# details.
+# https://github.com/pypa/packaging/blob/cf2cbe2aec28f87c6228a6fb136c27931c9af407/src/packaging/_parser.py#L65
+
+
+##
+
+
+@dc.dataclass()
+class RequiresToken:
+    name: str
+    text: str
+    position: int
+
+
+class RequiresParserSyntaxError(Exception):
+    def __init__(
+        self,
+        message: str,
+        *,
+        source: str,
+        span: ta.Tuple[int, int],
+    ) -> None:
+        self.span = span
+        self.message = message
+        self.source = source
+
+        super().__init__()
+
+    def __str__(self) -> str:
+        marker = ' ' * self.span[0] + '~' * (self.span[1] - self.span[0]) + '^'
+        return '\n    '.join([self.message, self.source, marker])
+
+
+REQUIRES_DEFAULT_RULES: ta.Dict[str, ta.Union[str, ta.Pattern[str]]] = {
+    'LEFT_PARENTHESIS': r'\(',
+    'RIGHT_PARENTHESIS': r'\)',
+    'LEFT_BRACKET': r'\[',
+    'RIGHT_BRACKET': r'\]',
+    'SEMICOLON': r';',
+    'COMMA': r',',
+    'QUOTED_STRING': re.compile(
+        r"""
+            (
+                ('[^']*')
+                |
+                ("[^"]*")
+            )
+        """,
+        re.VERBOSE,
+    ),
+    'OP': r'(===|==|~=|!=|<=|>=|<|>)',
+    'BOOLOP': r'\b(or|and)\b',
+    'IN': r'\bin\b',
+    'NOT': r'\bnot\b',
+    'VARIABLE': re.compile(
+        r"""
+            \b(
+                python_version
+                |python_full_version
+                |os[._]name
+                |sys[._]platform
+                |platform_(release|system)
+                |platform[._](version|machine|python_implementation)
+                |python_implementation
+                |implementation_(name|version)
+                |extra
+            )\b
+        """,
+        re.VERBOSE,
+    ),
+    'SPECIFIER': re.compile(
+        Specifier._operator_regex_str + Specifier._version_regex_str,  # noqa
+        re.VERBOSE | re.IGNORECASE,
+    ),
+    'AT': r'\@',
+    'URL': r'[^ \t]+',
+    'IDENTIFIER': r'\b[a-zA-Z0-9][a-zA-Z0-9._-]*\b',
+    'VERSION_PREFIX_TRAIL': r'\.\*',
+    'VERSION_LOCAL_LABEL_TRAIL': r'\+[a-z0-9]+(?:[-_\.][a-z0-9]+)*',
+    'WS': r'[ \t]+',
+    'END': r'$',
+}
+
+
+class RequiresTokenizer:
+    def __init__(
+        self,
+        source: str,
+        *,
+        rules: ta.Dict[str, ta.Union[str, ta.Pattern[str]]],
+    ) -> None:
+        super().__init__()
+
+        self.source = source
+        self.rules: ta.Dict[str, ta.Pattern[str]] = {name: re.compile(pattern) for name, pattern in rules.items()}
+        self.next_token: ta.Optional[RequiresToken] = None
+        self.position = 0
+
+    def consume(self, name: str) -> None:
+        if self.check(name):
+            self.read()
+
+    def check(self, name: str, *, peek: bool = False) -> bool:
+        check.state(self.next_token is None, f'Cannot check for {name!r}, already have {self.next_token!r}')
+        check.state(name in self.rules, f'Unknown token name: {name!r}')
+
+        expression = self.rules[name]
+
+        match = expression.match(self.source, self.position)
+        if match is None:
+            return False
+        if not peek:
+            self.next_token = RequiresToken(name, match[0], self.position)
+        return True
+
+    def expect(self, name: str, *, expected: str) -> RequiresToken:
+        if not self.check(name):
+            raise self.raise_syntax_error(f'Expected {expected}')
+        return self.read()
+
+    def read(self) -> RequiresToken:
+        token = self.next_token
+        check.state(token is not None)
+
+        self.position += len(check.not_none(token).text)
+        self.next_token = None
+
+        return check.not_none(token)
+
+    def raise_syntax_error(
+        self,
+        message: str,
+        *,
+        span_start: ta.Optional[int] = None,
+        span_end: ta.Optional[int] = None,
+    ) -> ta.NoReturn:
+        span = (
+            self.position if span_start is None else span_start,
+            self.position if span_end is None else span_end,
+        )
+        raise RequiresParserSyntaxError(
+            message,
+            source=self.source,
+            span=span,
+        )
+
+    @contextlib.contextmanager
+    def enclosing_tokens(self, open_token: str, close_token: str, *, around: str) -> ta.Iterator[None]:
+        if self.check(open_token):
+            open_position = self.position
+            self.read()
+        else:
+            open_position = None
+
+        yield
+
+        if open_position is None:
+            return
+
+        if not self.check(close_token):
+            self.raise_syntax_error(
+                f'Expected matching {close_token} for {open_token}, after {around}',
+                span_start=open_position,
+            )
+
+        self.read()
+
+
+@dc.dataclass(frozen=True)
+class RequiresNode:
+    value: str
+
+    def __str__(self) -> str:
+        return self.value
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}('{self}')>"
+
+    def serialize(self) -> str:
+        raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class RequiresVariable(RequiresNode):
+    def serialize(self) -> str:
+        return str(self)
+
+
+@dc.dataclass(frozen=True)
+class RequiresValue(RequiresNode):
+    def serialize(self) -> str:
+        return f'"{self}"'
+
+
+@dc.dataclass(frozen=True)
+class RequiresOp(RequiresNode):
+    def serialize(self) -> str:
+        return str(self)
+
+
+class RequiresMarkerItem(ta.NamedTuple):
+    l: ta.Union[RequiresVariable, RequiresValue]
+    op: RequiresOp
+    r: ta.Union[RequiresVariable, RequiresValue]
+
+
+@install_dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class ParsedRequirement:
+    name: str
+    url: str
+    extras: ta.List[str]
+    specifier: str
+    marker: ta.Optional[RequiresMarkerList]
+
+
+def parse_requirement(source: str) -> ParsedRequirement:
+    return _parse_requirement(RequiresTokenizer(source, rules=REQUIRES_DEFAULT_RULES))
+
+
+def _parse_requirement(tokenizer: RequiresTokenizer) -> ParsedRequirement:
+    tokenizer.consume('WS')
+
+    name_token = tokenizer.expect('IDENTIFIER', expected='package name at the start of dependency specifier')
+    name = name_token.text
+    tokenizer.consume('WS')
+
+    extras = _parse_requires_extras(tokenizer)
+    tokenizer.consume('WS')
+
+    url, specifier, marker = _parse_requirement_details(tokenizer)
+    tokenizer.expect('END', expected='end of dependency specifier')
+
+    return ParsedRequirement(name, url, extras, specifier, marker)
+
+
+def _parse_requirement_details(tokenizer: RequiresTokenizer) -> ta.Tuple[str, str, ta.Optional[RequiresMarkerList]]:
+    specifier = ''
+    url = ''
+    marker = None
+
+    if tokenizer.check('AT'):
+        tokenizer.read()
+        tokenizer.consume('WS')
+
+        url_start = tokenizer.position
+        url = tokenizer.expect('URL', expected='URL after @').text
+        if tokenizer.check('END', peek=True):
+            return (url, specifier, marker)
+
+        tokenizer.expect('WS', expected='whitespace after URL')
+
+        # The input might end after whitespace.
+        if tokenizer.check('END', peek=True):
+            return (url, specifier, marker)
+
+        marker = _parse_requirement_marker(
+            tokenizer, span_start=url_start, after='URL and whitespace',
+        )
+    else:
+        specifier_start = tokenizer.position
+        specifier = _parse_requires_specifier(tokenizer)
+        tokenizer.consume('WS')
+
+        if tokenizer.check('END', peek=True):
+            return (url, specifier, marker)
+
+        marker = _parse_requirement_marker(
+            tokenizer,
+            span_start=specifier_start,
+            after=(
+                'version specifier'
+                if specifier
+                else 'name and no valid version specifier'
+            ),
+        )
+
+    return (url, specifier, marker)
+
+
+def _parse_requirement_marker(
+    tokenizer: RequiresTokenizer, *, span_start: int, after: str,
+) -> RequiresMarkerList:
+    if not tokenizer.check('SEMICOLON'):
+        tokenizer.raise_syntax_error(
+            f'Expected end or semicolon (after {after})',
+            span_start=span_start,
+        )
+    tokenizer.read()
+
+    marker = _parse_requires_marker(tokenizer)
+    tokenizer.consume('WS')
+
+    return marker
+
+
+def _parse_requires_extras(tokenizer: RequiresTokenizer) -> ta.List[str]:
+    if not tokenizer.check('LEFT_BRACKET', peek=True):
+        return []
+
+    with tokenizer.enclosing_tokens(
+        'LEFT_BRACKET',
+        'RIGHT_BRACKET',
+        around='extras',
+    ):
+        tokenizer.consume('WS')
+        extras = _parse_requires_extras_list(tokenizer)
+        tokenizer.consume('WS')
+
+    return extras
+
+
+def _parse_requires_extras_list(tokenizer: RequiresTokenizer) -> ta.List[str]:
+    extras: ta.List[str] = []
+
+    if not tokenizer.check('IDENTIFIER'):
+        return extras
+
+    extras.append(tokenizer.read().text)
+
+    while True:
+        tokenizer.consume('WS')
+        if tokenizer.check('IDENTIFIER', peek=True):
+            tokenizer.raise_syntax_error('Expected comma between extra names')
+        elif not tokenizer.check('COMMA'):
+            break
+
+        tokenizer.read()
+        tokenizer.consume('WS')
+
+        extra_token = tokenizer.expect('IDENTIFIER', expected='extra name after comma')
+        extras.append(extra_token.text)
+
+    return extras
+
+
+def _parse_requires_specifier(tokenizer: RequiresTokenizer) -> str:
+    with tokenizer.enclosing_tokens(
+        'LEFT_PARENTHESIS',
+        'RIGHT_PARENTHESIS',
+        around='version specifier',
+    ):
+        tokenizer.consume('WS')
+        parsed_specifiers = _parse_requires_version_many(tokenizer)
+        tokenizer.consume('WS')
+
+    return parsed_specifiers
+
+
+def _parse_requires_version_many(tokenizer: RequiresTokenizer) -> str:
+    parsed_specifiers = ''
+    while tokenizer.check('SPECIFIER'):
+        span_start = tokenizer.position
+        parsed_specifiers += tokenizer.read().text
+        if tokenizer.check('VERSION_PREFIX_TRAIL', peek=True):
+            tokenizer.raise_syntax_error(
+                '.* suffix can only be used with `==` or `!=` operators',
+                span_start=span_start,
+                span_end=tokenizer.position + 1,
+            )
+        if tokenizer.check('VERSION_LOCAL_LABEL_TRAIL', peek=True):
+            tokenizer.raise_syntax_error(
+                'Local version label can only be used with `==` or `!=` operators',
+                span_start=span_start,
+                span_end=tokenizer.position,
+            )
+        tokenizer.consume('WS')
+        if not tokenizer.check('COMMA'):
+            break
+        parsed_specifiers += tokenizer.read().text
+        tokenizer.consume('WS')
+
+    return parsed_specifiers
+
+
+def parse_requires_marker(source: str) -> RequiresMarkerList:
+    return _parse_requires_full_marker(RequiresTokenizer(source, rules=REQUIRES_DEFAULT_RULES))
+
+
+def _parse_requires_full_marker(tokenizer: RequiresTokenizer) -> RequiresMarkerList:
+    retval = _parse_requires_marker(tokenizer)
+    tokenizer.expect('END', expected='end of marker expression')
+    return retval
+
+
+def _parse_requires_marker(tokenizer: RequiresTokenizer) -> RequiresMarkerList:
+    expression = [_parse_requires_marker_atom(tokenizer)]
+    while tokenizer.check('BOOLOP'):
+        token = tokenizer.read()
+        expr_right = _parse_requires_marker_atom(tokenizer)
+        expression.extend((token.text, expr_right))
+    return expression
+
+
+def _parse_requires_marker_atom(tokenizer: RequiresTokenizer) -> RequiresMarkerAtom:
+    tokenizer.consume('WS')
+    if tokenizer.check('LEFT_PARENTHESIS', peek=True):
+        with tokenizer.enclosing_tokens(
+            'LEFT_PARENTHESIS',
+            'RIGHT_PARENTHESIS',
+            around='marker expression',
+        ):
+            tokenizer.consume('WS')
+            marker: RequiresMarkerAtom = _parse_requires_marker(tokenizer)
+            tokenizer.consume('WS')
+    else:
+        marker = _parse_requires_marker_item(tokenizer)
+    tokenizer.consume('WS')
+    return marker
+
+
+def _parse_requires_marker_item(tokenizer: RequiresTokenizer) -> RequiresMarkerItem:
+    tokenizer.consume('WS')
+    marker_var_left = _parse_requires_marker_var(tokenizer)
+    tokenizer.consume('WS')
+    marker_op = _parse_requires_marker_op(tokenizer)
+    tokenizer.consume('WS')
+    marker_var_right = _parse_requires_marker_var(tokenizer)
+    tokenizer.consume('WS')
+    return RequiresMarkerItem(marker_var_left, marker_op, marker_var_right)
+
+
+def _parse_requires_marker_var(tokenizer: RequiresTokenizer) -> RequiresMarkerVar:
+    if tokenizer.check('VARIABLE'):
+        return process_requires_env_var(tokenizer.read().text.replace('.', '_'))
+    elif tokenizer.check('QUOTED_STRING'):
+        return process_requires_python_str(tokenizer.read().text)
+    else:
+        tokenizer.raise_syntax_error(message='Expected a marker variable or quoted string')
+        raise RuntimeError  # noqa
+
+
+def process_requires_env_var(env_var: str) -> RequiresVariable:
+    if env_var in ('platform_python_implementation', 'python_implementation'):
+        return RequiresVariable('platform_python_implementation')
+    else:
+        return RequiresVariable(env_var)
+
+
+def process_requires_python_str(python_str: str) -> RequiresValue:
+    value = ast.literal_eval(python_str)
+    return RequiresValue(str(value))
+
+
+def _parse_requires_marker_op(tokenizer: RequiresTokenizer) -> RequiresOp:
+    if tokenizer.check('IN'):
+        tokenizer.read()
+        return RequiresOp('in')
+    elif tokenizer.check('NOT'):
+        tokenizer.read()
+        tokenizer.expect('WS', expected="whitespace after 'not'")
+        tokenizer.expect('IN', expected="'in' after 'not'")
+        return RequiresOp('not in')
+    elif tokenizer.check('OP'):
+        return RequiresOp(tokenizer.read().text)
+    else:
+        return tokenizer.raise_syntax_error(
+            'Expected marker operator, one of '
+            '<=, <, !=, ==, >=, >, ~=, ===, in, not in',
+        )
+
+
+########################################
+# ../../../omcore/logs/base.py
 
 
 ##
@@ -9363,7 +9318,7 @@ class AsyncNopLogger(AsyncNopLoggerMetricCollector, AnyNopLogger[ta.Awaitable[No
 
 
 ########################################
-# ../../../omlish/logs/std/records.py
+# ../../../omcore/logs/std/records.py
 """
 TODO:
  - TypedDict?
@@ -10021,7 +9976,7 @@ class LogRecordLoggingContext(LoggingContext):
 
 
 ########################################
-# ../../../omlish/logs/std/standard.py
+# ../../../omcore/logs/std/standard.py
 """
 TODO:
  - structured
@@ -10147,7 +10102,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../omlish/subprocesses/base.py
+# ../../../omcore/subprocesses/base.py
 
 
 ##
@@ -10360,98 +10315,52 @@ class BaseSubprocesses(Abstract):
 
 
 ########################################
-# ../../interp/resolvers.py
+# ../../interp/providers/base.py
+"""
+TODO:
+ - backends
+  - local builds
+  - deadsnakes?
+  - uv
+ - loose versions
+"""
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class InterpResolverProviders:
-    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
+class InterpProvider(Abstract):
+    name: ta.ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if Abstract not in cls.__bases__ and 'name' not in cls.__dict__:
+            sfx = 'InterpProvider'
+            if not cls.__name__.endswith(sfx):
+                raise NameError(cls)
+            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
+
+    @abc.abstractmethod
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
+        raise NotImplementedError
+
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return []
+
+    async def install_version(self, version: InterpVersion) -> Interp:
+        raise TypeError
 
 
-class InterpResolver:
-    def __init__(
-            self,
-            providers: InterpResolverProviders,
-    ) -> None:
-        super().__init__()
-
-        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
-
-    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
-        lst = [
-            (i, si)
-            for i, p in enumerate(self._providers.values())
-            for si in await p.get_installed_versions(spec)
-            if spec.contains(si)
-        ]
-
-        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
-        if not slst:
-            return None
-
-        bi, bv = slst[-1]
-        bp = list(self._providers.values())[bi]
-        return (bp, bv)
-
-    async def resolve(
-            self,
-            spec: InterpSpecifier,
-            *,
-            install: bool = False,
-    ) -> ta.Optional[Interp]:
-        tup = await self._resolve_installed(spec)
-        if tup is not None:
-            bp, bv = tup
-            return await bp.get_installed_version(bv)
-
-        if not install:
-            return None
-
-        tp = list(self._providers.values())[0]  # noqa
-
-        sv = sorted(
-            [s for s in await tp.get_installable_versions(spec) if s in spec],
-            key=lambda s: s.version,
-        )
-        if not sv:
-            return None
-
-        bv = sv[-1]
-        return await tp.install_version(bv)
-
-    async def list(self, spec: InterpSpecifier) -> None:
-        print('installed:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installed_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-        print()
-
-        print('installable:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installable_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
+InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
 
 
 ########################################
-# ../../../omlish/logs/asyncs.py
+# ../../../omcore/logs/asyncs.py
 
 
 ##
@@ -10521,7 +10430,7 @@ class LoggerToAsyncLogger(AsyncLogger):
 
 
 ########################################
-# ../../../omlish/logs/std/loggers.py
+# ../../../omcore/logs/std/loggers.py
 
 
 ##
@@ -10570,7 +10479,7 @@ class StdLogger(Logger):
 
 
 ########################################
-# ../../../omlish/subprocesses/asyncs.py
+# ../../../omcore/subprocesses/asyncs.py
 
 
 ##
@@ -10671,7 +10580,7 @@ class AbstractAsyncSubprocesses(BaseSubprocesses, Abstract):
 
 
 ########################################
-# ../../../omlish/subprocesses/sync.py
+# ../../../omcore/subprocesses/sync.py
 """
 TODO:
  - popen
@@ -10819,56 +10728,98 @@ SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
 
 
 ########################################
-# ../../git/revisions.py
+# ../../interp/resolvers.py
 
 
 ##
 
 
-def get_git_revision(
-        *,
-        cwd: ta.Optional[str] = None,
-) -> ta.Optional[str]:
-    subprocesses.check_output('git', '--version')
+@dc.dataclass(frozen=True)
+class InterpResolverProviders:
+    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
 
-    if cwd is None:
-        cwd = os.getcwd()
 
-    if subprocess.run(  # noqa
-            subprocess_maybe_shell_wrap_exec(
-                'git',
-                'rev-parse',
-                '--is-inside-work-tree',
-            ),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-    ).returncode:
-        return None
+class InterpResolver:
+    def __init__(
+            self,
+            providers: InterpResolverProviders,
+    ) -> None:
+        super().__init__()
 
-    has_untracked = bool(subprocesses.check_output(
-        'git',
-        'ls-files',
-        '.',
-        '--exclude-standard',
-        '--others',
-        cwd=cwd,
-    ).decode().strip())
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
 
-    dirty_rev = subprocesses.check_output(
-        'git',
-        'describe',
-        '--match=NeVeRmAtCh',
-        '--always',
-        '--abbrev=40',
-        '--dirty',
-        cwd=cwd,
-    ).decode().strip()
+    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
+        lst = [
+            (i, si)
+            for i, p in enumerate(self._providers.values())
+            for si in await p.get_installed_versions(spec)
+            if spec.contains(si)
+        ]
 
-    return dirty_rev + ('-untracked' if has_untracked else '')
+        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
+        if not slst:
+            return None
+
+        bi, bv = slst[-1]
+        bp = list(self._providers.values())[bi]
+        return (bp, bv)
+
+    async def resolve(
+            self,
+            spec: InterpSpecifier,
+            *,
+            install: bool = False,
+    ) -> ta.Optional[Interp]:
+        tup = await self._resolve_installed(spec)
+        if tup is not None:
+            bp, bv = tup
+            return await bp.get_installed_version(bv)
+
+        if not install:
+            return None
+
+        tp = list(self._providers.values())[0]  # noqa
+
+        sv = sorted(
+            [s for s in await tp.get_installable_versions(spec) if s in spec],
+            key=lambda s: s.version,
+        )
+        if not sv:
+            return None
+
+        bv = sv[-1]
+        return await tp.install_version(bv)
+
+    async def list(self, spec: InterpSpecifier) -> None:
+        print('installed:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installed_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+        print()
+
+        print('installable:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installable_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
 
 
 ########################################
-# ../../../omlish/asyncs/asyncio/subprocesses.py
+# ../../../omcore/asyncs/asyncio/subprocesses.py
 
 
 ##
@@ -11064,7 +11015,7 @@ asyncio_subprocesses = AsyncioSubprocesses()
 
 
 ########################################
-# ../../../omlish/logs/modules.py
+# ../../../omcore/logs/modules.py
 
 
 ##
@@ -11087,6 +11038,55 @@ def get_module_loggers(mod_globals: ta.Mapping[str, ta.Any]) -> ta.Tuple[Logger,
         log := get_module_logger(mod_globals),
         LoggerToAsyncLogger(log),
     )
+
+
+########################################
+# ../../git/revisions.py
+
+
+##
+
+
+def get_git_revision(
+        *,
+        cwd: ta.Optional[str] = None,
+) -> ta.Optional[str]:
+    subprocesses.check_output('git', '--version')
+
+    if cwd is None:
+        cwd = os.getcwd()
+
+    if subprocess.run(  # noqa
+            subprocess_maybe_shell_wrap_exec(
+                'git',
+                'rev-parse',
+                '--is-inside-work-tree',
+            ),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+    ).returncode:
+        return None
+
+    has_untracked = bool(subprocesses.check_output(
+        'git',
+        'ls-files',
+        '.',
+        '--exclude-standard',
+        '--others',
+        cwd=cwd,
+    ).decode().strip())
+
+    dirty_rev = subprocesses.check_output(
+        'git',
+        'describe',
+        '--match=NeVeRmAtCh',
+        '--always',
+        '--abbrev=40',
+        '--dirty',
+        cwd=cwd,
+    ).decode().strip()
+
+    return dirty_rev + ('-untracked' if has_untracked else '')
 
 
 ########################################
@@ -12072,7 +12072,7 @@ https://github.com/pypa/sampleproject/blob/db5806e0a3204034c51b1c00dde7d5eb3fa25
 
 https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
-'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omcore'
+'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
 """  # noqa
 
 
@@ -12407,7 +12407,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         #         '*.c',
         #         '*.cc',
         #         '*.h',
-        #         '.omlish-manifests.json',
+        #         '.om-manifests.json',
         #         'LICENSE',
         #     ],
         # }

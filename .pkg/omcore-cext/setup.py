@@ -1,0 +1,67 @@
+import setuptools as st
+
+
+st.setup(
+    ext_modules=[
+        st.Extension(
+            name='omcore._check',
+            sources=['omcore/_check.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.collections.btreemap._btreemap',
+            sources=['omcore/collections/btreemap/_btreemap.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.collections.fixedmap._fixedmap',
+            sources=['omcore/collections/fixedmap/_fixedmap.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.collections.hamt._hamt',
+            sources=['omcore/collections/hamt/_hamt.c'],
+            extra_compile_args=['-std=c11'],
+        ),
+        st.Extension(
+            name='omcore.collections.treap._treap',
+            sources=['omcore/collections/treap/_treap.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.dispatch._dispatch',
+            sources=['omcore/dispatch/_dispatch.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.dispatch._methods',
+            sources=['omcore/dispatch/_methods.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.lang._asyncs',
+            sources=['omcore/lang/_asyncs.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.lang._comparison',
+            sources=['omcore/lang/_comparison.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.lang._functions',
+            sources=['omcore/lang/_functions.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.lang.imports._capture',
+            sources=['omcore/lang/imports/_capture.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
+            name='omcore.typedvalues._collection',
+            sources=['omcore/typedvalues/_collection.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+    ],
+)

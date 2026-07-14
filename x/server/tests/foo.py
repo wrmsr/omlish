@@ -9,7 +9,7 @@ async def _a_main() -> None:
 
     import anyio
 
-    from omlish.sockets.ports import get_available_port
+    from omcore.sockets.ports import get_available_port
 
     from ...server.config import Config
     from ...server.default import serve

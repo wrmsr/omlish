@@ -9,7 +9,7 @@ name = 'omdev-cext'
 authors = [
     {name = 'wrmsr'},
 ]
-urls = {source = 'https://github.com/wrmsr/omlish'}
+urls = {source = 'https://github.com/wrmsr/omcore'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'

@@ -15,11 +15,11 @@ import pprint
 
 import urllib3
 
-from omdev.home.secrets import load_secrets
 from omcore import check
 from omcore import dataclasses as dc
 from omcore import lang
 from omcore.secrets import all as sec
+from omdev.home.secrets import load_secrets
 
 
 ##

@@ -3,7 +3,7 @@
 # @om-lite
 # @om-script
 # @om-generated
-# @om-amalg-output ../../../omlish/lite/inject.py
+# @om-amalg-output ../../../omcore/lite/inject.py
 # @om-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP037 UP043 UP045
 import abc
@@ -28,15 +28,15 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
+            dict(path='injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
-            dict(path='inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
+            dict(path='inject.py', sha1='8136e16e99019cf01fc18a4b87d0fa1a9d55e23f'),
         ],
     )
 

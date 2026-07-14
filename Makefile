@@ -75,7 +75,7 @@ _default-venv:
 		ln -s .venvs/default .venv ; \
 	fi
 
-	@.venv/bin/python3 -m omlish.diag._pycharm.runhack install -e || true
+	@.venv/bin/python3 -m omcore.diag._pycharm.runhack install -e || true
 
 	@if [ -z "$$NO_LCPP" ] ; then \
 		if ! ${PYTHON} -c 'import importlib.util; exit(importlib.util.find_spec("llama_cpp") is None)' ; then \
@@ -161,9 +161,10 @@ gen: gen-amalg gen-dockerdev gen-cmake gen-aws gen-manifest gen-dataclass gen-pk
 .PHONY: gen-amalg
 gen-amalg: venv
 	${PYTHON} -m omdev.amalg gen \
+		-m omcore \
 		-m omdev \
 		-m ominfra \
-		-m omlish \
+		-m omllm \
 		-m omxtra \
 		${SRCS}
 
@@ -221,8 +222,8 @@ fix-docstrings: venv
 	${PYTHON} \
 		-m omdev.py.tools.fixdocstrings \
 		-j- \
-		-X '(?m)^# @omlish-generated$$' \
-		-X '(?m)^# @omlish-no-fixdocstrings$$' \
+		-X '(?m)^# @om-generated$$' \
+		-X '(?m)^# @om-no-fixdocstrings$$' \
 		-W \
 		${SRCS}
 
@@ -285,12 +286,12 @@ build-cext: venv
 # FIXME: ... also pyproject lol
 .PHONY: build-reflect
 build-reflect: venv
-	${PYTHON} -mmypyc omlish/reflect/core/*.py
+	${PYTHON} -mmypyc omcore/reflect/core/*.py
 
 # FIXME: ... ... also also pyproject lol
 .PHONY: clean-reflect
 clean-reflect:
-	rm omlish/reflect/core/*.so || true
+	rm omcore/reflect/core/*.so || true
 
 
 ## pre-commit
@@ -348,7 +349,7 @@ venv-14d:
 
 .PHONY: test-14d
 test-14d:
-	${PYPROJECT} venv 14d test -- ${PYTEST_OPTS} --ignore=omlish/sql
+	${PYPROJECT} venv 14d test -- ${PYTEST_OPTS} --ignore=omcore/sql
 
 # 14t
 
@@ -358,7 +359,7 @@ venv-14t:
 
 .PHONY: test-14t
 test-14t:
-	${PYPROJECT} venv 14t test -- ${PYTEST_OPTS} --ignore=omlish/sql
+	${PYPROJECT} venv 14t test -- ${PYTEST_OPTS} --ignore=omcore/sql
 
 # 14dt
 
@@ -368,7 +369,7 @@ venv-14dt:
 
 .PHONY: test-14dt
 test-14dt:
-	${PYPROJECT} venv 14dt test -- ${PYTEST_OPTS} --ignore=omlish/sql
+	${PYPROJECT} venv 14dt test -- ${PYTEST_OPTS} --ignore=omcore/sql
 
 # 15
 
@@ -390,8 +391,8 @@ venv-8:
 
 .PHONY: test-8
 test-8: venv-8
-	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@omlish-lite' ${SRCS}) ; \
-	$$(${PYPROJECT} venv 8 exe) -m omlish.testing.unittest -vb $$LITE_PATHS
+	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@om-lite' ${SRCS}) ; \
+	$$(${PYPROJECT} venv 8 exe) -m omcore.testing.unittest -vb $$LITE_PATHS
 
 # lite
 
@@ -411,9 +412,9 @@ venv-lite:
 
 .PHONY: test-lite
 test-lite:
-	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@omlish-lite' ${SRCS}) ; \
+	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@om-lite' ${SRCS}) ; \
 	for V in ${LITE_VENVS} ; do \
-		$$(${PYPROJECT} venv $$V exe) -m omlish.testing.unittest -vb $$LITE_PATHS ; \
+		$$(${PYPROJECT} venv $$V exe) -m omcore.testing.unittest -vb $$LITE_PATHS ; \
 	done
 
 # docker
@@ -570,8 +571,8 @@ test-install: venv
 
 ### Publish
 
-LOCAL_VERSION:=$$(${PYTHON} -c 'from omlish import __about__; print(__about__.__version__)')
-PYPI_VERSION:=$$(${PYTHON} -m omdev.tools.pip lookup-latest-version omlish)
+LOCAL_VERSION:=$$(${PYTHON} -c 'from omcore import __about__; print(__about__.__version__)')
+PYPI_VERSION:=$$(${PYTHON} -m omdev.tools.pip lookup-latest-version omcore)
 
 .PHONY: versions
 versions: venv
@@ -599,7 +600,7 @@ _post-publish:
 	# FIXME: enable *after* nuking big files from history
 	# git tag -a "v${LOCAL_VERSION}" -m "v${LOCAL_VERSION}"
 
-	${PYTHON} -m omdev.py.scripts.bumpversion -w omlish/__about__.py
+	${PYTHON} -m omdev.py.scripts.bumpversion -w omcore/__about__.py
 	${MAKE} gen
 
 

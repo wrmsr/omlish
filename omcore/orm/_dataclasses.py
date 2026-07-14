@@ -34,7 +34,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='7514673b39883258db895b0031e644b486721b54',
     cls_names=(
-        ('omlish.orm.codecs', 'FieldCodec'),
+        ('omcore.orm.codecs', 'FieldCodec'),
     ),
 )
 def _process_dataclass__7514673b39883258db895b0031e644b486721b54():
@@ -138,7 +138,7 @@ def _process_dataclass__7514673b39883258db895b0031e644b486721b54():
     ),
     plan_repr_sha1='5a96e6ea4d6f0cebd435ea88677738cdd7207de5',
     cls_names=(
-        ('omlish.orm.flushing', '_SessionFlusher.FlushResult'),
+        ('omcore.orm.flushing', '_SessionFlusher.FlushResult'),
     ),
 )
 def _process_dataclass__5a96e6ea4d6f0cebd435ea88677738cdd7207de5():
@@ -250,7 +250,7 @@ def _process_dataclass__5a96e6ea4d6f0cebd435ea88677738cdd7207de5():
     ),
     plan_repr_sha1='f9f6a101168f7596d024f71e4e2691d1bcd63b75',
     cls_names=(
-        ('omlish.orm.flushing', '_SessionFlusher._AutoKeyGraph'),
+        ('omcore.orm.flushing', '_SessionFlusher._AutoKeyGraph'),
     ),
 )
 def _process_dataclass__f9f6a101168f7596d024f71e4e2691d1bcd63b75():
@@ -371,7 +371,7 @@ def _process_dataclass__f9f6a101168f7596d024f71e4e2691d1bcd63b75():
     ),
     plan_repr_sha1='77844c1d369ea8da517a4947ef5b103ead21fb8f',
     cls_names=(
-        ('omlish.orm.flushing', '_SessionFlusher._DirtyEntities'),
+        ('omcore.orm.flushing', '_SessionFlusher._DirtyEntities'),
     ),
 )
 def _process_dataclass__77844c1d369ea8da517a4947ef5b103ead21fb8f():
@@ -504,7 +504,7 @@ def _process_dataclass__77844c1d369ea8da517a4947ef5b103ead21fb8f():
     ),
     plan_repr_sha1='90fe5172beb2792e8eb451a4d9902225b057118d',
     cls_names=(
-        ('omlish.orm.inmemory', 'InMemoryStore._IndexState'),
+        ('omcore.orm.inmemory', 'InMemoryStore._IndexState'),
     ),
 )
 def _process_dataclass__90fe5172beb2792e8eb451a4d9902225b057118d():
@@ -613,7 +613,7 @@ def _process_dataclass__90fe5172beb2792e8eb451a4d9902225b057118d():
     ),
     plan_repr_sha1='e32ed881cda9d66068780e9cb7cd9bcf13572aaa',
     cls_names=(
-        ('omlish.orm.inmemory', 'InMemoryStore._SelectedIndex'),
+        ('omcore.orm.inmemory', 'InMemoryStore._SelectedIndex'),
     ),
 )
 def _process_dataclass__e32ed881cda9d66068780e9cb7cd9bcf13572aaa():
@@ -738,7 +738,7 @@ def _process_dataclass__e32ed881cda9d66068780e9cb7cd9bcf13572aaa():
     ),
     plan_repr_sha1='313549b8121b625a954d42c1610d9bef736a7213',
     cls_names=(
-        ('omlish.orm.inmemory', 'InMemoryStore._State'),
+        ('omcore.orm.inmemory', 'InMemoryStore._State'),
     ),
 )
 def _process_dataclass__313549b8121b625a954d42c1610d9bef736a7213():
@@ -845,7 +845,7 @@ def _process_dataclass__313549b8121b625a954d42c1610d9bef736a7213():
     ),
     plan_repr_sha1='98ea4a5cb052ab1a4f4c5b9e186fd37f46ccc130',
     cls_names=(
-        ('omlish.orm.inmemory', 'InMemoryStore._TableState'),
+        ('omcore.orm.inmemory', 'InMemoryStore._TableState'),
     ),
 )
 def _process_dataclass__98ea4a5cb052ab1a4f4c5b9e186fd37f46ccc130():
@@ -962,7 +962,7 @@ def _process_dataclass__98ea4a5cb052ab1a4f4c5b9e186fd37f46ccc130():
     ),
     plan_repr_sha1='3cd8ca6a1f5381f251f51b5884b3918a7798b30d',
     cls_names=(
-        ('omlish.orm.ordering', 'OrderByItem'),
+        ('omcore.orm.ordering', 'OrderByItem'),
     ),
 )
 def _process_dataclass__3cd8ca6a1f5381f251f51b5884b3918a7798b30d():
@@ -1070,7 +1070,7 @@ def _process_dataclass__3cd8ca6a1f5381f251f51b5884b3918a7798b30d():
     ),
     plan_repr_sha1='3576262424b3ef8ff20966fa3744e5dba9a2ae7d',
     cls_names=(
-        ('omlish.orm.sql', 'FieldSqlType'),
+        ('omcore.orm.sql', 'FieldSqlType'),
     ),
 )
 def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
@@ -1179,7 +1179,7 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
     ),
     plan_repr_sha1='9bcadc6b485436dde22f785cd523e64b41ba962f',
     cls_names=(
-        ('omlish.orm.stores', 'Store.Lookup'),
+        ('omcore.orm.stores', 'Store.Lookup'),
     ),
 )
 def _process_dataclass__9bcadc6b485436dde22f785cd523e64b41ba962f():
@@ -1312,7 +1312,7 @@ def _process_dataclass__9bcadc6b485436dde22f785cd523e64b41ba962f():
     ),
     plan_repr_sha1='4e0614568e3fda967c56f177ac864d8d0f5142a6',
     cls_names=(
-        ('omlish.orm.wheres', 'WhereItem'),
+        ('omcore.orm.wheres', 'WhereItem'),
     ),
 )
 def _process_dataclass__4e0614568e3fda967c56f177ac864d8d0f5142a6():

@@ -5,7 +5,7 @@ state in the code, and the thread-safety questions that need to stay visible as 
 
 ## Context
 
-`mypydistill` is intended to replace the old runtime reflection system for real `omlish` use cases. That replacement is
+`mypydistill` is intended to replace the old runtime reflection system for real `omcore` use cases. That replacement is
 not only about correctness or richer type semantics. It also has to preserve the old system's practical performance
 shape.
 

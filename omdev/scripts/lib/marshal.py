@@ -3,7 +3,7 @@
 # @om-lite
 # @om-script
 # @om-generated
-# @om-amalg-output ../../../omlish/lite/marshal.py
+# @om-amalg-output ../../../omcore/lite/marshal.py
 # @om-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP037 UP045
 """
@@ -37,7 +37,7 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
@@ -45,7 +45,7 @@ def __omlish_amalg__():  # noqa
             dict(path='objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
-            dict(path='marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
+            dict(path='marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
         ],
     )
 

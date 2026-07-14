@@ -31,8 +31,8 @@ async def _provide_sql_store(
     import concurrent.futures as cf
     import sqlite3
 
-    from omlish import sql
-    from omlish.asyncs.asyncio import all as au
+    from omcore import sql
+    from omcore.asyncs.asyncio import all as au
 
     @contextlib.asynccontextmanager
     async def executor():

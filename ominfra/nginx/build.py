@@ -38,7 +38,7 @@ def build_nginx() -> None:
 
     #
 
-    build_dir = tempfile.mkdtemp('-omlish-nginx-build')
+    build_dir = tempfile.mkdtemp('-om-nginx-build')
     print(f'{build_dir=}')
 
     #

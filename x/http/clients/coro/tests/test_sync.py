@@ -14,7 +14,7 @@ def test_clients_stream(data, readall):
         with cli.stream_request(HttpClientRequest(
                 'https://httpbingo.org/drip?duration=1&numbytes=10&code=200&delay=1',
                 'POST' if data is not None else 'GET',
-                headers={'User-Agent': 'omlish'},
+                headers={'User-Agent': 'omcore'},
                 data=data,
         )) as resp:
             print(resp)
@@ -33,7 +33,7 @@ def test_clients_stream(data, readall):
 
 @pytest.mark.online
 def test_get_zombo():
-    from omlish.http.clients.default import request
+    from omcore.http.clients.default import request
     # from ....clients.httpx import HttpxHttpClient  # noqa
     # from ....clients.urllib import UrllibHttpClient  # noqa
 

@@ -7,10 +7,10 @@ TODO:
 import os.path
 import shutil
 
-from omdev.interp.default import get_default_interp_resolver
-from omdev.interp.types import InterpSpecifier
 from omcore.asyncs.asyncio.subprocesses import asyncio_subprocesses
 from omcore.lite.check import check
+from omdev.interp.default import get_default_interp_resolver
+from omdev.interp.types import InterpSpecifier
 
 from .specs import DeployVenvSpec
 

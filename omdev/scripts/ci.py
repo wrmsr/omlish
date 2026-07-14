@@ -88,165 +88,165 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
+            dict(path='../../omcore/asyncs/asyncio/utils.py', sha1='4f3e1678dab2b1baf6cb3407ed2bd972a5b6bb49'),
+            dict(path='../../omcore/docker/ports.py', sha1='087c5375697aaf247921786f89e46ed71b8218ee'),
+            dict(path='../../omcore/http/statuses.py', sha1='675eff6e1638e48aebb7aeae422e426c21a612d2'),
+            dict(path='../../omcore/http/urllib.py', sha1='fc273565255546f42152ab2dfc264feb8c8b8dc6'),
+            dict(path='../../omcore/http/versions.py', sha1='b903c3bec4fdbe699ff0536c89c0f9c40b6ee890'),
+            dict(path='../../omcore/io/pipelines/errors.py', sha1='42c3991496edf534c7a09d30cff8c6b919f80c50'),
+            dict(path='../../omcore/io/streambufs/errors.py', sha1='6b04cc2e4ba5461692128938a2bd5c261486746b'),
+            dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../omcore/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
+            dict(path='../../omcore/lite/bytes.py', sha1='5edf3e1dd70f26415154e8d352f0983aef2c6fc6'),
+            dict(path='../../omcore/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
+            dict(path='../../omcore/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
+            dict(path='../../omcore/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
+            dict(path='../../omcore/lite/injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
+            dict(path='../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
+            dict(path='../../omcore/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
+            dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
+            dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../omcore/lite/typemaps.py', sha1='04cd0405b3ec32df5dd3c3b1c5da999d4fde8736'),
+            dict(path='../../omcore/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
+            dict(path='../../omcore/logs/levels.py', sha1='bd87ff6a281e361cbab4f205802187b2080044e6'),
+            dict(path='../../omcore/logs/std/filters.py', sha1='3ec3856ade50561f99ce9463f54737ab1126d410'),
+            dict(path='../../omcore/logs/std/proxy.py', sha1='98c8cad9f65c6b76349bcde830a2e9770108a52a'),
+            dict(path='../../omcore/logs/warnings.py', sha1='03e6c5d0c4c25b51cdd225c029e652cdf741a51a'),
+            dict(path='../../omcore/os/files.py', sha1='0815ed435c8c7dc8b8bfe82026581abfe1ae610d'),
+            dict(path='../../omcore/os/paths.py', sha1='d9cc256d0d39be0ebc9ee4c87ab386af0c5fa98f'),
+            dict(path='../../omcore/secrets/ssl.py', sha1='a1927a9b862f5732c8f958020b2162e2599e5071'),
+            dict(path='../../omcore/sockets/addresses.py', sha1='91e74bab525937f7633193c9aecc54530e54b6d2'),
+            dict(path='../../omcore/sockets/io.py', sha1='8b4d1ef83a28e11c6cd6ba0c884b3922d8261446'),
             dict(path='consts.py', sha1='ef00d55ab4cdd799b22f2e8b736eacd52ee8a80e'),
             dict(path='github/env.py', sha1='c7a2389048f008f46f59f6bcc11e0d15655f2b1c'),
             dict(path='shell.py', sha1='a59e59b812394d0502837f4c198e1cf604f90227'),
-            dict(path='../specs/oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
-            dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='a093aa6b49e25b3206f59b703b281d569c386838'),
-            dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
-            dict(path='../../omlish/http/statuses.py', sha1='675eff6e1638e48aebb7aeae422e426c21a612d2'),
-            dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
-            dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
-            dict(path='../../omlish/io/pipelines/errors.py', sha1='231f62c44c201a261f2a781bcc0060e997ecf33c'),
-            dict(path='../../omlish/io/streambufs/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
-            dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omlish/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
-            dict(path='../../omlish/lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
-            dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
-            dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
-            dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
-            dict(path='../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
-            dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
-            dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
-            dict(path='../../omlish/lite/typemaps.py', sha1='a3852d79b8342eb9de7939eaaa8d8246ec1cf9b4'),
-            dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
-            dict(path='../../omlish/logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
-            dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
-            dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
-            dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='../../omlish/os/files.py', sha1='32f4fe2e7d32a6b368619081bd300e6f150e312b'),
-            dict(path='../../omlish/os/paths.py', sha1='6402eb786ec21a8df33b2414d28d1f74162f9ccd'),
-            dict(path='../../omlish/secrets/ssl.py', sha1='68af8abad22d64afa1736a8363036aa2121ada78'),
-            dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
-            dict(path='../../omlish/sockets/io.py', sha1='011c38fe63b0e070e12f40b52eb55530f43ca8f7'),
-            dict(path='github/api/v1/api.py', sha1='684744408bf968b8104d031dc4f35bbbc526b4b7'),
-            dict(path='github/api/v2/api.py', sha1='4adbabd4d4cd1a954d7cc49ab33b88c28a59a365'),
+            dict(path='../specs/oci/compression.py', sha1='427ff583b6df669b826228baa273193a83af5e17'),
+            dict(path='../../omcore/argparse/parsers.py', sha1='46321356fbfd17d94eeb0347e86eb042a9333d37'),
+            dict(path='../../omcore/formats/yaml/goyaml/errors.py', sha1='298b4d892d840ce98afb520143da35c56b98fb39'),
+            dict(path='../../omcore/http/headers.py', sha1='d256876b1151fba3efc7e767d7f469c9f602599e'),
+            dict(path='../../omcore/http/parsing.py', sha1='8325495aba43bc3da55c4dffa0af170879744b8f'),
+            dict(path='../../omcore/http/pipelines/compression/codings.py', sha1='18baac5a24e320417b94316439bf873302c2dc32'),  # noqa
+            dict(path='../../omcore/io/pipelines/core.py', sha1='629ab14961ca7b35893b7e5f1e781dcafb0beacb'),
+            dict(path='../../omcore/io/streambufs/types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
+            dict(path='../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
+            dict(path='../../omcore/lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
+            dict(path='../../omcore/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
+            dict(path='../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
+            dict(path='../../omcore/lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
+            dict(path='../../omcore/logs/infos.py', sha1='c6a4599ad727fbee7c3d8eb1bce80846f8106079'),
+            dict(path='../../omcore/logs/metrics/base.py', sha1='38429b7e804533da9a1dd356cf563ac4cff82aa2'),
+            dict(path='../../omcore/logs/protocols.py', sha1='2e13388c65699c4aa89f32b78be8496b94fc40bb'),
+            dict(path='../../omcore/os/temp.py', sha1='1a3ec8b53ddde9810c226965218242b714abca00'),
+            dict(path='../../omcore/sockets/bind.py', sha1='f4ad928b76155d500e3955e0923a86629bb31979'),
+            dict(path='../../omcore/sockets/handlers/types.py', sha1='4cccd7bda3a5cc31e7faa7c4db7a0098bd6c75bd'),
+            dict(path='../../omcore/text/mangle.py', sha1='c766b3cdf72a4dc211eb3a66f7f00278eb34dbd5'),
+            dict(path='github/api/v1/api.py', sha1='067fa8aa3e2708c8108fd395f2c12a910a9f071b'),
+            dict(path='github/api/v2/api.py', sha1='c100085029c5394a8dd23cd53385f73f5c16ba6c'),
             dict(path='github/bootstrap.py', sha1='9bf24b05603cd1a82db8be8b645bbad3e0d3f22f'),
-            dict(path='../specs/oci/datarefs.py', sha1='793ce5f2774e052b28d04b226a5f1eff6eec0a72'),
-            dict(path='../specs/oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
-            dict(path='../../omlish/argparse/parsers.py', sha1='51044d7b7d1b1ca27173be2d3c007d574827a188'),
-            dict(path='../../omlish/formats/yaml/goyaml/errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
-            dict(path='../../omlish/http/headers.py', sha1='aa2182505c9b09e2b658df8f8b3d927bc5fae13b'),
-            dict(path='../../omlish/http/parsing.py', sha1='1adee35518ee930557f2c3b19fd4253df98a5b3c'),
-            dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
-            dict(path='../../omlish/io/pipelines/core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
-            dict(path='../../omlish/io/streambufs/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
-            dict(path='../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
-            dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
-            dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../omlish/lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
-            dict(path='../../omlish/logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
-            dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
-            dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='../../omlish/os/temp.py', sha1='fba3470ac095a6c3f893156cc4437bda1b8796cb'),
-            dict(path='../../omlish/sockets/bind.py', sha1='a3446580db20f208cc99c7685fbd0181701166c8'),
-            dict(path='../../omlish/sockets/handlers/types.py', sha1='3eba55a4d5c1ca303958020f8e278ffd366661f9'),
-            dict(path='../../omlish/text/mangle.py', sha1='4583ee0724c77f8ad85ef47c225ced4fcd1598bf'),
-            dict(path='../dataserver/targets.py', sha1='0fb9422ca0daaf54be1c21a63e06f0fa7c1f4dbb'),
-            dict(path='../specs/oci/data.py', sha1='6c8b30260f3418505d0053d6a9cf8473196069d2'),
-            dict(path='../specs/oci/repositories.py', sha1='f224ea10f5d0f9d3719bc9fe867c7e1d2ccffbf3'),
-            dict(path='../specs/oci/tars.py', sha1='3ed00e97a494bd92c6a6149d22d51469bc0af384'),
-            dict(path='../../omlish/argparse/cli.py', sha1='aef500dd2d8f5a65c4c04ede11355ac8eb513f2e'),
-            dict(path='../../omlish/asyncs/asyncio/sockets.py', sha1='8d24dae988a30bb73f167a9ab62d4fc9eef4ad06'),
-            dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
-            dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='e9744c171d982ea8b4a6ace5f937926d51d5ec30'),
-            dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
-            dict(path='../../omlish/http/pipelines/objects.py', sha1='1d97b97dc148b53fce710f3bc35fbb6daeb60c79'),
-            dict(path='../../omlish/http/simple/types.py', sha1='8e31b8c442603b396523884ff554d3df6e7f4c1a'),
-            dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
-            dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
-            dict(path='../../omlish/io/pipelines/flow/types.py', sha1='4353968e5bd490f4121eadf9e391076bd2673f28'),
-            dict(path='../../omlish/io/pipelines/sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
-            dict(path='../../omlish/io/streambufs/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../../omlish/io/streambufs/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='../../omlish/io/streambufs/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
-            dict(path='../../omlish/lite/inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
-            dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
-            dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='../../omlish/logs/utils.py', sha1='f19e8f456172673b7418f3413f4ccef00a4b251c'),
-            dict(path='../../omlish/sockets/handlers/server.py', sha1='f25c27a4a53c6d004a200daf0d35369bf94218c1'),
-            dict(path='../../omlish/sockets/handlers/simple.py', sha1='78e1a4c419c8f82d10577f19654a3d8ce28d757f'),
-            dict(path='../../omlish/sockets/handlers/ssl.py', sha1='94c0acedffe5b581419a7a92c2f1c4e4a58b7a83'),
-            dict(path='../../omlish/sockets/handlers/threading.py', sha1='24d7815c7bf8fcf3480267020785a3edc90b32f9'),
-            dict(path='../../omlish/subprocesses/run.py', sha1='9b7e1265cd59c58d30d8915f96ba84f80797ef42'),
-            dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../dataserver/handlers.py', sha1='ce0a208cbd7f66b26b9539ec6d5e7ef1041a4886'),
-            dict(path='../dataserver/routes.py', sha1='97379cba6a531ca1bde33de0eb432bd9b36791c1'),
-            dict(path='../specs/oci/media.py', sha1='ccebb9fa56214759e48fe5e65368b4ce70fe0417'),
-            dict(path='../specs/oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
-            dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='5ae8fa62a717986ac45024d5988b626850ed1786'),
-            dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
-            dict(path='../../omlish/http/pipelines/chunking.py', sha1='7e25a89726210c96b93b4d1c676fdd8347ba82c5'),
-            dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='0abf43a23ccd37537eb225f98ec0058026ce28b7'),  # noqa
-            dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='650380a2bad2ee5cdbe92088b7f606709095bcb5'),  # noqa
-            dict(path='../../omlish/http/pipelines/encoders.py', sha1='fdcc3953e2a7f9ba4c1fddba9c365da113c77b45'),
-            dict(path='../../omlish/http/pipelines/requests.py', sha1='a0115429e52527073df8638f692aeca95803d3a7'),
-            dict(path='../../omlish/http/pipelines/responses.py', sha1='49c0a85b1fb7571dc52e0362f2b9eb68a2a4ee34'),
-            dict(path='../../omlish/http/simple/handlers.py', sha1='f15e127ac962f4577e06adfdb3c05a19fa896e89'),
-            dict(path='../../omlish/io/pipelines/handlers/decoders.py', sha1='c7a5db7b3989f8b5c952e255f9e6c8fc91fa6236'),  # noqa
-            dict(path='../../omlish/io/streambufs/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
-            dict(path='../../omlish/io/streambufs/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
-            dict(path='../../omlish/logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
-            dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
-            dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
-            dict(path='../../omlish/subprocesses/base.py', sha1='483de755e9d090d8cae5a774e232e0965ea5713e'),
-            dict(path='docker/cacheserved/manifests.py', sha1='80a65d08319d152f0bc6f893351e23368b3de93b'),
-            dict(path='../dataserver/server.py', sha1='91a673b19762088f3ed14aa91e7f6a0141bba3a5'),
-            dict(path='../specs/oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
-            dict(path='../specs/oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
-            dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
-            dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
-            dict(path='../../omlish/io/streambufs/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
-            dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
-            dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
-            dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
-            dict(path='../dataserver/http.py', sha1='4e2235b3c874ede6c2ab72d0fd4e282926617fc7'),
-            dict(path='../specs/oci/dataserver.py', sha1='49c8cde4810c4185a57696e84ce933978a3ed3a1'),
-            dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
-            dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='5047d6c283348c2cd4265c955bb94651e971addd'),
-            dict(path='../../omlish/http/pipelines/aggregators.py', sha1='dbffeb4a48b42edafea05abe1123b5e9862511bb'),
-            dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='ed307472f3d443f38eb33c66e0cdde9f9f1f7a00'),
-            dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
-            dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
-            dict(path='utils.py', sha1='b7b7b439b1077771f2bd7c7c74ed422ea2663014'),
-            dict(path='../../omlish/http/pipelines/decoders.py', sha1='d13e61a6e4ed6824b552b7b8dc3818eba43a6ce6'),
-            dict(path='../../omlish/io/pipelines/drivers/sync.py', sha1='a276abbb87270f8fc9c18685866b17c5f6415e32'),
-            dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
-            dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
-            dict(path='docker/cache.py', sha1='1c30c907c44e7cc12cd985ccb88b1f6b65558899'),
-            dict(path='docker/repositories.py', sha1='75c153882ec9f26f22ae955e6354cd5f65f1e5e0'),
-            dict(path='docker/utils.py', sha1='082e2b962ca1bc8e6b3f9bbe6ecfcadff310d54f'),
-            dict(path='github/api/clients.py', sha1='8ddc0f5ccf718f1b530f4a965f0cc56b68a6a2a8'),
-            dict(path='github/api/v2/azure.py', sha1='19052e8e2babb8b2953ec10e6b9dcee97c21419a'),
-            dict(path='requirements.py', sha1='c370a65958a00412e00608a0e1f12795e276aee1'),
-            dict(path='../specs/oci/pack/repositories.py', sha1='e9bf6fa8bdaae2031dd0967d07a56c93a2e099b6'),
-            dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
-            dict(path='docker/buildcaching.py', sha1='7b2633d5b8dac6aab01dd459e273cb370c5b11c8'),
-            dict(path='docker/imagepulling.py', sha1='d6b1ca1ecb9aa5c593a25e6deb78e942c75ebcb4'),
-            dict(path='github/api/v1/client.py', sha1='6ddd600cd8a7ff72a6a3408ded14240bafab6944'),
-            dict(path='github/api/v2/client.py', sha1='e28f27c07011487d5a3f4ae32fdfa1a857d02459'),
-            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='78f2e8f745cc126e57ff3bf65189a7144d4150bb'),  # noqa
-            dict(path='ci.py', sha1='87b82e2bd86aa886764f1e0067251b056e359650'),
-            dict(path='github/cache.py', sha1='d91f9c87d167574e94c99817e6c3a0f75925dfb9'),
-            dict(path='github/cli.py', sha1='4f63c026d5d00b04a579ee9186a6264094eeae9d'),
-            dict(path='../../omlish/http/simple/pipelines/sync.py', sha1='388ff0e3d7eca49116a57f344c4bef00bd7cd2e3'),
-            dict(path='docker/dataserver.py', sha1='05c6c4ae8c3058496c162d0bd7105810a9b1a334'),
-            dict(path='github/inject.py', sha1='99c0dd7c55767e7c49f70b7edac25da67f718b2e'),
-            dict(path='docker/cacheserved/cache.py', sha1='51587e48797f6e7b2cc99f023711b7466355aea5'),
-            dict(path='docker/inject.py', sha1='69acac65fae413cb58c1f9aa739d2cc1c3ffa09d'),
-            dict(path='inject.py', sha1='e86b16d79a113a4f387e68ed0db1d067bcada93a'),
-            dict(path='cli.py', sha1='b392df23b6eaf1a0b5223db07a3c4bcd1d1fe0a2'),
+            dict(path='../specs/oci/datarefs.py', sha1='19c6cf61c96efe6f667608a8eda120a0ad1ef466'),
+            dict(path='../specs/oci/pack/unpacking.py', sha1='6cc7a1a64a91b96144c150ac4e0006bfe2caa3e0'),
+            dict(path='../../omcore/argparse/cli.py', sha1='cbfc5b8a9863db3e643df46f268937cbba65b126'),
+            dict(path='../../omcore/asyncs/asyncio/sockets.py', sha1='57bfaf9aaf1cc8263dc3292d9b1397de9e81ce5d'),
+            dict(path='../../omcore/asyncs/asyncio/timeouts.py', sha1='cfde8108f1128ceea3502c77eefb015fb43a6239'),
+            dict(path='../../omcore/formats/yaml/goyaml/tokens.py', sha1='5dcdedc1e6af386b069afcc83783d3003bad08a6'),
+            dict(path='../../omcore/http/pipelines/bodymodes.py', sha1='0df5c7697210b27064a7dd54c736487195f82703'),
+            dict(path='../../omcore/http/pipelines/objects.py', sha1='18e331467e8ab0b66bc17938712434dd0e765f77'),
+            dict(path='../../omcore/http/simple/types.py', sha1='8e544dca75b3791ba12f28c73105941097063f8d'),
+            dict(path='../../omcore/io/pipelines/bytes/buffering.py', sha1='bf1d8923427f11b35a9ebde1e10944786c81262f'),
+            dict(path='../../omcore/io/pipelines/drivers/metadata.py', sha1='fa174d01438db50305953e0f500d303c6a80faac'),  # noqa
+            dict(path='../../omcore/io/pipelines/flow/types.py', sha1='81ead96b6a9487fbda313e858d75701ebe2d5518'),
+            dict(path='../../omcore/io/pipelines/sched/types.py', sha1='ff77ef20dd7750c25af4ab4826de06afe3b53bac'),
+            dict(path='../../omcore/io/streambufs/base.py', sha1='0f0cea0fe05f9d7b4669a7b3871bc78e12af98f6'),
+            dict(path='../../omcore/io/streambufs/framing.py', sha1='de1f818064576e855f20b005ea7855a1fd5f3f56'),
+            dict(path='../../omcore/io/streambufs/utils.py', sha1='62d7fce79bae738c199627668bdee8bb389efa1e'),
+            dict(path='../../omcore/lite/inject.py', sha1='8136e16e99019cf01fc18a4b87d0fa1a9d55e23f'),
+            dict(path='../../omcore/logs/contexts.py', sha1='529adb527492309bf8cde342271ac6ea2ebbf8a1'),
+            dict(path='../../omcore/logs/std/json.py', sha1='d1ff35ac871de63efec2b64ae5c63e63d295a8d5'),
+            dict(path='../../omcore/logs/utils.py', sha1='7dd07873ddd48f99bda0cf3837e01c4c7c4cc96c'),
+            dict(path='../../omcore/sockets/handlers/server.py', sha1='5ccd9132148bef04ef74c1d32f404cb49365253c'),
+            dict(path='../../omcore/sockets/handlers/simple.py', sha1='8d9fb9f4a91f5080f1f6c9bf50d8d4cf4bf9b677'),
+            dict(path='../../omcore/sockets/handlers/ssl.py', sha1='0db09b2095b8ee3b4eb401750f88ea75d3071ab9'),
+            dict(path='../../omcore/sockets/handlers/threading.py', sha1='511b07f34fb198371c3fcc86c428198816d3044b'),
+            dict(path='../../omcore/subprocesses/run.py', sha1='425596d73f3b5cbe1ab936718c77e39a88283350'),
+            dict(path='../../omcore/subprocesses/wrap.py', sha1='12d94dc2357951cd0fed1c50a46817d30d628927'),
+            dict(path='../dataserver/targets.py', sha1='ce67eead8f86eb09dd8f5fd6056ea126401fd60d'),
+            dict(path='../specs/oci/data.py', sha1='2509b4754bd1eb14e310e28da15a6fc35d4ad869'),
+            dict(path='../specs/oci/repositories.py', sha1='8fe374dd6959417d8908430901ff07f4175d3e84'),
+            dict(path='../specs/oci/tars.py', sha1='2a143153b5b727fa46a83a325b42f6dc28734359'),
+            dict(path='../../omcore/formats/yaml/goyaml/ast.py', sha1='e64be33431c4289953d3dcd1173cbc098250fbf6'),
+            dict(path='../../omcore/formats/yaml/goyaml/scanning.py', sha1='39eb73d30dd9e15a4c877d0d6c0fb865d9271a34'),
+            dict(path='../../omcore/http/pipelines/chunking.py', sha1='613ff1e7cc183872f73f89bc962376257925f534'),
+            dict(path='../../omcore/http/pipelines/compression/compressors.py', sha1='560abca3f4989ddb7c8c121a4ce862f87dea71a1'),  # noqa
+            dict(path='../../omcore/http/pipelines/compression/decompressors.py', sha1='70cdf7b80791f7d230afdadba498520f56c04a20'),  # noqa
+            dict(path='../../omcore/http/pipelines/encoders.py', sha1='2d36c841643c792ffacf0b8377ff06db244ffe42'),
+            dict(path='../../omcore/http/pipelines/requests.py', sha1='b825e91750b19e96176fd0e872eb8bdded965f01'),
+            dict(path='../../omcore/http/pipelines/responses.py', sha1='3145565e89891902ecd2ce193fac1609d3a26fe6'),
+            dict(path='../../omcore/http/simple/handlers.py', sha1='43502a58069673135882066ba939c99ea2f8dfc1'),
+            dict(path='../../omcore/io/pipelines/handlers/decoders.py', sha1='79e73945acbb2eb6c19543950f572bcb51387d72'),  # noqa
+            dict(path='../../omcore/io/streambufs/direct.py', sha1='5a629d79aa7f618dce40e11c2609bc0dcd008599'),
+            dict(path='../../omcore/io/streambufs/scanning.py', sha1='36411208b4e6515528f0310c7052b3faf2572b24'),
+            dict(path='../../omcore/logs/base.py', sha1='4195705c64f3ec1c4263c2c76c63351d9dacdd5c'),
+            dict(path='../../omcore/logs/std/records.py', sha1='fb1e2d887248cc24b0463156836d9965a06c8ab6'),
+            dict(path='../../omcore/logs/std/standard.py', sha1='223e3cba0f2854c5093fb60d6cef2f27b80c193c'),
+            dict(path='../../omcore/secrets/tempssl.py', sha1='bbf47f864752f318f4122e539523ad5e6ed0a3b9'),
+            dict(path='../../omcore/subprocesses/base.py', sha1='902de24f7135858a9f539fab378cacb96f5cc672'),
+            dict(path='../dataserver/handlers.py', sha1='f290d30b0e286d9152b9e7ff8135f2fdd222ceca'),
+            dict(path='../dataserver/routes.py', sha1='f65920d9104c79ab186d4d04f0d52f2c6ad185b6'),
+            dict(path='../specs/oci/media.py', sha1='803842842e9b3f1d51ccb48c41c7fb7df9d833b3'),
+            dict(path='../specs/oci/pack/packing.py', sha1='8f343e23dbd144c77e9dcdeb6d5e37c7649402ad'),
+            dict(path='../../omcore/formats/yaml/goyaml/parsing.py', sha1='44f0fe4afe807936df127c67f9d52837012cf13d'),
+            dict(path='../../omcore/http/pipelines/servers/responses.py', sha1='2c0be02c7a0510348e93cea96c4376d531b6a19c'),  # noqa
+            dict(path='../../omcore/io/streambufs/segmented.py', sha1='ad3c91e91d7b91396c51549fc7578419b1c3d336'),
+            dict(path='../../omcore/logs/asyncs.py', sha1='6b444494a0512f7b7ea2c93be5c4a9868deb7251'),
+            dict(path='../../omcore/logs/std/loggers.py', sha1='144a96b3b190a5641f3b7cc2656d6ffa4e45b5a9'),
+            dict(path='../../omcore/subprocesses/asyncs.py', sha1='8d428af73220f793d2c0e93f5c9966fac9474246'),
+            dict(path='../../omcore/subprocesses/sync.py', sha1='df383531e888c4652a285defb522dd90ce916b6a'),
+            dict(path='docker/cacheserved/manifests.py', sha1='c5121699b4ac6a23f00595870a4d409bbd1b1419'),
+            dict(path='../dataserver/server.py', sha1='a7f00bd01f370d2dd4f92f578dfe60232d966395'),
+            dict(path='../specs/oci/building.py', sha1='1c1f7bcea6ae5026ef1a428cead3a31d43c77d4c'),
+            dict(path='../specs/oci/loading.py', sha1='2fe11d2ab1446a57e9d5f508575ed455cfe0fd23'),
+            dict(path='../../omcore/asyncs/asyncio/subprocesses.py', sha1='901e82ac03fb6ce967728a715f1785e6e591ff8b'),
+            dict(path='../../omcore/formats/yaml/goyaml/decoding.py', sha1='6d728ea8efc77625dbf3b4a135edf430602f70bb'),
+            dict(path='../../omcore/http/pipelines/aggregators.py', sha1='2788fff67d15aff9648521dd04e8dec3463e6d96'),
+            dict(path='../../omcore/io/pipelines/bytes/decoders.py', sha1='4f0df234d6fba71e485378de06fa6c1f9276e6ef'),
+            dict(path='../../omcore/logs/modules.py', sha1='b51c2d4396854b515d29cee17f906d5cc47eb7f2'),
+            dict(path='../dataserver/http.py', sha1='e39f673cc82c78cd806b44a37a19902a01321c49'),
+            dict(path='../specs/oci/dataserver.py', sha1='b5469f2a1e797e7e04c468d8243a877910136e80'),
+            dict(path='../../omcore/http/pipelines/decoders.py', sha1='26ad861596fd85d8bc68b3d9612217fb9a098b7e'),
+            dict(path='../../omcore/io/pipelines/drivers/sync.py', sha1='e0ab886dbe7d62834e3f7a0eb01acd983bc66894'),
+            dict(path='../../omcore/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
+            dict(path='cache.py', sha1='f448ea9fe7384e6d2bcf398abfc6d53673d70c98'),
+            dict(path='docker/cmds.py', sha1='8c7d8c21691403d9e4bbd613fca23bd910f67e4d'),
+            dict(path='utils.py', sha1='d62c7f8a6acaf49f5e8967b1c2c613696c7ba2d1'),
+            dict(path='../../omcore/http/pipelines/servers/requests.py', sha1='2258c98399fd861ca308ff1ef498513d435f6fbb'),  # noqa
+            dict(path='compose.py', sha1='9170b312e5daa89cfc359a4676de5dc43dce5355'),
+            dict(path='docker/cache.py', sha1='027ee91a4fb38b7910bf2d6ff1953203d730a6a6'),
+            dict(path='docker/repositories.py', sha1='a44c12070e9dfb0b2a1c03660b512f18f6ec47ec'),
+            dict(path='docker/utils.py', sha1='14e1283836b9773a1a00840881ff8409bcf6af4c'),
+            dict(path='github/api/clients.py', sha1='7de270914d30be46903c19c4b7aa5503ee4f0832'),
+            dict(path='github/api/v2/azure.py', sha1='ffabbc96e9a1430672e1887d51bee02b47fb09fb'),
+            dict(path='requirements.py', sha1='17c373b4ee89986867c151d5a5ed06ecf58292d1'),
+            dict(path='../specs/oci/pack/repositories.py', sha1='d1d5d82a1109bdf2ccdbf06e378a8cc642c183b0'),
+            dict(path='../../omcore/http/simple/pipelines/handlers.py', sha1='9cce204b067dcf740b10146abe3b3cc5b0d58d6c'),  # noqa
+            dict(path='docker/buildcaching.py', sha1='4e96fde302b6850a9b71f301ed470a134fdb50a1'),
+            dict(path='docker/imagepulling.py', sha1='7a738fd4ad7f182e43ed8c0111160fa65b69ea8f'),
+            dict(path='github/api/v1/client.py', sha1='0cbbde48aea78269331af5e3168f7d28cd678fc7'),
+            dict(path='github/api/v2/client.py', sha1='192ab86b8ea87889f0cde46792772ff67f79c127'),
+            dict(path='../../omcore/http/simple/pipelines/sync.py', sha1='d9fe382a934e803a42cf90985f7827dcfd1a94af'),
+            dict(path='ci.py', sha1='00beddf93bbb2a02424db3916706fa442b1574ac'),
+            dict(path='github/cache.py', sha1='953ba94a76bc52321f4d6b40f9f673c2e456ba7f'),
+            dict(path='github/cli.py', sha1='52666bdc16a552357f21052e8a025c1dc938bb02'),
+            dict(path='docker/dataserver.py', sha1='9968525f13c9cb4847655b64da1ead7bca311280'),
+            dict(path='github/inject.py', sha1='0e4f9daff224f2fc2ceecf3a0be81d87e6837ebc'),
+            dict(path='docker/cacheserved/cache.py', sha1='0ae76cfd4a0c88ca1087d4fc304e80ca59d42c62'),
+            dict(path='docker/inject.py', sha1='4755881c4f90bfa7508c4e8aa03d9f030a9123d8'),
+            dict(path='inject.py', sha1='277c5529fd72cc023f136da599e10f9547ef9d60'),
+            dict(path='cli.py', sha1='8b5dee160252974c0d5fc1b205ca80bd14e7fae2'),
         ],
     )
 
@@ -254,20 +254,18 @@ def __omlish_amalg__():  # noqa
 ########################################
 
 
-# shell.py
+# ../../omcore/asyncs/asyncio/utils.py
 T = ta.TypeVar('T')
-
-# ../../omlish/asyncs/asyncio/utils.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
-# ../../omlish/http/statuses.py
+# ../../omcore/http/statuses.py
 HttpStatus = http.HTTPStatus  # ta.TypeAlias
 
-# ../../omlish/lite/bytes.py
+# ../../omcore/lite/bytes.py
 Bytes = ta.Union[bytes, bytearray]  # ta.TypeAlias
 BytesLike = ta.Union[Bytes, memoryview]  # ta.TypeAlias
 
-# ../../omlish/lite/check.py
+# ../../omcore/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
 CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
@@ -275,181 +273,100 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
-# ../../omlish/lite/contextmanagers.py
+# ../../omcore/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
-# ../../omlish/lite/typemaps.py
+# ../../omcore/lite/typemaps.py
 V = ta.TypeVar('V')
 
-# ../../omlish/lite/typing.py
+# ../../omcore/lite/typing.py
 A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
 A2 = ta.TypeVar('A2')
 
-# ../../omlish/logs/levels.py
+# ../../omcore/logs/levels.py
 LogLevel = int  # ta.TypeAlias
 
-# ../../omlish/sockets/addresses.py
+# ../../omcore/sockets/addresses.py
 SocketAddress = ta.Any  # ta.TypeAlias
 
-# github/api/v2/api.py
-GithubCacheServiceV2RequestT = ta.TypeVar('GithubCacheServiceV2RequestT')
-GithubCacheServiceV2ResponseT = ta.TypeVar('GithubCacheServiceV2ResponseT')
-
-# ../../omlish/argparse/parsers.py
+# ../../omcore/argparse/parsers.py
 ArgparseCmdFn = ta.Callable[[], ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]]  # ta.TypeAlias
 
-# ../../omlish/formats/yaml/goyaml/errors.py
+# ../../omcore/formats/yaml/goyaml/errors.py
 YamlErrorOr = ta.Union['YamlError', T]  # ta.TypeAlias
 
-# ../../omlish/http/headers.py
+# ../../omcore/http/headers.py
 StrOrBytes = ta.Union[str, bytes]  # ta.TypeAlias
 
-# ../../omlish/io/pipelines/core.py
+# ../../omcore/io/pipelines/core.py
 F = ta.TypeVar('F')
 IoPipelineHandlerFn = ta.Callable[['IoPipelineHandlerContext', F], T]  # ta.TypeAlias
 IoPipelineHandlerT = ta.TypeVar('IoPipelineHandlerT', bound='IoPipelineHandler')
 ShareableIoPipelineHandlerT = ta.TypeVar('ShareableIoPipelineHandlerT', bound='ShareableIoPipelineHandler')  # noqa
 IoPipelineMetadataT = ta.TypeVar('IoPipelineMetadataT', bound='IoPipelineMetadata')
 
-# ../../omlish/lite/json.py
+# ../../omcore/lite/json.py
 JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
-# ../../omlish/lite/maybes.py
+# ../../omcore/lite/maybes.py
 U = ta.TypeVar('U')
 
-# ../../omlish/lite/timeouts.py
+# ../../omcore/lite/timeouts.py
 TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', float, int, bool, None]  # ta.TypeAlias  # noqa
 
-# ../../omlish/logs/infos.py
+# ../../omcore/logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
 LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
 LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
 LoggingContextInfo = ta.Any  # ta.TypeAlias
 
-# ../../omlish/sockets/bind.py
+# ../../omcore/sockets/bind.py
 SocketBinderT = ta.TypeVar('SocketBinderT', bound='SocketBinder')
 SocketBinderConfigT = ta.TypeVar('SocketBinderConfigT', bound='SocketBinder.Config')
 CanSocketBinderConfig = ta.Union['SocketBinder.Config', int, ta.Tuple[str, int], str]  # ta.TypeAlias
 CanSocketBinder = ta.Union['SocketBinder', CanSocketBinderConfig]  # ta.TypeAlias
 
-# ../../omlish/sockets/handlers/types.py
+# ../../omcore/sockets/handlers/types.py
 SocketHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 
-# ../../omlish/asyncs/asyncio/timeouts.py
+# github/api/v2/api.py
+GithubCacheServiceV2RequestT = ta.TypeVar('GithubCacheServiceV2RequestT')
+GithubCacheServiceV2ResponseT = ta.TypeVar('GithubCacheServiceV2ResponseT')
+
+# ../../omcore/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
-# ../../omlish/http/simple/types.py
+# ../../omcore/http/simple/types.py
 SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
 SimpleHttpHandlerResponseData = ta.Union[Bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
-# ../../omlish/io/streambufs/utils.py
+# ../../omcore/io/streambufs/utils.py
 CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
-# ../../omlish/lite/inject.py
+# ../../omcore/lite/inject.py
 InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]  # ta.TypeAlias
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']  # ta.TypeAlias
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # ta.TypeAlias
 
-# ../../omlish/logs/contexts.py
+# ../../omcore/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
+
+# ../../omcore/subprocesses/base.py
+SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 # ../dataserver/handlers.py
 DataServerTargetT = ta.TypeVar('DataServerTargetT', bound='DataServerTarget')
-
-# ../../omlish/subprocesses/base.py
-SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 # ../specs/oci/building.py
 OciMediaDataclassT = ta.TypeVar('OciMediaDataclassT', bound='OciMediaDataclass')
 
 
 ########################################
-# ../consts.py
-
-
-CI_CACHE_VERSION = 2
-
-
-########################################
-# ../github/env.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class GithubEnvVar:
-    k: str
-
-    def __call__(self) -> ta.Optional[str]:
-        return os.environ.get(self.k)
-
-
-GITHUB_ENV_VARS: ta.Set[GithubEnvVar] = set()
-
-
-def register_github_env_var(k: str) -> GithubEnvVar:
-    ev = GithubEnvVar(k)
-    GITHUB_ENV_VARS.add(ev)
-    return ev
-
-
-########################################
-# ../shell.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ShellCmd:
-    s: str
-
-    env: ta.Optional[ta.Mapping[str, str]] = None
-
-    def build_run_kwargs(
-            self,
-            *,
-            env: ta.Optional[ta.Mapping[str, str]] = None,
-            **kwargs: ta.Any,
-    ) -> ta.Dict[str, ta.Any]:
-        if env is None:
-            env = os.environ
-        if self.env:
-            if (ek := set(env) & set(self.env)):
-                raise KeyError(*ek)
-            env = {**env, **self.env}
-
-        return dict(
-            env=env,
-            **kwargs,
-        )
-
-    def run(self, fn: ta.Callable[..., T], **kwargs) -> T:
-        return fn(
-            'sh', '-c', self.s,
-            **self.build_run_kwargs(**kwargs),
-        )
-
-
-########################################
-# ../../specs/oci/compression.py
-
-
-##
-
-
-class OciCompression(enum.Enum):
-    GZIP = enum.auto()
-    ZSTD = enum.auto()
-
-
-########################################
-# ../../../omlish/asyncs/asyncio/utils.py
+# ../../../omcore/asyncs/asyncio/utils.py
 """
 TODO:
  - split module
@@ -626,7 +543,7 @@ async def asyncio_shielded_finally(
 
 
 ########################################
-# ../../../omlish/docker/ports.py
+# ../../../omcore/docker/ports.py
 """
 TODO:
  - docstring
@@ -694,14 +611,14 @@ class DockerPortRelay:
 
 
 ########################################
-# ../../../omlish/http/statuses.py
+# ../../../omcore/http/statuses.py
 
 
 #
 
 
 ########################################
-# ../../../omlish/http/urllib.py
+# ../../../omcore/http/urllib.py
 
 
 ##
@@ -726,7 +643,7 @@ class NonRaisingUrllibErrorProcessor(urllib.request.HTTPErrorProcessor):
 
 
 ########################################
-# ../../../omlish/http/versions.py
+# ../../../omcore/http/versions.py
 
 
 ##
@@ -822,7 +739,7 @@ class HttpVersions:
 
 
 ########################################
-# ../../../omlish/io/pipelines/errors.py
+# ../../../omcore/io/pipelines/errors.py
 
 
 ##
@@ -957,7 +874,7 @@ class FlowControlValidationIoPipelineError(IoPipelineError):
 
 
 ########################################
-# ../../../omlish/io/streambufs/errors.py
+# ../../../omcore/io/streambufs/errors.py
 
 
 ##
@@ -1021,7 +938,7 @@ class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
 
 
 ########################################
-# ../../../omlish/lite/abstract.py
+# ../../../omcore/lite/abstract.py
 
 
 ##
@@ -1168,7 +1085,7 @@ class Abstract:
 
 
 ########################################
-# ../../../omlish/lite/asyncs.py
+# ../../../omcore/lite/asyncs.py
 
 
 ##
@@ -1312,7 +1229,7 @@ as_async_context_manager = SyncToAsyncContextManager
 
 
 ########################################
-# ../../../omlish/lite/bytes.py
+# ../../../omcore/lite/bytes.py
 
 
 ##
@@ -1367,7 +1284,7 @@ def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
 
 
 ########################################
-# ../../../omlish/lite/cached.py
+# ../../../omcore/lite/cached.py
 
 
 ##
@@ -1480,7 +1397,7 @@ globals()['cached_property'] = _cached_property
 
 
 ########################################
-# ../../../omlish/lite/check.py
+# ../../../omcore/lite/check.py
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
@@ -2060,7 +1977,7 @@ check = Checks()
 
 
 ########################################
-# ../../../omlish/lite/contextmanagers.py
+# ../../../omcore/lite/contextmanagers.py
 
 
 ##
@@ -2261,7 +2178,7 @@ aclosing = AsyncClosingManager
 
 
 ########################################
-# ../../../omlish/lite/dataclasses.py
+# ../../../omcore/lite/dataclasses.py
 
 
 ##
@@ -2522,7 +2439,7 @@ def dataclass_field_required(name: str) -> ta.Callable[[], ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/injectinspect.py
+# ../../../omcore/lite/injectinspect.py
 
 
 ##
@@ -2612,7 +2529,7 @@ def injection_inspect(obj: ta.Any) -> InjectionInspection:
 
 
 ########################################
-# ../../../omlish/lite/io.py
+# ../../../omcore/lite/io.py
 
 
 ##
@@ -2627,7 +2544,7 @@ class FnWriter:
 
 
 ########################################
-# ../../../omlish/lite/namespaces.py
+# ../../../omcore/lite/namespaces.py
 
 
 class NamespaceClass:
@@ -2642,7 +2559,7 @@ class NamespaceClass:
 
 
 ########################################
-# ../../../omlish/lite/objects.py
+# ../../../omcore/lite/objects.py
 
 
 ##
@@ -2722,7 +2639,7 @@ def dir_dict(o: ta.Any) -> ta.Dict[str, ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/reflect.py
+# ../../../omcore/lite/reflect.py
 
 
 ##
@@ -2811,7 +2728,7 @@ def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/strings.py
+# ../../../omcore/lite/strings.py
 
 
 ##
@@ -2900,7 +2817,7 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../omlish/lite/typemaps.py
+# ../../../omcore/lite/typemaps.py
 
 
 ##
@@ -3046,7 +2963,7 @@ class DynamicTypeMap(ta.Generic[V]):
 
 
 ########################################
-# ../../../omlish/lite/typing.py
+# ../../../omcore/lite/typing.py
 
 
 ##
@@ -3158,7 +3075,7 @@ class CanFloat(ta.Protocol):
 
 
 ########################################
-# ../../../omlish/logs/levels.py
+# ../../../omcore/logs/levels.py
 
 
 ##
@@ -3257,7 +3174,7 @@ NamedLogLevel._CACHE.update({i: NamedLogLevel(i) for i in NamedLogLevel._NAMES_B
 
 
 ########################################
-# ../../../omlish/logs/std/filters.py
+# ../../../omcore/logs/std/filters.py
 
 
 ##
@@ -3274,7 +3191,7 @@ class TidLoggingFilter(logging.Filter):
 
 
 ########################################
-# ../../../omlish/logs/std/proxy.py
+# ../../../omcore/logs/std/proxy.py
 
 
 ##
@@ -3377,7 +3294,7 @@ class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
 
 
 ########################################
-# ../../../omlish/logs/warnings.py
+# ../../../omcore/logs/warnings.py
 
 
 ##
@@ -3388,7 +3305,7 @@ class LoggingSetupWarning(Warning):
 
 
 ########################################
-# ../../../omlish/os/files.py
+# ../../../omcore/os/files.py
 
 
 ##
@@ -3440,7 +3357,7 @@ def unlinking_if_exists(path: str) -> ta.Iterator[None]:
 
 
 ########################################
-# ../../../omlish/os/paths.py
+# ../../../omcore/os/paths.py
 
 
 ##
@@ -3502,7 +3419,7 @@ def relative_symlink(
 
 
 ########################################
-# ../../../omlish/secrets/ssl.py
+# ../../../omcore/secrets/ssl.py
 
 
 ##
@@ -3515,7 +3432,7 @@ class SslCert:
 
 
 ########################################
-# ../../../omlish/sockets/addresses.py
+# ../../../omcore/sockets/addresses.py
 """
 TODO:
  - codification of https://docs.python.org/3/library/socket.html#socket-families
@@ -3585,7 +3502,7 @@ class SocketAndAddress(ta.NamedTuple):
 
 
 ########################################
-# ../../../omlish/sockets/io.py
+# ../../../omcore/sockets/io.py
 
 
 ##
@@ -3653,617 +3570,88 @@ def close_socket_immediately(sock: socket.socket) -> None:
 
 
 ########################################
-# ../github/api/v1/api.py
-"""
-export FILE_SIZE=$(stat --format="%s" $FILE)
-
-export CACHE_ID=$(curl -s \
-  -X POST \
-  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json;api-version=6.0-preview.1' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
-  | jq .cacheId)
-
-curl -s \
-  -X PATCH \
-  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
-  -H 'Content-Type: application/octet-stream' \
-  -H 'Accept: application/json;api-version=6.0-preview.1' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
-  --data-binary @"$FILE"
-
-curl -s \
-  -X POST \
-  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json;api-version=6.0-preview.1' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -d '{"size": '"$(stat --format="%s" $FILE)"'}'
-
-curl -s \
-  -X GET \
-  "${ACTIONS_CACHE_URL}_apis/artifactcache/cache?keys=$CACHE_KEY" \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  | jq .
-"""
+# ../consts.py
 
 
-##
-
-
-class GithubCacheServiceV1:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    #
-
-    API_VERSION = '6.0-preview.1'
-
-    @classmethod
-    def get_service_url(cls, base_url: str) -> str:
-        return f'{base_url.rstrip("/")}/_apis/artifactcache'
-
-    #
-
-    @classmethod
-    def dataclass_to_json(cls, obj: ta.Any) -> ta.Any:
-        return {
-            camel_case(k, lower=True): v
-            for k, v in dc.asdict(obj).items()
-            if v is not None
-        }
-
-    @classmethod
-    def dataclass_from_json(cls, dcls: ta.Type[T], obj: ta.Any) -> T:
-        return dcls(**{
-            snake_case(k): v
-            for k, v in obj.items()
-        })
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class ArtifactCacheEntry:
-        cache_key: ta.Optional[str]
-        scope: ta.Optional[str]
-        cache_version: ta.Optional[str]
-        creation_time: ta.Optional[str]
-        archive_location: ta.Optional[str]
-
-    @dc.dataclass(frozen=True)
-    class ArtifactCacheList:
-        total_count: int
-        artifact_caches: ta.Optional[ta.Sequence['GithubCacheServiceV1.ArtifactCacheEntry']]
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class ReserveCacheRequest:
-        key: str
-        cache_size: ta.Optional[int] = None
-        version: ta.Optional[str] = None
-
-    @dc.dataclass(frozen=True)
-    class ReserveCacheResponse:
-        cache_id: int
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class CommitCacheRequest:
-        size: int
-
-    #
-
-    class CompressionMethod:
-        GZIP = 'gzip'
-        ZSTD_WITHOUT_LONG = 'zstd-without-long'
-        ZSTD = 'zstd'
-
-    @dc.dataclass(frozen=True)
-    class InternalCacheOptions:
-        compression_method: ta.Optional[str]  # CompressionMethod
-        enable_cross_os_archive: ta.Optional[bool]
-        cache_size: ta.Optional[int]
+CI_CACHE_VERSION = 2
 
 
 ########################################
-# ../github/api/v2/api.py
-"""
-https://github.com/tonistiigi/go-actions-cache/blob/3e9a6642607fd6e4d5d4fdab7c91fe8bf4c36a25/cache_v2.go
-
-==
-
-curl -s \
-  -X POST \
-  "${ACTIONS_RESULTS_URL}twirp/github.actions.results.api.v1.CacheService/CreateCacheEntry" \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -d '{"key": "foo", "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
-  | jq .
-
-curl -s \
-  -X POST \
-  "${ACTIONS_RESULTS_URL}twirp/github.actions.results.api.v1.CacheService/GetCacheEntryDownloadURL" \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
-  -d '{"key": "foo", "restoreKeys": [], "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
-  | jq .
-"""  # noqa
+# ../github/env.py
 
 
 ##
 
 
-class GithubCacheServiceV2:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
+@dc.dataclass(frozen=True)
+class GithubEnvVar:
+    k: str
 
-    #
+    def __call__(self) -> ta.Optional[str]:
+        return os.environ.get(self.k)
 
-    SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
 
-    @classmethod
-    def get_service_url(cls, base_url: str) -> str:
-        return f'{base_url.rstrip("/")}/twirp/{cls.SERVICE_NAME}'
+GITHUB_ENV_VARS: ta.Set[GithubEnvVar] = set()
 
-    #
 
-    @dc.dataclass(frozen=True)
-    class Method(ta.Generic[GithubCacheServiceV2RequestT, GithubCacheServiceV2ResponseT]):
-        name: str
-        request: ta.Type[GithubCacheServiceV2RequestT]
-        response: ta.Type[GithubCacheServiceV2ResponseT]
-
-    #
-
-    class CacheScopePermission:
-        READ = 1
-        WRITE = 2
-        ALL = READ | WRITE
-
-    @dc.dataclass(frozen=True)
-    class CacheScope:
-        scope: str
-        permission: int  # CacheScopePermission
-
-    @dc.dataclass(frozen=True)
-    class CacheMetadata:
-        repository_id: int
-        scope: ta.Sequence['GithubCacheServiceV2.CacheScope']
-
-    VERSION_LENGTH: int = 64
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class CreateCacheEntryRequest:
-        key: str
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-        def __post_init__(self) -> None:
-            check.equal(len(self.version), GithubCacheServiceV2.VERSION_LENGTH)
-
-    @dc.dataclass(frozen=True)
-    class CreateCacheEntryResponse:
-        ok: bool
-        signed_upload_url: str
-        message: ta.Optional[str] = None
-
-    CREATE_CACHE_ENTRY_METHOD: Method[
-        CreateCacheEntryRequest,
-        CreateCacheEntryResponse,
-    ] = Method(
-        'CreateCacheEntry',
-        CreateCacheEntryRequest,
-        CreateCacheEntryResponse,
-    )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class FinalizeCacheEntryUploadRequest:
-        key: str
-        size_bytes: int
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-    @dc.dataclass(frozen=True)
-    class FinalizeCacheEntryUploadResponse:
-        ok: bool
-        entry_id: str
-        message: ta.Optional[str] = None
-
-    FINALIZE_CACHE_ENTRY_METHOD: Method[
-        FinalizeCacheEntryUploadRequest,
-        FinalizeCacheEntryUploadResponse,
-    ] = Method(
-        'FinalizeCacheEntryUpload',
-        FinalizeCacheEntryUploadRequest,
-        FinalizeCacheEntryUploadResponse,
-    )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class GetCacheEntryDownloadUrlRequest:
-        key: str
-        restore_keys: ta.Sequence[str]
-        version: str
-        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
-
-    @dc.dataclass(frozen=True)
-    class GetCacheEntryDownloadUrlResponse:
-        ok: bool
-        signed_download_url: str
-        matched_key: str
-
-    GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD: Method[
-        GetCacheEntryDownloadUrlRequest,
-        GetCacheEntryDownloadUrlResponse,
-    ] = Method(
-        'GetCacheEntryDownloadURL',
-        GetCacheEntryDownloadUrlRequest,
-        GetCacheEntryDownloadUrlResponse,
-    )
+def register_github_env_var(k: str) -> GithubEnvVar:
+    ev = GithubEnvVar(k)
+    GITHUB_ENV_VARS.add(ev)
+    return ev
 
 
 ########################################
-# ../github/bootstrap.py
-"""
-sudo rm -rf \
-    /usr/local/.ghcup \
-    /opt/hostedtoolcache \
-
-/usr/local/.ghcup       6.4G, 3391250 files
-/opt/hostedtoolcache    8.0G, 14843980 files
-/usr/local/lib/android  6.4G, 17251667 files
-"""
-
-
-##
-
-
-GITHUB_ACTIONS_ENV_VAR = register_github_env_var('GITHUB_ACTIONS')
-
-
-def is_in_github_actions() -> bool:
-    return GITHUB_ACTIONS_ENV_VAR() is not None
-
-
-########################################
-# ../../specs/oci/datarefs.py
+# ../shell.py
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class OciDataRef(Abstract):
-    pass
+class ShellCmd:
+    s: str
 
+    env: ta.Optional[ta.Mapping[str, str]] = None
 
-@dc.dataclass(frozen=True)
-class BytesOciDataRef(OciDataRef):
-    data: bytes
+    def build_run_kwargs(
+            self,
+            *,
+            env: ta.Optional[ta.Mapping[str, str]] = None,
+            **kwargs: ta.Any,
+    ) -> ta.Dict[str, ta.Any]:
+        if env is None:
+            env = os.environ
+        if self.env:
+            if (ek := set(env) & set(self.env)):
+                raise KeyError(*ek)
+            env = {**env, **self.env}
 
-
-@dc.dataclass(frozen=True)
-class FileOciDataRef(OciDataRef):
-    path: str
-
-
-@dc.dataclass(frozen=True)
-class TarFileOciDataRef(OciDataRef):
-    tar_file: tarfile.TarFile
-    tar_info: tarfile.TarInfo
-
-
-##
-
-
-@functools.singledispatch
-def write_oci_data_ref_to_file(
-        src_data: OciDataRef,
-        dst_file: str,
-        *,
-        symlink: bool = False,  # noqa
-        chunk_size: int = 1024 * 1024,
-) -> None:
-    with open_oci_data_ref(src_data) as f_src:
-        with open(dst_file, 'wb') as f_dst:
-            shutil.copyfileobj(f_src, f_dst, length=chunk_size)  # noqa
-
-
-@write_oci_data_ref_to_file.register
-def _(
-        src_data: FileOciDataRef,
-        dst_file: str,
-        *,
-        symlink: bool = False,
-        **kwargs: ta.Any,
-) -> None:
-    if symlink:
-        os.symlink(
-            os.path.relpath(src_data.path, os.path.dirname(dst_file)),
-            dst_file,
+        return dict(
+            env=env,
+            **kwargs,
         )
-    else:
-        shutil.copyfile(src_data.path, dst_file)
+
+    def run(self, fn: ta.Callable[..., T], **kwargs) -> T:
+        return fn(
+            'sh', '-c', self.s,
+            **self.build_run_kwargs(**kwargs),
+        )
 
 
-#
-
-
-@functools.singledispatch
-def open_oci_data_ref(data: OciDataRef) -> ta.BinaryIO:
-    raise TypeError(data)
-
-
-@open_oci_data_ref.register
-def _(data: FileOciDataRef) -> ta.BinaryIO:
-    return open(data.path, 'rb')
-
-
-@open_oci_data_ref.register
-def _(data: BytesOciDataRef) -> ta.BinaryIO:
-    return io.BytesIO(data.data)
-
-
-@open_oci_data_ref.register
-def _(data: TarFileOciDataRef) -> ta.BinaryIO:
-    return check.not_none(data.tar_file.extractfile(data.tar_info))  # type: ignore[return-value]
-
-
-#
-
-
-@functools.singledispatch
-def get_oci_data_ref_size(data: OciDataRef) -> int:
-    raise TypeError(data)
-
-
-@get_oci_data_ref_size.register
-def _(data: FileOciDataRef) -> int:
-    return os.path.getsize(data.path)
-
-
-@get_oci_data_ref_size.register
-def _(data: BytesOciDataRef) -> int:
-    return len(data.data)
-
-
-@get_oci_data_ref_size.register
-def _(data: TarFileOciDataRef) -> int:
-    return data.tar_info.size
+########################################
+# ../../specs/oci/compression.py
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class OciDataRefInfo:
-    data: OciDataRef
-
-    @cached_nullary
-    def sha256(self) -> str:
-        with open_oci_data_ref(self.data) as f:
-            return hashlib.file_digest(f, 'sha256').hexdigest()  # type: ignore[arg-type]
-
-    @cached_nullary
-    def digest(self) -> str:
-        return f'sha256:{self.sha256()}'
-
-    @cached_nullary
-    def size(self) -> int:
-        return get_oci_data_ref_size(self.data)
+class OciCompression(enum.Enum):
+    GZIP = enum.auto()
+    ZSTD = enum.auto()
 
 
 ########################################
-# ../../specs/oci/pack/unpacking.py
-
-
-##
-
-
-class OciLayerUnpacker(ExitStacked):
-    def __init__(
-            self,
-            input_files: ta.Sequence[ta.Union[str, tarfile.TarFile]],
-            output_file_path: str,
-    ) -> None:
-        super().__init__()
-
-        self._input_files = list(input_files)
-        self._output_file_path = output_file_path
-
-    #
-
-    @contextlib.contextmanager
-    def _open_input_file(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Iterator[tarfile.TarFile]:
-        if isinstance(input_file, tarfile.TarFile):
-            yield input_file
-
-        elif isinstance(input_file, str):
-            with tarfile.open(input_file) as tar_file:
-                yield tar_file
-
-        else:
-            raise TypeError(input_file)
-
-    #
-
-    class _Entry(ta.NamedTuple):
-        file: ta.Union[str, tarfile.TarFile]
-        info: tarfile.TarInfo
-
-    def _build_input_file_sorted_entries(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Sequence[_Entry]:
-        dct: ta.Dict[str, OciLayerUnpacker._Entry] = {}
-
-        with self._open_input_file(input_file) as input_tar_file:
-            for info in input_tar_file.getmembers():
-                check.not_in(info.name, dct)
-                dct[info.name] = self._Entry(
-                    file=input_file,
-                    info=info,
-                )
-
-        return sorted(dct.values(), key=lambda entry: entry.info.name)
-
-    @cached_nullary
-    def _entries_by_name(self) -> ta.Mapping[str, _Entry]:
-        root: dict = {}
-
-        def find_dir(dir_name: str) -> dict:  # noqa
-            if dir_name:
-                dir_parts = dir_name.split('/')
-            else:
-                dir_parts = []
-
-            cur = root  # noqa
-            for dir_part in dir_parts:
-                cur = cur[dir_part]  # noqa
-
-            return check.isinstance(cur, dict)
-
-        #
-
-        for input_file in self._input_files:
-            sorted_entries = self._build_input_file_sorted_entries(input_file)
-
-            wh_names = set()
-            wh_opaques = set()
-
-            #
-
-            for entry in sorted_entries:
-                info = entry.info
-                name = check.non_empty_str(info.name)
-                base_name = os.path.basename(name)
-                dir_name = os.path.dirname(name)
-
-                if base_name == '.wh..wh..opq':
-                    wh_opaques.add(dir_name)
-                    continue
-
-                if base_name.startswith('.wh.'):
-                    wh_base_name = os.path.basename(base_name[4:])
-                    wh_name = os.path.join(dir_name, wh_base_name)
-                    wh_names.add(wh_name)
-                    continue
-
-                cur = find_dir(dir_name)
-
-                if info.type == tarfile.DIRTYPE:
-                    try:
-                        ex = cur[base_name]
-                    except KeyError:
-                        cur[base_name] = {'': entry}
-                    else:
-                        ex[''] = entry
-
-                else:
-                    cur[base_name] = entry
-
-            #
-
-            for wh_name in reversed(sorted(wh_names)):  # noqa
-                wh_dir_name = os.path.dirname(wh_name)
-                wh_base_name = os.path.basename(wh_name)
-
-                cur = find_dir(wh_dir_name)
-                rm = cur[wh_base_name]
-
-                if isinstance(rm, dict):
-                    # Whiteouts wipe out whole directory:
-                    # https://github.com/containerd/containerd/blob/59c8cf6ea5f4175ad512914dd5ce554942bf144f/pkg/archive/tar_test.go#L648
-                    # check.equal(set(rm), '')
-                    del cur[wh_base_name]
-
-                elif isinstance(rm, self._Entry):
-                    del cur[wh_base_name]
-
-                else:
-                    raise TypeError(rm)
-
-            if wh_opaques:
-                raise NotImplementedError
-
-        #
-
-        out: ta.Dict[str, OciLayerUnpacker._Entry] = {}
-
-        def rec(cur):  # noqa
-            for _, child in sorted(cur.items(), key=lambda t: t[0]):
-                if isinstance(child, dict):
-                    rec(child)
-
-                elif isinstance(child, self._Entry):
-                    check.not_in(child.info.name, out)
-                    out[child.info.name] = child
-
-                else:
-                    raise TypeError(child)
-
-        rec(root)
-
-        return out
-
-    #
-
-    @cached_nullary
-    def _output_tar_file(self) -> tarfile.TarFile:
-        return self._enter_context(tarfile.open(self._output_file_path, 'w'))
-
-    #
-
-    def _add_unpacked_entry(
-            self,
-            input_tar_file: tarfile.TarFile,
-            info: tarfile.TarInfo,
-    ) -> None:
-        base_name = os.path.basename(info.name)
-        check.state(not base_name.startswith('.wh.'))
-
-        if info.type in tarfile.REGULAR_TYPES:
-            with check.not_none(input_tar_file.extractfile(info)) as f:
-                self._output_tar_file().addfile(info, f)
-
-        else:
-            self._output_tar_file().addfile(info)
-
-    def _unpack_file(
-            self,
-            input_file: ta.Union[str, tarfile.TarFile],
-    ) -> None:
-        entries_by_name = self._entries_by_name()
-
-        with self._open_input_file(input_file) as input_tar_file:
-            info: tarfile.TarInfo
-            for info in input_tar_file.getmembers():
-                try:
-                    entry = entries_by_name[info.name]
-                except KeyError:
-                    continue
-
-                if entry.file != input_file:
-                    continue
-
-                self._add_unpacked_entry(input_tar_file, info)
-
-    @cached_nullary
-    def write(self) -> None:
-        for input_file in self._input_files:
-            self._unpack_file(input_file)
-
-
-########################################
-# ../../../omlish/argparse/parsers.py
+# ../../../omcore/argparse/parsers.py
 
 
 ##
@@ -4522,7 +3910,7 @@ class ArgparseParserClass(Abstract):
 
 
 ########################################
-# ../../../omlish/formats/yaml/goyaml/errors.py
+# ../../../omcore/formats/yaml/goyaml/errors.py
 
 
 ##
@@ -4563,7 +3951,7 @@ def yaml_error(obj: ta.Union[YamlError, str, Exception]) -> YamlError:
 
 
 ########################################
-# ../../../omlish/http/headers.py
+# ../../../omcore/http/headers.py
 """
 TODO:
  - handle secrets (but they're strs..)
@@ -4867,7 +4255,7 @@ HttpHeaders._EMPTY = HttpHeaders([])  # noqa
 
 
 ########################################
-# ../../../omlish/http/parsing.py
+# ../../../omcore/http/parsing.py
 """
 Parses a complete HTTP/1.x start-line + header fields + final CRLF from a ``bytes`` object. Does NOT handle message
 bodies, chunked transfer decoding, trailers, or HTTP/2+.
@@ -6735,7 +6123,7 @@ def parse_http_trailers(
 
 
 ########################################
-# ../../../omlish/http/pipelines/compression/codings.py
+# ../../../omcore/http/pipelines/compression/codings.py
 
 
 ##
@@ -6850,7 +6238,7 @@ class DefaultIoPiplineHttpCompressionCodings(NamespaceClass):
 
 
 ########################################
-# ../../../omlish/io/pipelines/core.py
+# ../../../omcore/io/pipelines/core.py
 
 
 ##
@@ -8697,7 +8085,7 @@ class IoPipeline:
 
 
 ########################################
-# ../../../omlish/io/streambufs/types.py
+# ../../../omcore/io/streambufs/types.py
 
 
 ##
@@ -8965,7 +8353,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
 
 
 ########################################
-# ../../../omlish/lite/json.py
+# ../../../omcore/lite/json.py
 
 
 ##
@@ -9058,7 +8446,7 @@ def json_dumps(
 
 
 ########################################
-# ../../../omlish/lite/marshal.py
+# ../../../omcore/lite/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
@@ -9831,7 +9219,7 @@ unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
 
 
 ########################################
-# ../../../omlish/lite/maybes.py
+# ../../../omcore/lite/maybes.py
 
 
 ##
@@ -10049,7 +9437,7 @@ setattr(Maybe, 'empty', functools.partial(operator.attrgetter('_empty'), Maybe))
 
 
 ########################################
-# ../../../omlish/lite/runtime.py
+# ../../../omcore/lite/runtime.py
 
 
 ##
@@ -10069,7 +9457,7 @@ def check_lite_runtime_version() -> None:
 
 
 ########################################
-# ../../../omlish/lite/timeouts.py
+# ../../../omcore/lite/timeouts.py
 """
 TODO:
  - Event (/ Predicate)
@@ -10291,7 +9679,7 @@ class PredicateTimeout(Timeout):
 
 
 ########################################
-# ../../../omlish/logs/infos.py
+# ../../../omcore/logs/infos.py
 """
 TODO:
  - remove redundant info fields only present for std adaptation (Level.name, ...)
@@ -10648,7 +10036,7 @@ _check_logging_start_time()
 
 
 ########################################
-# ../../../omlish/logs/metrics/base.py
+# ../../../omcore/logs/metrics/base.py
 
 
 ##
@@ -10825,7 +10213,7 @@ class AsyncNopLoggerMetricCollector(AnyNopLoggerMetricCollector[ta.Awaitable[Non
 
 
 ########################################
-# ../../../omlish/logs/protocols.py
+# ../../../omcore/logs/protocols.py
 
 
 ##
@@ -10857,7 +10245,7 @@ class LoggerLike(ta.Protocol):
 
 
 ########################################
-# ../../../omlish/os/temp.py
+# ../../../omcore/os/temp.py
 
 
 ##
@@ -10905,7 +10293,7 @@ def temp_named_file_context(
 
 
 ########################################
-# ../../../omlish/sockets/bind.py
+# ../../../omcore/sockets/bind.py
 """
 TODO:
  - def parse: (<bind>)?:<port>, unix://, fd://
@@ -11226,7 +10614,7 @@ class UnixSocketBinder(SocketBinder):
 
 
 ########################################
-# ../../../omlish/sockets/handlers/types.py
+# ../../../omcore/sockets/handlers/types.py
 
 
 ##
@@ -11243,7 +10631,7 @@ class SocketHandlerClose(Exception):  # noqa
 
 
 ########################################
-# ../../../omlish/text/mangle.py
+# ../../../omcore/text/mangle.py
 
 
 ##
@@ -11339,569 +10727,617 @@ class StringMangler:
 
 
 ########################################
-# ../../dataserver/targets.py
+# ../github/api/v1/api.py
+"""
+export FILE_SIZE=$(stat --format="%s" $FILE)
+
+export CACHE_ID=$(curl -s \
+  -X POST \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"key": "'"$CACHE_KEY"'", "cacheSize": '"$FILE_SIZE"'}' \
+  | jq .cacheId)
+
+curl -s \
+  -X PATCH \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+  -H 'Content-Type: application/octet-stream' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -H "Content-Range: bytes 0-$((FILE_SIZE - 1))/*" \
+  --data-binary @"$FILE"
+
+curl -s \
+  -X POST \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/caches/$CACHE_ID" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json;api-version=6.0-preview.1' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"size": '"$(stat --format="%s" $FILE)"'}'
+
+curl -s \
+  -X GET \
+  "${ACTIONS_CACHE_URL}_apis/artifactcache/cache?keys=$CACHE_KEY" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  | jq .
+"""
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class DataServerTarget(Abstract):
-    content_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-    content_length: ta.Optional[int] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+class GithubCacheServiceV1:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
+    API_VERSION = '6.0-preview.1'
+
+    @classmethod
+    def get_service_url(cls, base_url: str) -> str:
+        return f'{base_url.rstrip("/")}/_apis/artifactcache'
 
     #
 
     @classmethod
-    def of(
-            cls,
-            obj: ta.Union[
-                'DataServerTarget',
-                bytes,
-                None,
-            ] = None,
-            *,
+    def dataclass_to_json(cls, obj: ta.Any) -> ta.Any:
+        return {
+            camel_case(k, lower=True): v
+            for k, v in dc.asdict(obj).items()
+            if v is not None
+        }
 
-            file_path: ta.Optional[str] = None,
-            url: ta.Optional[str] = None,
-
-            **kwargs: ta.Any,
-    ) -> 'DataServerTarget':
-        if isinstance(obj, DataServerTarget):
-            check.none(file_path)
-            check.none(url)
-            check.empty(kwargs)
-            return obj
-
-        elif isinstance(obj, bytes):
-            return BytesDataServerTarget(
-                data=obj,
-                **kwargs,
-            )
-
-        elif file_path is not None:
-            check.none(obj)
-            check.none(url)
-            return FileDataServerTarget(
-                file_path=file_path,
-                **kwargs,
-            )
-
-        elif url is not None:
-            check.none(obj)
-            check.none(file_path)
-            return UrlDataServerTarget(
-                url=url,
-                **kwargs,
-            )
-
-        else:
-            raise TypeError('No target type provided')
+    @classmethod
+    def dataclass_from_json(cls, dcls: ta.Type[T], obj: ta.Any) -> T:
+        return dcls(**{
+            snake_case(k): v
+            for k, v in obj.items()
+        })
 
     #
 
-    @classmethod
-    def of_bytes(cls, data: bytes) -> 'BytesDataServerTarget':
-        return BytesDataServerTarget(
-            data=data,
-            content_type='application/octet-stream',
-        )
+    @dc.dataclass(frozen=True)
+    class ArtifactCacheEntry:
+        cache_key: ta.Optional[str]
+        scope: ta.Optional[str]
+        cache_version: ta.Optional[str]
+        creation_time: ta.Optional[str]
+        archive_location: ta.Optional[str]
 
-    @classmethod
-    def of_text(cls, data: str) -> 'BytesDataServerTarget':
-        return BytesDataServerTarget(
-            data=data.encode('utf-8'),
-            content_type='text/plain; charset=utf-8',
-        )
+    @dc.dataclass(frozen=True)
+    class ArtifactCacheList:
+        total_count: int
+        artifact_caches: ta.Optional[ta.Sequence['GithubCacheServiceV1.ArtifactCacheEntry']]
 
-    @classmethod
-    def of_json(cls, data: str) -> 'BytesDataServerTarget':
-        return BytesDataServerTarget(
-            data=data.encode('utf-8'),
-            content_type='application/json; charset=utf-8',
-        )
+    #
 
-    @classmethod
-    def of_html(cls, data: str) -> 'BytesDataServerTarget':
-        return BytesDataServerTarget(
-            data=data.encode('utf-8'),
-            content_type='text/html; charset=utf-8',
-        )
+    @dc.dataclass(frozen=True)
+    class ReserveCacheRequest:
+        key: str
+        cache_size: ta.Optional[int] = None
+        version: ta.Optional[str] = None
 
+    @dc.dataclass(frozen=True)
+    class ReserveCacheResponse:
+        cache_id: int
 
-@dc.dataclass(frozen=True)
-class BytesDataServerTarget(DataServerTarget):
-    data: ta.Optional[bytes] = None  # required
+    #
 
+    @dc.dataclass(frozen=True)
+    class CommitCacheRequest:
+        size: int
 
-@dc.dataclass(frozen=True)
-class FileDataServerTarget(DataServerTarget):
-    file_path: ta.Optional[str] = None  # required
+    #
 
-    def __post_init__(self) -> None:
-        dataclass_maybe_post_init(super())
-        check.non_empty_str(self.file_path)
+    class CompressionMethod:
+        GZIP = 'gzip'
+        ZSTD_WITHOUT_LONG = 'zstd-without-long'
+        ZSTD = 'zstd'
 
-
-@dc.dataclass(frozen=True)
-class UrlDataServerTarget(DataServerTarget):
-    url: ta.Optional[str] = None  # required
-    methods: ta.Optional[ta.Sequence[str]] = None  # required
-
-    def __post_init__(self) -> None:
-        dataclass_maybe_post_init(super())
-        check.non_empty_str(self.url)
-        check.not_none(self.methods)
-        check.not_isinstance(self.methods, str)
+    @dc.dataclass(frozen=True)
+    class InternalCacheOptions:
+        compression_method: ta.Optional[str]  # CompressionMethod
+        enable_cross_os_archive: ta.Optional[bool]
+        cache_size: ta.Optional[int]
 
 
 ########################################
-# ../../specs/oci/data.py
+# ../github/api/v2/api.py
+"""
+https://github.com/tonistiigi/go-actions-cache/blob/3e9a6642607fd6e4d5d4fdab7c91fe8bf4c36a25/cache_v2.go
+
+==
+
+curl -s \
+  -X POST \
+  "${ACTIONS_RESULTS_URL}twirp/github.actions.results.api.v1.CacheService/CreateCacheEntry" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"key": "foo", "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
+  | jq .
+
+curl -s \
+  -X POST \
+  "${ACTIONS_RESULTS_URL}twirp/github.actions.results.api.v1.CacheService/GetCacheEntryDownloadURL" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
+  -d '{"key": "foo", "restoreKeys": [], "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
+  | jq .
+"""  # noqa
 
 
 ##
 
 
-@dc.dataclass()
-class OciDataclass(Abstract):
+class GithubCacheServiceV2:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
+    SERVICE_NAME = 'github.actions.results.api.v1.CacheService'
+
+    @classmethod
+    def get_service_url(cls, base_url: str) -> str:
+        return f'{base_url.rstrip("/")}/twirp/{cls.SERVICE_NAME}'
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Method(ta.Generic[GithubCacheServiceV2RequestT, GithubCacheServiceV2ResponseT]):
+        name: str
+        request: ta.Type[GithubCacheServiceV2RequestT]
+        response: ta.Type[GithubCacheServiceV2ResponseT]
+
+    #
+
+    class CacheScopePermission:
+        READ = 1
+        WRITE = 2
+        ALL = READ | WRITE
+
+    @dc.dataclass(frozen=True)
+    class CacheScope:
+        scope: str
+        permission: int  # CacheScopePermission
+
+    @dc.dataclass(frozen=True)
+    class CacheMetadata:
+        repository_id: int
+        scope: ta.Sequence['GithubCacheServiceV2.CacheScope']
+
+    VERSION_LENGTH: int = 64
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryRequest:
+        key: str
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+        def __post_init__(self) -> None:
+            check.equal(len(self.version), GithubCacheServiceV2.VERSION_LENGTH)
+
+    @dc.dataclass(frozen=True)
+    class CreateCacheEntryResponse:
+        ok: bool
+        signed_upload_url: str
+        message: ta.Optional[str] = None
+
+    CREATE_CACHE_ENTRY_METHOD: Method[
+        CreateCacheEntryRequest,
+        CreateCacheEntryResponse,
+    ] = Method(
+        'CreateCacheEntry',
+        CreateCacheEntryRequest,
+        CreateCacheEntryResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadRequest:
+        key: str
+        size_bytes: int
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class FinalizeCacheEntryUploadResponse:
+        ok: bool
+        entry_id: str
+        message: ta.Optional[str] = None
+
+    FINALIZE_CACHE_ENTRY_METHOD: Method[
+        FinalizeCacheEntryUploadRequest,
+        FinalizeCacheEntryUploadResponse,
+    ] = Method(
+        'FinalizeCacheEntryUpload',
+        FinalizeCacheEntryUploadRequest,
+        FinalizeCacheEntryUploadResponse,
+    )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlRequest:
+        key: str
+        restore_keys: ta.Sequence[str]
+        version: str
+        metadata: ta.Optional['GithubCacheServiceV2.CacheMetadata'] = None
+
+    @dc.dataclass(frozen=True)
+    class GetCacheEntryDownloadUrlResponse:
+        ok: bool
+        signed_download_url: str
+        matched_key: str
+
+    GET_CACHE_ENTRY_DOWNLOAD_URL_METHOD: Method[
+        GetCacheEntryDownloadUrlRequest,
+        GetCacheEntryDownloadUrlResponse,
+    ] = Method(
+        'GetCacheEntryDownloadURL',
+        GetCacheEntryDownloadUrlRequest,
+        GetCacheEntryDownloadUrlResponse,
+    )
+
+
+########################################
+# ../github/bootstrap.py
+"""
+sudo rm -rf \
+    /usr/local/.ghcup \
+    /opt/hostedtoolcache \
+
+/usr/local/.ghcup       6.4G, 3391250 files
+/opt/hostedtoolcache    8.0G, 14843980 files
+/usr/local/lib/android  6.4G, 17251667 files
+"""
+
+
+##
+
+
+GITHUB_ACTIONS_ENV_VAR = register_github_env_var('GITHUB_ACTIONS')
+
+
+def is_in_github_actions() -> bool:
+    return GITHUB_ACTIONS_ENV_VAR() is not None
+
+
+########################################
+# ../../specs/oci/datarefs.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class OciDataRef(Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
+class BytesOciDataRef(OciDataRef):
+    data: bytes
+
+
+@dc.dataclass(frozen=True)
+class FileOciDataRef(OciDataRef):
+    path: str
+
+
+@dc.dataclass(frozen=True)
+class TarFileOciDataRef(OciDataRef):
+    tar_file: tarfile.TarFile
+    tar_info: tarfile.TarInfo
+
+
 ##
 
 
-@dc.dataclass()
-class OciImageIndex(OciDataclass):
-    manifests: ta.List[ta.Union['OciImageIndex', 'OciImageManifest']]
+@functools.singledispatch
+def write_oci_data_ref_to_file(
+        src_data: OciDataRef,
+        dst_file: str,
+        *,
+        symlink: bool = False,  # noqa
+        chunk_size: int = 1024 * 1024,
+) -> None:
+    with open_oci_data_ref(src_data) as f_src:
+        with open(dst_file, 'wb') as f_dst:
+            shutil.copyfileobj(f_src, f_dst, length=chunk_size)  # noqa
 
-    annotations: ta.Optional[ta.Dict[str, str]] = None
+
+@write_oci_data_ref_to_file.register
+def _(
+        src_data: FileOciDataRef,
+        dst_file: str,
+        *,
+        symlink: bool = False,
+        **kwargs: ta.Any,
+) -> None:
+    if symlink:
+        os.symlink(
+            os.path.relpath(src_data.path, os.path.dirname(dst_file)),
+            dst_file,
+        )
+    else:
+        shutil.copyfile(src_data.path, dst_file)
 
 
 #
 
 
-@dc.dataclass()
-class OciImageManifest(OciDataclass):
-    config: 'OciImageConfig'
+@functools.singledispatch
+def open_oci_data_ref(data: OciDataRef) -> ta.BinaryIO:
+    raise TypeError(data)
 
-    layers: ta.List['OciImageLayer']
 
-    annotations: ta.Optional[ta.Dict[str, str]] = None
+@open_oci_data_ref.register
+def _(data: FileOciDataRef) -> ta.BinaryIO:
+    return open(data.path, 'rb')
+
+
+@open_oci_data_ref.register
+def _(data: BytesOciDataRef) -> ta.BinaryIO:
+    return io.BytesIO(data.data)
+
+
+@open_oci_data_ref.register
+def _(data: TarFileOciDataRef) -> ta.BinaryIO:
+    return check.not_none(data.tar_file.extractfile(data.tar_info))  # type: ignore[return-value]
 
 
 #
 
 
-@dc.dataclass()
-class OciImageLayer(OciDataclass):
-    class Kind(enum.Enum):
-        TAR = enum.auto()
-        TAR_GZIP = enum.auto()
-        TAR_ZSTD = enum.auto()
+@functools.singledispatch
+def get_oci_data_ref_size(data: OciDataRef) -> int:
+    raise TypeError(data)
 
-        @property
-        def compression(self) -> ta.Optional[OciCompression]:
-            if self is self.TAR:
-                return None
-            elif self is self.TAR_GZIP:
-                return OciCompression.GZIP
-            elif self is self.TAR_ZSTD:
-                return OciCompression.ZSTD
-            else:
-                raise ValueError(self)
 
-        @classmethod
-        def from_compression(cls, compression: ta.Optional[OciCompression]) -> 'OciImageLayer.Kind':
-            if compression is None:
-                return cls.TAR
-            elif compression == OciCompression.GZIP:
-                return cls.TAR_GZIP
-            elif compression == OciCompression.ZSTD:
-                return cls.TAR_ZSTD
-            else:
-                raise ValueError(compression)
+@get_oci_data_ref_size.register
+def _(data: FileOciDataRef) -> int:
+    return os.path.getsize(data.path)
 
-    kind: Kind
 
+@get_oci_data_ref_size.register
+def _(data: BytesOciDataRef) -> int:
+    return len(data.data)
+
+
+@get_oci_data_ref_size.register
+def _(data: TarFileOciDataRef) -> int:
+    return data.tar_info.size
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class OciDataRefInfo:
     data: OciDataRef
 
+    @cached_nullary
+    def sha256(self) -> str:
+        with open_oci_data_ref(self.data) as f:
+            return hashlib.file_digest(f, 'sha256').hexdigest()  # type: ignore[arg-type]
 
-#
+    @cached_nullary
+    def digest(self) -> str:
+        return f'sha256:{self.sha256()}'
 
-
-@dc.dataclass()
-class OciImageConfig(OciDataclass):
-    """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/config.md"""
-
-    architecture: str
-    os: str
-
-    @dc.dataclass()
-    class RootFs:
-        type: str
-        diff_ids: ta.List[str]
-
-    rootfs: RootFs
-
-    #
-
-    created: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-    author: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-    os_version: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.version', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
-    os_features: ta.Optional[ta.List[str]] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.features', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
-    variant: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-
-    """
-    config object, OPTIONAL
-        User string, OPTIONAL
-        ExposedPorts object, OPTIONAL
-        Env array of strings, OPTIONAL
-        Entrypoint array of strings, OPTIONAL
-        Cmd array of strings, OPTIONAL
-        Volumes object, OPTIONAL
-        WorkingDir string, OPTIONAL
-        Labels object, OPTIONAL
-        StopSignal string, OPTIONAL
-        ArgsEscaped boolean, OPTIONAL
-        Memory integer, OPTIONAL
-        MemorySwap integer, OPTIONAL
-        CpuShares integer, OPTIONAL
-        Healthcheck object, OPTIONAL
-    """
-    config: ta.Optional[ta.Dict[str, ta.Any]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-
-    @dc.dataclass()
-    class History:
-        created: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-        author: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-        created_by: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-        comment: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-        empty_layer: ta.Optional[bool] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-
-    history: ta.Optional[ta.List[History]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-
-
-##
-
-
-def is_empty_oci_dataclass(obj: OciDataclass) -> bool:
-    if not isinstance(obj, OciDataclass):
-        raise TypeError(obj)
-
-    elif isinstance(obj, OciImageIndex):
-        return not obj.manifests
-
-    elif isinstance(obj, OciImageManifest):
-        return not obj.layers
-
-    else:
-        return False
-
-
-##
-
-
-def get_single_leaf_oci_image_index(image_index: OciImageIndex) -> OciImageIndex:
-    while True:
-        child_manifest = check.single(image_index.manifests)
-        if isinstance(child_manifest, OciImageManifest):
-            break
-        image_index = check.isinstance(child_manifest, OciImageIndex)
-
-    return image_index
-
-
-def get_single_oci_image_manifest(image_index: OciImageIndex) -> OciImageManifest:
-    child_index = check.single(image_index.manifests)
-    return check.isinstance(child_index, OciImageManifest)
+    @cached_nullary
+    def size(self) -> int:
+        return get_oci_data_ref_size(self.data)
 
 
 ########################################
-# ../../specs/oci/repositories.py
+# ../../specs/oci/pack/unpacking.py
 
 
 ##
 
 
-class OciRepository(Abstract):
-    @abc.abstractmethod
-    def contains_blob(self, digest: str) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def read_blob(self, digest: str) -> bytes:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def ref_blob(self, digest: str) -> OciDataRef:
-        raise NotImplementedError
-
-    @classmethod
-    def of(
-            cls,
-            obj: ta.Union[
-                'OciRepository',
-                str,
-                tarfile.TarFile,
-                ta.Mapping[str, bytes],
-            ],
-    ) -> 'OciRepository':
-        if isinstance(obj, OciRepository):
-            return obj
-
-        elif isinstance(obj, str):
-            check.arg(os.path.isdir(obj))
-            return DirectoryOciRepository(obj)
-
-        elif isinstance(obj, tarfile.TarFile):
-            return TarFileOciRepository(obj)
-
-        elif isinstance(obj, ta.Mapping):
-            return DictOciRepository(obj)
-
-        else:
-            raise TypeError(obj)
-
-
-class FileOciRepository(OciRepository, Abstract):
-    @abc.abstractmethod
-    def read_file(self, path: str) -> bytes:
-        raise NotImplementedError
-
-
-#
-
-
-class DirectoryOciRepository(FileOciRepository):
-    def __init__(self, data_dir: str) -> None:
-        super().__init__()
-
-        self._data_dir = check.non_empty_str(data_dir)
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._data_dir!r})'
-
-    def read_file(self, path: str) -> bytes:
-        full_path = os.path.join(self._data_dir, path)
-        check.arg(is_path_in_dir(self._data_dir, full_path))
-        with open(full_path, 'rb') as f:
-            return f.read()
-
-    def blob_path(self, digest: str) -> str:
-        scheme, value = digest.split(':')
-        return os.path.join('blobs', scheme, value)
-
-    def blob_full_path(self, digest: str) -> str:
-        path = self.blob_path(digest)
-        full_path = os.path.join(self._data_dir, path)
-        check.arg(is_path_in_dir(self._data_dir, full_path))
-        return full_path
-
-    def contains_blob(self, digest: str) -> bool:
-        return os.path.isfile(self.blob_full_path(digest))
-
-    def read_blob(self, digest: str) -> bytes:
-        return self.read_file(self.blob_path(digest))
-
-    def ref_blob(self, digest: str) -> OciDataRef:
-        return FileOciDataRef(self.blob_full_path(digest))
-
-
-#
-
-
-class TarFileOciRepository(FileOciRepository):
-    def __init__(self, tar_file: tarfile.TarFile) -> None:
-        super().__init__()
-
-        check.arg('r' in tar_file.mode)
-
-        self._tar_file = tar_file
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._tar_file!r})'
-
-    def read_file(self, path: str) -> bytes:
-        if (ti := self._tar_file.getmember(path)) is None:
-            raise FileNotFoundError(path)
-        with check.not_none(self._tar_file.extractfile(ti)) as f:
-            return f.read()
-
-    def blob_name(self, digest: str) -> str:
-        scheme, value = digest.split(':')
-        return os.path.join('blobs', scheme, value)
-
-    def contains_blob(self, digest: str) -> bool:
-        try:
-            self._tar_file.getmember(self.blob_name(digest))
-        except KeyError:
-            return False
-        else:
-            return True
-
-    def read_blob(self, digest: str) -> bytes:
-        if (ti := self._tar_file.getmember(self.blob_name(digest))) is None:
-            raise KeyError(digest)
-        with check.not_none(self._tar_file.extractfile(ti)) as f:
-            return f.read()
-
-    def ref_blob(self, digest: str) -> OciDataRef:
-        return TarFileOciDataRef(
-            tar_file=self._tar_file,
-            tar_info=self._tar_file.getmember(self.blob_name(digest)),
-        )
-
-
-#
-
-
-class DictOciRepository(OciRepository):
-    def __init__(self, blobs: ta.Mapping[str, bytes]) -> None:
-        super().__init__()
-
-        self._blobs = blobs
-
-    def contains_blob(self, digest: str) -> bool:
-        return digest in self._blobs
-
-    def read_blob(self, digest: str) -> bytes:
-        return self._blobs[digest]
-
-    def ref_blob(self, digest: str) -> OciDataRef:
-        return BytesOciDataRef(self._blobs[digest])
-
-
-########################################
-# ../../specs/oci/tars.py
-
-
-##
-
-
-class WrittenOciDataTarFileInfo(ta.NamedTuple):
-    compressed_sz: int
-    compressed_sha256: str
-
-    tar_sz: int
-    tar_sha256: str
-
-
-class OciDataTarWriter(ExitStacked):
+class OciLayerUnpacker(ExitStacked):
     def __init__(
             self,
-            f: ta.BinaryIO,
-            compression: ta.Optional[OciCompression] = None,
-            *,
-            gzip_level: int = 1,
-            zstd_level: int = 10,
+            input_files: ta.Sequence[ta.Union[str, tarfile.TarFile]],
+            output_file_path: str,
     ) -> None:
         super().__init__()
 
-        self._f = f
-        self._compression = compression
+        self._input_files = list(input_files)
+        self._output_file_path = output_file_path
 
-        self._gzip_level = gzip_level
-        self._zstd_level = zstd_level
+    #
 
-    class _FileWrapper:
-        def __init__(self, f):
-            super().__init__()
+    @contextlib.contextmanager
+    def _open_input_file(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Iterator[tarfile.TarFile]:
+        if isinstance(input_file, tarfile.TarFile):
+            yield input_file
 
-            self._f = f
-            self._c = 0
-            self._h = hashlib.sha256()
-
-        @property
-        def size(self) -> int:
-            return self._c
-
-        def sha256(self) -> str:
-            return self._h.hexdigest()
-
-        def write(self, d):
-            self._c += len(d)
-            self._h.update(d)
-            self._f.write(d)
-
-        def tell(self) -> int:
-            return self._f.tell()
-
-    _cw: _FileWrapper
-    _cf: ta.BinaryIO
-
-    _tw: _FileWrapper
-    _tf: tarfile.TarFile
-
-    def info(self) -> WrittenOciDataTarFileInfo:
-        return WrittenOciDataTarFileInfo(
-            compressed_sz=self._cw.size,
-            compressed_sha256=self._cw.sha256(),
-
-            tar_sz=self._tw.size,
-            tar_sha256=self._tw.sha256(),
-        )
-
-    def _enter_contexts(self) -> None:
-        self._cw = self._FileWrapper(self._f)
-
-        if self._compression is OciCompression.GZIP:
-            self._cf = self._enter_context(
-                gzip.GzipFile(  # type: ignore
-                    fileobj=self._cw,
-                    mode='wb',
-                    compresslevel=self._gzip_level,
-                ),
-            )
-
-        elif self._compression is OciCompression.ZSTD:
-            import zstandard  # noqa
-
-            zc = zstandard.ZstdCompressor(
-                level=self._zstd_level,
-            )
-            self._cf = self._enter_context(zc.stream_writer(self._cw))  # type: ignore
-
-        elif self._compression is None:
-            self._cf = self._cw  # type: ignore
+        elif isinstance(input_file, str):
+            with tarfile.open(input_file) as tar_file:
+                yield tar_file
 
         else:
-            raise ValueError(self._compression)
+            raise TypeError(input_file)
+
+    #
+
+    class _Entry(ta.NamedTuple):
+        file: ta.Union[str, tarfile.TarFile]
+        info: tarfile.TarInfo
+
+    def _build_input_file_sorted_entries(self, input_file: ta.Union[str, tarfile.TarFile]) -> ta.Sequence[_Entry]:
+        dct: ta.Dict[str, OciLayerUnpacker._Entry] = {}
+
+        with self._open_input_file(input_file) as input_tar_file:
+            for info in input_tar_file.getmembers():
+                check.not_in(info.name, dct)
+                dct[info.name] = self._Entry(
+                    file=input_file,
+                    info=info,
+                )
+
+        return sorted(dct.values(), key=lambda entry: entry.info.name)
+
+    @cached_nullary
+    def _entries_by_name(self) -> ta.Mapping[str, _Entry]:
+        root: dict = {}
+
+        def find_dir(dir_name: str) -> dict:  # noqa
+            if dir_name:
+                dir_parts = dir_name.split('/')
+            else:
+                dir_parts = []
+
+            cur = root  # noqa
+            for dir_part in dir_parts:
+                cur = cur[dir_part]  # noqa
+
+            return check.isinstance(cur, dict)
 
         #
 
-        self._tw = self._FileWrapper(self._cf)
+        for input_file in self._input_files:
+            sorted_entries = self._build_input_file_sorted_entries(input_file)
 
-        self._tf = self._enter_context(
-            tarfile.open(  # type: ignore  # noqa
-                fileobj=self._tw,
-                mode='w',
-            ),
-        )
+            wh_names = set()
+            wh_opaques = set()
 
-    def tar_file(self) -> tarfile.TarFile:
-        return self._tf
+            #
 
-    def add_file(self, ti: tarfile.TarInfo, f: ta.Optional[ta.BinaryIO] = None) -> None:
-        self._tf.addfile(ti, f)
+            for entry in sorted_entries:
+                info = entry.info
+                name = check.non_empty_str(info.name)
+                base_name = os.path.basename(name)
+                dir_name = os.path.dirname(name)
 
+                if base_name == '.wh..wh..opq':
+                    wh_opaques.add(dir_name)
+                    continue
 
-def write_oci_data_tar_file(
-        f: ta.BinaryIO,
-        data: ta.Mapping[str, OciDataRef],
-) -> WrittenOciDataTarFileInfo:
-    with OciDataTarWriter(f) as tgw:
-        for n, dr in data.items():
-            ti = tarfile.TarInfo(name=n)
-            ri = OciDataRefInfo(dr)
-            ti.size = ri.size()
-            with open_oci_data_ref(dr) as df:
-                tgw.add_file(ti, df)
+                if base_name.startswith('.wh.'):
+                    wh_base_name = os.path.basename(base_name[4:])
+                    wh_name = os.path.join(dir_name, wh_base_name)
+                    wh_names.add(wh_name)
+                    continue
 
-    return tgw.info()
+                cur = find_dir(dir_name)
+
+                if info.type == tarfile.DIRTYPE:
+                    try:
+                        ex = cur[base_name]
+                    except KeyError:
+                        cur[base_name] = {'': entry}
+                    else:
+                        ex[''] = entry
+
+                else:
+                    cur[base_name] = entry
+
+            #
+
+            for wh_name in reversed(sorted(wh_names)):  # noqa
+                wh_dir_name = os.path.dirname(wh_name)
+                wh_base_name = os.path.basename(wh_name)
+
+                cur = find_dir(wh_dir_name)
+                rm = cur[wh_base_name]
+
+                if isinstance(rm, dict):
+                    # Whiteouts wipe out whole directory:
+                    # https://github.com/containerd/containerd/blob/59c8cf6ea5f4175ad512914dd5ce554942bf144f/pkg/archive/tar_test.go#L648
+                    # check.equal(set(rm), '')
+                    del cur[wh_base_name]
+
+                elif isinstance(rm, self._Entry):
+                    del cur[wh_base_name]
+
+                else:
+                    raise TypeError(rm)
+
+            if wh_opaques:
+                raise NotImplementedError
+
+        #
+
+        out: ta.Dict[str, OciLayerUnpacker._Entry] = {}
+
+        def rec(cur):  # noqa
+            for _, child in sorted(cur.items(), key=lambda t: t[0]):
+                if isinstance(child, dict):
+                    rec(child)
+
+                elif isinstance(child, self._Entry):
+                    check.not_in(child.info.name, out)
+                    out[child.info.name] = child
+
+                else:
+                    raise TypeError(child)
+
+        rec(root)
+
+        return out
+
+    #
+
+    @cached_nullary
+    def _output_tar_file(self) -> tarfile.TarFile:
+        return self._enter_context(tarfile.open(self._output_file_path, 'w'))
+
+    #
+
+    def _add_unpacked_entry(
+            self,
+            input_tar_file: tarfile.TarFile,
+            info: tarfile.TarInfo,
+    ) -> None:
+        base_name = os.path.basename(info.name)
+        check.state(not base_name.startswith('.wh.'))
+
+        if info.type in tarfile.REGULAR_TYPES:
+            with check.not_none(input_tar_file.extractfile(info)) as f:
+                self._output_tar_file().addfile(info, f)
+
+        else:
+            self._output_tar_file().addfile(info)
+
+    def _unpack_file(
+            self,
+            input_file: ta.Union[str, tarfile.TarFile],
+    ) -> None:
+        entries_by_name = self._entries_by_name()
+
+        with self._open_input_file(input_file) as input_tar_file:
+            info: tarfile.TarInfo
+            for info in input_tar_file.getmembers():
+                try:
+                    entry = entries_by_name[info.name]
+                except KeyError:
+                    continue
+
+                if entry.file != input_file:
+                    continue
+
+                self._add_unpacked_entry(input_tar_file, info)
+
+    @cached_nullary
+    def write(self) -> None:
+        for input_file in self._input_files:
+            self._unpack_file(input_file)
 
 
 ########################################
-# ../../../omlish/argparse/cli.py
+# ../../../omcore/argparse/cli.py
 """
 FIXME:
  - exit_on_error lol
@@ -12005,7 +11441,7 @@ class ArgparseCli(ArgparseParserClass, Abstract):
 
 
 ########################################
-# ../../../omlish/asyncs/asyncio/sockets.py
+# ../../../omcore/asyncs/asyncio/sockets.py
 
 
 ##
@@ -12050,7 +11486,7 @@ async def asyncio_wait_until_can_connect(
 
 
 ########################################
-# ../../../omlish/asyncs/asyncio/timeouts.py
+# ../../../omcore/asyncs/asyncio/timeouts.py
 
 
 ##
@@ -12066,7 +11502,7 @@ def asyncio_maybe_timeout(
 
 
 ########################################
-# ../../../omlish/formats/yaml/goyaml/tokens.py
+# ../../../omcore/formats/yaml/goyaml/tokens.py
 ##
 # MIT License
 #
@@ -13088,7 +12524,7 @@ def yaml_detect_line_break_char(src: str) -> str:
 
 
 ########################################
-# ../../../omlish/http/pipelines/bodymodes.py
+# ../../../omcore/http/pipelines/bodymodes.py
 
 
 ##
@@ -13134,7 +12570,7 @@ class IoPipelineHttpBodyMode:
 
 
 ########################################
-# ../../../omlish/http/pipelines/objects.py
+# ../../../omcore/http/pipelines/objects.py
 
 
 ##
@@ -13374,7 +12810,7 @@ class IoPipelineHttpMessageObjects(Abstract):
 
 
 ########################################
-# ../../../omlish/http/simple/types.py
+# ../../../omcore/http/simple/types.py
 
 
 ##
@@ -13467,7 +12903,7 @@ class SimpleHttpHandler_(Abstract):  # noqa
 
 
 ########################################
-# ../../../omlish/io/pipelines/bytes/buffering.py
+# ../../../omcore/io/pipelines/bytes/buffering.py
 
 
 ##
@@ -13490,7 +12926,7 @@ class OutboundBytesBufferingIoPipelineHandler(IoPipelineHandler, Abstract):
 
 
 ########################################
-# ../../../omlish/io/pipelines/drivers/metadata.py
+# ../../../omcore/io/pipelines/drivers/metadata.py
 
 
 ##
@@ -13502,7 +12938,7 @@ class DriverIoPipelineMetadata(IoPipelineMetadata):
 
 
 ########################################
-# ../../../omlish/io/pipelines/flow/types.py
+# ../../../omcore/io/pipelines/flow/types.py
 
 
 ##
@@ -13631,7 +13067,7 @@ class IoPipelineFlow(Abstract):
 
 
 ########################################
-# ../../../omlish/io/pipelines/sched/types.py
+# ../../../omcore/io/pipelines/sched/types.py
 
 
 ##
@@ -13658,7 +13094,7 @@ class IoPipelineScheduling(Abstract):
 
 
 ########################################
-# ../../../omlish/io/streambufs/base.py
+# ../../../omcore/io/streambufs/base.py
 
 
 ##
@@ -13671,7 +13107,7 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 
 
 ########################################
-# ../../../omlish/io/streambufs/framing.py
+# ../../../omcore/io/streambufs/framing.py
 
 
 ##
@@ -14006,7 +13442,7 @@ class LengthFieldByteStreamFrameDecoder:
 
 
 ########################################
-# ../../../omlish/io/streambufs/utils.py
+# ../../../omcore/io/streambufs/utils.py
 
 
 ##
@@ -14166,7 +13602,7 @@ class ByteStreamBuffers(NamespaceClass):
 
 
 ########################################
-# ../../../omlish/lite/inject.py
+# ../../../omcore/lite/inject.py
 
 
 ###
@@ -15184,7 +14620,7 @@ inj = InjectionApi()
 
 
 ########################################
-# ../../../omlish/logs/contexts.py
+# ../../../omcore/logs/contexts.py
 
 
 ##
@@ -15347,7 +14783,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
 
 ########################################
-# ../../../omlish/logs/std/json.py
+# ../../../omcore/logs/std/json.py
 """
 TODO:
  - translate json keys
@@ -15404,7 +14840,7 @@ class JsonLoggingFormatter(logging.Formatter):
 
 
 ########################################
-# ../../../omlish/logs/utils.py
+# ../../../omcore/logs/utils.py
 
 
 ##
@@ -15494,7 +14930,7 @@ log_timing_context = LogTimingContext
 
 
 ########################################
-# ../../../omlish/sockets/handlers/server.py
+# ../../../omcore/sockets/handlers/server.py
 
 
 ##
@@ -15680,7 +15116,7 @@ class SocketHandlerServer:
 
 
 ########################################
-# ../../../omlish/sockets/handlers/simple.py
+# ../../../omcore/sockets/handlers/simple.py
 
 
 ##
@@ -15796,7 +15232,7 @@ class ExceptionLoggingSocketHandler(SocketHandler_):
 
 
 ########################################
-# ../../../omlish/sockets/handlers/ssl.py
+# ../../../omcore/sockets/handlers/ssl.py
 
 
 ##
@@ -15829,7 +15265,7 @@ class SslErrorHandlingSocketHandler(SocketHandler_):
 
 
 ########################################
-# ../../../omlish/sockets/handlers/threading.py
+# ../../../omcore/sockets/handlers/threading.py
 
 
 ##
@@ -15947,7 +15383,7 @@ class ThreadingSocketHandler:
 
 
 ########################################
-# ../../../omlish/subprocesses/run.py
+# ../../../omcore/subprocesses/run.py
 
 
 ##
@@ -16078,7 +15514,7 @@ class SubprocessRunnable(Abstract, ta.Generic[T]):
 
 
 ########################################
-# ../../../omlish/subprocesses/wrap.py
+# ../../../omcore/subprocesses/wrap.py
 """
 This bypasses debuggers attaching to spawned subprocess children that look like python processes. See:
 
@@ -16104,586 +15540,569 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 ########################################
-# ../../dataserver/handlers.py
+# ../../dataserver/targets.py
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class DataServerRequest:
-    method: str
-    path: str
-
-
-@dc.dataclass(frozen=True)
-class DataServerResponse:
-    status: int
-    headers: ta.Optional[ta.Mapping[str, str]] = None
-    body: ta.Optional[io.IOBase] = None
-
-    #
-
-    def close(self) -> None:
-        if (body := self.body) is not None:
-            body.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-
-class DataServerError(Exception):
-    pass
-
-
-class DataServerHandler(Abstract):
-    @abc.abstractmethod
-    def handle(self, req: DataServerRequest) -> DataServerResponse:
-        raise NotImplementedError
-
-
-##
-
-
-class DataServerTargetHandler(DataServerHandler, Abstract, ta.Generic[DataServerTargetT]):
-    def __init__(self, target: DataServerTargetT) -> None:
-        super().__init__()
-
-        self._target = target
+class DataServerTarget(Abstract):
+    content_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    content_length: ta.Optional[int] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
 
     #
 
     @classmethod
-    def for_target(cls, tgt: DataServerTarget, **kwargs: ta.Any) -> 'DataServerTargetHandler':
-        try:
-            hc = _DATA_SERVER_TARGET_HANDLERS[type(tgt)]
-        except KeyError:
-            raise TypeError(tgt)  # noqa
+    def of(
+            cls,
+            obj: ta.Union[
+                'DataServerTarget',
+                bytes,
+                None,
+            ] = None,
+            *,
+
+            file_path: ta.Optional[str] = None,
+            url: ta.Optional[str] = None,
+
+            **kwargs: ta.Any,
+    ) -> 'DataServerTarget':
+        if isinstance(obj, DataServerTarget):
+            check.none(file_path)
+            check.none(url)
+            check.empty(kwargs)
+            return obj
+
+        elif isinstance(obj, bytes):
+            return BytesDataServerTarget(
+                data=obj,
+                **kwargs,
+            )
+
+        elif file_path is not None:
+            check.none(obj)
+            check.none(url)
+            return FileDataServerTarget(
+                file_path=file_path,
+                **kwargs,
+            )
+
+        elif url is not None:
+            check.none(obj)
+            check.none(file_path)
+            return UrlDataServerTarget(
+                url=url,
+                **kwargs,
+            )
+
         else:
-            return hc(tgt, **kwargs)
+            raise TypeError('No target type provided')
 
     #
 
-    def _make_headers(self) -> ta.Dict[str, str]:
-        dct = {}
-        if (ct := self._target.content_type) is not None:
-            dct['Content-Type'] = ct
-        if (cl := self._target.content_length) is not None:
-            dct['Content-Length'] = str(cl)
-        return dct
+    @classmethod
+    def of_bytes(cls, data: bytes) -> 'BytesDataServerTarget':
+        return BytesDataServerTarget(
+            data=data,
+            content_type='application/octet-stream',
+        )
 
+    @classmethod
+    def of_text(cls, data: str) -> 'BytesDataServerTarget':
+        return BytesDataServerTarget(
+            data=data.encode('utf-8'),
+            content_type='text/plain; charset=utf-8',
+        )
 
-#
+    @classmethod
+    def of_json(cls, data: str) -> 'BytesDataServerTarget':
+        return BytesDataServerTarget(
+            data=data.encode('utf-8'),
+            content_type='application/json; charset=utf-8',
+        )
 
-
-_DATA_SERVER_TARGET_HANDLERS: ta.Dict[ta.Type[DataServerTarget], ta.Type[DataServerTargetHandler]] = {}
-
-
-def _register_data_server_target_handler(*tcs):
-    def inner(hc):
-        check.issubclass(hc, DataServerTargetHandler)
-        for tc in tcs:
-            check.issubclass(tc, DataServerTarget)
-            check.not_in(tc, _DATA_SERVER_TARGET_HANDLERS)
-            _DATA_SERVER_TARGET_HANDLERS[tc] = hc
-        return hc
-    return inner
-
-
-#
-
-
-@_register_data_server_target_handler(BytesDataServerTarget)
-class BytesDataServerTargetHandler(DataServerTargetHandler[BytesDataServerTarget]):
-    def _make_headers(self) -> ta.Dict[str, str]:
-        dct = super()._make_headers()
-        if 'Content-Length' not in dct and self._target.data is not None:
-            dct['Content-Length'] = str(len(self._target.data))
-        return dct
-
-    def handle(self, req: DataServerRequest) -> DataServerResponse:
-        if req.method not in ('GET', 'HEAD'):
-            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
-
-        return DataServerResponse(
-            HttpStatus.OK,
-            headers=self._make_headers(),
-            body=io.BytesIO(self._target.data) if self._target.data is not None and req.method == 'GET' else None,
+    @classmethod
+    def of_html(cls, data: str) -> 'BytesDataServerTarget':
+        return BytesDataServerTarget(
+            data=data.encode('utf-8'),
+            content_type='text/html; charset=utf-8',
         )
 
 
-#
+@dc.dataclass(frozen=True)
+class BytesDataServerTarget(DataServerTarget):
+    data: ta.Optional[bytes] = None  # required
 
 
-@_register_data_server_target_handler(FileDataServerTarget)
-class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget]):
-    def handle(self, req: DataServerRequest) -> DataServerResponse:
-        if req.method == 'HEAD':
-            try:
-                st = os.stat(check.not_none(self._target.file_path))
-            except FileNotFoundError:
-                return DataServerResponse(HttpStatus.NOT_FOUND)
+@dc.dataclass(frozen=True)
+class FileDataServerTarget(DataServerTarget):
+    file_path: ta.Optional[str] = None  # required
 
-            return DataServerResponse(
-                HttpStatus.OK,
-                headers={
-                    'Content-Length': str(st.st_size),
-                    **self._make_headers(),
-                },
-            )
-
-        elif req.method == 'GET':
-            try:
-                f = open(check.not_none(self._target.file_path), 'rb')  # noqa
-            except FileNotFoundError:
-                return DataServerResponse(HttpStatus.NOT_FOUND)
-
-            try:
-                sz = os.fstat(f.fileno())
-
-                return DataServerResponse(
-                    HttpStatus.OK,
-                    headers={
-                        'Content-Length': str(sz.st_size),
-                        **self._make_headers(),
-                    },
-                    body=f,  # noqa
-                )
-
-            except Exception:  # noqa
-                f.close()
-                raise
-
-        else:
-            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
+    def __post_init__(self) -> None:
+        dataclass_maybe_post_init(super())
+        check.non_empty_str(self.file_path)
 
 
-#
+@dc.dataclass(frozen=True)
+class UrlDataServerTarget(DataServerTarget):
+    url: ta.Optional[str] = None  # required
+    methods: ta.Optional[ta.Sequence[str]] = None  # required
 
-
-@_register_data_server_target_handler(UrlDataServerTarget)
-class UrlDataServerTargetHandler(DataServerTargetHandler[UrlDataServerTarget]):
-    def handle(self, req: DataServerRequest) -> DataServerResponse:
-        if req.method not in check.not_none(self._target.methods):
-            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
-
-        resp: http.client.HTTPResponse = urllib.request.urlopen(urllib.request.Request(  # noqa
-            method=req.method,
-            url=check.not_none(self._target.url),
-        ))
-
-        try:
-            return DataServerResponse(
-                resp.status,
-                headers=dict(resp.headers.items()),
-                body=resp,
-            )
-
-        except Exception:  # noqa
-            resp.close()
-            raise
+    def __post_init__(self) -> None:
+        dataclass_maybe_post_init(super())
+        check.non_empty_str(self.url)
+        check.not_none(self.methods)
+        check.not_isinstance(self.methods, str)
 
 
 ########################################
-# ../../dataserver/routes.py
-"""
-TODO:
- - generate to nginx config
-"""
+# ../../specs/oci/data.py
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class DataServerRoute:
-    paths: ta.Sequence[str]
-    target: DataServerTarget
+@dc.dataclass()
+class OciDataclass(Abstract):
+    pass
+
+
+##
+
+
+@dc.dataclass()
+class OciImageIndex(OciDataclass):
+    manifests: ta.List[ta.Union['OciImageIndex', 'OciImageManifest']]
+
+    annotations: ta.Optional[ta.Dict[str, str]] = None
+
+
+#
+
+
+@dc.dataclass()
+class OciImageManifest(OciDataclass):
+    config: 'OciImageConfig'
+
+    layers: ta.List['OciImageLayer']
+
+    annotations: ta.Optional[ta.Dict[str, str]] = None
+
+
+#
+
+
+@dc.dataclass()
+class OciImageLayer(OciDataclass):
+    class Kind(enum.Enum):
+        TAR = enum.auto()
+        TAR_GZIP = enum.auto()
+        TAR_ZSTD = enum.auto()
+
+        @property
+        def compression(self) -> ta.Optional[OciCompression]:
+            if self is self.TAR:
+                return None
+            elif self is self.TAR_GZIP:
+                return OciCompression.GZIP
+            elif self is self.TAR_ZSTD:
+                return OciCompression.ZSTD
+            else:
+                raise ValueError(self)
+
+        @classmethod
+        def from_compression(cls, compression: ta.Optional[OciCompression]) -> 'OciImageLayer.Kind':
+            if compression is None:
+                return cls.TAR
+            elif compression == OciCompression.GZIP:
+                return cls.TAR_GZIP
+            elif compression == OciCompression.ZSTD:
+                return cls.TAR_ZSTD
+            else:
+                raise ValueError(compression)
+
+    kind: Kind
+
+    data: OciDataRef
+
+
+#
+
+
+@dc.dataclass()
+class OciImageConfig(OciDataclass):
+    """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/config.md"""
+
+    architecture: str
+    os: str
+
+    @dc.dataclass()
+    class RootFs:
+        type: str
+        diff_ids: ta.List[str]
+
+    rootfs: RootFs
+
+    #
+
+    created: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    author: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    os_version: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.version', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+    os_features: ta.Optional[ta.List[str]] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'os.features', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+    variant: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+    """
+    config object, OPTIONAL
+        User string, OPTIONAL
+        ExposedPorts object, OPTIONAL
+        Env array of strings, OPTIONAL
+        Entrypoint array of strings, OPTIONAL
+        Cmd array of strings, OPTIONAL
+        Volumes object, OPTIONAL
+        WorkingDir string, OPTIONAL
+        Labels object, OPTIONAL
+        StopSignal string, OPTIONAL
+        ArgsEscaped boolean, OPTIONAL
+        Memory integer, OPTIONAL
+        MemorySwap integer, OPTIONAL
+        CpuShares integer, OPTIONAL
+        Healthcheck object, OPTIONAL
+    """
+    config: ta.Optional[ta.Dict[str, ta.Any]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+    @dc.dataclass()
+    class History:
+        created: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+        author: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+        created_by: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+        comment: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+        empty_layer: ta.Optional[bool] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+    history: ta.Optional[ta.List[History]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+
+
+##
+
+
+def is_empty_oci_dataclass(obj: OciDataclass) -> bool:
+    if not isinstance(obj, OciDataclass):
+        raise TypeError(obj)
+
+    elif isinstance(obj, OciImageIndex):
+        return not obj.manifests
+
+    elif isinstance(obj, OciImageManifest):
+        return not obj.layers
+
+    else:
+        return False
+
+
+##
+
+
+def get_single_leaf_oci_image_index(image_index: OciImageIndex) -> OciImageIndex:
+    while True:
+        child_manifest = check.single(image_index.manifests)
+        if isinstance(child_manifest, OciImageManifest):
+            break
+        image_index = check.isinstance(child_manifest, OciImageIndex)
+
+    return image_index
+
+
+def get_single_oci_image_manifest(image_index: OciImageIndex) -> OciImageManifest:
+    child_index = check.single(image_index.manifests)
+    return check.isinstance(child_index, OciImageManifest)
+
+
+########################################
+# ../../specs/oci/repositories.py
+
+
+##
+
+
+class OciRepository(Abstract):
+    @abc.abstractmethod
+    def contains_blob(self, digest: str) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def read_blob(self, digest: str) -> bytes:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def ref_blob(self, digest: str) -> OciDataRef:
+        raise NotImplementedError
 
     @classmethod
-    def of(cls, obj: ta.Union[
-        'DataServerRoute',
-        ta.Tuple[
-            ta.Union[str, ta.Iterable[str]],
-            DataServerTarget,
-        ],
-    ]) -> 'DataServerRoute':
-        if isinstance(obj, cls):
+    def of(
+            cls,
+            obj: ta.Union[
+                'OciRepository',
+                str,
+                tarfile.TarFile,
+                ta.Mapping[str, bytes],
+            ],
+    ) -> 'OciRepository':
+        if isinstance(obj, OciRepository):
             return obj
 
-        elif isinstance(obj, tuple):
-            p, t = obj
+        elif isinstance(obj, str):
+            check.arg(os.path.isdir(obj))
+            return DirectoryOciRepository(obj)
 
-            if isinstance(p, str):
-                p = [p]
+        elif isinstance(obj, tarfile.TarFile):
+            return TarFileOciRepository(obj)
 
-            return cls(
-                paths=tuple(p),
-                target=check.isinstance(t, DataServerTarget),
-            )
+        elif isinstance(obj, ta.Mapping):
+            return DictOciRepository(obj)
 
         else:
             raise TypeError(obj)
 
-    @classmethod
-    def of_(cls, *objs: ta.Any) -> ta.List['DataServerRoute']:
-        return [cls.of(obj) for obj in objs]
+
+class FileOciRepository(OciRepository, Abstract):
+    @abc.abstractmethod
+    def read_file(self, path: str) -> bytes:
+        raise NotImplementedError
+
+
+#
+
+
+class DirectoryOciRepository(FileOciRepository):
+    def __init__(self, data_dir: str) -> None:
+        super().__init__()
+
+        self._data_dir = check.non_empty_str(data_dir)
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._data_dir!r})'
+
+    def read_file(self, path: str) -> bytes:
+        full_path = os.path.join(self._data_dir, path)
+        check.arg(is_path_in_dir(self._data_dir, full_path))
+        with open(full_path, 'rb') as f:
+            return f.read()
+
+    def blob_path(self, digest: str) -> str:
+        scheme, value = digest.split(':')
+        return os.path.join('blobs', scheme, value)
+
+    def blob_full_path(self, digest: str) -> str:
+        path = self.blob_path(digest)
+        full_path = os.path.join(self._data_dir, path)
+        check.arg(is_path_in_dir(self._data_dir, full_path))
+        return full_path
+
+    def contains_blob(self, digest: str) -> bool:
+        return os.path.isfile(self.blob_full_path(digest))
+
+    def read_blob(self, digest: str) -> bytes:
+        return self.read_file(self.blob_path(digest))
+
+    def ref_blob(self, digest: str) -> OciDataRef:
+        return FileOciDataRef(self.blob_full_path(digest))
+
+
+#
+
+
+class TarFileOciRepository(FileOciRepository):
+    def __init__(self, tar_file: tarfile.TarFile) -> None:
+        super().__init__()
+
+        check.arg('r' in tar_file.mode)
+
+        self._tar_file = tar_file
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._tar_file!r})'
+
+    def read_file(self, path: str) -> bytes:
+        if (ti := self._tar_file.getmember(path)) is None:
+            raise FileNotFoundError(path)
+        with check.not_none(self._tar_file.extractfile(ti)) as f:
+            return f.read()
+
+    def blob_name(self, digest: str) -> str:
+        scheme, value = digest.split(':')
+        return os.path.join('blobs', scheme, value)
+
+    def contains_blob(self, digest: str) -> bool:
+        try:
+            self._tar_file.getmember(self.blob_name(digest))
+        except KeyError:
+            return False
+        else:
+            return True
+
+    def read_blob(self, digest: str) -> bytes:
+        if (ti := self._tar_file.getmember(self.blob_name(digest))) is None:
+            raise KeyError(digest)
+        with check.not_none(self._tar_file.extractfile(ti)) as f:
+            return f.read()
+
+    def ref_blob(self, digest: str) -> OciDataRef:
+        return TarFileOciDataRef(
+            tar_file=self._tar_file,
+            tar_info=self._tar_file.getmember(self.blob_name(digest)),
+        )
+
+
+#
+
+
+class DictOciRepository(OciRepository):
+    def __init__(self, blobs: ta.Mapping[str, bytes]) -> None:
+        super().__init__()
+
+        self._blobs = blobs
+
+    def contains_blob(self, digest: str) -> bool:
+        return digest in self._blobs
+
+    def read_blob(self, digest: str) -> bytes:
+        return self._blobs[digest]
+
+    def ref_blob(self, digest: str) -> OciDataRef:
+        return BytesOciDataRef(self._blobs[digest])
 
 
 ########################################
-# ../../specs/oci/media.py
+# ../../specs/oci/tars.py
 
 
 ##
 
 
-OCI_MEDIA_FIELDS: ta.Collection[str] = frozenset([
-    'schema_version',
-    'media_type',
-])
+class WrittenOciDataTarFileInfo(ta.NamedTuple):
+    compressed_sz: int
+    compressed_sha256: str
 
+    tar_sz: int
+    tar_sha256: str
 
-@dc.dataclass()
-class OciMediaDataclass(Abstract):
-    SCHEMA_VERSION: ta.ClassVar[int]
 
-    @property
-    def schema_version(self) -> int:
-        raise TypeError
-
-    MEDIA_TYPE: ta.ClassVar[str]
-
-    @property
-    def media_type(self) -> str:
-        raise TypeError
-
-    #
-
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        for a in OCI_MEDIA_FIELDS:
-            check.in_(a, cls.__dict__)
-
-
-_REGISTERED_OCI_MEDIA_DATACLASSES: ta.Dict[str, ta.Type[OciMediaDataclass]] = {}
-
-
-def _register_oci_media_dataclass(cls):
-    check.issubclass(cls, OciMediaDataclass)
-    check.arg(dc.is_dataclass(cls))
-    mt = check.non_empty_str(cls.__dict__['MEDIA_TYPE'])
-    check.not_in(mt, _REGISTERED_OCI_MEDIA_DATACLASSES)
-    _REGISTERED_OCI_MEDIA_DATACLASSES[mt] = cls
-    return cls
-
-
-def get_registered_oci_media_dataclass(media_type: str) -> ta.Optional[ta.Type[OciMediaDataclass]]:
-    return _REGISTERED_OCI_MEDIA_DATACLASSES.get(media_type)
-
-
-def unmarshal_oci_media_dataclass(
-        dct: ta.Mapping[str, ta.Any],
-        *,
-        media_type: ta.Optional[str] = None,
-) -> ta.Any:
-    if media_type is None:
-        media_type = check.non_empty_str(dct['mediaType'])
-    cls = _REGISTERED_OCI_MEDIA_DATACLASSES[media_type]
-    return unmarshal_obj(dct, cls)
-
-
-##
-
-
-@dc.dataclass()
-class OciMediaDescriptor:
-    """
-    https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/descriptor.md#properties
-    """  # noqa
-
-    media_type: str = dc.field(metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
-    digest: str
-    size: int
-
-    #
-
-    urls: ta.Optional[ta.Sequence[str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-    annotations: ta.Optional[ta.Mapping[str, str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
-    data: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
-    artifact_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'artifactType', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
-
-    #
-
-    platform: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
-
-
-##
-
-
-@_register_oci_media_dataclass
-@dc.dataclass()
-class OciMediaImageIndex(OciMediaDataclass):
-    """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/image-index.md"""
-
-    manifests: ta.Sequence[OciMediaDescriptor]  # -> OciMediaImageIndex | OciMediaImageManifest
-
-    #
-
-    annotations: ta.Optional[ta.Mapping[str, str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
-
-    #
-
-    SCHEMA_VERSION: ta.ClassVar[int] = 2
-    schema_version: int = dc.field(default=SCHEMA_VERSION, metadata={OBJ_MARSHALER_FIELD_KEY: 'schemaVersion'})
-
-    MEDIA_TYPE: ta.ClassVar[str] = 'application/vnd.oci.image.index.v1+json'
-    media_type: str = dc.field(default=MEDIA_TYPE, metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
-
-
-#
-
-
-@_register_oci_media_dataclass
-@dc.dataclass()
-class OciMediaImageManifest(OciMediaDataclass):
-    """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/manifest.md"""
-
-    config: OciMediaDescriptor  # -> OciMediaImageConfig
-
-    layers: ta.Sequence[OciMediaDescriptor]
-
-    #
-
-    annotations: ta.Optional[ta.Mapping[str, str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
-
-    #
-
-    SCHEMA_VERSION: ta.ClassVar[int] = 2
-    schema_version: int = dc.field(default=SCHEMA_VERSION, metadata={OBJ_MARSHALER_FIELD_KEY: 'schemaVersion'})
-
-    MEDIA_TYPE: ta.ClassVar[str] = 'application/vnd.oci.image.manifest.v1+json'
-    media_type: str = dc.field(default=MEDIA_TYPE, metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
-
-
-#
-
-
-OCI_IMAGE_LAYER_KIND_MEDIA_TYPES: ta.Mapping[OciImageLayer.Kind, str] = {
-    OciImageLayer.Kind.TAR: 'application/vnd.oci.image.layer.v1.tar',
-    OciImageLayer.Kind.TAR_GZIP: 'application/vnd.oci.image.layer.v1.tar+gzip',
-    OciImageLayer.Kind.TAR_ZSTD: 'application/vnd.oci.image.layer.v1.tar+zstd',
-}
-
-OCI_IMAGE_LAYER_KIND_MEDIA_TYPES_: ta.Mapping[str, OciImageLayer.Kind] = {
-    v: k
-    for k, v in OCI_IMAGE_LAYER_KIND_MEDIA_TYPES.items()
-}
-
-
-#
-
-
-@_register_oci_media_dataclass
-@dc.dataclass()
-class OciMediaImageConfig(OciImageConfig, OciMediaDataclass):
-    SCHEMA_VERSION: ta.ClassVar[int] = 2
-    schema_version: int = dc.field(default=SCHEMA_VERSION, metadata={OBJ_MARSHALER_FIELD_KEY: 'schemaVersion'})
-
-    MEDIA_TYPE: ta.ClassVar[str] = 'application/vnd.oci.image.config.v1+json'
-    media_type: str = dc.field(default=MEDIA_TYPE, metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
-
-
-##
-
-
-OCI_MANIFEST_MEDIA_TYPES: ta.AbstractSet[str] = frozenset([
-    OciMediaImageIndex.MEDIA_TYPE,
-    OciMediaImageManifest.MEDIA_TYPE,
-])
-
-
-########################################
-# ../../specs/oci/pack/packing.py
-
-
-##
-
-
-class OciLayerPacker(ExitStacked):
+class OciDataTarWriter(ExitStacked):
     def __init__(
             self,
-            input_file_path: str,
-            output_file_paths: ta.Sequence[str],
-            *,
+            f: ta.BinaryIO,
             compression: ta.Optional[OciCompression] = None,
+            *,
+            gzip_level: int = 1,
+            zstd_level: int = 10,
     ) -> None:
         super().__init__()
 
-        self._input_file_path = input_file_path
-        self._output_file_paths = list(output_file_paths)
+        self._f = f
         self._compression = compression
 
-        self._output_file_indexes_by_name: ta.Dict[str, int] = {}
+        self._gzip_level = gzip_level
+        self._zstd_level = zstd_level
 
-    #
+    class _FileWrapper:
+        def __init__(self, f):
+            super().__init__()
 
-    @cached_nullary
-    def _input_tar_file(self) -> tarfile.TarFile:
-        # FIXME: check uncompressed
-        return self._enter_context(tarfile.open(self._input_file_path))
+            self._f = f
+            self._c = 0
+            self._h = hashlib.sha256()
 
-    #
+        @property
+        def size(self) -> int:
+            return self._c
 
-    @cached_nullary
-    def _entries_by_name(self) -> ta.Mapping[str, tarfile.TarInfo]:
-        return {
-            info.name: info
-            for info in self._input_tar_file().getmembers()
-        }
+        def sha256(self) -> str:
+            return self._h.hexdigest()
 
-    #
+        def write(self, d):
+            self._c += len(d)
+            self._h.update(d)
+            self._f.write(d)
 
-    class _CategorizedEntries(ta.NamedTuple):
-        files_by_name: ta.Mapping[str, tarfile.TarInfo]
-        non_files_by_name: ta.Mapping[str, tarfile.TarInfo]
-        links_by_name: ta.Mapping[str, tarfile.TarInfo]
+        def tell(self) -> int:
+            return self._f.tell()
 
-    @cached_nullary
-    def _categorized_entries(self) -> _CategorizedEntries:
-        files_by_name: ta.Dict[str, tarfile.TarInfo] = {}
-        non_files_by_name: ta.Dict[str, tarfile.TarInfo] = {}
-        links_by_name: ta.Dict[str, tarfile.TarInfo] = {}
+    _cw: _FileWrapper
+    _cf: ta.BinaryIO
 
-        for name, info in self._entries_by_name().items():
-            if info.type in tarfile.REGULAR_TYPES:
-                files_by_name[name] = info
-            elif info.type in (tarfile.LNKTYPE, tarfile.GNUTYPE_LONGLINK):
-                links_by_name[name] = info
-            else:
-                non_files_by_name[name] = info
+    _tw: _FileWrapper
+    _tf: tarfile.TarFile
 
-        return self._CategorizedEntries(
-            files_by_name=files_by_name,
-            non_files_by_name=non_files_by_name,
-            links_by_name=links_by_name,
+    def info(self) -> WrittenOciDataTarFileInfo:
+        return WrittenOciDataTarFileInfo(
+            compressed_sz=self._cw.size,
+            compressed_sha256=self._cw.sha256(),
+
+            tar_sz=self._tw.size,
+            tar_sha256=self._tw.sha256(),
         )
 
-    #
+    def _enter_contexts(self) -> None:
+        self._cw = self._FileWrapper(self._f)
 
-    @cached_nullary
-    def _non_files_sorted_by_name(self) -> ta.Sequence[tarfile.TarInfo]:
-        return sorted(
-            self._categorized_entries().non_files_by_name.values(),
-            key=lambda info: info.name,
-        )
-
-    @cached_nullary
-    def _files_descending_by_size(self) -> ta.Sequence[tarfile.TarInfo]:
-        return sorted(
-            self._categorized_entries().files_by_name.values(),
-            key=lambda info: -check.isinstance(info.size, int),
-        )
-
-    #
-
-    @cached_nullary
-    def _output_files(self) -> ta.Sequence[ta.BinaryIO]:
-        return [
-            self._enter_context(open(output_file_path, 'wb'))
-            for output_file_path in self._output_file_paths
-        ]
-
-    @cached_nullary
-    def _output_tar_writers(self) -> ta.Sequence[OciDataTarWriter]:
-        return [
-            self._enter_context(
-                OciDataTarWriter(
-                    output_file,
-                    compression=self._compression,
+        if self._compression is OciCompression.GZIP:
+            self._cf = self._enter_context(
+                gzip.GzipFile(  # type: ignore
+                    fileobj=self._cw,
+                    mode='wb',
+                    compresslevel=self._gzip_level,
                 ),
             )
-            for output_file in self._output_files()
-        ]
 
-    #
+        elif self._compression is OciCompression.ZSTD:
+            import zstandard  # noqa
 
-    def _write_entry(
-            self,
-            info: tarfile.TarInfo,
-            output_file_idx: int,
-    ) -> None:
-        check.not_in(info.name, self._output_file_indexes_by_name)
+            zc = zstandard.ZstdCompressor(
+                level=self._zstd_level,
+            )
+            self._cf = self._enter_context(zc.stream_writer(self._cw))  # type: ignore
 
-        writer = self._output_tar_writers()[output_file_idx]
-
-        if info.type in tarfile.REGULAR_TYPES:
-            with check.not_none(self._input_tar_file().extractfile(info)) as f:
-                writer.add_file(info, f)  # type: ignore
+        elif self._compression is None:
+            self._cf = self._cw  # type: ignore
 
         else:
-            writer.add_file(info)
+            raise ValueError(self._compression)
 
-        self._output_file_indexes_by_name[info.name] = output_file_idx
+        #
 
-    @cached_nullary
-    def _write_non_files(self) -> None:
-        for non_file in self._non_files_sorted_by_name():
-            self._write_entry(non_file, 0)
+        self._tw = self._FileWrapper(self._cf)
 
-    @cached_nullary
-    def _write_files(self) -> None:
-        writers = self._output_tar_writers()
+        self._tf = self._enter_context(
+            tarfile.open(  # type: ignore  # noqa
+                fileobj=self._tw,
+                mode='w',
+            ),
+        )
 
-        bins = [
-            (writer.info().compressed_sz, i)
-            for i, writer in enumerate(writers)
-        ]
+    def tar_file(self) -> tarfile.TarFile:
+        return self._tf
 
-        heapq.heapify(bins)
+    def add_file(self, ti: tarfile.TarInfo, f: ta.Optional[ta.BinaryIO] = None) -> None:
+        self._tf.addfile(ti, f)
 
-        for file in self._files_descending_by_size():
-            _, bin_index = heapq.heappop(bins)
 
-            writer = writers[bin_index]
+def write_oci_data_tar_file(
+        f: ta.BinaryIO,
+        data: ta.Mapping[str, OciDataRef],
+) -> WrittenOciDataTarFileInfo:
+    with OciDataTarWriter(f) as tgw:
+        for n, dr in data.items():
+            ti = tarfile.TarInfo(name=n)
+            ri = OciDataRefInfo(dr)
+            ti.size = ri.size()
+            with open_oci_data_ref(dr) as df:
+                tgw.add_file(ti, df)
 
-            self._write_entry(file, bin_index)
-
-            bin_size = writer.info().compressed_sz
-
-            heapq.heappush(bins, (bin_size, bin_index))
-
-    @cached_nullary
-    def _write_links(self) -> None:
-        for link in self._categorized_entries().links_by_name.values():
-            link_name = check.non_empty_str(link.linkname)
-
-            output_file_idx = self._output_file_indexes_by_name[link_name]
-
-            self._write_entry(link, output_file_idx)
-
-    @cached_nullary
-    def write(self) -> ta.Mapping[str, WrittenOciDataTarFileInfo]:
-        writers = self._output_tar_writers()
-
-        self._write_non_files()
-        self._write_files()
-        self._write_links()
-
-        for output_tar_writer in writers:
-            output_tar_writer.tar_file().close()
-
-        return {
-            output_file_path: output_tar_writer.info()
-            for output_file_path, output_tar_writer in zip(self._output_file_paths, writers)
-        }
+    return tgw.info()
 
 
 ########################################
-# ../../../omlish/formats/yaml/goyaml/ast.py
+# ../../../omcore/formats/yaml/goyaml/ast.py
 ##
 # MIT License
 #
@@ -18929,7 +18348,7 @@ def yaml_ast_merge(dst: YamlNode, src: YamlNode) -> ta.Optional[YamlError]:
 
 
 ########################################
-# ../../../omlish/formats/yaml/goyaml/scanning.py
+# ../../../omcore/formats/yaml/goyaml/scanning.py
 ##
 # MIT License
 #
@@ -20846,7 +20265,7 @@ def _yaml_trim_right_func(s: str, predicate: ta.Callable[[str], bool]) -> str:
 
 
 ########################################
-# ../../../omlish/http/pipelines/chunking.py
+# ../../../omcore/http/pipelines/chunking.py
 
 
 ##
@@ -21003,7 +20422,7 @@ class IoPipelineHttpObjectDechunker(
 
 
 ########################################
-# ../../../omlish/http/pipelines/compression/compressors.py
+# ../../../omcore/http/pipelines/compression/compressors.py
 
 
 ##
@@ -21123,7 +20542,7 @@ class IoPipelineHttpObjectCompressor(
 
 
 ########################################
-# ../../../omlish/http/pipelines/compression/decompressors.py
+# ../../../omcore/http/pipelines/compression/decompressors.py
 
 
 ##
@@ -21419,7 +20838,7 @@ class IoPipelineHttpObjectDecompressor(
 
 
 ########################################
-# ../../../omlish/http/pipelines/encoders.py
+# ../../../omcore/http/pipelines/encoders.py
 
 
 ##
@@ -21545,7 +20964,7 @@ class IoPipelineHttpObjectEncoder(
 
 
 ########################################
-# ../../../omlish/http/pipelines/requests.py
+# ../../../omcore/http/pipelines/requests.py
 
 
 ##
@@ -21752,7 +21171,7 @@ class IoPipelineHttpRequestObjects(IoPipelineHttpMessageObjects):
 
 
 ########################################
-# ../../../omlish/http/pipelines/responses.py
+# ../../../omcore/http/pipelines/responses.py
 
 
 ##
@@ -21962,7 +21381,7 @@ class IoPipelineHttpResponseObjects(IoPipelineHttpMessageObjects):
 
 
 ########################################
-# ../../../omlish/http/simple/handlers.py
+# ../../../omcore/http/simple/handlers.py
 
 
 ##
@@ -22046,7 +21465,7 @@ class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
 
 
 ########################################
-# ../../../omlish/io/pipelines/handlers/decoders.py
+# ../../../omcore/io/pipelines/handlers/decoders.py
 
 
 ##
@@ -22136,7 +21555,7 @@ class FnMessageToMessageDecoderIoPipelineHandler(MessageToMessageDecoderIoPipeli
 
 
 ########################################
-# ../../../omlish/io/streambufs/direct.py
+# ../../../omcore/io/streambufs/direct.py
 
 
 ##
@@ -22303,7 +21722,7 @@ def empty_byte_stream_buffer_view() -> ByteStreamBufferView:
 
 
 ########################################
-# ../../../omlish/io/streambufs/scanning.py
+# ../../../omcore/io/streambufs/scanning.py
 
 
 ##
@@ -22417,7 +21836,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
 
 ########################################
-# ../../../omlish/logs/base.py
+# ../../../omcore/logs/base.py
 
 
 ##
@@ -22704,7 +22123,7 @@ class AsyncNopLogger(AsyncNopLoggerMetricCollector, AnyNopLogger[ta.Awaitable[No
 
 
 ########################################
-# ../../../omlish/logs/std/records.py
+# ../../../omcore/logs/std/records.py
 """
 TODO:
  - TypedDict?
@@ -23362,7 +22781,7 @@ class LogRecordLoggingContext(LoggingContext):
 
 
 ########################################
-# ../../../omlish/logs/std/standard.py
+# ../../../omcore/logs/std/standard.py
 """
 TODO:
  - structured
@@ -23488,7 +22907,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../omlish/secrets/tempssl.py
+# ../../../omcore/secrets/tempssl.py
 
 
 ##
@@ -23552,7 +22971,7 @@ def generate_temp_localhost_ssl_cert() -> TempSslCert:
 
 
 ########################################
-# ../../../omlish/subprocesses/base.py
+# ../../../omcore/subprocesses/base.py
 
 
 ##
@@ -23765,520 +23184,586 @@ class BaseSubprocesses(Abstract):
 
 
 ########################################
-# ../docker/cacheserved/manifests.py
+# ../../dataserver/handlers.py
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class CacheServedDockerImageManifest:
-    @dc.dataclass(frozen=True)
-    class Route:
-        paths: ta.Sequence[str]
-
-        content_type: str
-        content_length: int
-
-        @dc.dataclass(frozen=True)
-        class Target(Abstract):
-            pass
-
-        @dc.dataclass(frozen=True)
-        class BytesTarget(Target):
-            data: bytes
-
-        @dc.dataclass(frozen=True)
-        class CacheKeyTarget(Target):
-            key: str
-
-        target: Target
-
-        def __post_init__(self) -> None:
-            check.not_isinstance(self.paths, str)
-
-    routes: ta.Sequence[Route]
+class DataServerRequest:
+    method: str
+    path: str
 
 
-#
+@dc.dataclass(frozen=True)
+class DataServerResponse:
+    status: int
+    headers: ta.Optional[ta.Mapping[str, str]] = None
+    body: ta.Optional[io.IOBase] = None
+
+    #
+
+    def close(self) -> None:
+        if (body := self.body) is not None:
+            body.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
 
-async def build_cache_served_docker_image_manifest(
-        data_server_routes: ta.Iterable[DataServerRoute],
-        make_file_cache_key: ta.Callable[[str], ta.Awaitable[str]],
-) -> CacheServedDockerImageManifest:
-    routes: ta.List[CacheServedDockerImageManifest.Route] = []
-
-    for data_server_route in data_server_routes:
-        content_length: int
-
-        data_server_target = data_server_route.target
-        target: CacheServedDockerImageManifest.Route.Target
-        if isinstance(data_server_target, BytesDataServerTarget):
-            bytes_data = check.isinstance(data_server_target.data, bytes)
-            content_length = len(bytes_data)
-            target = CacheServedDockerImageManifest.Route.BytesTarget(bytes_data)
-
-        elif isinstance(data_server_target, FileDataServerTarget):
-            file_path = check.non_empty_str(data_server_target.file_path)
-            content_length = os.path.getsize(file_path)
-            cache_key = await make_file_cache_key(file_path)
-            target = CacheServedDockerImageManifest.Route.CacheKeyTarget(cache_key)
-
-        else:
-            raise TypeError(data_server_target)
-
-        routes.append(CacheServedDockerImageManifest.Route(
-            paths=data_server_route.paths,
-
-            content_type=check.non_empty_str(data_server_target.content_type),
-            content_length=content_length,
-
-            target=target,
-        ))
-
-    return CacheServedDockerImageManifest(
-        routes=routes,
-    )
+class DataServerError(Exception):
+    pass
 
 
-#
-
-
-async def build_cache_served_docker_image_data_server_routes(
-        manifest: CacheServedDockerImageManifest,
-        make_cache_key_target: ta.Callable[..., ta.Awaitable[DataServerTarget]],
-) -> ta.List[DataServerRoute]:
-    routes: ta.List[DataServerRoute] = []
-
-    for manifest_route in manifest.routes:
-        manifest_target = manifest_route.target
-
-        target_kwargs: dict = dict(
-            content_type=manifest_route.content_type,
-            content_length=manifest_route.content_length,
-        )
-
-        target: DataServerTarget
-
-        if isinstance(manifest_target, CacheServedDockerImageManifest.Route.BytesTarget):
-            target = DataServerTarget.of(manifest_target.data, **target_kwargs)
-
-        elif isinstance(manifest_target, CacheServedDockerImageManifest.Route.CacheKeyTarget):
-            target = await make_cache_key_target(manifest_target.key, **target_kwargs)
-
-        else:
-            raise TypeError(manifest_target)
-
-        routes.append(DataServerRoute(
-            paths=manifest_route.paths,
-            target=target,
-        ))
-
-    return routes
-
-
-########################################
-# ../../dataserver/server.py
+class DataServerHandler(Abstract):
+    @abc.abstractmethod
+    def handle(self, req: DataServerRequest) -> DataServerResponse:
+        raise NotImplementedError
 
 
 ##
 
 
-class DataServer:
-    @dc.dataclass(frozen=True)
-    class HandlerRoute:
-        paths: ta.Sequence[str]
-        handler: DataServerHandler
-
-        def __post_init__(self) -> None:
-            check.not_isinstance(self.paths, str)
-            for p in self.paths:
-                check.non_empty_str(p)
-            check.isinstance(self.handler, DataServerHandler)
-
-        @classmethod
-        def of(cls, obj: ta.Union[
-            'DataServer.HandlerRoute',
-            DataServerRoute,
-        ]) -> 'DataServer.HandlerRoute':
-            if isinstance(obj, cls):
-                return obj
-
-            elif isinstance(obj, DataServerRoute):
-                return cls(
-                    paths=obj.paths,
-                    handler=DataServerTargetHandler.for_target(obj.target),
-                )
-
-            else:
-                raise TypeError(obj)
-
-        @classmethod
-        def of_(cls, *objs: ta.Any) -> ta.List['DataServer.HandlerRoute']:
-            return [cls.of(obj) for obj in objs]
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Config:
-        pass
-
-    def __init__(
-            self,
-            routes: ta.Optional[ta.Iterable[HandlerRoute]] = None,
-            config: Config = Config(),
-    ) -> None:
+class DataServerTargetHandler(DataServerHandler, Abstract, ta.Generic[DataServerTargetT]):
+    def __init__(self, target: DataServerTargetT) -> None:
         super().__init__()
 
-        self._config = config
-
-        self.set_routes(routes)
+        self._target = target
 
     #
 
-    _routes_by_path: ta.Dict[str, HandlerRoute]
-
-    def set_routes(self, routes: ta.Optional[ta.Iterable[HandlerRoute]]) -> None:
-        routes_by_path: ta.Dict[str, DataServer.HandlerRoute] = {}
-
-        for r in routes or []:
-            for p in r.paths:
-                check.not_in(p, routes_by_path)
-                routes_by_path[p] = r
-
-        self._routes_by_path = routes_by_path
+    @classmethod
+    def for_target(cls, tgt: DataServerTarget, **kwargs: ta.Any) -> 'DataServerTargetHandler':
+        try:
+            hc = _DATA_SERVER_TARGET_HANDLERS[type(tgt)]
+        except KeyError:
+            raise TypeError(tgt)  # noqa
+        else:
+            return hc(tgt, **kwargs)
 
     #
+
+    def _make_headers(self) -> ta.Dict[str, str]:
+        dct = {}
+        if (ct := self._target.content_type) is not None:
+            dct['Content-Type'] = ct
+        if (cl := self._target.content_length) is not None:
+            dct['Content-Length'] = str(cl)
+        return dct
+
+
+#
+
+
+_DATA_SERVER_TARGET_HANDLERS: ta.Dict[ta.Type[DataServerTarget], ta.Type[DataServerTargetHandler]] = {}
+
+
+def _register_data_server_target_handler(*tcs):
+    def inner(hc):
+        check.issubclass(hc, DataServerTargetHandler)
+        for tc in tcs:
+            check.issubclass(tc, DataServerTarget)
+            check.not_in(tc, _DATA_SERVER_TARGET_HANDLERS)
+            _DATA_SERVER_TARGET_HANDLERS[tc] = hc
+        return hc
+    return inner
+
+
+#
+
+
+@_register_data_server_target_handler(BytesDataServerTarget)
+class BytesDataServerTargetHandler(DataServerTargetHandler[BytesDataServerTarget]):
+    def _make_headers(self) -> ta.Dict[str, str]:
+        dct = super()._make_headers()
+        if 'Content-Length' not in dct and self._target.data is not None:
+            dct['Content-Length'] = str(len(self._target.data))
+        return dct
 
     def handle(self, req: DataServerRequest) -> DataServerResponse:
-        try:
-            rt = self._routes_by_path[req.path]
-        except KeyError:
-            return DataServerResponse(HttpStatus.NOT_FOUND)
+        if req.method not in ('GET', 'HEAD'):
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
 
-        return rt.handler.handle(req)
+        return DataServerResponse(
+            HttpStatus.OK,
+            headers=self._make_headers(),
+            body=io.BytesIO(self._target.data) if self._target.data is not None and req.method == 'GET' else None,
+        )
+
+
+#
+
+
+@_register_data_server_target_handler(FileDataServerTarget)
+class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget]):
+    def handle(self, req: DataServerRequest) -> DataServerResponse:
+        if req.method == 'HEAD':
+            try:
+                st = os.stat(check.not_none(self._target.file_path))
+            except FileNotFoundError:
+                return DataServerResponse(HttpStatus.NOT_FOUND)
+
+            return DataServerResponse(
+                HttpStatus.OK,
+                headers={
+                    'Content-Length': str(st.st_size),
+                    **self._make_headers(),
+                },
+            )
+
+        elif req.method == 'GET':
+            try:
+                f = open(check.not_none(self._target.file_path), 'rb')  # noqa
+            except FileNotFoundError:
+                return DataServerResponse(HttpStatus.NOT_FOUND)
+
+            try:
+                sz = os.fstat(f.fileno())
+
+                return DataServerResponse(
+                    HttpStatus.OK,
+                    headers={
+                        'Content-Length': str(sz.st_size),
+                        **self._make_headers(),
+                    },
+                    body=f,  # noqa
+                )
+
+            except Exception:  # noqa
+                f.close()
+                raise
+
+        else:
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
+
+
+#
+
+
+@_register_data_server_target_handler(UrlDataServerTarget)
+class UrlDataServerTargetHandler(DataServerTargetHandler[UrlDataServerTarget]):
+    def handle(self, req: DataServerRequest) -> DataServerResponse:
+        if req.method not in check.not_none(self._target.methods):
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
+
+        resp: http.client.HTTPResponse = urllib.request.urlopen(urllib.request.Request(  # noqa
+            method=req.method,
+            url=check.not_none(self._target.url),
+        ))
+
+        try:
+            return DataServerResponse(
+                resp.status,
+                headers=dict(resp.headers.items()),
+                body=resp,
+            )
+
+        except Exception:  # noqa
+            resp.close()
+            raise
 
 
 ########################################
-# ../../specs/oci/building.py
-
-
-##
-
-
-class OciRepositoryBuilder:
-    @dc.dataclass(frozen=True)
-    class Blob:
-        digest: str
-
-        data: OciDataRef
-        info: OciDataRefInfo
-
-        media_type: ta.Optional[str] = None
-
-        #
-
-        def read(self) -> bytes:
-            with open_oci_data_ref(self.data) as f:
-                return f.read()
-
-        def read_json(self) -> ta.Any:
-            return json.loads(self.read().decode('utf-8'))
-
-        def read_media(
-                self,
-                cls: ta.Type[OciMediaDataclassT] = OciMediaDataclass,  # type: ignore[assignment]
-        ) -> OciMediaDataclassT:
-            mt = check.non_empty_str(self.media_type)
-            dct = self.read_json()
-            obj = unmarshal_oci_media_dataclass(
-                dct,
-                media_type=mt,
-            )
-            return check.isinstance(obj, cls)
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._blobs: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
-
-    #
-
-    def get_blobs(self) -> ta.Dict[str, Blob]:
-        return dict(self._blobs)
-
-    def add_blob(
-            self,
-            r: OciDataRef,
-            ri: ta.Optional[OciDataRefInfo] = None,
-            *,
-            media_type: ta.Optional[str] = None,
-    ) -> Blob:
-        if ri is None:
-            ri = OciDataRefInfo(r)
-
-        if (dg := ri.digest()) in self._blobs:
-            raise KeyError(ri.digest())
-
-        blob = self.Blob(
-            digest=dg,
-
-            data=r,
-            info=ri,
-
-            media_type=media_type,
-        )
-
-        self._blobs[dg] = blob
-
-        return blob
-
-    #
-
-    def marshal_media(self, obj: OciMediaDataclass) -> bytes:
-        check.isinstance(obj, OciMediaDataclass)
-        m = marshal_obj(obj)
-        j = json_dumps_compact(m)
-        b = j.encode('utf-8')
-        return b
-
-    def add_media(self, obj: OciMediaDataclass) -> OciMediaDescriptor:
-        b = self.marshal_media(obj)
-
-        r = BytesOciDataRef(b)
-        ri = OciDataRefInfo(r)
-        self.add_blob(
-            r,
-            ri,
-            media_type=obj.media_type,
-        )
-
-        return OciMediaDescriptor(
-            media_type=obj.media_type,
-            digest=ri.digest(),
-            size=ri.size(),
-        )
-
-    #
-
-    def to_media(self, obj: OciDataclass) -> ta.Union[OciMediaDataclass, OciMediaDescriptor]:
-        def make_kw(*exclude):
-            return {
-                a: v
-                for f in dc.fields(obj)
-                if (a := f.name) not in exclude
-                for v in [getattr(obj, a)]
-                if v is not None
-            }
-
-        if isinstance(obj, OciImageIndex):
-            return OciMediaImageIndex(
-                **make_kw('manifests'),
-                manifests=[
-                    self.add_data(m)
-                    for m in obj.manifests
-                ],
-            )
-
-        elif isinstance(obj, OciImageManifest):
-            return OciMediaImageManifest(
-                **make_kw('config', 'layers'),
-                config=self.add_data(obj.config),
-                layers=[
-                    self.add_data(l)
-                    for l in obj.layers
-                ],
-            )
-
-        elif isinstance(obj, OciImageLayer):
-            ri = OciDataRefInfo(obj.data)
-            mt = OCI_IMAGE_LAYER_KIND_MEDIA_TYPES[obj.kind]
-            self.add_blob(
-                obj.data,
-                ri,
-                media_type=mt,
-            )
-            return OciMediaDescriptor(
-                media_type=mt,
-                digest=ri.digest(),
-                size=ri.size(),
-            )
-
-        elif isinstance(obj, OciImageConfig):
-            return OciMediaImageConfig(**make_kw())
-
-        else:
-            raise TypeError(obj)
-
-    def add_data(self, obj: OciDataclass) -> OciMediaDescriptor:
-        ret = self.to_media(obj)
-
-        if isinstance(ret, OciMediaDataclass):
-            return self.add_media(ret)
-
-        elif isinstance(ret, OciMediaDescriptor):
-            return ret
-
-        else:
-            raise TypeError(ret)
+# ../../dataserver/routes.py
+"""
+TODO:
+ - generate to nginx config
+"""
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class BuiltOciImageIndexRepository:
-    index: OciImageIndex
+class DataServerRoute:
+    paths: ta.Sequence[str]
+    target: DataServerTarget
 
-    media_index_descriptor: OciMediaDescriptor
-    media_index: OciMediaImageIndex
+    @classmethod
+    def of(cls, obj: ta.Union[
+        'DataServerRoute',
+        ta.Tuple[
+            ta.Union[str, ta.Iterable[str]],
+            DataServerTarget,
+        ],
+    ]) -> 'DataServerRoute':
+        if isinstance(obj, cls):
+            return obj
 
-    blobs: ta.Mapping[str, OciRepositoryBuilder.Blob]
+        elif isinstance(obj, tuple):
+            p, t = obj
 
+            if isinstance(p, str):
+                p = [p]
 
-def build_oci_index_repository(index: OciImageIndex) -> BuiltOciImageIndexRepository:
-    builder = OciRepositoryBuilder()
-
-    media_index_descriptor = builder.add_data(index)
-
-    blobs = builder.get_blobs()
-
-    media_index = blobs[media_index_descriptor.digest].read_media(OciMediaImageIndex)
-
-    return BuiltOciImageIndexRepository(
-        index=index,
-
-        media_index_descriptor=media_index_descriptor,
-        media_index=media_index,
-
-        blobs=blobs,
-    )
-
-
-########################################
-# ../../specs/oci/loading.py
-
-
-##
-
-
-class OciRepositoryLoader:
-    def __init__(
-            self,
-            repo: OciRepository,
-    ) -> None:
-        super().__init__()
-
-        self._repo = repo
-
-    #
-
-    def load_object(
-            self,
-            data: bytes,
-            cls: ta.Type[T] = object,  # type: ignore[assignment]
-            *,
-            media_type: ta.Optional[str] = None,
-    ) -> T:
-        text = data.decode('utf-8')
-        dct = json.loads(text)
-        obj = unmarshal_oci_media_dataclass(
-            dct,
-            media_type=media_type,
-        )
-        return check.isinstance(obj, cls)
-
-    def read_object(
-            self,
-            digest: str,
-            cls: ta.Type[T] = object,  # type: ignore[assignment]
-            *,
-            media_type: ta.Optional[str] = None,
-    ) -> T:
-        data = self._repo.read_blob(digest)
-        return self.load_object(
-            data,
-            cls,
-            media_type=media_type,
-        )
-
-    def read_descriptor(
-            self,
-            desc: OciMediaDescriptor,
-            cls: ta.Type[T] = object,  # type: ignore[assignment]
-    ) -> ta.Any:
-        return self.read_object(
-            desc.digest,
-            cls,
-            media_type=desc.media_type,
-        )
-
-    #
-
-    def from_media(self, obj: ta.Any) -> ta.Any:
-        def make_kw(*exclude):
-            return {
-                a: getattr(obj, a)
-                for f in dc.fields(obj)
-                if (a := f.name) not in OCI_MEDIA_FIELDS
-                and a not in exclude
-            }
-
-        if isinstance(obj, OciMediaImageConfig):
-            return OciImageConfig(**make_kw())
-
-        elif isinstance(obj, OciMediaImageManifest):
-            return OciImageManifest(
-                **make_kw('config', 'layers'),
-                config=self.from_media(self.read_descriptor(obj.config)),
-                layers=[
-                    OciImageLayer(
-                        kind=lk,
-                        data=self._repo.ref_blob(l.digest),
-                    )
-                    for l in obj.layers
-                    if (lk := OCI_IMAGE_LAYER_KIND_MEDIA_TYPES_.get(l.media_type)) is not None
-                ],
-            )
-
-        elif isinstance(obj, OciMediaImageIndex):
-            return OciImageIndex(
-                **make_kw('manifests'),
-                manifests=[
-                    fm
-                    for m in obj.manifests
-                    if self._repo.contains_blob(m.digest)
-                    for fm in [self.from_media(self.read_descriptor(m))]
-                    if not is_empty_oci_dataclass(fm)
-                ],
+            return cls(
+                paths=tuple(p),
+                target=check.isinstance(t, DataServerTarget),
             )
 
         else:
             raise TypeError(obj)
 
+    @classmethod
+    def of_(cls, *objs: ta.Any) -> ta.List['DataServerRoute']:
+        return [cls.of(obj) for obj in objs]
+
+
+########################################
+# ../../specs/oci/media.py
+
 
 ##
 
 
-def read_oci_repository_root_index(
-        obj: ta.Any,
+OCI_MEDIA_FIELDS: ta.Collection[str] = frozenset([
+    'schema_version',
+    'media_type',
+])
+
+
+@dc.dataclass()
+class OciMediaDataclass(Abstract):
+    SCHEMA_VERSION: ta.ClassVar[int]
+
+    @property
+    def schema_version(self) -> int:
+        raise TypeError
+
+    MEDIA_TYPE: ta.ClassVar[str]
+
+    @property
+    def media_type(self) -> str:
+        raise TypeError
+
+    #
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        for a in OCI_MEDIA_FIELDS:
+            check.in_(a, cls.__dict__)
+
+
+_REGISTERED_OCI_MEDIA_DATACLASSES: ta.Dict[str, ta.Type[OciMediaDataclass]] = {}
+
+
+def _register_oci_media_dataclass(cls):
+    check.issubclass(cls, OciMediaDataclass)
+    check.arg(dc.is_dataclass(cls))
+    mt = check.non_empty_str(cls.__dict__['MEDIA_TYPE'])
+    check.not_in(mt, _REGISTERED_OCI_MEDIA_DATACLASSES)
+    _REGISTERED_OCI_MEDIA_DATACLASSES[mt] = cls
+    return cls
+
+
+def get_registered_oci_media_dataclass(media_type: str) -> ta.Optional[ta.Type[OciMediaDataclass]]:
+    return _REGISTERED_OCI_MEDIA_DATACLASSES.get(media_type)
+
+
+def unmarshal_oci_media_dataclass(
+        dct: ta.Mapping[str, ta.Any],
         *,
-        file_name: str = 'index.json',
-) -> OciImageIndex:
-    file_repo = check.isinstance(OciRepository.of(obj), FileOciRepository)
+        media_type: ta.Optional[str] = None,
+) -> ta.Any:
+    if media_type is None:
+        media_type = check.non_empty_str(dct['mediaType'])
+    cls = _REGISTERED_OCI_MEDIA_DATACLASSES[media_type]
+    return unmarshal_obj(dct, cls)
 
-    repo_ldr = OciRepositoryLoader(file_repo)
 
-    media_image_idx = repo_ldr.load_object(file_repo.read_file(file_name), OciMediaImageIndex)
+##
 
-    image_idx = repo_ldr.from_media(media_image_idx)
 
-    return check.isinstance(image_idx, OciImageIndex)
+@dc.dataclass()
+class OciMediaDescriptor:
+    """
+    https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/descriptor.md#properties
+    """  # noqa
+
+    media_type: str = dc.field(metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
+    digest: str
+    size: int
+
+    #
+
+    urls: ta.Optional[ta.Sequence[str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    annotations: ta.Optional[ta.Mapping[str, str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+    data: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})
+    artifact_type: ta.Optional[str] = dc.field(default=None, metadata={OBJ_MARSHALER_FIELD_KEY: 'artifactType', OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+
+    #
+
+    platform: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+
+
+##
+
+
+@_register_oci_media_dataclass
+@dc.dataclass()
+class OciMediaImageIndex(OciMediaDataclass):
+    """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/image-index.md"""
+
+    manifests: ta.Sequence[OciMediaDescriptor]  # -> OciMediaImageIndex | OciMediaImageManifest
+
+    #
+
+    annotations: ta.Optional[ta.Mapping[str, str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+
+    #
+
+    SCHEMA_VERSION: ta.ClassVar[int] = 2
+    schema_version: int = dc.field(default=SCHEMA_VERSION, metadata={OBJ_MARSHALER_FIELD_KEY: 'schemaVersion'})
+
+    MEDIA_TYPE: ta.ClassVar[str] = 'application/vnd.oci.image.index.v1+json'
+    media_type: str = dc.field(default=MEDIA_TYPE, metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
+
+
+#
+
+
+@_register_oci_media_dataclass
+@dc.dataclass()
+class OciMediaImageManifest(OciMediaDataclass):
+    """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/manifest.md"""
+
+    config: OciMediaDescriptor  # -> OciMediaImageConfig
+
+    layers: ta.Sequence[OciMediaDescriptor]
+
+    #
+
+    annotations: ta.Optional[ta.Mapping[str, str]] = dc.field(default=None, metadata={OBJ_MARSHALER_OMIT_IF_NONE: True})  # noqa
+
+    #
+
+    SCHEMA_VERSION: ta.ClassVar[int] = 2
+    schema_version: int = dc.field(default=SCHEMA_VERSION, metadata={OBJ_MARSHALER_FIELD_KEY: 'schemaVersion'})
+
+    MEDIA_TYPE: ta.ClassVar[str] = 'application/vnd.oci.image.manifest.v1+json'
+    media_type: str = dc.field(default=MEDIA_TYPE, metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
+
+
+#
+
+
+OCI_IMAGE_LAYER_KIND_MEDIA_TYPES: ta.Mapping[OciImageLayer.Kind, str] = {
+    OciImageLayer.Kind.TAR: 'application/vnd.oci.image.layer.v1.tar',
+    OciImageLayer.Kind.TAR_GZIP: 'application/vnd.oci.image.layer.v1.tar+gzip',
+    OciImageLayer.Kind.TAR_ZSTD: 'application/vnd.oci.image.layer.v1.tar+zstd',
+}
+
+OCI_IMAGE_LAYER_KIND_MEDIA_TYPES_: ta.Mapping[str, OciImageLayer.Kind] = {
+    v: k
+    for k, v in OCI_IMAGE_LAYER_KIND_MEDIA_TYPES.items()
+}
+
+
+#
+
+
+@_register_oci_media_dataclass
+@dc.dataclass()
+class OciMediaImageConfig(OciImageConfig, OciMediaDataclass):
+    SCHEMA_VERSION: ta.ClassVar[int] = 2
+    schema_version: int = dc.field(default=SCHEMA_VERSION, metadata={OBJ_MARSHALER_FIELD_KEY: 'schemaVersion'})
+
+    MEDIA_TYPE: ta.ClassVar[str] = 'application/vnd.oci.image.config.v1+json'
+    media_type: str = dc.field(default=MEDIA_TYPE, metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
+
+
+##
+
+
+OCI_MANIFEST_MEDIA_TYPES: ta.AbstractSet[str] = frozenset([
+    OciMediaImageIndex.MEDIA_TYPE,
+    OciMediaImageManifest.MEDIA_TYPE,
+])
 
 
 ########################################
-# ../../../omlish/formats/yaml/goyaml/parsing.py
+# ../../specs/oci/pack/packing.py
+
+
+##
+
+
+class OciLayerPacker(ExitStacked):
+    def __init__(
+            self,
+            input_file_path: str,
+            output_file_paths: ta.Sequence[str],
+            *,
+            compression: ta.Optional[OciCompression] = None,
+    ) -> None:
+        super().__init__()
+
+        self._input_file_path = input_file_path
+        self._output_file_paths = list(output_file_paths)
+        self._compression = compression
+
+        self._output_file_indexes_by_name: ta.Dict[str, int] = {}
+
+    #
+
+    @cached_nullary
+    def _input_tar_file(self) -> tarfile.TarFile:
+        # FIXME: check uncompressed
+        return self._enter_context(tarfile.open(self._input_file_path))
+
+    #
+
+    @cached_nullary
+    def _entries_by_name(self) -> ta.Mapping[str, tarfile.TarInfo]:
+        return {
+            info.name: info
+            for info in self._input_tar_file().getmembers()
+        }
+
+    #
+
+    class _CategorizedEntries(ta.NamedTuple):
+        files_by_name: ta.Mapping[str, tarfile.TarInfo]
+        non_files_by_name: ta.Mapping[str, tarfile.TarInfo]
+        links_by_name: ta.Mapping[str, tarfile.TarInfo]
+
+    @cached_nullary
+    def _categorized_entries(self) -> _CategorizedEntries:
+        files_by_name: ta.Dict[str, tarfile.TarInfo] = {}
+        non_files_by_name: ta.Dict[str, tarfile.TarInfo] = {}
+        links_by_name: ta.Dict[str, tarfile.TarInfo] = {}
+
+        for name, info in self._entries_by_name().items():
+            if info.type in tarfile.REGULAR_TYPES:
+                files_by_name[name] = info
+            elif info.type in (tarfile.LNKTYPE, tarfile.GNUTYPE_LONGLINK):
+                links_by_name[name] = info
+            else:
+                non_files_by_name[name] = info
+
+        return self._CategorizedEntries(
+            files_by_name=files_by_name,
+            non_files_by_name=non_files_by_name,
+            links_by_name=links_by_name,
+        )
+
+    #
+
+    @cached_nullary
+    def _non_files_sorted_by_name(self) -> ta.Sequence[tarfile.TarInfo]:
+        return sorted(
+            self._categorized_entries().non_files_by_name.values(),
+            key=lambda info: info.name,
+        )
+
+    @cached_nullary
+    def _files_descending_by_size(self) -> ta.Sequence[tarfile.TarInfo]:
+        return sorted(
+            self._categorized_entries().files_by_name.values(),
+            key=lambda info: -check.isinstance(info.size, int),
+        )
+
+    #
+
+    @cached_nullary
+    def _output_files(self) -> ta.Sequence[ta.BinaryIO]:
+        return [
+            self._enter_context(open(output_file_path, 'wb'))
+            for output_file_path in self._output_file_paths
+        ]
+
+    @cached_nullary
+    def _output_tar_writers(self) -> ta.Sequence[OciDataTarWriter]:
+        return [
+            self._enter_context(
+                OciDataTarWriter(
+                    output_file,
+                    compression=self._compression,
+                ),
+            )
+            for output_file in self._output_files()
+        ]
+
+    #
+
+    def _write_entry(
+            self,
+            info: tarfile.TarInfo,
+            output_file_idx: int,
+    ) -> None:
+        check.not_in(info.name, self._output_file_indexes_by_name)
+
+        writer = self._output_tar_writers()[output_file_idx]
+
+        if info.type in tarfile.REGULAR_TYPES:
+            with check.not_none(self._input_tar_file().extractfile(info)) as f:
+                writer.add_file(info, f)  # type: ignore
+
+        else:
+            writer.add_file(info)
+
+        self._output_file_indexes_by_name[info.name] = output_file_idx
+
+    @cached_nullary
+    def _write_non_files(self) -> None:
+        for non_file in self._non_files_sorted_by_name():
+            self._write_entry(non_file, 0)
+
+    @cached_nullary
+    def _write_files(self) -> None:
+        writers = self._output_tar_writers()
+
+        bins = [
+            (writer.info().compressed_sz, i)
+            for i, writer in enumerate(writers)
+        ]
+
+        heapq.heapify(bins)
+
+        for file in self._files_descending_by_size():
+            _, bin_index = heapq.heappop(bins)
+
+            writer = writers[bin_index]
+
+            self._write_entry(file, bin_index)
+
+            bin_size = writer.info().compressed_sz
+
+            heapq.heappush(bins, (bin_size, bin_index))
+
+    @cached_nullary
+    def _write_links(self) -> None:
+        for link in self._categorized_entries().links_by_name.values():
+            link_name = check.non_empty_str(link.linkname)
+
+            output_file_idx = self._output_file_indexes_by_name[link_name]
+
+            self._write_entry(link, output_file_idx)
+
+    @cached_nullary
+    def write(self) -> ta.Mapping[str, WrittenOciDataTarFileInfo]:
+        writers = self._output_tar_writers()
+
+        self._write_non_files()
+        self._write_files()
+        self._write_links()
+
+        for output_tar_writer in writers:
+            output_tar_writer.tar_file().close()
+
+        return {
+            output_file_path: output_tar_writer.info()
+            for output_file_path, output_tar_writer in zip(self._output_file_paths, writers)
+        }
+
+
+########################################
+# ../../../omcore/formats/yaml/goyaml/parsing.py
 ##
 # MIT License
 #
@@ -26678,7 +26163,7 @@ class YamlParser:
 
 
 ########################################
-# ../../../omlish/http/pipelines/servers/responses.py
+# ../../../omcore/http/pipelines/servers/responses.py
 
 
 ##
@@ -26706,7 +26191,7 @@ class IoPipelineHttpResponseCompressor(IoPipelineHttpResponseObjects, IoPipeline
 
 
 ########################################
-# ../../../omlish/io/streambufs/segmented.py
+# ../../../omcore/io/streambufs/segmented.py
 
 
 ##
@@ -27457,7 +26942,7 @@ def byte_stream_buffer_view_from_segments(mvs: ta.Sequence[memoryview]) -> ByteS
 
 
 ########################################
-# ../../../omlish/logs/asyncs.py
+# ../../../omcore/logs/asyncs.py
 
 
 ##
@@ -27527,7 +27012,7 @@ class LoggerToAsyncLogger(AsyncLogger):
 
 
 ########################################
-# ../../../omlish/logs/std/loggers.py
+# ../../../omcore/logs/std/loggers.py
 
 
 ##
@@ -27576,7 +27061,7 @@ class StdLogger(Logger):
 
 
 ########################################
-# ../../../omlish/subprocesses/asyncs.py
+# ../../../omcore/subprocesses/asyncs.py
 
 
 ##
@@ -27677,7 +27162,7 @@ class AbstractAsyncSubprocesses(BaseSubprocesses, Abstract):
 
 
 ########################################
-# ../../../omlish/subprocesses/sync.py
+# ../../../omcore/subprocesses/sync.py
 """
 TODO:
  - popen
@@ -27825,126 +27310,520 @@ SubprocessRun._DEFAULT_SUBPROCESSES = subprocesses  # noqa
 
 
 ########################################
-# ../../dataserver/http.py
-"""
-TODO:
- - asyncio
- - chunked transfer - both output and urllib input
- - range headers
-"""
+# ../docker/cacheserved/manifests.py
 
 
 ##
 
 
-class DataServerSimpleHttpHandler(SimpleHttpHandler_):
-    DEFAULT_READ_CHUNK_SIZE = 0x10000
+@dc.dataclass(frozen=True)
+class CacheServedDockerImageManifest:
+    @dc.dataclass(frozen=True)
+    class Route:
+        paths: ta.Sequence[str]
+
+        content_type: str
+        content_length: int
+
+        @dc.dataclass(frozen=True)
+        class Target(Abstract):
+            pass
+
+        @dc.dataclass(frozen=True)
+        class BytesTarget(Target):
+            data: bytes
+
+        @dc.dataclass(frozen=True)
+        class CacheKeyTarget(Target):
+            key: str
+
+        target: Target
+
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.paths, str)
+
+    routes: ta.Sequence[Route]
+
+
+#
+
+
+async def build_cache_served_docker_image_manifest(
+        data_server_routes: ta.Iterable[DataServerRoute],
+        make_file_cache_key: ta.Callable[[str], ta.Awaitable[str]],
+) -> CacheServedDockerImageManifest:
+    routes: ta.List[CacheServedDockerImageManifest.Route] = []
+
+    for data_server_route in data_server_routes:
+        content_length: int
+
+        data_server_target = data_server_route.target
+        target: CacheServedDockerImageManifest.Route.Target
+        if isinstance(data_server_target, BytesDataServerTarget):
+            bytes_data = check.isinstance(data_server_target.data, bytes)
+            content_length = len(bytes_data)
+            target = CacheServedDockerImageManifest.Route.BytesTarget(bytes_data)
+
+        elif isinstance(data_server_target, FileDataServerTarget):
+            file_path = check.non_empty_str(data_server_target.file_path)
+            content_length = os.path.getsize(file_path)
+            cache_key = await make_file_cache_key(file_path)
+            target = CacheServedDockerImageManifest.Route.CacheKeyTarget(cache_key)
+
+        else:
+            raise TypeError(data_server_target)
+
+        routes.append(CacheServedDockerImageManifest.Route(
+            paths=data_server_route.paths,
+
+            content_type=check.non_empty_str(data_server_target.content_type),
+            content_length=content_length,
+
+            target=target,
+        ))
+
+    return CacheServedDockerImageManifest(
+        routes=routes,
+    )
+
+
+#
+
+
+async def build_cache_served_docker_image_data_server_routes(
+        manifest: CacheServedDockerImageManifest,
+        make_cache_key_target: ta.Callable[..., ta.Awaitable[DataServerTarget]],
+) -> ta.List[DataServerRoute]:
+    routes: ta.List[DataServerRoute] = []
+
+    for manifest_route in manifest.routes:
+        manifest_target = manifest_route.target
+
+        target_kwargs: dict = dict(
+            content_type=manifest_route.content_type,
+            content_length=manifest_route.content_length,
+        )
+
+        target: DataServerTarget
+
+        if isinstance(manifest_target, CacheServedDockerImageManifest.Route.BytesTarget):
+            target = DataServerTarget.of(manifest_target.data, **target_kwargs)
+
+        elif isinstance(manifest_target, CacheServedDockerImageManifest.Route.CacheKeyTarget):
+            target = await make_cache_key_target(manifest_target.key, **target_kwargs)
+
+        else:
+            raise TypeError(manifest_target)
+
+        routes.append(DataServerRoute(
+            paths=manifest_route.paths,
+            target=target,
+        ))
+
+    return routes
+
+
+########################################
+# ../../dataserver/server.py
+
+
+##
+
+
+class DataServer:
+    @dc.dataclass(frozen=True)
+    class HandlerRoute:
+        paths: ta.Sequence[str]
+        handler: DataServerHandler
+
+        def __post_init__(self) -> None:
+            check.not_isinstance(self.paths, str)
+            for p in self.paths:
+                check.non_empty_str(p)
+            check.isinstance(self.handler, DataServerHandler)
+
+        @classmethod
+        def of(cls, obj: ta.Union[
+            'DataServer.HandlerRoute',
+            DataServerRoute,
+        ]) -> 'DataServer.HandlerRoute':
+            if isinstance(obj, cls):
+                return obj
+
+            elif isinstance(obj, DataServerRoute):
+                return cls(
+                    paths=obj.paths,
+                    handler=DataServerTargetHandler.for_target(obj.target),
+                )
+
+            else:
+                raise TypeError(obj)
+
+        @classmethod
+        def of_(cls, *objs: ta.Any) -> ta.List['DataServer.HandlerRoute']:
+            return [cls.of(obj) for obj in objs]
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Config:
+        pass
 
     def __init__(
             self,
-            ps: DataServer,
-            *,
-            read_chunk_size: int = DEFAULT_READ_CHUNK_SIZE,
+            routes: ta.Optional[ta.Iterable[HandlerRoute]] = None,
+            config: Config = Config(),
     ) -> None:
         super().__init__()
 
-        self._ps = ps
-        self._read_chunk_size = read_chunk_size
+        self._config = config
 
-    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        p_req = DataServerRequest(
-            req.method,
-            req.path,
-        )
+        self.set_routes(routes)
 
-        p_resp = self._ps.handle(p_req)
+    #
+
+    _routes_by_path: ta.Dict[str, HandlerRoute]
+
+    def set_routes(self, routes: ta.Optional[ta.Iterable[HandlerRoute]]) -> None:
+        routes_by_path: ta.Dict[str, DataServer.HandlerRoute] = {}
+
+        for r in routes or []:
+            for p in r.paths:
+                check.not_in(p, routes_by_path)
+                routes_by_path[p] = r
+
+        self._routes_by_path = routes_by_path
+
+    #
+
+    def handle(self, req: DataServerRequest) -> DataServerResponse:
         try:
-            data: ta.Any
-            if (p_body := p_resp.body) is not None:
-                def stream_data():
-                    try:
-                        while (b := p_body.read(self._read_chunk_size)):
-                            yield b
-                    finally:
-                        p_body.close()
+            rt = self._routes_by_path[req.path]
+        except KeyError:
+            return DataServerResponse(HttpStatus.NOT_FOUND)
 
-                data = SimpleHttpHandlerResponseStreamedData(stream_data())
-
-            else:
-                data = None
-
-            resp = SimpleHttpHandlerResponse(
-                status=p_resp.status,
-                headers=p_resp.headers,
-                data=data,
-                close_connection=True,
-            )
-
-            return resp
-
-        except Exception:  # noqa
-            p_resp.close()
-
-            raise
+        return rt.handler.handle(req)
 
 
 ########################################
-# ../../specs/oci/dataserver.py
+# ../../specs/oci/building.py
 
 
 ##
 
 
-def build_oci_repository_data_server_routes(
-        repo_name: str,
-        built_repo: BuiltOciImageIndexRepository,
-) -> ta.List[DataServerRoute]:
-    base_url_path = f'/v2/{repo_name}'
+class OciRepositoryBuilder:
+    @dc.dataclass(frozen=True)
+    class Blob:
+        digest: str
 
-    repo_contents: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
+        data: OciDataRef
+        info: OciDataRefInfo
 
-    repo_contents[f'{base_url_path}/manifests/latest'] = built_repo.blobs[built_repo.media_index_descriptor.digest]
+        media_type: ta.Optional[str] = None
 
-    for blob in built_repo.blobs.values():
-        repo_contents['/'.join([
-            base_url_path,
-            'manifests' if blob.media_type in OCI_MANIFEST_MEDIA_TYPES else 'blobs',
-            blob.digest,
-        ])] = blob
+        #
+
+        def read(self) -> bytes:
+            with open_oci_data_ref(self.data) as f:
+                return f.read()
+
+        def read_json(self) -> ta.Any:
+            return json.loads(self.read().decode('utf-8'))
+
+        def read_media(
+                self,
+                cls: ta.Type[OciMediaDataclassT] = OciMediaDataclass,  # type: ignore[assignment]
+        ) -> OciMediaDataclassT:
+            mt = check.non_empty_str(self.media_type)
+            dct = self.read_json()
+            obj = unmarshal_oci_media_dataclass(
+                dct,
+                media_type=mt,
+            )
+            return check.isinstance(obj, cls)
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._blobs: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
 
     #
 
-    def build_blob_target(blob: OciRepositoryBuilder.Blob) -> ta.Optional[DataServerTarget]:  # noqa
-        kw: dict = dict(
-            content_type=check.non_empty_str(blob.media_type),
+    def get_blobs(self) -> ta.Dict[str, Blob]:
+        return dict(self._blobs)
+
+    def add_blob(
+            self,
+            r: OciDataRef,
+            ri: ta.Optional[OciDataRefInfo] = None,
+            *,
+            media_type: ta.Optional[str] = None,
+    ) -> Blob:
+        if ri is None:
+            ri = OciDataRefInfo(r)
+
+        if (dg := ri.digest()) in self._blobs:
+            raise KeyError(ri.digest())
+
+        blob = self.Blob(
+            digest=dg,
+
+            data=r,
+            info=ri,
+
+            media_type=media_type,
         )
 
-        if isinstance(blob.data, BytesOciDataRef):
-            return DataServerTarget.of(blob.data.data, **kw)
+        self._blobs[dg] = blob
 
-        elif isinstance(blob.data, FileOciDataRef):
-            return DataServerTarget.of(file_path=blob.data.path, **kw)
+        return blob
+
+    #
+
+    def marshal_media(self, obj: OciMediaDataclass) -> bytes:
+        check.isinstance(obj, OciMediaDataclass)
+        m = marshal_obj(obj)
+        j = json_dumps_compact(m)
+        b = j.encode('utf-8')
+        return b
+
+    def add_media(self, obj: OciMediaDataclass) -> OciMediaDescriptor:
+        b = self.marshal_media(obj)
+
+        r = BytesOciDataRef(b)
+        ri = OciDataRefInfo(r)
+        self.add_blob(
+            r,
+            ri,
+            media_type=obj.media_type,
+        )
+
+        return OciMediaDescriptor(
+            media_type=obj.media_type,
+            digest=ri.digest(),
+            size=ri.size(),
+        )
+
+    #
+
+    def to_media(self, obj: OciDataclass) -> ta.Union[OciMediaDataclass, OciMediaDescriptor]:
+        def make_kw(*exclude):
+            return {
+                a: v
+                for f in dc.fields(obj)
+                if (a := f.name) not in exclude
+                for v in [getattr(obj, a)]
+                if v is not None
+            }
+
+        if isinstance(obj, OciImageIndex):
+            return OciMediaImageIndex(
+                **make_kw('manifests'),
+                manifests=[
+                    self.add_data(m)
+                    for m in obj.manifests
+                ],
+            )
+
+        elif isinstance(obj, OciImageManifest):
+            return OciMediaImageManifest(
+                **make_kw('config', 'layers'),
+                config=self.add_data(obj.config),
+                layers=[
+                    self.add_data(l)
+                    for l in obj.layers
+                ],
+            )
+
+        elif isinstance(obj, OciImageLayer):
+            ri = OciDataRefInfo(obj.data)
+            mt = OCI_IMAGE_LAYER_KIND_MEDIA_TYPES[obj.kind]
+            self.add_blob(
+                obj.data,
+                ri,
+                media_type=mt,
+            )
+            return OciMediaDescriptor(
+                media_type=mt,
+                digest=ri.digest(),
+                size=ri.size(),
+            )
+
+        elif isinstance(obj, OciImageConfig):
+            return OciMediaImageConfig(**make_kw())
 
         else:
-            with open_oci_data_ref(blob.data) as f:
-                data = f.read()
+            raise TypeError(obj)
 
-            return DataServerTarget.of(data, **kw)
+    def add_data(self, obj: OciDataclass) -> OciMediaDescriptor:
+        ret = self.to_media(obj)
 
-    #
+        if isinstance(ret, OciMediaDataclass):
+            return self.add_media(ret)
 
-    return [
-        DataServerRoute(
-            paths=[path],
-            target=target,
-        )
-        for path, blob in repo_contents.items()
-        if (target := build_blob_target(blob)) is not None
-    ]
+        elif isinstance(ret, OciMediaDescriptor):
+            return ret
+
+        else:
+            raise TypeError(ret)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class BuiltOciImageIndexRepository:
+    index: OciImageIndex
+
+    media_index_descriptor: OciMediaDescriptor
+    media_index: OciMediaImageIndex
+
+    blobs: ta.Mapping[str, OciRepositoryBuilder.Blob]
+
+
+def build_oci_index_repository(index: OciImageIndex) -> BuiltOciImageIndexRepository:
+    builder = OciRepositoryBuilder()
+
+    media_index_descriptor = builder.add_data(index)
+
+    blobs = builder.get_blobs()
+
+    media_index = blobs[media_index_descriptor.digest].read_media(OciMediaImageIndex)
+
+    return BuiltOciImageIndexRepository(
+        index=index,
+
+        media_index_descriptor=media_index_descriptor,
+        media_index=media_index,
+
+        blobs=blobs,
+    )
 
 
 ########################################
-# ../../../omlish/asyncs/asyncio/subprocesses.py
+# ../../specs/oci/loading.py
+
+
+##
+
+
+class OciRepositoryLoader:
+    def __init__(
+            self,
+            repo: OciRepository,
+    ) -> None:
+        super().__init__()
+
+        self._repo = repo
+
+    #
+
+    def load_object(
+            self,
+            data: bytes,
+            cls: ta.Type[T] = object,  # type: ignore[assignment]
+            *,
+            media_type: ta.Optional[str] = None,
+    ) -> T:
+        text = data.decode('utf-8')
+        dct = json.loads(text)
+        obj = unmarshal_oci_media_dataclass(
+            dct,
+            media_type=media_type,
+        )
+        return check.isinstance(obj, cls)
+
+    def read_object(
+            self,
+            digest: str,
+            cls: ta.Type[T] = object,  # type: ignore[assignment]
+            *,
+            media_type: ta.Optional[str] = None,
+    ) -> T:
+        data = self._repo.read_blob(digest)
+        return self.load_object(
+            data,
+            cls,
+            media_type=media_type,
+        )
+
+    def read_descriptor(
+            self,
+            desc: OciMediaDescriptor,
+            cls: ta.Type[T] = object,  # type: ignore[assignment]
+    ) -> ta.Any:
+        return self.read_object(
+            desc.digest,
+            cls,
+            media_type=desc.media_type,
+        )
+
+    #
+
+    def from_media(self, obj: ta.Any) -> ta.Any:
+        def make_kw(*exclude):
+            return {
+                a: getattr(obj, a)
+                for f in dc.fields(obj)
+                if (a := f.name) not in OCI_MEDIA_FIELDS
+                and a not in exclude
+            }
+
+        if isinstance(obj, OciMediaImageConfig):
+            return OciImageConfig(**make_kw())
+
+        elif isinstance(obj, OciMediaImageManifest):
+            return OciImageManifest(
+                **make_kw('config', 'layers'),
+                config=self.from_media(self.read_descriptor(obj.config)),
+                layers=[
+                    OciImageLayer(
+                        kind=lk,
+                        data=self._repo.ref_blob(l.digest),
+                    )
+                    for l in obj.layers
+                    if (lk := OCI_IMAGE_LAYER_KIND_MEDIA_TYPES_.get(l.media_type)) is not None
+                ],
+            )
+
+        elif isinstance(obj, OciMediaImageIndex):
+            return OciImageIndex(
+                **make_kw('manifests'),
+                manifests=[
+                    fm
+                    for m in obj.manifests
+                    if self._repo.contains_blob(m.digest)
+                    for fm in [self.from_media(self.read_descriptor(m))]
+                    if not is_empty_oci_dataclass(fm)
+                ],
+            )
+
+        else:
+            raise TypeError(obj)
+
+
+##
+
+
+def read_oci_repository_root_index(
+        obj: ta.Any,
+        *,
+        file_name: str = 'index.json',
+) -> OciImageIndex:
+    file_repo = check.isinstance(OciRepository.of(obj), FileOciRepository)
+
+    repo_ldr = OciRepositoryLoader(file_repo)
+
+    media_image_idx = repo_ldr.load_object(file_repo.read_file(file_name), OciMediaImageIndex)
+
+    image_idx = repo_ldr.from_media(media_image_idx)
+
+    return check.isinstance(image_idx, OciImageIndex)
+
+
+########################################
+# ../../../omcore/asyncs/asyncio/subprocesses.py
 
 
 ##
@@ -28140,7 +28019,7 @@ asyncio_subprocesses = AsyncioSubprocesses()
 
 
 ########################################
-# ../../../omlish/formats/yaml/goyaml/decoding.py
+# ../../../omcore/formats/yaml/goyaml/decoding.py
 ##
 # MIT License
 #
@@ -29163,7 +29042,7 @@ def yaml_decode(s: str) -> ta.Any:
 
 
 ########################################
-# ../../../omlish/http/pipelines/aggregators.py
+# ../../../omcore/http/pipelines/aggregators.py
 """
 TODO:
  - validating mode?
@@ -29548,7 +29427,7 @@ class IoPipelineHttpObjectAggregatorDecoder(
 
 
 ########################################
-# ../../../omlish/io/pipelines/bytes/decoders.py
+# ../../../omcore/io/pipelines/bytes/decoders.py
 """
 TODO:
  - netty 'pending_removal' trick
@@ -29900,7 +29779,7 @@ class BufferedBytesToMessageDecoderIoPipelineHandler(
 
 
 ########################################
-# ../../../omlish/logs/modules.py
+# ../../../omcore/logs/modules.py
 
 
 ##
@@ -29926,479 +29805,126 @@ def get_module_loggers(mod_globals: ta.Mapping[str, ta.Any]) -> ta.Tuple[Logger,
 
 
 ########################################
-# ../cache.py
+# ../../dataserver/http.py
 """
 TODO:
- - os.mtime, Config.purge_after_days
-  - nice to have: get a total set of might-need keys ahead of time and keep those
-  - okay: just purge after running
+ - asyncio
+ - chunked transfer - both output and urllib input
+ - range headers
 """
 
 
-CacheVersion = ta.NewType('CacheVersion', int)
-
-
-log = get_module_logger(globals())  # noqa
-
-
 ##
 
 
-class FileCache(Abstract):
-    DEFAULT_CACHE_VERSION: ta.ClassVar[CacheVersion] = CacheVersion(CI_CACHE_VERSION)
+class DataServerSimpleHttpHandler(SimpleHttpHandler_):
+    DEFAULT_READ_CHUNK_SIZE = 0x10000
 
     def __init__(
             self,
+            ps: DataServer,
             *,
-            version: ta.Optional[CacheVersion] = None,
+            read_chunk_size: int = DEFAULT_READ_CHUNK_SIZE,
     ) -> None:
         super().__init__()
 
-        if version is None:
-            version = self.DEFAULT_CACHE_VERSION
-        check.isinstance(version, int)
-        check.arg(version >= 0)
-        self._version: CacheVersion = version
+        self._ps = ps
+        self._read_chunk_size = read_chunk_size
 
-    @property
-    def version(self) -> CacheVersion:
-        return self._version
-
-    #
-
-    @abc.abstractmethod
-    def get_file(self, key: str) -> ta.Awaitable[ta.Optional[str]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> ta.Awaitable[str]:
-        raise NotImplementedError
-
-
-#
-
-
-class DirectoryFileCache(FileCache):
-    @dc.dataclass(frozen=True)
-    class Config:
-        dir: str
-
-        no_create: bool = False
-        no_purge: bool = False
-
-        no_update_mtime: bool = False
-
-        purge_max_age_s: ta.Optional[float] = None
-        purge_max_size_b: ta.Optional[int] = None
-
-    def __init__(
-            self,
-            config: Config,
-            *,
-            version: ta.Optional[CacheVersion] = None,
-    ) -> None:  # noqa
-        super().__init__(
-            version=version,
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        p_req = DataServerRequest(
+            req.method,
+            req.path,
         )
 
-        self._config = config
+        p_resp = self._ps.handle(p_req)
+        try:
+            data: ta.Any
+            if (p_body := p_resp.body) is not None:
+                def stream_data():
+                    try:
+                        while (b := p_body.read(self._read_chunk_size)):
+                            yield b
+                    finally:
+                        p_body.close()
 
-    @property
-    def dir(self) -> str:
-        return self._config.dir
+                data = SimpleHttpHandlerResponseStreamedData(stream_data())
 
-    #
+            else:
+                data = None
 
-    VERSION_FILE_NAME = '.ci-cache-version'
-
-    def _iter_dir_contents(self) -> ta.Iterator[str]:
-        for n in sorted(os.listdir(self.dir)):
-            if n.startswith('.'):
-                continue
-            yield os.path.join(self.dir, n)
-
-    @cached_nullary
-    def setup_dir(self) -> None:
-        version_file = os.path.join(self.dir, self.VERSION_FILE_NAME)
-
-        if self._config.no_create:
-            check.state(os.path.isdir(self.dir))
-
-        elif not os.path.isdir(self.dir):
-            os.makedirs(self.dir)
-            with open(version_file, 'w') as f:
-                f.write(f'{self._version}\n')
-            return
-
-        # NOTE: intentionally raises FileNotFoundError to refuse to use an existing non-cache dir as a cache dir.
-        with open(version_file) as f:
-            dir_version = int(f.read().strip())
-
-        if dir_version == self._version:
-            return
-
-        if self._config.no_purge:
-            raise RuntimeError(f'{dir_version=} != {self._version=}')
-
-        dirs = [n for n in sorted(os.listdir(self.dir)) if os.path.isdir(os.path.join(self.dir, n))]
-        if dirs:
-            raise RuntimeError(
-                f'Refusing to remove stale cache dir {self.dir!r} '
-                f'due to present directories: {", ".join(dirs)}',
+            resp = SimpleHttpHandlerResponse(
+                status=p_resp.status,
+                headers=p_resp.headers,
+                data=data,
+                close_connection=True,
             )
 
-        for fp in self._iter_dir_contents():
-            check.state(os.path.isfile(fp))
-            log.debug('Purging stale cache file: %s', fp)
-            os.unlink(fp)
+            return resp
 
-        os.unlink(version_file)
+        except Exception:  # noqa
+            p_resp.close()
 
-        with open(version_file, 'w') as f:
-            f.write(str(self._version))
+            raise
 
-    #
 
-    def purge(self, *, dry_run: bool = False) -> None:
-        purge_max_age_s = self._config.purge_max_age_s
-        purge_max_size_b = self._config.purge_max_size_b
-        if self._config.no_purge or (purge_max_age_s is None and purge_max_size_b is None):
-            return
-
-        self.setup_dir()
-
-        purge_min_mtime: ta.Optional[float] = None
-        if purge_max_age_s is not None:
-            purge_min_mtime = time.time() - purge_max_age_s
-
-        dct: ta.Dict[str, os.stat_result] = {}
-        for fp in self._iter_dir_contents():
-            check.state(os.path.isfile(fp))
-            dct[fp] = os.stat(fp)
-
-        total_size_b = 0
-        for fp, st in sorted(dct.items(), key=lambda t: -t[1].st_mtime):
-            total_size_b += st.st_size
-
-            purge = False
-            if purge_min_mtime is not None and st.st_mtime < purge_min_mtime:
-                purge = True
-            if purge_max_size_b is not None and total_size_b >= purge_max_size_b:
-                purge = True
-
-            if not purge:
-                continue
-
-            log.debug('Purging cache file: %s', fp)
-            if not dry_run:
-                os.unlink(fp)
-
-    #
-
-    def get_cache_file_path(
-            self,
-            key: str,
-    ) -> str:
-        self.setup_dir()
-        return os.path.join(self.dir, key)
-
-    def format_incomplete_file(self, f: str) -> str:
-        return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
-
-    #
-
-    async def get_file(self, key: str) -> ta.Optional[str]:
-        cache_file_path = self.get_cache_file_path(key)
-        if not os.path.exists(cache_file_path):
-            return None
-
-        if not self._config.no_update_mtime:
-            stat_info = os.stat(cache_file_path)
-            os.utime(cache_file_path, (stat_info.st_atime, time.time()))
-
-        return cache_file_path
-
-    async def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> str:
-        cache_file_path = self.get_cache_file_path(key)
-        if steal:
-            shutil.move(file_path, cache_file_path)
-        else:
-            shutil.copyfile(file_path, cache_file_path)
-        return cache_file_path
+########################################
+# ../../specs/oci/dataserver.py
 
 
 ##
 
 
-class DataCache:
-    @dc.dataclass(frozen=True)
-    class Data(Abstract):
-        pass
+def build_oci_repository_data_server_routes(
+        repo_name: str,
+        built_repo: BuiltOciImageIndexRepository,
+) -> ta.List[DataServerRoute]:
+    base_url_path = f'/v2/{repo_name}'
 
-    @dc.dataclass(frozen=True)
-    class BytesData(Data):
-        data: bytes
+    repo_contents: ta.Dict[str, OciRepositoryBuilder.Blob] = {}
 
-    @dc.dataclass(frozen=True)
-    class FileData(Data):
-        file_path: str
+    repo_contents[f'{base_url_path}/manifests/latest'] = built_repo.blobs[built_repo.media_index_descriptor.digest]
 
-    @dc.dataclass(frozen=True)
-    class UrlData(Data):
-        url: str
+    for blob in built_repo.blobs.values():
+        repo_contents['/'.join([
+            base_url_path,
+            'manifests' if blob.media_type in OCI_MANIFEST_MEDIA_TYPES else 'blobs',
+            blob.digest,
+        ])] = blob
 
     #
 
-    @abc.abstractmethod
-    def get_data(self, key: str) -> ta.Awaitable[ta.Optional[Data]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def put_data(self, key: str, data: Data) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-#
-
-
-@functools.singledispatch
-async def read_data_cache_data(data: DataCache.Data) -> bytes:
-    raise TypeError(data)
-
-
-@read_data_cache_data.register
-async def _(data: DataCache.BytesData) -> bytes:
-    return data.data
-
-
-@read_data_cache_data.register
-async def _(data: DataCache.FileData) -> bytes:
-    with open(data.file_path, 'rb') as f:  # noqa
-        return f.read()
-
-
-@read_data_cache_data.register
-async def _(data: DataCache.UrlData) -> bytes:
-    def inner() -> bytes:
-        with urllib.request.urlopen(urllib.request.Request(  # noqa
-            data.url,
-        )) as resp:
-            return resp.read()
-
-    return await asyncio.get_running_loop().run_in_executor(None, inner)
-
-
-#
-
-
-class FileCacheDataCache(DataCache):
-    def __init__(
-            self,
-            file_cache: FileCache,
-    ) -> None:
-        super().__init__()
-
-        self._file_cache = file_cache
-
-    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        if (file_path := await self._file_cache.get_file(key)) is None:
-            return None
-
-        return DataCache.FileData(file_path)
-
-    async def put_data(self, key: str, data: DataCache.Data) -> None:
-        steal = False
-
-        if isinstance(data, DataCache.BytesData):
-            file_path = make_temp_file()
-            with open(file_path, 'wb') as f:  # noqa
-                f.write(data.data)
-            steal = True
-
-        elif isinstance(data, DataCache.FileData):
-            file_path = data.file_path
-
-        elif isinstance(data, DataCache.UrlData):
-            raise NotImplementedError
-
-        else:
-            raise TypeError(data)
-
-        await self._file_cache.put_file(
-            key,
-            file_path,
-            steal=steal,
+    def build_blob_target(blob: OciRepositoryBuilder.Blob) -> ta.Optional[DataServerTarget]:  # noqa
+        kw: dict = dict(
+            content_type=check.non_empty_str(blob.media_type),
         )
 
+        if isinstance(blob.data, BytesOciDataRef):
+            return DataServerTarget.of(blob.data.data, **kw)
 
-########################################
-# ../docker/cmds.py
+        elif isinstance(blob.data, FileOciDataRef):
+            return DataServerTarget.of(file_path=blob.data.path, **kw)
 
+        else:
+            with open_oci_data_ref(blob.data) as f:
+                data = f.read()
 
-##
+            return DataServerTarget.of(data, **kw)
 
+    #
 
-async def is_docker_image_present(image: str) -> bool:
-    out = await asyncio_subprocesses.check_output(
-        'docker',
-        'images',
-        '--format', 'json',
-        image,
-    )
-
-    out_s = out.decode('utf-8').strip()
-    if not out_s:
-        return False
-
-    json.loads(out_s)  # noqa
-    return True
-
-
-async def pull_docker_image(
-        image: str,
-) -> None:
-    await asyncio_subprocesses.check_call(
-        'docker',
-        'pull',
-        image,
-    )
-
-
-async def build_docker_image(
-        docker_file: str,
-        *,
-        tag: ta.Optional[str] = None,
-        cwd: ta.Optional[str] = None,
-        run_options: ta.Optional[ta.Sequence[str]] = None,
-) -> str:
-    with temp_file_context() as id_file:
-        await asyncio_subprocesses.check_call(
-            'docker',
-            'build',
-            '-f', os.path.abspath(docker_file),
-            '--iidfile', id_file,
-            *(['--tag', tag] if tag is not None else []),
-            *(run_options or []),
-            '.',
-            **(dict(cwd=cwd) if cwd is not None else {}),
+    return [
+        DataServerRoute(
+            paths=[path],
+            target=target,
         )
-
-        with open(id_file) as f:  # noqa
-            image_id = check.single(f.read().strip().splitlines()).strip()
-
-    return image_id
-
-
-async def tag_docker_image(image: str, tag: str) -> None:
-    await asyncio_subprocesses.check_call(
-        'docker',
-        'tag',
-        image,
-        tag,
-    )
-
-
-async def delete_docker_tag(tag: str) -> None:
-    await asyncio_subprocesses.check_call(
-        'docker',
-        'rmi',
-        tag,
-    )
-
-
-##
-
-
-async def save_docker_tar_cmd(
-        image: str,
-        output_cmd: ShellCmd,
-) -> None:
-    cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
-    await cmd.run(asyncio_subprocesses.check_call)
-
-
-async def save_docker_tar(
-        image: str,
-        tar_file: str,
-) -> None:
-    return await save_docker_tar_cmd(
-        image,
-        ShellCmd(f'cat > {shlex.quote(tar_file)}'),
-    )
-
-
-#
-
-
-async def load_docker_tar_cmd(
-        input_cmd: ShellCmd,
-) -> str:
-    cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
-
-    out = (await cmd.run(asyncio_subprocesses.check_output)).decode()
-
-    line = check.single(out.strip().splitlines())
-    loaded = line.partition(':')[2].strip()
-    return loaded
-
-
-async def load_docker_tar(
-        tar_file: str,
-) -> str:
-    return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
-
-
-##
-
-
-async def ensure_docker_image_setup(
-        image: str,
-        *,
-        cwd: ta.Optional[str] = None,
-) -> None:
-    await asyncio_subprocesses.check_call(
-        'docker',
-        'run',
-        '--rm',
-        '--entrypoint', '/bin/true',  # FIXME: lol
-        image,
-        **(dict(cwd=cwd) if cwd is not None else {}),
-    )
+        for path, blob in repo_contents.items()
+        if (target := build_blob_target(blob)) is not None
+    ]
 
 
 ########################################
-# ../utils.py
-
-
-##
-
-
-def read_yaml_file(yaml_file: str) -> ta.Any:
-    with open(yaml_file) as f:
-        return yaml_decode(f.read())
-
-
-##
-
-
-def sha256_str(s: str) -> str:
-    return hashlib.sha256(s.encode('utf-8')).hexdigest()
-
-
-########################################
-# ../../../omlish/http/pipelines/decoders.py
+# ../../../omcore/http/pipelines/decoders.py
 """
 TODO:
  - chunked make_chunk_header - https://datatracker.ietf.org/doc/html/rfc9112#name-chunk-extensions
@@ -31017,7 +30543,7 @@ class IoPipelineHttpObjectDecoder(
 
 
 ########################################
-# ../../../omlish/io/pipelines/drivers/sync.py
+# ../../../omcore/io/pipelines/drivers/sync.py
 """
 TODO:
  - can implement sched w/ settimeout
@@ -31347,7 +30873,7 @@ class SyncSocketIoPipelineDriver:
 
 
 ########################################
-# ../../../omlish/lite/timing.py
+# ../../../omcore/lite/timing.py
 
 
 log = get_module_logger(globals())  # noqa
@@ -31356,6 +30882,514 @@ log = get_module_logger(globals())  # noqa
 LogTimingContext.DEFAULT_LOG = log
 
 log_timing_context = log_timing_context  # noqa
+
+
+########################################
+# ../cache.py
+"""
+TODO:
+ - os.mtime, Config.purge_after_days
+  - nice to have: get a total set of might-need keys ahead of time and keep those
+  - okay: just purge after running
+"""
+
+
+CacheVersion = ta.NewType('CacheVersion', int)
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class FileCache(Abstract):
+    DEFAULT_CACHE_VERSION: ta.ClassVar[CacheVersion] = CacheVersion(CI_CACHE_VERSION)
+
+    def __init__(
+            self,
+            *,
+            version: ta.Optional[CacheVersion] = None,
+    ) -> None:
+        super().__init__()
+
+        if version is None:
+            version = self.DEFAULT_CACHE_VERSION
+        check.isinstance(version, int)
+        check.arg(version >= 0)
+        self._version: CacheVersion = version
+
+    @property
+    def version(self) -> CacheVersion:
+        return self._version
+
+    #
+
+    @abc.abstractmethod
+    def get_file(self, key: str) -> ta.Awaitable[ta.Optional[str]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> ta.Awaitable[str]:
+        raise NotImplementedError
+
+
+#
+
+
+class DirectoryFileCache(FileCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        dir: str
+
+        no_create: bool = False
+        no_purge: bool = False
+
+        no_update_mtime: bool = False
+
+        purge_max_age_s: ta.Optional[float] = None
+        purge_max_size_b: ta.Optional[int] = None
+
+    def __init__(
+            self,
+            config: Config,
+            *,
+            version: ta.Optional[CacheVersion] = None,
+    ) -> None:  # noqa
+        super().__init__(
+            version=version,
+        )
+
+        self._config = config
+
+    @property
+    def dir(self) -> str:
+        return self._config.dir
+
+    #
+
+    VERSION_FILE_NAME = '.ci-cache-version'
+
+    def _iter_dir_contents(self) -> ta.Iterator[str]:
+        for n in sorted(os.listdir(self.dir)):
+            if n.startswith('.'):
+                continue
+            yield os.path.join(self.dir, n)
+
+    @cached_nullary
+    def setup_dir(self) -> None:
+        version_file = os.path.join(self.dir, self.VERSION_FILE_NAME)
+
+        if self._config.no_create:
+            check.state(os.path.isdir(self.dir))
+
+        elif not os.path.isdir(self.dir):
+            os.makedirs(self.dir)
+            with open(version_file, 'w') as f:
+                f.write(f'{self._version}\n')
+            return
+
+        # NOTE: intentionally raises FileNotFoundError to refuse to use an existing non-cache dir as a cache dir.
+        with open(version_file) as f:
+            dir_version = int(f.read().strip())
+
+        if dir_version == self._version:
+            return
+
+        if self._config.no_purge:
+            raise RuntimeError(f'{dir_version=} != {self._version=}')
+
+        dirs = [n for n in sorted(os.listdir(self.dir)) if os.path.isdir(os.path.join(self.dir, n))]
+        if dirs:
+            raise RuntimeError(
+                f'Refusing to remove stale cache dir {self.dir!r} '
+                f'due to present directories: {", ".join(dirs)}',
+            )
+
+        for fp in self._iter_dir_contents():
+            check.state(os.path.isfile(fp))
+            log.debug('Purging stale cache file: %s', fp)
+            os.unlink(fp)
+
+        os.unlink(version_file)
+
+        with open(version_file, 'w') as f:
+            f.write(str(self._version))
+
+    #
+
+    def purge(self, *, dry_run: bool = False) -> None:
+        purge_max_age_s = self._config.purge_max_age_s
+        purge_max_size_b = self._config.purge_max_size_b
+        if self._config.no_purge or (purge_max_age_s is None and purge_max_size_b is None):
+            return
+
+        self.setup_dir()
+
+        purge_min_mtime: ta.Optional[float] = None
+        if purge_max_age_s is not None:
+            purge_min_mtime = time.time() - purge_max_age_s
+
+        dct: ta.Dict[str, os.stat_result] = {}
+        for fp in self._iter_dir_contents():
+            check.state(os.path.isfile(fp))
+            dct[fp] = os.stat(fp)
+
+        total_size_b = 0
+        for fp, st in sorted(dct.items(), key=lambda t: -t[1].st_mtime):
+            total_size_b += st.st_size
+
+            purge = False
+            if purge_min_mtime is not None and st.st_mtime < purge_min_mtime:
+                purge = True
+            if purge_max_size_b is not None and total_size_b >= purge_max_size_b:
+                purge = True
+
+            if not purge:
+                continue
+
+            log.debug('Purging cache file: %s', fp)
+            if not dry_run:
+                os.unlink(fp)
+
+    #
+
+    def get_cache_file_path(
+            self,
+            key: str,
+    ) -> str:
+        self.setup_dir()
+        return os.path.join(self.dir, key)
+
+    def format_incomplete_file(self, f: str) -> str:
+        return os.path.join(os.path.dirname(f), f'_{os.path.basename(f)}.incomplete')
+
+    #
+
+    async def get_file(self, key: str) -> ta.Optional[str]:
+        cache_file_path = self.get_cache_file_path(key)
+        if not os.path.exists(cache_file_path):
+            return None
+
+        if not self._config.no_update_mtime:
+            stat_info = os.stat(cache_file_path)
+            os.utime(cache_file_path, (stat_info.st_atime, time.time()))
+
+        return cache_file_path
+
+    async def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = self.get_cache_file_path(key)
+        if steal:
+            shutil.move(file_path, cache_file_path)
+        else:
+            shutil.copyfile(file_path, cache_file_path)
+        return cache_file_path
+
+
+##
+
+
+class DataCache:
+    @dc.dataclass(frozen=True)
+    class Data(Abstract):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class BytesData(Data):
+        data: bytes
+
+    @dc.dataclass(frozen=True)
+    class FileData(Data):
+        file_path: str
+
+    @dc.dataclass(frozen=True)
+    class UrlData(Data):
+        url: str
+
+    #
+
+    @abc.abstractmethod
+    def get_data(self, key: str) -> ta.Awaitable[ta.Optional[Data]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def put_data(self, key: str, data: Data) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+#
+
+
+@functools.singledispatch
+async def read_data_cache_data(data: DataCache.Data) -> bytes:
+    raise TypeError(data)
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.BytesData) -> bytes:
+    return data.data
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.FileData) -> bytes:
+    with open(data.file_path, 'rb') as f:  # noqa
+        return f.read()
+
+
+@read_data_cache_data.register
+async def _(data: DataCache.UrlData) -> bytes:
+    def inner() -> bytes:
+        with urllib.request.urlopen(urllib.request.Request(  # noqa
+            data.url,
+        )) as resp:
+            return resp.read()
+
+    return await asyncio.get_running_loop().run_in_executor(None, inner)
+
+
+#
+
+
+class FileCacheDataCache(DataCache):
+    def __init__(
+            self,
+            file_cache: FileCache,
+    ) -> None:
+        super().__init__()
+
+        self._file_cache = file_cache
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        if (file_path := await self._file_cache.get_file(key)) is None:
+            return None
+
+        return DataCache.FileData(file_path)
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        steal = False
+
+        if isinstance(data, DataCache.BytesData):
+            file_path = make_temp_file()
+            with open(file_path, 'wb') as f:  # noqa
+                f.write(data.data)
+            steal = True
+
+        elif isinstance(data, DataCache.FileData):
+            file_path = data.file_path
+
+        elif isinstance(data, DataCache.UrlData):
+            raise NotImplementedError
+
+        else:
+            raise TypeError(data)
+
+        await self._file_cache.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )
+
+
+########################################
+# ../docker/cmds.py
+
+
+##
+
+
+async def is_docker_image_present(image: str) -> bool:
+    out = await asyncio_subprocesses.check_output(
+        'docker',
+        'images',
+        '--format', 'json',
+        image,
+    )
+
+    out_s = out.decode('utf-8').strip()
+    if not out_s:
+        return False
+
+    json.loads(out_s)  # noqa
+    return True
+
+
+async def pull_docker_image(
+        image: str,
+) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'pull',
+        image,
+    )
+
+
+async def build_docker_image(
+        docker_file: str,
+        *,
+        tag: ta.Optional[str] = None,
+        cwd: ta.Optional[str] = None,
+        run_options: ta.Optional[ta.Sequence[str]] = None,
+) -> str:
+    with temp_file_context() as id_file:
+        await asyncio_subprocesses.check_call(
+            'docker',
+            'build',
+            '-f', os.path.abspath(docker_file),
+            '--iidfile', id_file,
+            *(['--tag', tag] if tag is not None else []),
+            *(run_options or []),
+            '.',
+            **(dict(cwd=cwd) if cwd is not None else {}),
+        )
+
+        with open(id_file) as f:  # noqa
+            image_id = check.single(f.read().strip().splitlines()).strip()
+
+    return image_id
+
+
+async def tag_docker_image(image: str, tag: str) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'tag',
+        image,
+        tag,
+    )
+
+
+async def delete_docker_tag(tag: str) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'rmi',
+        tag,
+    )
+
+
+##
+
+
+async def save_docker_tar_cmd(
+        image: str,
+        output_cmd: ShellCmd,
+) -> None:
+    cmd = dc.replace(output_cmd, s=f'docker save {image} | {output_cmd.s}')
+    await cmd.run(asyncio_subprocesses.check_call)
+
+
+async def save_docker_tar(
+        image: str,
+        tar_file: str,
+) -> None:
+    return await save_docker_tar_cmd(
+        image,
+        ShellCmd(f'cat > {shlex.quote(tar_file)}'),
+    )
+
+
+#
+
+
+async def load_docker_tar_cmd(
+        input_cmd: ShellCmd,
+) -> str:
+    cmd = dc.replace(input_cmd, s=f'{input_cmd.s} | docker load')
+
+    out = (await cmd.run(asyncio_subprocesses.check_output)).decode()
+
+    line = check.single(out.strip().splitlines())
+    loaded = line.partition(':')[2].strip()
+    return loaded
+
+
+async def load_docker_tar(
+        tar_file: str,
+) -> str:
+    return await load_docker_tar_cmd(ShellCmd(f'cat {shlex.quote(tar_file)}'))
+
+
+##
+
+
+async def ensure_docker_image_setup(
+        image: str,
+        *,
+        cwd: ta.Optional[str] = None,
+) -> None:
+    await asyncio_subprocesses.check_call(
+        'docker',
+        'run',
+        '--rm',
+        '--entrypoint', '/bin/true',  # FIXME: lol
+        image,
+        **(dict(cwd=cwd) if cwd is not None else {}),
+    )
+
+
+########################################
+# ../utils.py
+
+
+##
+
+
+def read_yaml_file(yaml_file: str) -> ta.Any:
+    with open(yaml_file) as f:
+        return yaml_decode(f.read())
+
+
+##
+
+
+def sha256_str(s: str) -> str:
+    return hashlib.sha256(s.encode('utf-8')).hexdigest()
+
+
+########################################
+# ../../../omcore/http/pipelines/servers/requests.py
+
+
+##
+
+
+class IoPipelineHttpRequestDecoder(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDecoder):
+    _parse_mode: ta.Final = HttpParser.Mode.REQUEST
+    _if_content_length_missing: ta.Final = 'empty'
+
+
+##
+
+
+class IoPipelineHttpRequestAggregatorDecoder(
+    IoPipelineHttpRequestObjects,
+    IoPipelineHttpObjectAggregatorDecoder,
+):
+    _if_content_length_missing: ta.Final = 'empty'
+
+
+##
+
+
+class IoPipelineHttpRequestDechunker(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDechunker):
+    pass
+
+
+##
+
+
+class IoPipelineHttpRequestDecompressor(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDecompressor):
+    pass
 
 
 ########################################
@@ -32527,39 +32561,134 @@ class OciPackedRepositoryBuilder(ExitStacked):
 
 
 ########################################
-# ../../../omlish/http/pipelines/servers/requests.py
+# ../../../omcore/http/simple/pipelines/handlers.py
 
 
 ##
 
 
-class IoPipelineHttpRequestDecoder(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDecoder):
-    _parse_mode: ta.Final = HttpParser.Mode.REQUEST
-    _if_content_length_missing: ta.Final = 'empty'
+class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
+    def __init__(self, handler: SimpleHttpHandler) -> None:
+        super().__init__()
 
+        self._handler = handler
 
-##
+    @dc.dataclass(frozen=True)
+    class SocketAndAddressMetadata(IoPipelineMetadata):
+        socket: socket_.socket
+        address: SocketAddress
 
+        @classmethod
+        def of(cls, saa: SocketAndAddress) -> 'SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata':
+            return cls(saa.socket, saa.address)
 
-class IoPipelineHttpRequestAggregatorDecoder(
-    IoPipelineHttpRequestObjects,
-    IoPipelineHttpObjectAggregatorDecoder,
-):
-    _if_content_length_missing: ta.Final = 'empty'
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.InitialInput):
+            ctx.feed_in(msg)
 
+            IoPipelineFlow.maybe_ready_for_input(ctx)
 
-##
+            return
 
+        if not isinstance(msg, FullIoPipelineHttpRequest):
+            ctx.feed_in(msg)
+            return
 
-class IoPipelineHttpRequestDechunker(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDechunker):
-    pass
+        #
 
+        sam = ctx.pipeline.metadata[SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata]
 
-##
+        handler_req = SimpleHttpHandlerRequest(
+            client_address=SocketAndAddress(sam.socket, sam.address),
+            method=msg.head.method,
+            path=msg.head.target,
+            headers=check.not_none(msg.head.parsed).headers,
+            data=ByteStreamBuffers.to_bytes(msg.body),
+        )
 
+        handler_resp = self._handler(handler_req)
 
-class IoPipelineHttpRequestDecompressor(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDecompressor):
-    pass
+        try:
+            headers = HttpHeaders(handler_resp.headers or {})
+            new_headers: ta.Dict[str, str] = {}
+
+            data = handler_resp.data
+
+            if data is not None and headers.lower.get('content-length') is None:
+                cl: ta.Optional[int]
+                if isinstance(data, bytes):
+                    cl = len(data)
+                elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
+                    cl = data.length
+                else:
+                    raise TypeError(data)
+                if cl is not None:
+                    new_headers['Content-Length'] = str(cl)
+
+            # if headers.lower.get('connect') is None:
+            #     if h.key.lower() != 'connection':
+            #         return None
+            #     elif h.value.lower() == 'close':
+            #         return True
+            #     elif h.value.lower() == 'keep-alive':
+            #         return False
+            #     else:
+            #         return None
+            new_headers['Connection'] = 'close'  # TODO: handler_resp.close_connection
+
+            if new_headers:
+                headers = HttpHeaders({**headers, **new_headers})
+
+            head = IoPipelineHttpResponseHead(
+                status=handler_resp.status,
+                reason=IoPipelineHttpResponseHead.get_reason_phrase(handler_resp.status),
+                headers=headers,
+            )
+
+            if isinstance(data, (bytes, type(None))):
+                resp = FullIoPipelineHttpResponse(
+                    head=head,
+                    body=data or b'',
+                )
+
+                ctx.feed_out(resp)
+
+            elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
+                ctx.feed_out(head)
+
+                for b in data.iter:
+                    ctx.feed_out(IoPipelineHttpResponseBodyData(b))
+
+                ctx.feed_out(IoPipelineHttpResponseEnd())
+
+            else:
+                raise TypeError(data)
+
+            ctx.feed_out(IoPipelineMessages.FinalOutput())
+
+        finally:
+            handler_resp.close()
+
+    #
+
+    @classmethod
+    def build_standard_pipeline_spec(
+            cls,
+            sock: socket_.socket,
+            addr: SocketAddress,
+            handler: SimpleHttpHandler,
+    ) -> IoPipeline.Spec:
+        return IoPipeline.Spec(
+            [
+                IoPipelineHttpRequestDecoder(),
+                IoPipelineHttpRequestAggregatorDecoder(),
+                IoPipelineHttpResponseEncoder(),
+                SimpleHttpHandlerServerIoPipelineHandler(handler),
+            ],
+            metadata=[
+                SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata(sock, addr),
+            ],
+        )
 
 
 ########################################
@@ -33038,134 +33167,98 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
 
 
 ########################################
-# ../../../omlish/http/simple/pipelines/handlers.py
+# ../../../omcore/http/simple/pipelines/sync.py
 
 
-##
-
-
-class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
-    def __init__(self, handler: SimpleHttpHandler) -> None:
-        super().__init__()
-
-        self._handler = handler
-
-    @dc.dataclass(frozen=True)
-    class SocketAndAddressMetadata(IoPipelineMetadata):
-        socket: socket_.socket
-        address: SocketAddress
-
-        @classmethod
-        def of(cls, saa: SocketAndAddress) -> 'SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata':
-            return cls(saa.socket, saa.address)
-
-    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, IoPipelineMessages.InitialInput):
-            ctx.feed_in(msg)
-
-            IoPipelineFlow.maybe_ready_for_input(ctx)
-
-            return
-
-        if not isinstance(msg, FullIoPipelineHttpRequest):
-            ctx.feed_in(msg)
-            return
-
-        #
-
-        sam = ctx.pipeline.metadata[SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata]
-
-        handler_req = SimpleHttpHandlerRequest(
-            client_address=SocketAndAddress(sam.socket, sam.address),
-            method=msg.head.method,
-            path=msg.head.target,
-            headers=check.not_none(msg.head.parsed).headers,
-            data=ByteStreamBuffers.to_bytes(msg.body),
-        )
-
-        handler_resp = self._handler(handler_req)
-
-        try:
-            headers = HttpHeaders(handler_resp.headers or {})
-            new_headers: ta.Dict[str, str] = {}
-
-            data = handler_resp.data
-
-            if data is not None and headers.lower.get('content-length') is None:
-                cl: ta.Optional[int]
-                if isinstance(data, bytes):
-                    cl = len(data)
-                elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
-                    cl = data.length
-                else:
-                    raise TypeError(data)
-                if cl is not None:
-                    new_headers['Content-Length'] = str(cl)
-
-            # if headers.lower.get('connect') is None:
-            #     if h.key.lower() != 'connection':
-            #         return None
-            #     elif h.value.lower() == 'close':
-            #         return True
-            #     elif h.value.lower() == 'keep-alive':
-            #         return False
-            #     else:
-            #         return None
-            new_headers['Connection'] = 'close'  # TODO: handler_resp.close_connection
-
-            if new_headers:
-                headers = HttpHeaders({**headers, **new_headers})
-
-            head = IoPipelineHttpResponseHead(
-                status=handler_resp.status,
-                reason=IoPipelineHttpResponseHead.get_reason_phrase(handler_resp.status),
-                headers=headers,
-            )
-
-            if isinstance(data, (bytes, type(None))):
-                resp = FullIoPipelineHttpResponse(
-                    head=head,
-                    body=data or b'',
-                )
-
-                ctx.feed_out(resp)
-
-            elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
-                ctx.feed_out(head)
-
-                for b in data.iter:
-                    ctx.feed_out(IoPipelineHttpResponseBodyData(b))
-
-                ctx.feed_out(IoPipelineHttpResponseEnd())
-
-            else:
-                raise TypeError(data)
-
-            ctx.feed_out(IoPipelineMessages.FinalOutput())
-
-        finally:
-            handler_resp.close()
+@contextlib.contextmanager
+def make_simple_http_server(
+        bind: CanSocketBinder,
+        handler: SimpleHttpHandler,
+        *,
+        # keep_alive: bool = False,  # TODO
+        ssl_context: ta.Optional['ssl.SSLContext'] = None,
+        ignore_ssl_errors: bool = False,
+        executor: ta.Optional[cf.Executor] = None,
+        use_threads: bool = False,
+        **kwargs: ta.Any,
+) -> ta.Iterator[SocketHandlerServer]:
+    check.arg(not (executor is not None and use_threads))
 
     #
 
-    @classmethod
-    def build_standard_pipeline_spec(
-            cls,
-            sock: socket_.socket,
-            addr: SocketAddress,
-            handler: SimpleHttpHandler,
-    ) -> IoPipeline.Spec:
-        return IoPipeline.Spec(
-            [
-                IoPipelineHttpRequestDecoder(),
-                IoPipelineHttpRequestAggregatorDecoder(),
-                IoPipelineHttpResponseEncoder(),
-                SimpleHttpHandlerServerIoPipelineHandler(handler),
-            ],
-            metadata=[
-                SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata(sock, addr),
-            ],
+    def pipeline_serve(conn: SocketAndAddress) -> None:
+        try:
+            conn.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError as e:
+            if e.errno != errno.ENOPROTOOPT:
+                raise
+
+        drv = SyncSocketIoPipelineDriver(
+            IoPipeline.Spec(
+                [
+                    IoPipelineHttpRequestDecoder(),
+                    IoPipelineHttpRequestAggregatorDecoder(),
+                    IoPipelineHttpResponseEncoder(),
+                    SimpleHttpHandlerServerIoPipelineHandler(handler),
+                ],
+                metadata=[
+                    SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata.of(conn),
+                ],
+            ),
+            conn.socket,
         )
+
+        drv.loop_until_done()
+
+    #
+
+    with contextlib.ExitStack() as es:
+        socket_handler: SocketHandler = pipeline_serve
+
+        #
+
+        if ssl_context is not None:
+            socket_handler = SocketWrappingSocketHandler(
+                socket_handler,
+                SocketAndAddress.socket_wrapper(functools.partial(
+                    ssl_context.wrap_socket,
+                    server_side=True,
+                )),
+            )
+
+        if ignore_ssl_errors:
+            socket_handler = SslErrorHandlingSocketHandler(
+                socket_handler,
+            )
+
+        #
+
+        socket_handler = StandardSocketHandler(
+            socket_handler,
+        )
+
+        #
+
+        if executor is not None:
+            socket_handler = ExecutorSocketHandler(
+                socket_handler,
+                executor,
+            )
+
+        elif use_threads:
+            socket_handler = es.enter_context(ThreadingSocketHandler(
+                socket_handler,
+            ))
+
+        #
+
+        server = es.enter_context(SocketHandlerServer(
+            SocketBinder.of(bind),
+            socket_handler,
+            **kwargs,
+        ))
+
+        yield server
 
 
 ########################################
@@ -33539,101 +33632,6 @@ class GithubCli(ArgparseCli):
     )
     def list_cache_entries(self) -> None:
         raise NotImplementedError
-
-
-########################################
-# ../../../omlish/http/simple/pipelines/sync.py
-
-
-@contextlib.contextmanager
-def make_simple_http_server(
-        bind: CanSocketBinder,
-        handler: SimpleHttpHandler,
-        *,
-        # keep_alive: bool = False,  # TODO
-        ssl_context: ta.Optional['ssl.SSLContext'] = None,
-        ignore_ssl_errors: bool = False,
-        executor: ta.Optional[cf.Executor] = None,
-        use_threads: bool = False,
-        **kwargs: ta.Any,
-) -> ta.Iterator[SocketHandlerServer]:
-    check.arg(not (executor is not None and use_threads))
-
-    #
-
-    def pipeline_serve(conn: SocketAndAddress) -> None:
-        try:
-            conn.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        except OSError as e:
-            if e.errno != errno.ENOPROTOOPT:
-                raise
-
-        drv = SyncSocketIoPipelineDriver(
-            IoPipeline.Spec(
-                [
-                    IoPipelineHttpRequestDecoder(),
-                    IoPipelineHttpRequestAggregatorDecoder(),
-                    IoPipelineHttpResponseEncoder(),
-                    SimpleHttpHandlerServerIoPipelineHandler(handler),
-                ],
-                metadata=[
-                    SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata.of(conn),
-                ],
-            ),
-            conn.socket,
-        )
-
-        drv.loop_until_done()
-
-    #
-
-    with contextlib.ExitStack() as es:
-        socket_handler: SocketHandler = pipeline_serve
-
-        #
-
-        if ssl_context is not None:
-            socket_handler = SocketWrappingSocketHandler(
-                socket_handler,
-                SocketAndAddress.socket_wrapper(functools.partial(
-                    ssl_context.wrap_socket,
-                    server_side=True,
-                )),
-            )
-
-        if ignore_ssl_errors:
-            socket_handler = SslErrorHandlingSocketHandler(
-                socket_handler,
-            )
-
-        #
-
-        socket_handler = StandardSocketHandler(
-            socket_handler,
-        )
-
-        #
-
-        if executor is not None:
-            socket_handler = ExecutorSocketHandler(
-                socket_handler,
-                executor,
-            )
-
-        elif use_threads:
-            socket_handler = es.enter_context(ThreadingSocketHandler(
-                socket_handler,
-            ))
-
-        #
-
-        server = es.enter_context(SocketHandlerServer(
-            SocketBinder.of(bind),
-            socket_handler,
-            **kwargs,
-        ))
-
-        yield server
 
 
 ########################################

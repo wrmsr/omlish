@@ -8,7 +8,7 @@ shell.preamble = [
 [[do.consts]]
 foo = 'bar'
 srcs = [
-    'omlish',
+    'omcore',
     'omdev',
 ]
 
@@ -32,11 +32,11 @@ return datetime.datetime.now().strftime(fmt)
 """
 
 [do.def.local_version]
-sh = "{{python}} -c 'from omlish import __about__; print(__about__.__version__)'"
+sh = "{{python}} -c 'from omcore import __about__; print(__about__.__version__)'"
 cache = true
 
 [do.def.pypi_version]
-sh = "{{python}} -m omdev.tools.pip lookup-latest-version omlish"
+sh = "{{python}} -m omdev.tools.pip lookup-latest-version omcore"
 cache = true
 
 #
@@ -89,12 +89,12 @@ echo "for s = {{s}}"
 #
 
 [do.task.test_lite]
-sh = '{{python}} -m omlish.testing.unittest -vb omlish.lite'
+sh = '{{python}} -m omcore.testing.unittest -vb omcore.lite'
 
 [do.task.py_test_lite]
 py = """
 subprocess.check_call(
-    './python -m omlish.testing.unittest -vb omlish.lite',
+    './python -m omcore.testing.unittest -vb omcore.lite',
     shell=True,
 )
 """

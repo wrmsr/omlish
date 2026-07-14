@@ -74,7 +74,7 @@ def launch_docker_container(
         check_call(['docker', 'kill', '-sKILL', ctr_id])
 
 
-def write_docker_temp_file(ctr_id: str, data: bytes, suffix: str = 'omlish') -> str:
+def write_docker_temp_file(ctr_id: str, data: bytes, suffix: str = 'om') -> str:
     fname = check_output([
         'docker', 'exec', ctr_id,
         'mktemp', f'--suffix=-{suffix}',

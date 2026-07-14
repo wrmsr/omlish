@@ -6,8 +6,8 @@ from omcore import lang
 
 
 with lang.auto_proxy_import(globals()):
-    from omlish.subprocesses import editor
-    from omlish.subprocesses import sync as sync_subprocesses
+    from omcore.subprocesses import editor
+    from omcore.subprocesses import sync as sync_subprocesses
 
 
 ##

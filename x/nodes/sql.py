@@ -1,6 +1,6 @@
 """
 TODO:
- - move to omlish.sql, pg-specific trigger compiler - https://docs.sqlalchemy.org/en/20/core/compiler.html
+ - move to omcore.sql, pg-specific trigger compiler - https://docs.sqlalchemy.org/en/20/core/compiler.html
 """
 import textwrap
 import typing as ta

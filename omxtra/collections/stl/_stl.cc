@@ -1470,7 +1470,7 @@ static PyType_Spec MapObjObj_spec = {
 };
 
 
-PyDoc_STRVAR(stl_doc, "Native STL-backed collection primitives for omlish.collections.stl");
+PyDoc_STRVAR(stl_doc, "Native STL-backed collection primitives for omxtra.collections.stl");
 
 static int stl_exec(PyObject *module)
 {

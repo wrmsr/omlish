@@ -127,7 +127,7 @@ def run_shell(*args: inj.Elemental) -> None:
     # _backend = 'trio'
 
     if _backend == 'trio':
-        from omlish.diag.pydevd import patch_for_trio_asyncio  # noqa
+        from omcore.diag.pydevd import patch_for_trio_asyncio  # noqa
         patch_for_trio_asyncio()  # noqa
 
     anyio.run(functools.partial(a_run_shell, *args), backend=_backend)  # noqa

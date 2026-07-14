@@ -54,64 +54,64 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='../../../../omlish/configs/types.py', sha1='f7a5584cd6eccb77d18d729796072a162e9a8790'),
-            dict(path='../../../../omlish/formats/ini/sections.py', sha1='731c92cce82e183d1d4bdc23fc781fad62187394'),
-            dict(path='../../../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
-            dict(path='../../../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
-            dict(path='../../../../omlish/io/streambufs/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
-            dict(path='../../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../../../omlish/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
-            dict(path='../../../../omlish/lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
-            dict(path='../../../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../../../omlish/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
-            dict(path='../../../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
-            dict(path='../../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='../../../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
-            dict(path='../../../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
-            dict(path='../../../../omlish/logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
-            dict(path='../../../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
-            dict(path='../../../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
-            dict(path='../../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='../../../../omlish/os/pidfiles/pidfile.py', sha1='4fedbf087d874b8f9b612cf0707ac82feb88deaa'),
-            dict(path='../../../../omlish/subprocesses/utils.py', sha1='2210d90ab1bfc75642aa2f4caad662368900aa1c'),
-            dict(path='../auth.py', sha1='2a565a74c25ce4dfc8526b092cfe72e66d73c427'),
-            dict(path='../dataclasses.py', sha1='9d4c8d1aada04d5fe64899b85cbd1af0f5a1a972'),
-            dict(path='../../../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
-            dict(path='../../../../omlish/io/streambufs/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
-            dict(path='../../../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
-            dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../../../omlish/logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
-            dict(path='../../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
-            dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
-            dict(path='../../../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
-            dict(path='../../../../omlish/io/streambufs/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../../../../omlish/io/streambufs/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
-            dict(path='../../../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
-            dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../../../../omlish/io/streambufs/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
-            dict(path='../../../../omlish/io/streambufs/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
-            dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
-            dict(path='../../../../omlish/logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
-            dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
-            dict(path='../../../../omlish/io/streambufs/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),  # noqa
-            dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
-            dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='cursor.py', sha1='00f1c62e16e4c85b20658eaf33c0bedf22c9e18f'),
-            dict(path='../../../journald/messages.py', sha1='db0d5d608e51aa2ae35839329b6feb7944b0a738'),
-            dict(path='../../../threadworkers.py', sha1='1c03d1e5609bd44115be883c802e203c40e93a37'),
-            dict(path='poster.py', sha1='275770a4e60ea5777053c9044e37d71397c3ed20'),
-            dict(path='../../../journald/tailer.py', sha1='1c37a6bbde32e8556d26b94b439f14869731ac01'),
-            dict(path='driver.py', sha1='a9353a417fc4e57f29e7f04038c3bf4668f36dbd'),
-            dict(path='main.py', sha1='8cb83e241c0b9dc9f1fc0cd727254f6e4a070c58'),
+            dict(path='../../../../omcore/configs/types.py', sha1='6abb34596a340c3804dc53a813473739047b1c7d'),
+            dict(path='../../../../omcore/formats/ini/sections.py', sha1='66a0b99ffe63766420ec18d25341699dabcfa55e'),
+            dict(path='../../../../omcore/formats/toml/parser.py', sha1='e2562aaa4d8bf0a3bee0e96e38908bc2f060b41a'),
+            dict(path='../../../../omcore/formats/toml/writer.py', sha1='0091ad73e098694861c006960c6b7b7bf07a7b69'),
+            dict(path='../../../../omcore/io/streambufs/errors.py', sha1='6b04cc2e4ba5461692128938a2bd5c261486746b'),
+            dict(path='../../../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../../../omcore/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
+            dict(path='../../../../omcore/lite/bytes.py', sha1='5edf3e1dd70f26415154e8d352f0983aef2c6fc6'),
+            dict(path='../../../../omcore/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
+            dict(path='../../../../omcore/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
+            dict(path='../../../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
+            dict(path='../../../../omcore/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
+            dict(path='../../../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
+            dict(path='../../../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../../../omcore/logs/levels.py', sha1='bd87ff6a281e361cbab4f205802187b2080044e6'),
+            dict(path='../../../../omcore/logs/std/filters.py', sha1='3ec3856ade50561f99ce9463f54737ab1126d410'),
+            dict(path='../../../../omcore/logs/std/proxy.py', sha1='98c8cad9f65c6b76349bcde830a2e9770108a52a'),
+            dict(path='../../../../omcore/logs/warnings.py', sha1='03e6c5d0c4c25b51cdd225c029e652cdf741a51a'),
+            dict(path='../../../../omcore/os/pidfiles/pidfile.py', sha1='1082f109ec1272d7c281707b9620ae6a9a241a9f'),
+            dict(path='../../../../omcore/subprocesses/utils.py', sha1='54f0e245f69ed3d4e64f3b6bdac7bdc6e28cf9a4'),
+            dict(path='../../../../omcore/formats/yaml/backends.py', sha1='b6bdba7cc029eaa23f6d029731a12db355d32bf9'),
+            dict(path='../../../../omcore/io/streambufs/types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
+            dict(path='../../../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
+            dict(path='../../../../omcore/lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
+            dict(path='../../../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
+            dict(path='../../../../omcore/logs/infos.py', sha1='c6a4599ad727fbee7c3d8eb1bce80846f8106079'),
+            dict(path='../../../../omcore/logs/metrics/base.py', sha1='38429b7e804533da9a1dd356cf563ac4cff82aa2'),
+            dict(path='../auth.py', sha1='3c36e85d7848a2b75841224d792358019734243b'),
+            dict(path='../dataclasses.py', sha1='fbfac5bf101339124567fda0baf23c233c576aaf'),
+            dict(path='../../../../omcore/configs/formats.py', sha1='9263da888199b408e902490244e9d5caddc69821'),
+            dict(path='../../../../omcore/io/streambufs/base.py', sha1='0f0cea0fe05f9d7b4669a7b3871bc78e12af98f6'),
+            dict(path='../../../../omcore/io/streambufs/utils.py', sha1='62d7fce79bae738c199627668bdee8bb389efa1e'),
+            dict(path='../../../../omcore/logs/contexts.py', sha1='529adb527492309bf8cde342271ac6ea2ebbf8a1'),
+            dict(path='../../../../omcore/logs/std/json.py', sha1='d1ff35ac871de63efec2b64ae5c63e63d295a8d5'),
+            dict(path='../../../../omcore/subprocesses/wrap.py', sha1='12d94dc2357951cd0fed1c50a46817d30d628927'),
+            dict(path='../logs.py', sha1='d6773b6e7b0b84e14d49dbe8c0ebc29a3ddab4a6'),
+            dict(path='../../../../omcore/io/streambufs/direct.py', sha1='5a629d79aa7f618dce40e11c2609bc0dcd008599'),
+            dict(path='../../../../omcore/io/streambufs/scanning.py', sha1='36411208b4e6515528f0310c7052b3faf2572b24'),
+            dict(path='../../../../omcore/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
+            dict(path='../../../../omcore/logs/base.py', sha1='4195705c64f3ec1c4263c2c76c63351d9dacdd5c'),
+            dict(path='../../../../omcore/logs/std/records.py', sha1='fb1e2d887248cc24b0463156836d9965a06c8ab6'),
+            dict(path='../../../../omcore/logs/std/standard.py', sha1='223e3cba0f2854c5093fb60d6cef2f27b80c193c'),
+            dict(path='../../../../omcore/io/streambufs/segmented.py', sha1='ad3c91e91d7b91396c51549fc7578419b1c3d336'),  # noqa
+            dict(path='../../../../omcore/logs/asyncs.py', sha1='6b444494a0512f7b7ea2c93be5c4a9868deb7251'),
+            dict(path='../../../../omcore/logs/std/loggers.py', sha1='144a96b3b190a5641f3b7cc2656d6ffa4e45b5a9'),
+            dict(path='../../../../omcore/logs/modules.py', sha1='b51c2d4396854b515d29cee17f906d5cc47eb7f2'),
+            dict(path='cursor.py', sha1='3f128d8774b4b1da27b9b4bb12f393ab106fc8dd'),
+            dict(path='../../../journald/messages.py', sha1='57450f800041551bf38a389de9b10aa90b28690f'),
+            dict(path='../../../threadworkers.py', sha1='3ecad2a49598539a113d0ef2a97b632871ecb400'),
+            dict(path='poster.py', sha1='c08f413405f6e410bd060536b4a55d060bfa5080'),
+            dict(path='../../../journald/tailer.py', sha1='ece26cf4d19b819a87d1f3393f92c2f2da439dc2'),
+            dict(path='driver.py', sha1='8c6a06cbdfc72974acaeb89a01afcdc2560462d5'),
+            dict(path='main.py', sha1='a32f5780a5a399084020622fc444d8602c605293'),
         ],
     )
 
@@ -119,28 +119,28 @@ def __omlish_amalg__():  # noqa
 ########################################
 
 
-# ../../../../omlish/configs/types.py
+# ../../../../omcore/configs/types.py
 ConfigMap = ta.Mapping[str, ta.Any]  # ta.TypeAlias
 
-# ../../../../omlish/formats/ini/sections.py
+# ../../../../omcore/formats/ini/sections.py
 IniSectionSettingsMap = ta.Mapping[str, ta.Mapping[str, ta.Union[str, ta.Sequence[str]]]]  # ta.TypeAlias
 
-# ../../../../omlish/formats/toml/parser.py
+# ../../../../omcore/formats/toml/parser.py
 TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
 TomlKey = ta.Tuple[str, ...]  # ta.TypeAlias
 TomlPos = int  # ta.TypeAlias
 
-# ../../../../omlish/lite/abstract.py
+# ../../../../omcore/lite/abstract.py
 T = ta.TypeVar('T')
 
-# ../../../../omlish/lite/bytes.py
+# ../../../../omcore/lite/bytes.py
 Bytes = ta.Union[bytes, bytearray]  # ta.TypeAlias
 BytesLike = ta.Union[Bytes, memoryview]  # ta.TypeAlias
 
-# ../../../../omlish/lite/cached.py
+# ../../../../omcore/lite/cached.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
-# ../../../../omlish/lite/check.py
+# ../../../../omcore/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
 CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
@@ -148,31 +148,31 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
-# ../../../../omlish/lite/contextmanagers.py
+# ../../../../omcore/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
-# ../../../../omlish/logs/levels.py
+# ../../../../omcore/logs/levels.py
 LogLevel = int  # ta.TypeAlias
 
-# ../../../../omlish/lite/json.py
+# ../../../../omcore/lite/json.py
 JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
-# ../../../../omlish/logs/infos.py
+# ../../../../omcore/logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
 LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
 LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
 LoggingContextInfo = ta.Any  # ta.TypeAlias
 
-# ../../../../omlish/configs/formats.py
+# ../../../../omcore/configs/formats.py
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 ObjConfigDataT = ta.TypeVar('ObjConfigDataT', bound='ObjConfigData')
 
-# ../../../../omlish/io/streambufs/utils.py
+# ../../../../omcore/io/streambufs/utils.py
 CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
-# ../../../../omlish/logs/contexts.py
+# ../../../../omcore/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
 
 # ../../../threadworkers.py
@@ -180,14 +180,14 @@ ThreadWorkerT = ta.TypeVar('ThreadWorkerT', bound='ThreadWorker')
 
 
 ########################################
-# ../../../../../omlish/configs/types.py
+# ../../../../../omcore/configs/types.py
 
 
 ##
 
 
 ########################################
-# ../../../../../omlish/formats/ini/sections.py
+# ../../../../../omcore/formats/ini/sections.py
 
 
 ##
@@ -228,7 +228,7 @@ def render_ini_sections(
 
 
 ########################################
-# ../../../../../omlish/formats/toml/parser.py
+# ../../../../../omcore/formats/toml/parser.py
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2021 Taneli Hukkinen
 # Licensed to PSF under a Contributor Agreement.
@@ -1153,7 +1153,7 @@ class TomlParser:
 
 
 ########################################
-# ../../../../../omlish/formats/toml/writer.py
+# ../../../../../omcore/formats/toml/writer.py
 
 
 ##
@@ -1280,7 +1280,7 @@ class TomlWriter:
 
 
 ########################################
-# ../../../../../omlish/io/streambufs/errors.py
+# ../../../../../omcore/io/streambufs/errors.py
 
 
 ##
@@ -1344,7 +1344,7 @@ class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
 
 
 ########################################
-# ../../../../../omlish/lite/abstract.py
+# ../../../../../omcore/lite/abstract.py
 
 
 ##
@@ -1491,7 +1491,7 @@ class Abstract:
 
 
 ########################################
-# ../../../../../omlish/lite/asyncs.py
+# ../../../../../omcore/lite/asyncs.py
 
 
 ##
@@ -1635,7 +1635,7 @@ as_async_context_manager = SyncToAsyncContextManager
 
 
 ########################################
-# ../../../../../omlish/lite/bytes.py
+# ../../../../../omcore/lite/bytes.py
 
 
 ##
@@ -1690,7 +1690,7 @@ def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
 
 
 ########################################
-# ../../../../../omlish/lite/cached.py
+# ../../../../../omcore/lite/cached.py
 
 
 ##
@@ -1803,7 +1803,7 @@ globals()['cached_property'] = _cached_property
 
 
 ########################################
-# ../../../../../omlish/lite/check.py
+# ../../../../../omcore/lite/check.py
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
@@ -2383,7 +2383,7 @@ check = Checks()
 
 
 ########################################
-# ../../../../../omlish/lite/contextmanagers.py
+# ../../../../../omcore/lite/contextmanagers.py
 
 
 ##
@@ -2584,7 +2584,7 @@ aclosing = AsyncClosingManager
 
 
 ########################################
-# ../../../../../omlish/lite/io.py
+# ../../../../../omcore/lite/io.py
 
 
 ##
@@ -2599,7 +2599,7 @@ class FnWriter:
 
 
 ########################################
-# ../../../../../omlish/lite/namespaces.py
+# ../../../../../omcore/lite/namespaces.py
 
 
 class NamespaceClass:
@@ -2614,7 +2614,7 @@ class NamespaceClass:
 
 
 ########################################
-# ../../../../../omlish/lite/objects.py
+# ../../../../../omcore/lite/objects.py
 
 
 ##
@@ -2694,7 +2694,7 @@ def dir_dict(o: ta.Any) -> ta.Dict[str, ta.Any]:
 
 
 ########################################
-# ../../../../../omlish/lite/reflect.py
+# ../../../../../omcore/lite/reflect.py
 
 
 ##
@@ -2783,7 +2783,7 @@ def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
 
 
 ########################################
-# ../../../../../omlish/lite/strings.py
+# ../../../../../omcore/lite/strings.py
 
 
 ##
@@ -2872,7 +2872,7 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../../../omlish/logs/levels.py
+# ../../../../../omcore/logs/levels.py
 
 
 ##
@@ -2971,7 +2971,7 @@ NamedLogLevel._CACHE.update({i: NamedLogLevel(i) for i in NamedLogLevel._NAMES_B
 
 
 ########################################
-# ../../../../../omlish/logs/std/filters.py
+# ../../../../../omcore/logs/std/filters.py
 
 
 ##
@@ -2988,7 +2988,7 @@ class TidLoggingFilter(logging.Filter):
 
 
 ########################################
-# ../../../../../omlish/logs/std/proxy.py
+# ../../../../../omcore/logs/std/proxy.py
 
 
 ##
@@ -3091,7 +3091,7 @@ class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
 
 
 ########################################
-# ../../../../../omlish/logs/warnings.py
+# ../../../../../omcore/logs/warnings.py
 
 
 ##
@@ -3102,7 +3102,7 @@ class LoggingSetupWarning(Warning):
 
 
 ########################################
-# ../../../../../omlish/os/pidfiles/pidfile.py
+# ../../../../../omcore/os/pidfiles/pidfile.py
 """
 TODO:
  - 'json pids', with code version? '.json.pid'? '.jpid'?
@@ -3303,7 +3303,7 @@ class Pidfile:
 
 
 ########################################
-# ../../../../../omlish/subprocesses/utils.py
+# ../../../../../omcore/subprocesses/utils.py
 
 
 ##
@@ -3325,373 +3325,7 @@ def subprocess_close(
 
 
 ########################################
-# ../../auth.py
-"""
-https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
-
-TODO:
- - https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html
-  - boto / s3transfer upload_fileobj doesn't stream either lol - eagerly calcs Content-MD5
- - sts tokens
- - !! fix canonical_qs - sort params
- - secrets
-"""
-
-
-##
-
-
-class AwsSigner:
-    def __init__(
-            self,
-            creds: 'AwsSigner.Credentials',
-            region_name: str,
-            service_name: str,
-    ) -> None:
-        super().__init__()
-
-        self._creds = creds
-        self._region_name = region_name
-        self._service_name = service_name
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Credentials:
-        access_key_id: str
-        secret_access_key: str = dc.field(repr=False)
-
-    @dc.dataclass(frozen=True)
-    class Request:
-        method: str
-        url: str
-        headers: ta.Mapping[str, ta.Sequence[str]] = dc.field(default_factory=dict)
-        payload: bytes = b''
-
-    #
-
-    ISO8601 = '%Y%m%dT%H%M%SZ'
-
-    #
-
-    @staticmethod
-    def _host_from_url(url: str) -> str:
-        url_parts = urllib.parse.urlsplit(url)
-        host = check.non_empty_str(url_parts.hostname)
-        default_ports = {
-            'http': 80,
-            'https': 443,
-        }
-        if url_parts.port is not None:
-            if url_parts.port != default_ports.get(url_parts.scheme):
-                host = f'{host}:{int(url_parts.port)}'
-        return host
-
-    @staticmethod
-    def _lower_case_http_map(d: ta.Mapping[str, ta.Sequence[str]]) -> ta.Mapping[str, ta.Sequence[str]]:
-        o: ta.Dict[str, ta.List[str]] = {}
-        for k, vs in d.items():
-            o.setdefault(k.lower(), []).extend(check.not_isinstance(vs, str))
-        return o
-
-    #
-
-    @staticmethod
-    def _as_bytes(data: ta.Union[str, bytes]) -> bytes:
-        return data if isinstance(data, bytes) else data.encode('utf-8')
-
-    @staticmethod
-    def _sha256(data: ta.Union[str, bytes]) -> str:
-        return hashlib.sha256(AwsSigner._as_bytes(data)).hexdigest()
-
-    @staticmethod
-    def _sha256_sign(key: bytes, msg: ta.Union[str, bytes]) -> bytes:
-        return hmac.new(key, AwsSigner._as_bytes(msg), hashlib.sha256).digest()
-
-    @staticmethod
-    def _sha256_sign_hex(key: bytes, msg: ta.Union[str, bytes]) -> str:
-        return hmac.new(key, AwsSigner._as_bytes(msg), hashlib.sha256).hexdigest()
-
-    _EMPTY_SHA256: str
-
-    #
-
-    _SIGNED_HEADERS_BLACKLIST = frozenset([
-        'authorization',
-        'expect',
-        'user-agent',
-        'x-amzn-trace-id',
-    ])
-
-    def _validate_request(self, req: Request) -> None:
-        check.non_empty_str(req.method)
-        check.equal(req.method.upper(), req.method)
-        for k, vs in req.headers.items():
-            check.equal(k.strip(), k)
-            for v in vs:
-                check.equal(v.strip(), v)
-
-
-AwsSigner._EMPTY_SHA256 = AwsSigner._sha256(b'')  # noqa
-
-
-##
-
-
-class V4AwsSigner(AwsSigner):
-    def sign(
-            self,
-            req: AwsSigner.Request,
-            *,
-            sign_payload: bool = False,
-            utcnow: ta.Optional[datetime.datetime] = None,
-    ) -> ta.Mapping[str, ta.Sequence[str]]:
-        self._validate_request(req)
-
-        #
-
-        if utcnow is None:
-            utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
-        req_dt = utcnow.strftime(self.ISO8601)
-
-        #
-
-        parsed_url = urllib.parse.urlsplit(req.url)
-        canon_uri = parsed_url.path
-        canon_qs = parsed_url.query
-
-        #
-
-        headers_to_sign: ta.Dict[str, ta.List[str]] = {
-            k: list(v)
-            for k, v in self._lower_case_http_map(req.headers).items()
-            if k not in self._SIGNED_HEADERS_BLACKLIST
-        }
-
-        if 'host' not in headers_to_sign:
-            headers_to_sign['host'] = [self._host_from_url(req.url)]
-
-        headers_to_sign['x-amz-date'] = [req_dt]
-
-        hashed_payload = self._sha256(req.payload) if req.payload else self._EMPTY_SHA256
-        if sign_payload:
-            headers_to_sign['x-amz-content-sha256'] = [hashed_payload]
-
-        sorted_header_names = sorted(headers_to_sign)
-        canon_headers = ''.join([
-            ':'.join((k, ','.join(headers_to_sign[k]))) + '\n'
-            for k in sorted_header_names
-        ])
-        signed_headers = ';'.join(sorted_header_names)
-
-        #
-
-        canon_req = '\n'.join([
-            req.method,
-            canon_uri,
-            canon_qs,
-            canon_headers,
-            signed_headers,
-            hashed_payload,
-        ])
-
-        #
-
-        algorithm = 'AWS4-HMAC-SHA256'
-        scope_parts = [
-            req_dt[:8],
-            self._region_name,
-            self._service_name,
-            'aws4_request',
-        ]
-        scope = '/'.join(scope_parts)
-        hashed_canon_req = self._sha256(canon_req)
-        string_to_sign = '\n'.join([
-            algorithm,
-            req_dt,
-            scope,
-            hashed_canon_req,
-        ])
-
-        #
-
-        key = self._creds.secret_access_key
-        key_date = self._sha256_sign(f'AWS4{key}'.encode('utf-8'), req_dt[:8])  # noqa
-        key_region = self._sha256_sign(key_date, self._region_name)
-        key_service = self._sha256_sign(key_region, self._service_name)
-        key_signing = self._sha256_sign(key_service, 'aws4_request')
-        sig = self._sha256_sign_hex(key_signing, string_to_sign)
-
-        #
-
-        cred_scope = '/'.join([
-            self._creds.access_key_id,
-            *scope_parts,
-        ])
-        auth = f'{algorithm} ' + ', '.join([
-            f'Credential={cred_scope}',
-            f'SignedHeaders={signed_headers}',
-            f'Signature={sig}',
-        ])
-
-        #
-
-        out = {
-            'Authorization': [auth],
-            'X-Amz-Date': [req_dt],
-        }
-        if sign_payload:
-            out['X-Amz-Content-SHA256'] = [hashed_payload]
-        return out
-
-
-########################################
-# ../../dataclasses.py
-
-
-##
-
-
-class AwsDataclass:
-    class Raw(dict):
-        pass
-
-    #
-
-    _aws_meta: ta.ClassVar[ta.Optional['AwsDataclassMeta']] = None
-
-    @classmethod
-    def _get_aws_meta(cls) -> 'AwsDataclassMeta':
-        try:
-            return cls.__dict__['_aws_meta']
-        except KeyError:
-            pass
-        ret = cls._aws_meta = AwsDataclassMeta(cls)
-        return ret
-
-    #
-
-    def to_aws(self) -> ta.Mapping[str, ta.Any]:
-        return self._get_aws_meta().converters().d2a(self)
-
-    @classmethod
-    def from_aws(cls, v: ta.Mapping[str, ta.Any]) -> 'AwsDataclass':
-        return cls._get_aws_meta().converters().a2d(v)
-
-
-@dc.dataclass(frozen=True)
-class AwsDataclassMeta:
-    cls: ta.Type['AwsDataclass']
-
-    #
-
-    class Field(ta.NamedTuple):
-        d_name: str
-        a_name: str
-        is_opt: bool
-        is_seq: bool
-        dc_cls: ta.Optional[ta.Type['AwsDataclass']]
-
-    @cached_nullary
-    def fields(self) -> ta.Sequence[Field]:
-        fs = []
-        for f in dc.fields(self.cls):  # type: ignore  # noqa
-            d_name = f.name
-            a_name = camel_case(d_name, lower=True)
-
-            is_opt = False
-            is_seq = False
-            dc_cls = None
-
-            c = f.type
-            if c is AwsDataclass.Raw:
-                continue
-
-            if is_optional_alias(c):
-                is_opt = True
-                c = get_optional_alias_arg(c)
-
-            if is_generic_alias(c) and ta.get_origin(c) is collections.abc.Sequence:
-                is_seq = True
-                [c] = ta.get_args(c)
-
-            if is_generic_alias(c):
-                raise TypeError(c)
-
-            if isinstance(c, type) and issubclass(c, AwsDataclass):
-                dc_cls = c
-
-            fs.append(AwsDataclassMeta.Field(
-                d_name=d_name,
-                a_name=a_name,
-                is_opt=is_opt,
-                is_seq=is_seq,
-                dc_cls=dc_cls,
-            ))
-
-        return fs
-
-    #
-
-    class Converters(ta.NamedTuple):
-        d2a: ta.Callable
-        a2d: ta.Callable
-
-    @cached_nullary
-    def converters(self) -> Converters:
-        for df in dc.fields(self.cls):  # type: ignore  # noqa
-            c = df.type
-
-            if is_optional_alias(c):
-                c = get_optional_alias_arg(c)
-
-            if c is AwsDataclass.Raw:
-                rf = df.name
-                break
-
-        else:
-            rf = None
-
-        fs = [
-            (f, f.dc_cls._get_aws_meta().converters() if f.dc_cls is not None else None)  # noqa
-            for f in self.fields()
-        ]
-
-        def d2a(o):
-            dct = {}
-            for f, cs in fs:
-                x = getattr(o, f.d_name)
-                if x is None:
-                    continue
-                if cs is not None:
-                    if f.is_seq:
-                        x = list(map(cs.d2a, x))
-                    else:
-                        x = cs.d2a(x)
-                dct[f.a_name] = x
-            return dct
-
-        def a2d(v):
-            dct = {}
-            for f, cs in fs:
-                x = v.get(f.a_name)
-                if x is None:
-                    continue
-                if cs is not None:
-                    if f.is_seq:
-                        x = list(map(cs.a2d, x))
-                    else:
-                        x = cs.a2d(x)
-                dct[f.d_name] = x
-            if rf is not None:
-                dct[rf] = self.cls.Raw(v)
-            return self.cls(**dct)
-
-        return AwsDataclassMeta.Converters(d2a, a2d)
-
-
-########################################
-# ../../../../../omlish/formats/yaml/backends.py
+# ../../../../../omcore/formats/yaml/backends.py
 
 
 ##
@@ -3812,7 +3446,7 @@ class DEFAULT_YAML_BACKEND:  # noqa
 
 
 ########################################
-# ../../../../../omlish/io/streambufs/types.py
+# ../../../../../omcore/io/streambufs/types.py
 
 
 ##
@@ -4080,7 +3714,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
 
 
 ########################################
-# ../../../../../omlish/lite/json.py
+# ../../../../../omcore/lite/json.py
 
 
 ##
@@ -4173,7 +3807,7 @@ def json_dumps(
 
 
 ########################################
-# ../../../../../omlish/lite/marshal.py
+# ../../../../../omcore/lite/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
@@ -4946,7 +4580,7 @@ unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
 
 
 ########################################
-# ../../../../../omlish/lite/runtime.py
+# ../../../../../omcore/lite/runtime.py
 
 
 ##
@@ -4966,7 +4600,7 @@ def check_lite_runtime_version() -> None:
 
 
 ########################################
-# ../../../../../omlish/logs/infos.py
+# ../../../../../omcore/logs/infos.py
 """
 TODO:
  - remove redundant info fields only present for std adaptation (Level.name, ...)
@@ -5323,7 +4957,7 @@ _check_logging_start_time()
 
 
 ########################################
-# ../../../../../omlish/logs/metrics/base.py
+# ../../../../../omcore/logs/metrics/base.py
 
 
 ##
@@ -5500,178 +5134,373 @@ class AsyncNopLoggerMetricCollector(AnyNopLoggerMetricCollector[ta.Awaitable[Non
 
 
 ########################################
-# ../../logs.py
+# ../../auth.py
 """
-https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html :
- - The maximum batch size is 1,048,576 bytes. This size is calculated as the sum of all event messages in UTF-8, plus 26
-   bytes for each log event.
- - None of the log events in the batch can be more than 2 hours in the future.
- - None of the log events in the batch can be more than 14 days in the past. Also, none of the log events can be from
-   earlier than the retention period of the log group.
- - The log events in the batch must be in chronological order by their timestamp. The timestamp is the time that the
-   event occurred, expressed as the number of milliseconds after Jan 1, 1970 00:00:00 UTC. (In AWS Tools for PowerShell
-   and the AWS SDK for .NET, the timestamp is specified in .NET format: yyyy-mm-ddThh:mm:ss. For example,
-   2017-09-15T13:45:30.)
- - A batch of log events in a single request cannot span more than 24 hours. Otherwise, the operation fails.
- - Each log event can be no larger than 256 KB.
- - The maximum number of log events in a batch is 10,000.
+https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
+
+TODO:
+ - https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html
+  - boto / s3transfer upload_fileobj doesn't stream either lol - eagerly calcs Content-MD5
+ - sts tokens
+ - !! fix canonical_qs - sort params
+ - secrets
 """
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class AwsLogEvent(AwsDataclass):
-    message: str
-    timestamp: int  # milliseconds UTC
-
-
-@dc.dataclass(frozen=True)
-class AwsPutLogEventsRequest(AwsDataclass):
-    log_group_name: str
-    log_stream_name: str
-    log_events: ta.Sequence[AwsLogEvent]
-    sequence_token: ta.Optional[str] = None
-
-
-@dc.dataclass(frozen=True)
-class AwsRejectedLogEventsInfo(AwsDataclass):
-    expired_log_event_end_index: ta.Optional[int] = None
-    too_new_log_event_start_index: ta.Optional[int] = None
-    too_old_log_event_end_index: ta.Optional[int] = None
-
-
-@dc.dataclass(frozen=True)
-class AwsPutLogEventsResponse(AwsDataclass):
-    next_sequence_token: ta.Optional[str] = None
-    rejected_log_events_info: ta.Optional[AwsRejectedLogEventsInfo] = None
-
-    raw: ta.Optional[AwsDataclass.Raw] = None
-
-
-##
-
-
-class AwsLogMessageBuilder:
-    """
-    TODO:
-     - max_items
-     - max_bytes - manually build body
-     - flush_interval
-     - split sorted chunks if span over 24h
-    """
-
-    DEFAULT_URL = 'https://logs.{region_name}.amazonaws.com/'  # noqa
-
-    DEFAULT_SERVICE_NAME = 'logs'
-
-    DEFAULT_TARGET = 'Logs_20140328.PutLogEvents'
-    DEFAULT_CONTENT_TYPE = 'application/x-amz-json-1.1'
-
-    DEFAULT_HEADERS: ta.Mapping[str, str] = {
-        'X-Amz-Target': DEFAULT_TARGET,
-        'Content-Type': DEFAULT_CONTENT_TYPE,
-    }
-
+class AwsSigner:
     def __init__(
             self,
-            log_group_name: str,
-            log_stream_name: str,
+            creds: 'AwsSigner.Credentials',
             region_name: str,
-            credentials: ta.Optional[AwsSigner.Credentials],
-
-            url: ta.Optional[str] = None,
-            service_name: str = DEFAULT_SERVICE_NAME,
-            headers: ta.Optional[ta.Mapping[str, str]] = None,
-            extra_headers: ta.Optional[ta.Mapping[str, str]] = None,
+            service_name: str,
     ) -> None:
         super().__init__()
 
-        self._log_group_name = check.non_empty_str(log_group_name)
-        self._log_stream_name = check.non_empty_str(log_stream_name)
-
-        if url is None:
-            url = self.DEFAULT_URL.format(region_name=region_name)
-        self._url = url
-
-        if headers is None:
-            headers = self.DEFAULT_HEADERS
-        if extra_headers is not None:
-            headers = {**headers, **extra_headers}
-        self._headers = {k: [v] for k, v in headers.items()}
-
-        signer: ta.Optional[V4AwsSigner]
-        if credentials is not None:
-            signer = V4AwsSigner(
-                credentials,
-                region_name,
-                service_name,
-            )
-        else:
-            signer = None
-        self._signer = signer
+        self._creds = creds
+        self._region_name = region_name
+        self._service_name = service_name
 
     #
 
     @dc.dataclass(frozen=True)
-    class Message:
-        message: str
-        ts_ms: int  # milliseconds UTC
+    class Credentials:
+        access_key_id: str
+        secret_access_key: str = dc.field(repr=False)
 
     @dc.dataclass(frozen=True)
-    class Post:
+    class Request:
+        method: str
         url: str
-        headers: ta.Mapping[str, str]
-        data: bytes
+        headers: ta.Mapping[str, ta.Sequence[str]] = dc.field(default_factory=dict)
+        payload: bytes = b''
 
-    def feed(self, messages: ta.Sequence[Message]) -> ta.Sequence[Post]:
-        if not messages:
-            return []
+    #
 
-        payload = AwsPutLogEventsRequest(
-            log_group_name=self._log_group_name,
-            log_stream_name=self._log_stream_name,
-            log_events=[
-                AwsLogEvent(
-                    message=m.message,
-                    timestamp=m.ts_ms,
-                )
-                for m in sorted(messages, key=lambda m: m.ts_ms)
-            ],
-        )
+    ISO8601 = '%Y%m%dT%H%M%SZ'
 
-        body = json.dumps(
-            payload.to_aws(),
-            indent=None,
-            separators=(',', ':'),
-        ).encode('utf-8')
+    #
 
-        sig_req = V4AwsSigner.Request(
-            method='POST',
-            url=self._url,
-            headers=self._headers,
-            payload=body,
-        )
+    @staticmethod
+    def _host_from_url(url: str) -> str:
+        url_parts = urllib.parse.urlsplit(url)
+        host = check.non_empty_str(url_parts.hostname)
+        default_ports = {
+            'http': 80,
+            'https': 443,
+        }
+        if url_parts.port is not None:
+            if url_parts.port != default_ports.get(url_parts.scheme):
+                host = f'{host}:{int(url_parts.port)}'
+        return host
 
-        if (signer := self._signer) is not None:
-            sig_headers = signer.sign(
-                sig_req,
-                sign_payload=False,
-            )
-            sig_req = dc.replace(sig_req, headers={**sig_req.headers, **sig_headers})
+    @staticmethod
+    def _lower_case_http_map(d: ta.Mapping[str, ta.Sequence[str]]) -> ta.Mapping[str, ta.Sequence[str]]:
+        o: ta.Dict[str, ta.List[str]] = {}
+        for k, vs in d.items():
+            o.setdefault(k.lower(), []).extend(check.not_isinstance(vs, str))
+        return o
 
-        post = AwsLogMessageBuilder.Post(
-            url=self._url,
-            headers={k: check.single(v) for k, v in sig_req.headers.items()},
-            data=sig_req.payload,
-        )
+    #
 
-        return [post]
+    @staticmethod
+    def _as_bytes(data: ta.Union[str, bytes]) -> bytes:
+        return data if isinstance(data, bytes) else data.encode('utf-8')
+
+    @staticmethod
+    def _sha256(data: ta.Union[str, bytes]) -> str:
+        return hashlib.sha256(AwsSigner._as_bytes(data)).hexdigest()
+
+    @staticmethod
+    def _sha256_sign(key: bytes, msg: ta.Union[str, bytes]) -> bytes:
+        return hmac.new(key, AwsSigner._as_bytes(msg), hashlib.sha256).digest()
+
+    @staticmethod
+    def _sha256_sign_hex(key: bytes, msg: ta.Union[str, bytes]) -> str:
+        return hmac.new(key, AwsSigner._as_bytes(msg), hashlib.sha256).hexdigest()
+
+    _EMPTY_SHA256: str
+
+    #
+
+    _SIGNED_HEADERS_BLACKLIST = frozenset([
+        'authorization',
+        'expect',
+        'user-agent',
+        'x-amzn-trace-id',
+    ])
+
+    def _validate_request(self, req: Request) -> None:
+        check.non_empty_str(req.method)
+        check.equal(req.method.upper(), req.method)
+        for k, vs in req.headers.items():
+            check.equal(k.strip(), k)
+            for v in vs:
+                check.equal(v.strip(), v)
+
+
+AwsSigner._EMPTY_SHA256 = AwsSigner._sha256(b'')  # noqa
+
+
+##
+
+
+class V4AwsSigner(AwsSigner):
+    def sign(
+            self,
+            req: AwsSigner.Request,
+            *,
+            sign_payload: bool = False,
+            utcnow: ta.Optional[datetime.datetime] = None,
+    ) -> ta.Mapping[str, ta.Sequence[str]]:
+        self._validate_request(req)
+
+        #
+
+        if utcnow is None:
+            utcnow = datetime.datetime.now(tz=datetime.timezone.utc)  # noqa
+        req_dt = utcnow.strftime(self.ISO8601)
+
+        #
+
+        parsed_url = urllib.parse.urlsplit(req.url)
+        canon_uri = parsed_url.path
+        canon_qs = parsed_url.query
+
+        #
+
+        headers_to_sign: ta.Dict[str, ta.List[str]] = {
+            k: list(v)
+            for k, v in self._lower_case_http_map(req.headers).items()
+            if k not in self._SIGNED_HEADERS_BLACKLIST
+        }
+
+        if 'host' not in headers_to_sign:
+            headers_to_sign['host'] = [self._host_from_url(req.url)]
+
+        headers_to_sign['x-amz-date'] = [req_dt]
+
+        hashed_payload = self._sha256(req.payload) if req.payload else self._EMPTY_SHA256
+        if sign_payload:
+            headers_to_sign['x-amz-content-sha256'] = [hashed_payload]
+
+        sorted_header_names = sorted(headers_to_sign)
+        canon_headers = ''.join([
+            ':'.join((k, ','.join(headers_to_sign[k]))) + '\n'
+            for k in sorted_header_names
+        ])
+        signed_headers = ';'.join(sorted_header_names)
+
+        #
+
+        canon_req = '\n'.join([
+            req.method,
+            canon_uri,
+            canon_qs,
+            canon_headers,
+            signed_headers,
+            hashed_payload,
+        ])
+
+        #
+
+        algorithm = 'AWS4-HMAC-SHA256'
+        scope_parts = [
+            req_dt[:8],
+            self._region_name,
+            self._service_name,
+            'aws4_request',
+        ]
+        scope = '/'.join(scope_parts)
+        hashed_canon_req = self._sha256(canon_req)
+        string_to_sign = '\n'.join([
+            algorithm,
+            req_dt,
+            scope,
+            hashed_canon_req,
+        ])
+
+        #
+
+        key = self._creds.secret_access_key
+        key_date = self._sha256_sign(f'AWS4{key}'.encode('utf-8'), req_dt[:8])  # noqa
+        key_region = self._sha256_sign(key_date, self._region_name)
+        key_service = self._sha256_sign(key_region, self._service_name)
+        key_signing = self._sha256_sign(key_service, 'aws4_request')
+        sig = self._sha256_sign_hex(key_signing, string_to_sign)
+
+        #
+
+        cred_scope = '/'.join([
+            self._creds.access_key_id,
+            *scope_parts,
+        ])
+        auth = f'{algorithm} ' + ', '.join([
+            f'Credential={cred_scope}',
+            f'SignedHeaders={signed_headers}',
+            f'Signature={sig}',
+        ])
+
+        #
+
+        out = {
+            'Authorization': [auth],
+            'X-Amz-Date': [req_dt],
+        }
+        if sign_payload:
+            out['X-Amz-Content-SHA256'] = [hashed_payload]
+        return out
 
 
 ########################################
-# ../../../../../omlish/configs/formats.py
+# ../../dataclasses.py
+
+
+##
+
+
+class AwsDataclass:
+    class Raw(dict):
+        pass
+
+    #
+
+    _aws_meta: ta.ClassVar[ta.Optional['AwsDataclassMeta']] = None
+
+    @classmethod
+    def _get_aws_meta(cls) -> 'AwsDataclassMeta':
+        try:
+            return cls.__dict__['_aws_meta']
+        except KeyError:
+            pass
+        ret = cls._aws_meta = AwsDataclassMeta(cls)
+        return ret
+
+    #
+
+    def to_aws(self) -> ta.Mapping[str, ta.Any]:
+        return self._get_aws_meta().converters().d2a(self)
+
+    @classmethod
+    def from_aws(cls, v: ta.Mapping[str, ta.Any]) -> 'AwsDataclass':
+        return cls._get_aws_meta().converters().a2d(v)
+
+
+@dc.dataclass(frozen=True)
+class AwsDataclassMeta:
+    cls: ta.Type['AwsDataclass']
+
+    #
+
+    class Field(ta.NamedTuple):
+        d_name: str
+        a_name: str
+        is_opt: bool
+        is_seq: bool
+        dc_cls: ta.Optional[ta.Type['AwsDataclass']]
+
+    @cached_nullary
+    def fields(self) -> ta.Sequence[Field]:
+        fs = []
+        for f in dc.fields(self.cls):  # type: ignore  # noqa
+            d_name = f.name
+            a_name = camel_case(d_name, lower=True)
+
+            is_opt = False
+            is_seq = False
+            dc_cls = None
+
+            c = f.type
+            if c is AwsDataclass.Raw:
+                continue
+
+            if is_optional_alias(c):
+                is_opt = True
+                c = get_optional_alias_arg(c)
+
+            if is_generic_alias(c) and ta.get_origin(c) is collections.abc.Sequence:
+                is_seq = True
+                [c] = ta.get_args(c)
+
+            if is_generic_alias(c):
+                raise TypeError(c)
+
+            if isinstance(c, type) and issubclass(c, AwsDataclass):
+                dc_cls = c
+
+            fs.append(AwsDataclassMeta.Field(
+                d_name=d_name,
+                a_name=a_name,
+                is_opt=is_opt,
+                is_seq=is_seq,
+                dc_cls=dc_cls,
+            ))
+
+        return fs
+
+    #
+
+    class Converters(ta.NamedTuple):
+        d2a: ta.Callable
+        a2d: ta.Callable
+
+    @cached_nullary
+    def converters(self) -> Converters:
+        for df in dc.fields(self.cls):  # type: ignore  # noqa
+            c = df.type
+
+            if is_optional_alias(c):
+                c = get_optional_alias_arg(c)
+
+            if c is AwsDataclass.Raw:
+                rf = df.name
+                break
+
+        else:
+            rf = None
+
+        fs = [
+            (f, f.dc_cls._get_aws_meta().converters() if f.dc_cls is not None else None)  # noqa
+            for f in self.fields()
+        ]
+
+        def d2a(o):
+            dct = {}
+            for f, cs in fs:
+                x = getattr(o, f.d_name)
+                if x is None:
+                    continue
+                if cs is not None:
+                    if f.is_seq:
+                        x = list(map(cs.d2a, x))
+                    else:
+                        x = cs.d2a(x)
+                dct[f.a_name] = x
+            return dct
+
+        def a2d(v):
+            dct = {}
+            for f, cs in fs:
+                x = v.get(f.a_name)
+                if x is None:
+                    continue
+                if cs is not None:
+                    if f.is_seq:
+                        x = list(map(cs.a2d, x))
+                    else:
+                        x = cs.a2d(x)
+                dct[f.d_name] = x
+            if rf is not None:
+                dct[rf] = self.cls.Raw(v)
+            return self.cls(**dct)
+
+        return AwsDataclassMeta.Converters(d2a, a2d)
+
+
+########################################
+# ../../../../../omcore/configs/formats.py
 """
 Notes:
  - necessarily string-oriented
@@ -6025,7 +5854,7 @@ DEFAULT_CONFIG_RENDERER = SwitchedConfigRenderer(DEFAULT_CONFIG_RENDERERS)
 
 
 ########################################
-# ../../../../../omlish/io/streambufs/base.py
+# ../../../../../omcore/io/streambufs/base.py
 
 
 ##
@@ -6038,7 +5867,7 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 
 
 ########################################
-# ../../../../../omlish/io/streambufs/utils.py
+# ../../../../../omcore/io/streambufs/utils.py
 
 
 ##
@@ -6198,7 +6027,7 @@ class ByteStreamBuffers(NamespaceClass):
 
 
 ########################################
-# ../../../../../omlish/logs/contexts.py
+# ../../../../../omcore/logs/contexts.py
 
 
 ##
@@ -6361,7 +6190,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
 
 ########################################
-# ../../../../../omlish/logs/std/json.py
+# ../../../../../omcore/logs/std/json.py
 """
 TODO:
  - translate json keys
@@ -6418,7 +6247,7 @@ class JsonLoggingFormatter(logging.Formatter):
 
 
 ########################################
-# ../../../../../omlish/subprocesses/wrap.py
+# ../../../../../omcore/subprocesses/wrap.py
 """
 This bypasses debuggers attaching to spawned subprocess children that look like python processes. See:
 
@@ -6444,7 +6273,178 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 ########################################
-# ../../../../../omlish/io/streambufs/direct.py
+# ../../logs.py
+"""
+https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html :
+ - The maximum batch size is 1,048,576 bytes. This size is calculated as the sum of all event messages in UTF-8, plus 26
+   bytes for each log event.
+ - None of the log events in the batch can be more than 2 hours in the future.
+ - None of the log events in the batch can be more than 14 days in the past. Also, none of the log events can be from
+   earlier than the retention period of the log group.
+ - The log events in the batch must be in chronological order by their timestamp. The timestamp is the time that the
+   event occurred, expressed as the number of milliseconds after Jan 1, 1970 00:00:00 UTC. (In AWS Tools for PowerShell
+   and the AWS SDK for .NET, the timestamp is specified in .NET format: yyyy-mm-ddThh:mm:ss. For example,
+   2017-09-15T13:45:30.)
+ - A batch of log events in a single request cannot span more than 24 hours. Otherwise, the operation fails.
+ - Each log event can be no larger than 256 KB.
+ - The maximum number of log events in a batch is 10,000.
+"""
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class AwsLogEvent(AwsDataclass):
+    message: str
+    timestamp: int  # milliseconds UTC
+
+
+@dc.dataclass(frozen=True)
+class AwsPutLogEventsRequest(AwsDataclass):
+    log_group_name: str
+    log_stream_name: str
+    log_events: ta.Sequence[AwsLogEvent]
+    sequence_token: ta.Optional[str] = None
+
+
+@dc.dataclass(frozen=True)
+class AwsRejectedLogEventsInfo(AwsDataclass):
+    expired_log_event_end_index: ta.Optional[int] = None
+    too_new_log_event_start_index: ta.Optional[int] = None
+    too_old_log_event_end_index: ta.Optional[int] = None
+
+
+@dc.dataclass(frozen=True)
+class AwsPutLogEventsResponse(AwsDataclass):
+    next_sequence_token: ta.Optional[str] = None
+    rejected_log_events_info: ta.Optional[AwsRejectedLogEventsInfo] = None
+
+    raw: ta.Optional[AwsDataclass.Raw] = None
+
+
+##
+
+
+class AwsLogMessageBuilder:
+    """
+    TODO:
+     - max_items
+     - max_bytes - manually build body
+     - flush_interval
+     - split sorted chunks if span over 24h
+    """
+
+    DEFAULT_URL = 'https://logs.{region_name}.amazonaws.com/'  # noqa
+
+    DEFAULT_SERVICE_NAME = 'logs'
+
+    DEFAULT_TARGET = 'Logs_20140328.PutLogEvents'
+    DEFAULT_CONTENT_TYPE = 'application/x-amz-json-1.1'
+
+    DEFAULT_HEADERS: ta.Mapping[str, str] = {
+        'X-Amz-Target': DEFAULT_TARGET,
+        'Content-Type': DEFAULT_CONTENT_TYPE,
+    }
+
+    def __init__(
+            self,
+            log_group_name: str,
+            log_stream_name: str,
+            region_name: str,
+            credentials: ta.Optional[AwsSigner.Credentials],
+
+            url: ta.Optional[str] = None,
+            service_name: str = DEFAULT_SERVICE_NAME,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            extra_headers: ta.Optional[ta.Mapping[str, str]] = None,
+    ) -> None:
+        super().__init__()
+
+        self._log_group_name = check.non_empty_str(log_group_name)
+        self._log_stream_name = check.non_empty_str(log_stream_name)
+
+        if url is None:
+            url = self.DEFAULT_URL.format(region_name=region_name)
+        self._url = url
+
+        if headers is None:
+            headers = self.DEFAULT_HEADERS
+        if extra_headers is not None:
+            headers = {**headers, **extra_headers}
+        self._headers = {k: [v] for k, v in headers.items()}
+
+        signer: ta.Optional[V4AwsSigner]
+        if credentials is not None:
+            signer = V4AwsSigner(
+                credentials,
+                region_name,
+                service_name,
+            )
+        else:
+            signer = None
+        self._signer = signer
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Message:
+        message: str
+        ts_ms: int  # milliseconds UTC
+
+    @dc.dataclass(frozen=True)
+    class Post:
+        url: str
+        headers: ta.Mapping[str, str]
+        data: bytes
+
+    def feed(self, messages: ta.Sequence[Message]) -> ta.Sequence[Post]:
+        if not messages:
+            return []
+
+        payload = AwsPutLogEventsRequest(
+            log_group_name=self._log_group_name,
+            log_stream_name=self._log_stream_name,
+            log_events=[
+                AwsLogEvent(
+                    message=m.message,
+                    timestamp=m.ts_ms,
+                )
+                for m in sorted(messages, key=lambda m: m.ts_ms)
+            ],
+        )
+
+        body = json.dumps(
+            payload.to_aws(),
+            indent=None,
+            separators=(',', ':'),
+        ).encode('utf-8')
+
+        sig_req = V4AwsSigner.Request(
+            method='POST',
+            url=self._url,
+            headers=self._headers,
+            payload=body,
+        )
+
+        if (signer := self._signer) is not None:
+            sig_headers = signer.sign(
+                sig_req,
+                sign_payload=False,
+            )
+            sig_req = dc.replace(sig_req, headers={**sig_req.headers, **sig_headers})
+
+        post = AwsLogMessageBuilder.Post(
+            url=self._url,
+            headers={k: check.single(v) for k, v in sig_req.headers.items()},
+            data=sig_req.payload,
+        )
+
+        return [post]
+
+
+########################################
+# ../../../../../omcore/io/streambufs/direct.py
 
 
 ##
@@ -6611,7 +6611,7 @@ def empty_byte_stream_buffer_view() -> ByteStreamBufferView:
 
 
 ########################################
-# ../../../../../omlish/io/streambufs/scanning.py
+# ../../../../../omcore/io/streambufs/scanning.py
 
 
 ##
@@ -6725,7 +6725,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
 
 ########################################
-# ../../../../../omlish/lite/configs.py
+# ../../../../../omcore/lite/configs.py
 
 
 ##
@@ -6757,7 +6757,7 @@ def load_config_file_obj(
 
 
 ########################################
-# ../../../../../omlish/logs/base.py
+# ../../../../../omcore/logs/base.py
 
 
 ##
@@ -7044,7 +7044,7 @@ class AsyncNopLogger(AsyncNopLoggerMetricCollector, AnyNopLogger[ta.Awaitable[No
 
 
 ########################################
-# ../../../../../omlish/logs/std/records.py
+# ../../../../../omcore/logs/std/records.py
 """
 TODO:
  - TypedDict?
@@ -7702,7 +7702,7 @@ class LogRecordLoggingContext(LoggingContext):
 
 
 ########################################
-# ../../../../../omlish/logs/std/standard.py
+# ../../../../../omcore/logs/std/standard.py
 """
 TODO:
  - structured
@@ -7828,7 +7828,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../../../omlish/io/streambufs/segmented.py
+# ../../../../../omcore/io/streambufs/segmented.py
 
 
 ##
@@ -8579,7 +8579,7 @@ def byte_stream_buffer_view_from_segments(mvs: ta.Sequence[memoryview]) -> ByteS
 
 
 ########################################
-# ../../../../../omlish/logs/asyncs.py
+# ../../../../../omcore/logs/asyncs.py
 
 
 ##
@@ -8649,7 +8649,7 @@ class LoggerToAsyncLogger(AsyncLogger):
 
 
 ########################################
-# ../../../../../omlish/logs/std/loggers.py
+# ../../../../../omcore/logs/std/loggers.py
 
 
 ##
@@ -8698,7 +8698,7 @@ class StdLogger(Logger):
 
 
 ########################################
-# ../../../../../omlish/logs/modules.py
+# ../../../../../omcore/logs/modules.py
 
 
 ##

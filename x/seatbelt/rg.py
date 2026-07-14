@@ -214,7 +214,7 @@ def sandboxed_rg(
 def _main() -> None:
     out = sandboxed_rg(
         'foo',
-        ['omlish'],
+        ['omcore'],
     )
 
     print(out)

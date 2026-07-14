@@ -5,11 +5,11 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omlish-cext'
+name = 'omcore-cext'
 authors = [
     {name = 'wrmsr'},
 ]
-urls = {source = 'https://github.com/wrmsr/omlish'}
+urls = {source = 'https://github.com/wrmsr/omcore'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
@@ -22,9 +22,9 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.14',
 ]
-description = 'omlish'
+description = 'omcore'
 dependencies = [
-    'omlish == 0.0.28',
+    'omcore == 0.0.28',
 ]
 
 [tool.setuptools]

@@ -5,7 +5,7 @@
 
 This is now only used by the http 'coro' stuff, which is also about to be deleted.
 
-Anything that would have used this should now use `omlish.io.streams`.
+Anything that would have used this should now use `omcore.io.streams`.
 """
 import io
 import typing as ta

@@ -9,7 +9,7 @@ name = 'omllm'
 authors = [
     {name = 'wrmsr'},
 ]
-urls = {source = 'https://github.com/wrmsr/omlish'}
+urls = {source = 'https://github.com/wrmsr/omcore'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
@@ -24,7 +24,7 @@ classifiers = [
 ]
 description = 'omllm'
 dependencies = [
-    'omlish == 0.0.28',
+    'omcore == 0.0.28',
 ]
 
 [project.optional-dependencies]
@@ -36,7 +36,7 @@ omdev = [
 ]
 
 [project.entry-points]
-'omlish.manifests' = {omllm = 'omllm'}
+'omcore.manifests' = {omllm = 'omllm'}
 
 [tool.setuptools]
 
@@ -59,7 +59,7 @@ exclude = [
     '*.hh',
     '*.abnf',
     '*.g4',
-    '.omlish-manifests.json',
+    '.om-manifests.json',
     'py.typed',
     '*.md',
     'README',

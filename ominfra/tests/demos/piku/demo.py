@@ -10,7 +10,7 @@ TIMEBOMB_DELAY_S = 20 * 60
 
 def _main() -> None:
     if USE_DOCKERFILE:
-        img_name = 'wrmsr/omlish-piku-demo'
+        img_name = 'wrmsr/om-piku-demo'
         cur_dir = os.path.dirname(__file__)
         u.build_docker_image(img_name, cur_dir)
 

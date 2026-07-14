@@ -178,7 +178,7 @@ machinery:
 
 The original intent is still broader than the current implementation:
 
-- A grown-up replacement foundation for the current `omlish` reflection system.
+- A grown-up replacement foundation for the current `omcore` reflection system.
 - Runtime type reflection that is fast enough for production use through
   coherent in-memory caching.
 - A high-level toolbox for marshalling, typeclass dispatch, schema derivation,

@@ -8,7 +8,7 @@ class Project(ProjectBase):
     description = 'ominfra'
 
     dependencies = [
-        f'omlish == {__version__}',
+        f'omcore == {__version__}',
     ]
 
     optional_dependencies = {
@@ -18,7 +18,7 @@ class Project(ProjectBase):
     }
 
     entry_points = {
-        'omlish.manifests': {name: name},
+        'omcore.manifests': {name: name},
     }
 
 

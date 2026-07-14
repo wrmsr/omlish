@@ -3,7 +3,6 @@ import subprocess
 import sys
 import typing as ta
 
-from omdev.cli import CliModule
 from omcore import cached
 from omcore import check
 from omcore import collections as col
@@ -12,6 +11,7 @@ from omcore import lang
 from omcore import marshal as msh
 from omcore.argparse import all as ap
 from omcore.formats.json import all as json
+from omdev.cli import CliModule
 
 
 ##

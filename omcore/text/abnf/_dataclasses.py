@@ -46,7 +46,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='539d9b0cdd4e831cff3bd7c0f04804ce66051513',
     cls_names=(
-        ('omlish.text.abnf.engines.base', 'EngineCapabilities'),
+        ('omcore.text.abnf.engines.base', 'EngineCapabilities'),
     ),
 )
 def _process_dataclass__539d9b0cdd4e831cff3bd7c0f04804ce66051513():
@@ -178,7 +178,7 @@ def _process_dataclass__539d9b0cdd4e831cff3bd7c0f04804ce66051513():
     ),
     plan_repr_sha1='4af384cbf5bf3126d5b25a0a7d978c091850a03b',
     cls_names=(
-        ('omlish.text.abnf.engines.lr.cfg', 'Nt'),
+        ('omcore.text.abnf.engines.lr.cfg', 'Nt'),
     ),
 )
 def _process_dataclass__4af384cbf5bf3126d5b25a0a7d978c091850a03b():
@@ -262,7 +262,7 @@ def _process_dataclass__4af384cbf5bf3126d5b25a0a7d978c091850a03b():
     ),
     plan_repr_sha1='5a41133839b8f78abbdde874874e91a03b6fde0b',
     cls_names=(
-        ('omlish.text.abnf.engines.lr.cfg', 'Production'),
+        ('omcore.text.abnf.engines.lr.cfg', 'Production'),
     ),
 )
 def _process_dataclass__5a41133839b8f78abbdde874874e91a03b6fde0b():
@@ -352,7 +352,7 @@ def _process_dataclass__5a41133839b8f78abbdde874874e91a03b6fde0b():
     ),
     plan_repr_sha1='2e12975bcdf1599f7d88099033ee7d57e6fdf45f',
     cls_names=(
-        ('omlish.text.abnf.engines.tokens.specs', 'Token'),
+        ('omcore.text.abnf.engines.tokens.specs', 'Token'),
     ),
 )
 def _process_dataclass__2e12975bcdf1599f7d88099033ee7d57e6fdf45f():
@@ -485,7 +485,7 @@ def _process_dataclass__2e12975bcdf1599f7d88099033ee7d57e6fdf45f():
     ),
     plan_repr_sha1='ec5f5af5a6f008424120bcad0f0b73c8f53cf6ee',
     cls_names=(
-        ('omlish.text.abnf.engines.tokens.specs', 'TokenSpec'),
+        ('omcore.text.abnf.engines.tokens.specs', 'TokenSpec'),
     ),
 )
 def _process_dataclass__ec5f5af5a6f008424120bcad0f0b73c8f53cf6ee():
@@ -652,7 +652,7 @@ def _process_dataclass__ec5f5af5a6f008424120bcad0f0b73c8f53cf6ee():
     ),
     plan_repr_sha1='2b0d5afd5ad2c92259ae4d9e5c77a36d0b111d44',
     cls_names=(
-        ('omlish.text.abnf.engines.tokens.specs', 'TokenizedGrammar'),
+        ('omcore.text.abnf.engines.tokens.specs', 'TokenizedGrammar'),
     ),
 )
 def _process_dataclass__2b0d5afd5ad2c92259ae4d9e5c77a36d0b111d44():
@@ -808,11 +808,11 @@ def _process_dataclass__2b0d5afd5ad2c92259ae4d9e5c77a36d0b111d44():
     ),
     plan_repr_sha1='30a5dd74853303d917aae5f67d4e7189615d1440',
     cls_names=(
-        ('omlish.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.AltOp'),
-        ('omlish.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.QuotedString'),
-        ('omlish.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.RuleName'),
-        ('omlish.text.abnf.opto', '_CaseInsensitiveStringLiteralRegexItem'),
-        ('omlish.text.abnf.opto', '_StringLiteralRegexItem'),
+        ('omcore.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.AltOp'),
+        ('omcore.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.QuotedString'),
+        ('omcore.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.RuleName'),
+        ('omcore.text.abnf.opto', '_CaseInsensitiveStringLiteralRegexItem'),
+        ('omcore.text.abnf.opto', '_StringLiteralRegexItem'),
     ),
 )
 def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
@@ -914,7 +914,7 @@ def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
     ),
     plan_repr_sha1='77f9e223cd2b11b886449dea89b694036e037244',
     cls_names=(
-        ('omlish.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.Modifier'),
+        ('omcore.text.abnf.meta', 'MetaGrammarRuleMatchVisitor.Modifier'),
     ),
 )
 def _process_dataclass__77f9e223cd2b11b886449dea89b694036e037244():
@@ -1024,7 +1024,7 @@ def _process_dataclass__77f9e223cd2b11b886449dea89b694036e037244():
     ),
     plan_repr_sha1='9104a51696bc4129d13d616118c0f732322e677c',
     cls_names=(
-        ('omlish.text.abnf.ops', 'RangeLiteral.Range'),
+        ('omcore.text.abnf.ops', 'RangeLiteral.Range'),
     ),
 )
 def _process_dataclass__9104a51696bc4129d13d616118c0f732322e677c():
@@ -1134,7 +1134,7 @@ def _process_dataclass__9104a51696bc4129d13d616118c0f732322e677c():
     ),
     plan_repr_sha1='3dce49e08774c707abbc7a6513e35ccdc43001c9',
     cls_names=(
-        ('omlish.text.abnf.ops', 'Repeat.Times'),
+        ('omcore.text.abnf.ops', 'Repeat.Times'),
     ),
 )
 def _process_dataclass__3dce49e08774c707abbc7a6513e35ccdc43001c9():
@@ -1228,7 +1228,7 @@ def _process_dataclass__3dce49e08774c707abbc7a6513e35ccdc43001c9():
     ),
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
     cls_names=(
-        ('omlish.text.abnf.opto', '_RegexItem'),
+        ('omcore.text.abnf.opto', '_RegexItem'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -1307,7 +1307,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
     ),
     plan_repr_sha1='f7dc3147180d5d4dc248e9c0d94aa0f1e503c4c7',
     cls_names=(
-        ('omlish.text.abnf.opto', '_RegexRegexItem'),
+        ('omcore.text.abnf.opto', '_RegexRegexItem'),
     ),
 )
 def _process_dataclass__f7dc3147180d5d4dc248e9c0d94aa0f1e503c4c7():

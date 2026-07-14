@@ -1,10 +1,10 @@
 # ruff: noqa: UP006 UP007 UP045
 import dataclasses as dc
 
+from omcore.lite.check import check
 from omdev.interp.default import get_default_interp_resolver
 from omdev.interp.types import InterpOpts
 from omdev.interp.types import InterpSpecifier
-from omcore.lite.check import check
 
 from ..commands.base import Command
 from ..commands.base import CommandExecutor

@@ -1,6 +1,6 @@
 """
 TODO:
- -> omlish.formats.xml
+ -> omcore.formats.xml
 """
 import typing as ta
 import xml.etree.ElementTree as ET

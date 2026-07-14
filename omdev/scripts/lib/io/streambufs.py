@@ -3,7 +3,7 @@
 # @om-lite
 # @om-script
 # @om-generated
-# @om-amalg-output ../../../../omlish/io/streambufs/_amalg.py
+# @om-amalg-output ../../../../omcore/io/streambufs/_amalg.py
 # @om-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP037 UP045
 import abc
@@ -19,24 +19,24 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
+            dict(path='errors.py', sha1='6b04cc2e4ba5461692128938a2bd5c261486746b'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
+            dict(path='../../lite/bytes.py', sha1='5edf3e1dd70f26415154e8d352f0983aef2c6fc6'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
-            dict(path='base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='reading.py', sha1='94ed2afc05aebc8108a5df168477d5273cd2acbf'),
-            dict(path='utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
-            dict(path='direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
-            dict(path='scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
-            dict(path='adapters.py', sha1='c6fbf2e18ff040be75df7db137f14d91b57c64b4'),
-            dict(path='linear.py', sha1='aa5ac37747d153479f4be3df9327b9c96a59381b'),
-            dict(path='segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
-            dict(path='_amalg.py', sha1='40e7a4a4ebfe4b61f86c6a8c9d2cda6e898d8c18'),
+            dict(path='types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
+            dict(path='base.py', sha1='0f0cea0fe05f9d7b4669a7b3871bc78e12af98f6'),
+            dict(path='framing.py', sha1='de1f818064576e855f20b005ea7855a1fd5f3f56'),
+            dict(path='reading.py', sha1='36ca4cdf831d8913088dc82a5a512ea7ad0aa66b'),
+            dict(path='utils.py', sha1='62d7fce79bae738c199627668bdee8bb389efa1e'),
+            dict(path='direct.py', sha1='5a629d79aa7f618dce40e11c2609bc0dcd008599'),
+            dict(path='scanning.py', sha1='36411208b4e6515528f0310c7052b3faf2572b24'),
+            dict(path='adapters.py', sha1='672207f8bdc5261c22cd7d9049d9f763523bf46e'),
+            dict(path='linear.py', sha1='1c3bbf4424c22d7d120a2f0735a6cc7d9d2cd3f4'),
+            dict(path='segmented.py', sha1='ad3c91e91d7b91396c51549fc7578419b1c3d336'),
+            dict(path='_amalg.py', sha1='795e3dc80a8acd501be0ff3fd579e9e4a5f74794'),
         ],
     )
 

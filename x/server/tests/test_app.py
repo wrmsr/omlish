@@ -39,7 +39,7 @@ def randhex(l: int) -> str:
 )
 # @au.with_adapter_loop(wait=True)
 async def test_auth(harness):
-    # from omlish import logs  # noqa
+    # from omcore import logs  # noqa
     # logs.configure_standard_logging('DEBUG')  # noqa
 
     port = get_available_port()

@@ -182,7 +182,7 @@ class CodeGen:
     _HEADER_GENERAL_IMPORTS: ta.Sequence[str] = [
         'import typing as ta',
         '',
-        'from omlish import lang',
+        'from omcore import lang',
     ]
 
     _HEADER_TYPE_DEFS: ta.Sequence[str] = [

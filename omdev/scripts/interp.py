@@ -50,60 +50,82 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='../packaging/versions.py', sha1='d515a54dd7fa27a9fd4d8c8617e5a21a3c12ea1e'),
-            dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
-            dict(path='../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
-            dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
-            dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
-            dict(path='../../omlish/logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
-            dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
-            dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
-            dict(path='../packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
-            dict(path='../../omlish/argparse/parsers.py', sha1='51044d7b7d1b1ca27173be2d3c007d574827a188'),
-            dict(path='../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
-            dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../omlish/lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
-            dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
+            dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../omcore/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
+            dict(path='../../omcore/lite/injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
+            dict(path='../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
+            dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../omcore/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
+            dict(path='../../omcore/logs/levels.py', sha1='bd87ff6a281e361cbab4f205802187b2080044e6'),
+            dict(path='../../omcore/logs/std/filters.py', sha1='3ec3856ade50561f99ce9463f54737ab1126d410'),
+            dict(path='../../omcore/logs/std/proxy.py', sha1='98c8cad9f65c6b76349bcde830a2e9770108a52a'),
+            dict(path='../packaging/versions.py', sha1='cd6a636f9944f3c8b410c40a5212b538cc7f4200'),
+            dict(path='../../omcore/argparse/parsers.py', sha1='46321356fbfd17d94eeb0347e86eb042a9333d37'),
+            dict(path='../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
+            dict(path='../../omcore/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
+            dict(path='../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
+            dict(path='../../omcore/lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
+            dict(path='../../omcore/logs/protocols.py', sha1='2e13388c65699c4aa89f32b78be8496b94fc40bb'),
+            dict(path='../packaging/specifiers.py', sha1='d1a6a73c198a9266a605234efeb8bef2b940eeb5'),
+            dict(path='../../omcore/argparse/cli.py', sha1='cbfc5b8a9863db3e643df46f268937cbba65b126'),
+            dict(path='../../omcore/asyncs/asyncio/timeouts.py', sha1='cfde8108f1128ceea3502c77eefb015fb43a6239'),
+            dict(path='../../omcore/lite/inject.py', sha1='8136e16e99019cf01fc18a4b87d0fa1a9d55e23f'),
+            dict(path='../../omcore/logs/std/json.py', sha1='d1ff35ac871de63efec2b64ae5c63e63d295a8d5'),
+            dict(path='../../omcore/subprocesses/run.py', sha1='425596d73f3b5cbe1ab936718c77e39a88283350'),
+            dict(path='../../omcore/subprocesses/wrap.py', sha1='12d94dc2357951cd0fed1c50a46817d30d628927'),
             dict(path='types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
-            dict(path='../../omlish/argparse/cli.py', sha1='aef500dd2d8f5a65c4c04ede11355ac8eb513f2e'),
-            dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
-            dict(path='../../omlish/lite/inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
-            dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='../../omlish/subprocesses/run.py', sha1='9b7e1265cd59c58d30d8915f96ba84f80797ef42'),
-            dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
-            dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
-            dict(path='../../omlish/subprocesses/base.py', sha1='483de755e9d090d8cae5a774e232e0965ea5713e'),
+            dict(path='../../omcore/logs/std/standard.py', sha1='223e3cba0f2854c5093fb60d6cef2f27b80c193c'),
+            dict(path='../../omcore/subprocesses/base.py', sha1='902de24f7135858a9f539fab378cacb96f5cc672'),
+            dict(path='providers/base.py', sha1='bb952ac8a8c2ceeac41a777753a1a4e60439f3d4'),
+            dict(path='../../omcore/subprocesses/asyncs.py', sha1='8d428af73220f793d2c0e93f5c9966fac9474246'),
             dict(path='resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
-            dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
-            dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
-            dict(path='inspect.py', sha1='d13c4cd18388ef68cff8edcd1af1a28da2234f4f'),
-            dict(path='pyenv/pyenv.py', sha1='d1f6e657c671c1b1a5b0e627284df656fe2d10d3'),
-            dict(path='uv/uv.py', sha1='8c6515cd6755efab3972da92a285e94ccb255515'),
-            dict(path='providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
-            dict(path='providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
-            dict(path='pyenv/install.py', sha1='72fe61d3db273f9885530c464cc6b16d9dd5eee0'),
-            dict(path='uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
-            dict(path='providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
-            dict(path='pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
-            dict(path='uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
-            dict(path='pyenv/inject.py', sha1='b8fb68f5a7cae86c70fe1bad6c29a8b2dfc985c3'),
-            dict(path='inject.py', sha1='b039abbadf0b096d2724182af2e0ebda2a230852'),
-            dict(path='cli.py', sha1='10fe8cd449bf1271b571cded5fff2d26039256fc'),
+            dict(path='../../omcore/asyncs/asyncio/subprocesses.py', sha1='901e82ac03fb6ce967728a715f1785e6e591ff8b'),
+            dict(path='inspect.py', sha1='121c6c547bd359ca436cb14886a081bb7762a032'),
+            dict(path='pyenv/pyenv.py', sha1='8c3d0fee72f4e52d2c48beb51cd223f555dfdc87'),
+            dict(path='uv/uv.py', sha1='1239cb13aad6669a638fdc2c390442a8588460b2'),
+            dict(path='providers/running.py', sha1='90e9d89b4c20897644f2ee4f8b30d1632f6cfa07'),
+            dict(path='providers/system.py', sha1='5b337476498d3187d4a8774f04f9e634f60972fb'),
+            dict(path='pyenv/install.py', sha1='c2e2a6c9ebb36b1dd09482662bdafdb59c75ae81'),
+            dict(path='uv/provider.py', sha1='fcb5939d4038b41c1a3e887feb10cfcb0924107c'),
+            dict(path='providers/inject.py', sha1='558f0761ce1bd375136f9e733c8674895eec9e62'),
+            dict(path='pyenv/provider.py', sha1='2d9ef6be0b9dd151361a6e8604a682fa74f9920c'),
+            dict(path='uv/inject.py', sha1='86cc5b6b8fa88beaa9f468bf05c078f8af330a23'),
+            dict(path='pyenv/inject.py', sha1='1fe5f906720082a73332f98199e3dd1b2dccd67b'),
+            dict(path='inject.py', sha1='1bb2d07e46745fcd0126aee0a5ad5ab75b407143'),
+            dict(path='cli.py', sha1='103a96006c010a4cbd634b3c35813cdc108e3087'),
         ],
     )
 
 
 ########################################
 
+
+# ../../omcore/lite/abstract.py
+T = ta.TypeVar('T')
+
+# ../../omcore/lite/cached.py
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+
+# ../../omcore/lite/check.py
+SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
+CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
+CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
+CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
+CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
+CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
+
+# ../../omcore/lite/typing.py
+A0 = ta.TypeVar('A0')
+A1 = ta.TypeVar('A1')
+A2 = ta.TypeVar('A2')
+
+# ../../omcore/logs/levels.py
+LogLevel = int  # ta.TypeAlias
 
 # ../packaging/versions.py
 VersionLocalType = ta.Tuple[ta.Union[int, str], ...]  # ta.TypeAlias
@@ -113,467 +135,38 @@ VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalTy
 VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # ta.TypeAlias  # noqa
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]  # ta.TypeAlias
 
-# ../../omlish/lite/abstract.py
-T = ta.TypeVar('T')
+# ../../omcore/argparse/parsers.py
+ArgparseCmdFn = ta.Callable[[], ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]]  # ta.TypeAlias
 
-# ../../omlish/lite/cached.py
-CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+# ../../omcore/lite/json.py
+JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
-# ../../omlish/lite/check.py
-SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
-CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
-CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
-CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
-CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
-CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
+# ../../omcore/lite/maybes.py
+U = ta.TypeVar('U')
 
-# ../../omlish/lite/typing.py
-A0 = ta.TypeVar('A0')
-A1 = ta.TypeVar('A1')
-A2 = ta.TypeVar('A2')
-
-# ../../omlish/logs/levels.py
-LogLevel = int  # ta.TypeAlias
+# ../../omcore/lite/timeouts.py
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', float, int, bool, None]  # ta.TypeAlias  # noqa
 
 # ../packaging/specifiers.py
 UnparsedVersion = ta.Union['Version', str]  # ta.TypeAlias
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]  # ta.TypeAlias
 
-# ../../omlish/argparse/parsers.py
-ArgparseCmdFn = ta.Callable[[], ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]]  # ta.TypeAlias
-
-# ../../omlish/lite/json.py
-JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
-
-# ../../omlish/lite/maybes.py
-U = ta.TypeVar('U')
-
-# ../../omlish/lite/timeouts.py
-TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', float, int, bool, None]  # ta.TypeAlias  # noqa
-
-# ../../omlish/asyncs/asyncio/timeouts.py
+# ../../omcore/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
-# ../../omlish/lite/inject.py
+# ../../omcore/lite/inject.py
 InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]  # ta.TypeAlias
 InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']  # ta.TypeAlias
 InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # ta.TypeAlias
 
-# ../../omlish/subprocesses/base.py
+# ../../omcore/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
 
 ########################################
-# ../../packaging/versions.py
-# Copyright (c) Donald Stufft and individual contributors.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-# following conditions are met:
-#
-#     1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
-#        following disclaimer.
-#
-#     2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-#        following disclaimer in the documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. This file is dual licensed under the terms of the
-# Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
-# details.
-# https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-
-
-##
-
-
-class InfinityVersionType:
-    def __repr__(self) -> str:
-        return 'Infinity'
-
-    def __hash__(self) -> int:
-        return hash(repr(self))
-
-    def __lt__(self, other: object) -> bool:
-        return False
-
-    def __le__(self, other: object) -> bool:
-        return False
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, self.__class__)
-
-    def __gt__(self, other: object) -> bool:
-        return True
-
-    def __ge__(self, other: object) -> bool:
-        return True
-
-    def __neg__(self: object) -> 'NegativeInfinityVersionType':
-        return NegativeInfinityVersion
-
-
-InfinityVersion = InfinityVersionType()
-
-
-class NegativeInfinityVersionType:
-    def __repr__(self) -> str:
-        return '-Infinity'
-
-    def __hash__(self) -> int:
-        return hash(repr(self))
-
-    def __lt__(self, other: object) -> bool:
-        return True
-
-    def __le__(self, other: object) -> bool:
-        return True
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, self.__class__)
-
-    def __gt__(self, other: object) -> bool:
-        return False
-
-    def __ge__(self, other: object) -> bool:
-        return False
-
-    def __neg__(self: object) -> InfinityVersionType:
-        return InfinityVersion
-
-
-NegativeInfinityVersion = NegativeInfinityVersionType()
-
-
-##
-
-
-class _Version(ta.NamedTuple):
-    epoch: int
-    release: ta.Tuple[int, ...]
-    dev: ta.Optional[ta.Tuple[str, int]]
-    pre: ta.Optional[ta.Tuple[str, int]]
-    post: ta.Optional[ta.Tuple[str, int]]
-    local: ta.Optional[VersionLocalType]
-
-
-class InvalidVersion(ValueError):  # noqa
-    pass
-
-
-class _BaseVersion:
-    _key: ta.Tuple[ta.Any, ...]
-
-    def __hash__(self) -> int:
-        return hash(self._key)
-
-    def __lt__(self, other: '_BaseVersion') -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key < other._key
-
-    def __le__(self, other: '_BaseVersion') -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key <= other._key
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key == other._key
-
-    def __ge__(self, other: '_BaseVersion') -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key >= other._key
-
-    def __gt__(self, other: '_BaseVersion') -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key > other._key
-
-    def __ne__(self, other: object) -> bool:
-        if not isinstance(other, _BaseVersion):
-            return NotImplemented
-        return self._key != other._key
-
-
-_VERSION_PATTERN = r"""
-    v?
-    (?:
-        (?:(?P<epoch>[0-9]+)!)?
-        (?P<release>[0-9]+(?:\.[0-9]+)*)
-        (?P<pre>
-            [-_\.]?
-            (?P<pre_l>alpha|a|beta|b|preview|pre|c|rc)
-            [-_\.]?
-            (?P<pre_n>[0-9]+)?
-        )?
-        (?P<post>
-            (?:-(?P<post_n1>[0-9]+))
-            |
-            (?:
-                [-_\.]?
-                (?P<post_l>post|rev|r)
-                [-_\.]?
-                (?P<post_n2>[0-9]+)?
-            )
-        )?
-        (?P<dev>
-            [-_\.]?
-            (?P<dev_l>dev)
-            [-_\.]?
-            (?P<dev_n>[0-9]+)?
-        )?
-    )
-    (?:\+(?P<local>[a-z0-9]+(?:[-_\.][a-z0-9]+)*))?
-"""
-
-VERSION_PATTERN = _VERSION_PATTERN
-
-
-class Version(_BaseVersion):
-    _regex = re.compile(r'^\s*' + VERSION_PATTERN + r'\s*$', re.VERBOSE | re.IGNORECASE)
-    _key: VersionCmpKey
-
-    def __init__(self, version: str) -> None:
-        match = self._regex.search(version)
-        if not match:
-            raise InvalidVersion(f"Invalid version: '{version}'")
-
-        self._version = _Version(
-            epoch=int(match.group('epoch')) if match.group('epoch') else 0,
-            release=tuple(int(i) for i in match.group('release').split('.')),
-            pre=_parse_letter_version(match.group('pre_l'), match.group('pre_n')),
-            post=_parse_letter_version(match.group('post_l'), match.group('post_n1') or match.group('post_n2')),
-            dev=_parse_letter_version(match.group('dev_l'), match.group('dev_n')),
-            local=_parse_local_version(match.group('local')),
-        )
-
-        self._key = _version_cmpkey(
-            self._version.epoch,
-            self._version.release,
-            self._version.pre,
-            self._version.post,
-            self._version.dev,
-            self._version.local,
-        )
-
-    def __repr__(self) -> str:
-        return f"<Version('{self}')>"
-
-    def __str__(self) -> str:
-        parts = []
-
-        if self.epoch != 0:
-            parts.append(f'{self.epoch}!')
-
-        parts.append('.'.join(str(x) for x in self.release))
-
-        if self.pre is not None:
-            parts.append(''.join(str(x) for x in self.pre))
-
-        if self.post is not None:
-            parts.append(f'.post{self.post}')
-
-        if self.dev is not None:
-            parts.append(f'.dev{self.dev}')
-
-        if self.local is not None:
-            parts.append(f'+{self.local}')
-
-        return ''.join(parts)
-
-    @property
-    def epoch(self) -> int:
-        return self._version.epoch
-
-    @property
-    def release(self) -> ta.Tuple[int, ...]:
-        return self._version.release
-
-    @property
-    def pre(self) -> ta.Optional[ta.Tuple[str, int]]:
-        return self._version.pre
-
-    @property
-    def post(self) -> ta.Optional[int]:
-        return self._version.post[1] if self._version.post else None
-
-    @property
-    def dev(self) -> ta.Optional[int]:
-        return self._version.dev[1] if self._version.dev else None
-
-    @property
-    def local(self) -> ta.Optional[str]:
-        if self._version.local:
-            return '.'.join(str(x) for x in self._version.local)
-        else:
-            return None
-
-    @property
-    def public(self) -> str:
-        return str(self).split('+', 1)[0]
-
-    @property
-    def base_version(self) -> str:
-        parts = []
-
-        if self.epoch != 0:
-            parts.append(f'{self.epoch}!')
-
-        parts.append('.'.join(str(x) for x in self.release))
-
-        return ''.join(parts)
-
-    @property
-    def is_prerelease(self) -> bool:
-        return self.dev is not None or self.pre is not None
-
-    @property
-    def is_postrelease(self) -> bool:
-        return self.post is not None
-
-    @property
-    def is_devrelease(self) -> bool:
-        return self.dev is not None
-
-    @property
-    def major(self) -> int:
-        return self.release[0] if len(self.release) >= 1 else 0
-
-    @property
-    def minor(self) -> int:
-        return self.release[1] if len(self.release) >= 2 else 0
-
-    @property
-    def micro(self) -> int:
-        return self.release[2] if len(self.release) >= 3 else 0
-
-
-def _parse_letter_version(
-        letter: ta.Optional[str],
-        number: ta.Union[str, bytes, ta.SupportsInt, None],
-) -> ta.Optional[ta.Tuple[str, int]]:
-    if letter:
-        if number is None:
-            number = 0
-
-        letter = letter.lower()
-        if letter == 'alpha':
-            letter = 'a'
-        elif letter == 'beta':
-            letter = 'b'
-        elif letter in ['c', 'pre', 'preview']:
-            letter = 'rc'
-        elif letter in ['rev', 'r']:
-            letter = 'post'
-
-        return letter, int(number)
-    if not letter and number:
-        letter = 'post'
-        return letter, int(number)
-
-    return None
-
-
-_local_version_separators = re.compile(r'[\._-]')
-
-
-def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[VersionLocalType]:
-    if local is not None:
-        return tuple(
-            part.lower() if not part.isdigit() else int(part)
-            for part in _local_version_separators.split(local)
-        )
-    return None
-
-
-def _version_cmpkey(
-    epoch: int,
-    release: ta.Tuple[int, ...],
-    pre: ta.Optional[ta.Tuple[str, int]],
-    post: ta.Optional[ta.Tuple[str, int]],
-    dev: ta.Optional[ta.Tuple[str, int]],
-    local: ta.Optional[VersionLocalType],
-) -> VersionCmpKey:
-    _release = tuple(reversed(list(itertools.dropwhile(lambda x: x == 0, reversed(release)))))
-
-    if pre is None and post is None and dev is not None:
-        _pre: VersionCmpPrePostDevType = NegativeInfinityVersion
-    elif pre is None:
-        _pre = InfinityVersion
-    else:
-        _pre = pre
-
-    if post is None:
-        _post: VersionCmpPrePostDevType = NegativeInfinityVersion
-    else:
-        _post = post
-
-    if dev is None:
-        _dev: VersionCmpPrePostDevType = InfinityVersion
-    else:
-        _dev = dev
-
-    if local is None:
-        _local: VersionCmpLocalType = NegativeInfinityVersion
-    else:
-        _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinityVersion, i) for i in local)
-
-    return epoch, _release, _pre, _post, _dev, _local
-
-
-##
-
-
-def canonicalize_version(
-        version: ta.Union[Version, str],
-        *,
-        strip_trailing_zero: bool = True,
-) -> str:
-    if isinstance(version, str):
-        try:
-            parsed = Version(version)
-        except InvalidVersion:
-            return version
-    else:
-        parsed = version
-
-    parts = []
-
-    if parsed.epoch != 0:
-        parts.append(f'{parsed.epoch}!')
-
-    release_segment = '.'.join(str(x) for x in parsed.release)
-    if strip_trailing_zero:
-        release_segment = re.sub(r'(\.0)+$', '', release_segment)
-    parts.append(release_segment)
-
-    if parsed.pre is not None:
-        parts.append(''.join(str(x) for x in parsed.pre))
-
-    if parsed.post is not None:
-        parts.append(f'.post{parsed.post}')
-
-    if parsed.dev is not None:
-        parts.append(f'.dev{parsed.dev}')
-
-    if parsed.local is not None:
-        parts.append(f'+{parsed.local}')
-
-    return ''.join(parts)
-
-
-########################################
-# ../../../omlish/lite/abstract.py
+# ../../../omcore/lite/abstract.py
 
 
 ##
@@ -720,7 +313,7 @@ class Abstract:
 
 
 ########################################
-# ../../../omlish/lite/cached.py
+# ../../../omcore/lite/cached.py
 
 
 ##
@@ -833,7 +426,7 @@ globals()['cached_property'] = _cached_property
 
 
 ########################################
-# ../../../omlish/lite/check.py
+# ../../../omcore/lite/check.py
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
@@ -1413,7 +1006,7 @@ check = Checks()
 
 
 ########################################
-# ../../../omlish/lite/injectinspect.py
+# ../../../omcore/lite/injectinspect.py
 
 
 ##
@@ -1503,7 +1096,7 @@ def injection_inspect(obj: ta.Any) -> InjectionInspection:
 
 
 ########################################
-# ../../../omlish/lite/io.py
+# ../../../omcore/lite/io.py
 
 
 ##
@@ -1518,7 +1111,7 @@ class FnWriter:
 
 
 ########################################
-# ../../../omlish/lite/reflect.py
+# ../../../omcore/lite/reflect.py
 
 
 ##
@@ -1607,7 +1200,7 @@ def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/strings.py
+# ../../../omcore/lite/strings.py
 
 
 ##
@@ -1696,7 +1289,7 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../omlish/lite/typing.py
+# ../../../omcore/lite/typing.py
 
 
 ##
@@ -1808,7 +1401,7 @@ class CanFloat(ta.Protocol):
 
 
 ########################################
-# ../../../omlish/logs/levels.py
+# ../../../omcore/logs/levels.py
 
 
 ##
@@ -1907,7 +1500,7 @@ NamedLogLevel._CACHE.update({i: NamedLogLevel(i) for i in NamedLogLevel._NAMES_B
 
 
 ########################################
-# ../../../omlish/logs/std/filters.py
+# ../../../omcore/logs/std/filters.py
 
 
 ##
@@ -1924,7 +1517,7 @@ class TidLoggingFilter(logging.Filter):
 
 
 ########################################
-# ../../../omlish/logs/std/proxy.py
+# ../../../omcore/logs/std/proxy.py
 
 
 ##
@@ -2024,6 +1617,1257 @@ class ProxyLoggingHandler(ProxyLoggingFilterer, logging.Handler):
 
     def handleError(self, record):
         self._underlying.handleError(record)
+
+
+########################################
+# ../../packaging/versions.py
+# Copyright (c) Donald Stufft and individual contributors.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#
+#     1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+#        following disclaimer.
+#
+#     2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+#        following disclaimer in the documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. This file is dual licensed under the terms of the
+# Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
+# details.
+# https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
+
+
+##
+
+
+class InfinityVersionType:
+    def __repr__(self) -> str:
+        return 'Infinity'
+
+    def __hash__(self) -> int:
+        return hash(repr(self))
+
+    def __lt__(self, other: object) -> bool:
+        return False
+
+    def __le__(self, other: object) -> bool:
+        return False
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, self.__class__)
+
+    def __gt__(self, other: object) -> bool:
+        return True
+
+    def __ge__(self, other: object) -> bool:
+        return True
+
+    def __neg__(self: object) -> 'NegativeInfinityVersionType':
+        return NegativeInfinityVersion
+
+
+InfinityVersion = InfinityVersionType()
+
+
+class NegativeInfinityVersionType:
+    def __repr__(self) -> str:
+        return '-Infinity'
+
+    def __hash__(self) -> int:
+        return hash(repr(self))
+
+    def __lt__(self, other: object) -> bool:
+        return True
+
+    def __le__(self, other: object) -> bool:
+        return True
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, self.__class__)
+
+    def __gt__(self, other: object) -> bool:
+        return False
+
+    def __ge__(self, other: object) -> bool:
+        return False
+
+    def __neg__(self: object) -> InfinityVersionType:
+        return InfinityVersion
+
+
+NegativeInfinityVersion = NegativeInfinityVersionType()
+
+
+##
+
+
+class _Version(ta.NamedTuple):
+    epoch: int
+    release: ta.Tuple[int, ...]
+    dev: ta.Optional[ta.Tuple[str, int]]
+    pre: ta.Optional[ta.Tuple[str, int]]
+    post: ta.Optional[ta.Tuple[str, int]]
+    local: ta.Optional[VersionLocalType]
+
+
+class InvalidVersion(ValueError):  # noqa
+    pass
+
+
+class _BaseVersion:
+    _key: ta.Tuple[ta.Any, ...]
+
+    def __hash__(self) -> int:
+        return hash(self._key)
+
+    def __lt__(self, other: '_BaseVersion') -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key < other._key
+
+    def __le__(self, other: '_BaseVersion') -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key <= other._key
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key == other._key
+
+    def __ge__(self, other: '_BaseVersion') -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key >= other._key
+
+    def __gt__(self, other: '_BaseVersion') -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key > other._key
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, _BaseVersion):
+            return NotImplemented
+        return self._key != other._key
+
+
+_VERSION_PATTERN = r"""
+    v?
+    (?:
+        (?:(?P<epoch>[0-9]+)!)?
+        (?P<release>[0-9]+(?:\.[0-9]+)*)
+        (?P<pre>
+            [-_\.]?
+            (?P<pre_l>alpha|a|beta|b|preview|pre|c|rc)
+            [-_\.]?
+            (?P<pre_n>[0-9]+)?
+        )?
+        (?P<post>
+            (?:-(?P<post_n1>[0-9]+))
+            |
+            (?:
+                [-_\.]?
+                (?P<post_l>post|rev|r)
+                [-_\.]?
+                (?P<post_n2>[0-9]+)?
+            )
+        )?
+        (?P<dev>
+            [-_\.]?
+            (?P<dev_l>dev)
+            [-_\.]?
+            (?P<dev_n>[0-9]+)?
+        )?
+    )
+    (?:\+(?P<local>[a-z0-9]+(?:[-_\.][a-z0-9]+)*))?
+"""
+
+VERSION_PATTERN = _VERSION_PATTERN
+
+
+class Version(_BaseVersion):
+    _regex = re.compile(r'^\s*' + VERSION_PATTERN + r'\s*$', re.VERBOSE | re.IGNORECASE)
+    _key: VersionCmpKey
+
+    def __init__(self, version: str) -> None:
+        match = self._regex.search(version)
+        if not match:
+            raise InvalidVersion(f"Invalid version: '{version}'")
+
+        self._version = _Version(
+            epoch=int(match.group('epoch')) if match.group('epoch') else 0,
+            release=tuple(int(i) for i in match.group('release').split('.')),
+            pre=_parse_letter_version(match.group('pre_l'), match.group('pre_n')),
+            post=_parse_letter_version(match.group('post_l'), match.group('post_n1') or match.group('post_n2')),
+            dev=_parse_letter_version(match.group('dev_l'), match.group('dev_n')),
+            local=_parse_local_version(match.group('local')),
+        )
+
+        self._key = _version_cmpkey(
+            self._version.epoch,
+            self._version.release,
+            self._version.pre,
+            self._version.post,
+            self._version.dev,
+            self._version.local,
+        )
+
+    def __repr__(self) -> str:
+        return f"<Version('{self}')>"
+
+    def __str__(self) -> str:
+        parts = []
+
+        if self.epoch != 0:
+            parts.append(f'{self.epoch}!')
+
+        parts.append('.'.join(str(x) for x in self.release))
+
+        if self.pre is not None:
+            parts.append(''.join(str(x) for x in self.pre))
+
+        if self.post is not None:
+            parts.append(f'.post{self.post}')
+
+        if self.dev is not None:
+            parts.append(f'.dev{self.dev}')
+
+        if self.local is not None:
+            parts.append(f'+{self.local}')
+
+        return ''.join(parts)
+
+    @property
+    def epoch(self) -> int:
+        return self._version.epoch
+
+    @property
+    def release(self) -> ta.Tuple[int, ...]:
+        return self._version.release
+
+    @property
+    def pre(self) -> ta.Optional[ta.Tuple[str, int]]:
+        return self._version.pre
+
+    @property
+    def post(self) -> ta.Optional[int]:
+        return self._version.post[1] if self._version.post else None
+
+    @property
+    def dev(self) -> ta.Optional[int]:
+        return self._version.dev[1] if self._version.dev else None
+
+    @property
+    def local(self) -> ta.Optional[str]:
+        if self._version.local:
+            return '.'.join(str(x) for x in self._version.local)
+        else:
+            return None
+
+    @property
+    def public(self) -> str:
+        return str(self).split('+', 1)[0]
+
+    @property
+    def base_version(self) -> str:
+        parts = []
+
+        if self.epoch != 0:
+            parts.append(f'{self.epoch}!')
+
+        parts.append('.'.join(str(x) for x in self.release))
+
+        return ''.join(parts)
+
+    @property
+    def is_prerelease(self) -> bool:
+        return self.dev is not None or self.pre is not None
+
+    @property
+    def is_postrelease(self) -> bool:
+        return self.post is not None
+
+    @property
+    def is_devrelease(self) -> bool:
+        return self.dev is not None
+
+    @property
+    def major(self) -> int:
+        return self.release[0] if len(self.release) >= 1 else 0
+
+    @property
+    def minor(self) -> int:
+        return self.release[1] if len(self.release) >= 2 else 0
+
+    @property
+    def micro(self) -> int:
+        return self.release[2] if len(self.release) >= 3 else 0
+
+
+def _parse_letter_version(
+        letter: ta.Optional[str],
+        number: ta.Union[str, bytes, ta.SupportsInt, None],
+) -> ta.Optional[ta.Tuple[str, int]]:
+    if letter:
+        if number is None:
+            number = 0
+
+        letter = letter.lower()
+        if letter == 'alpha':
+            letter = 'a'
+        elif letter == 'beta':
+            letter = 'b'
+        elif letter in ['c', 'pre', 'preview']:
+            letter = 'rc'
+        elif letter in ['rev', 'r']:
+            letter = 'post'
+
+        return letter, int(number)
+    if not letter and number:
+        letter = 'post'
+        return letter, int(number)
+
+    return None
+
+
+_local_version_separators = re.compile(r'[\._-]')
+
+
+def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[VersionLocalType]:
+    if local is not None:
+        return tuple(
+            part.lower() if not part.isdigit() else int(part)
+            for part in _local_version_separators.split(local)
+        )
+    return None
+
+
+def _version_cmpkey(
+    epoch: int,
+    release: ta.Tuple[int, ...],
+    pre: ta.Optional[ta.Tuple[str, int]],
+    post: ta.Optional[ta.Tuple[str, int]],
+    dev: ta.Optional[ta.Tuple[str, int]],
+    local: ta.Optional[VersionLocalType],
+) -> VersionCmpKey:
+    _release = tuple(reversed(list(itertools.dropwhile(lambda x: x == 0, reversed(release)))))
+
+    if pre is None and post is None and dev is not None:
+        _pre: VersionCmpPrePostDevType = NegativeInfinityVersion
+    elif pre is None:
+        _pre = InfinityVersion
+    else:
+        _pre = pre
+
+    if post is None:
+        _post: VersionCmpPrePostDevType = NegativeInfinityVersion
+    else:
+        _post = post
+
+    if dev is None:
+        _dev: VersionCmpPrePostDevType = InfinityVersion
+    else:
+        _dev = dev
+
+    if local is None:
+        _local: VersionCmpLocalType = NegativeInfinityVersion
+    else:
+        _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinityVersion, i) for i in local)
+
+    return epoch, _release, _pre, _post, _dev, _local
+
+
+##
+
+
+def canonicalize_version(
+        version: ta.Union[Version, str],
+        *,
+        strip_trailing_zero: bool = True,
+) -> str:
+    if isinstance(version, str):
+        try:
+            parsed = Version(version)
+        except InvalidVersion:
+            return version
+    else:
+        parsed = version
+
+    parts = []
+
+    if parsed.epoch != 0:
+        parts.append(f'{parsed.epoch}!')
+
+    release_segment = '.'.join(str(x) for x in parsed.release)
+    if strip_trailing_zero:
+        release_segment = re.sub(r'(\.0)+$', '', release_segment)
+    parts.append(release_segment)
+
+    if parsed.pre is not None:
+        parts.append(''.join(str(x) for x in parsed.pre))
+
+    if parsed.post is not None:
+        parts.append(f'.post{parsed.post}')
+
+    if parsed.dev is not None:
+        parts.append(f'.dev{parsed.dev}')
+
+    if parsed.local is not None:
+        parts.append(f'+{parsed.local}')
+
+    return ''.join(parts)
+
+
+########################################
+# ../../../omcore/argparse/parsers.py
+
+
+##
+
+
+@dc.dataclass(eq=False)
+class ArgparseArg:
+    args: ta.Sequence[ta.Any]
+    kwargs: ta.Mapping[str, ta.Any]
+    group: ta.Optional[str] = None
+    dest: ta.Optional[str] = None
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return getattr(instance.args, self.dest)  # type: ignore
+
+
+def argparse_arg(*args, **kwargs) -> ArgparseArg:
+    return ArgparseArg(
+        args=args,
+        group=kwargs.pop('group', None),
+        kwargs=kwargs,
+    )
+
+
+def argparse_arg_(*args, **kwargs) -> ta.Any:
+    return argparse_arg(*args, **kwargs)
+
+
+#
+
+
+@dc.dataclass(eq=False)
+class ArgparseCmd:
+    name: str
+    fn: ArgparseCmdFn
+    args: ta.Sequence[ArgparseArg] = ()  # noqa
+
+    # _: dc.KW_ONLY
+
+    aliases: ta.Optional[ta.Sequence[str]] = None
+    parent: ta.Optional['ArgparseCmd'] = None
+    accepts_unknown: bool = False
+    default: bool = False
+
+    no_help: bool = False
+
+    def __post_init__(self) -> None:
+        def check_name(s: str) -> None:
+            check.isinstance(s, str)
+            check.not_in('_', s)
+            check.not_empty(s)
+
+        check_name(self.name)
+        check.arg(callable(self.fn))
+        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
+
+        check.not_isinstance(self.aliases, str)
+        for a in self.aliases or []:
+            check_name(a)
+        check.isinstance(self.parent, (ArgparseCmd, type(None)))
+        check.isinstance(self.accepts_unknown, bool)
+
+        functools.update_wrapper(self, self.fn)
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return dc.replace(self, fn=self.fn.__get__(instance, owner))  # noqa
+
+    def __call__(self, *args, **kwargs) -> ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]:
+        return self.fn(*args, **kwargs)
+
+
+def argparse_cmd(
+        *args: ArgparseArg,
+        name: ta.Optional[str] = None,
+
+        aliases: ta.Optional[ta.Iterable[str]] = None,
+        parent: ta.Optional[ArgparseCmd] = None,
+        accepts_unknown: bool = False,
+        default: bool = False,
+
+        no_help: bool = False,
+) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
+    for arg in args:
+        check.isinstance(arg, ArgparseArg)
+    check.isinstance(name, (str, type(None)))
+
+    check.isinstance(parent, (ArgparseCmd, type(None)))
+    check.not_isinstance(aliases, str)
+    check.isinstance(default, bool)
+
+    def inner(fn):
+        return ArgparseCmd(
+            (name if name is not None else fn.__name__).replace('_', '-'),
+            fn,
+            args,
+
+            aliases=tuple(aliases) if aliases is not None else None,
+            parent=parent,
+            accepts_unknown=accepts_unknown,
+            default=default,
+
+            no_help=no_help,
+        )
+
+    return inner
+
+
+##
+
+
+def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
+    if ann is str:
+        return {}
+    elif ann is int:
+        return {'type': int}
+    elif ann is bool:
+        return {'action': 'store_true'}
+    elif ann is list:
+        return {'action': 'append'}
+    elif is_optional_alias(ann):
+        return _get_argparse_arg_ann_kwargs(get_optional_alias_arg(ann))
+    else:
+        raise TypeError(ann)
+
+
+class _ArgparseParserClassAnnotationBox:
+    def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
+        super().__init__()
+
+        self.__annotations__ = annotations  # type: ignore
+
+
+def configure_argparse_parser_class_parser(
+        cls: type,
+        parser: ta.Optional[argparse.ArgumentParser] = None,
+) -> argparse.ArgumentParser:
+    ns = cls.__dict__
+    objs = {}
+    mro = cls.__mro__[::-1]
+    for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
+        bseen = set()  # type: ignore
+        for k, v in bns.items():
+            if isinstance(v, (ArgparseCmd, ArgparseArg)):
+                check.not_in(v, bseen)
+                bseen.add(v)
+                objs[k] = v
+            elif k in objs:
+                del [k]
+
+    #
+
+    anns = ta.get_type_hints(_ArgparseParserClassAnnotationBox({
+        **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
+        **ns.get('__annotations__', {}),
+    }), globalns=ns.get('__globals__', {}))
+
+    #
+
+    if parser is None:
+        parser = argparse.ArgumentParser()
+
+    #
+
+    subparsers = parser.add_subparsers()
+
+    default_cmd: ta.Optional[ArgparseCmd] = None
+
+    for att, obj in objs.items():
+        if isinstance(obj, ArgparseCmd):
+            if obj.parent is not None:
+                raise NotImplementedError
+
+            if obj.default:
+                if default_cmd:
+                    raise TypeError(f'Already have a default command: {default_cmd}, {obj}')
+                default_cmd = obj
+
+            for cn in [obj.name, *(obj.aliases or [])]:
+                subparser = subparsers.add_parser(
+                    cn,
+                    **(dict(add_help=False) if obj.no_help else {}),  # type: ignore[arg-type]
+                )
+
+                for arg in (obj.args or []):
+                    if (
+                            len(arg.args) == 1 and
+                            isinstance(arg.args[0], str) and
+                            not (n := check.isinstance(arg.args[0], str)).startswith('-') and
+                            'metavar' not in arg.kwargs
+                    ):
+                        subparser.add_argument(
+                            n.replace('-', '_'),
+                            **arg.kwargs,
+                            metavar=n,
+                        )
+                    else:
+                        subparser.add_argument(*arg.args, **arg.kwargs)
+
+                subparser.set_defaults(_cmd=obj)
+
+        elif isinstance(obj, ArgparseArg):
+            if obj.group is not None:
+                # FIXME: add_argument_group
+                raise NotImplementedError
+
+            if att in anns:
+                ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
+                obj.kwargs = {**ann_kwargs, **obj.kwargs}
+
+            if not obj.dest:
+                if 'dest' in obj.kwargs:
+                    obj.dest = obj.kwargs['dest']
+                else:
+                    obj.dest = obj.kwargs['dest'] = att  # type: ignore
+
+            parser.add_argument(*obj.args, **obj.kwargs)
+
+        else:
+            raise TypeError(obj)
+
+    if default_cmd is not None:
+        parser.set_defaults(_cmd=default_cmd)
+
+    return parser
+
+
+##
+
+
+class ArgparseParserClass(Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        ns = cls.__dict__
+
+        if '_parser' in ns:
+            parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
+        else:
+            parser = argparse.ArgumentParser()
+
+        configure_argparse_parser_class_parser(cls, parser)
+
+        setattr(cls, '_parser', parser)
+
+    #
+
+    _parser: ta.ClassVar[argparse.ArgumentParser]
+
+    @classmethod
+    def get_parser(cls) -> argparse.ArgumentParser:
+        return cls._parser
+
+
+########################################
+# ../../../omcore/lite/json.py
+
+
+##
+
+
+JSON_PRETTY_INDENT = 2
+
+JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=JSON_PRETTY_INDENT,
+)
+
+json_dump_pretty: ta.Callable[..., None] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)
+json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
+
+
+##
+
+
+JSON_COMPACT_SEPARATORS = (',', ':')
+
+JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=None,
+    separators=JSON_COMPACT_SEPARATORS,
+)
+
+json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
+json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+##
+
+
+JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': JSON_PRETTY_KWARGS,
+    'compact': JSON_COMPACT_KWARGS,
+    None: {},
+}
+
+
+##
+
+
+def json_dump(
+        obj: ta.Any,
+        fp: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    json.dump(
+        obj,
+        fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dump_encode(
+        obj: ta.Any,
+        fp: ta.Any,
+        encoding: str = 'utf-8',
+        *,
+        errors: str = 'strict',
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    def write(s: str) -> int:
+        fp.write(s.encode(encoding, errors))
+        return len(s)
+
+    json.dump(
+        obj,
+        FnWriter(write),
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dumps(
+        obj: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> str:
+    return json.dumps(
+        obj,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+########################################
+# ../../../omcore/lite/maybes.py
+
+
+##
+
+
+@functools.total_ordering
+class Maybe(ta.Generic[T]):
+    class ValueNotPresentError(BaseException):
+        pass
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def present(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def must(self) -> T:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def __repr__(self) -> str:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __hash__(self) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __eq__(self, other) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __lt__(self, other) -> bool:
+        raise NotImplementedError
+
+    #
+
+    @ta.final
+    def __ne__(self, other):
+        return not (self == other)
+
+    @ta.final
+    def __iter__(self) -> ta.Iterator[T]:
+        if self.present:
+            yield self.must()
+
+    @ta.final
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError
+
+    #
+
+    @ta.final
+    def if_present(self, consumer: ta.Callable[[T], None]) -> None:
+        if self.present:
+            consumer(self.must())
+
+    @ta.final
+    def filter(self, predicate: ta.Callable[[T], bool]) -> 'Maybe[T]':
+        if self.present and predicate(self.must()):
+            return self
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def map(self, mapper: ta.Callable[[T], U]) -> 'Maybe[U]':
+        if self.present:
+            return Maybe.just(mapper(self.must()))
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def flat_map(self, mapper: ta.Callable[[T], 'Maybe[U]']) -> 'Maybe[U]':
+        if self.present:
+            if not isinstance(v := mapper(self.must()), Maybe):
+                raise TypeError(v)
+            return v
+        else:
+            return Maybe.empty()
+
+    @ta.final
+    def or_else(self, other: ta.Union[T, U]) -> ta.Union[T, U]:
+        if self.present:
+            return self.must()
+        else:
+            return other
+
+    @ta.final
+    def or_none(self) -> ta.Optional[T]:
+        if self.present:
+            return self.must()
+        else:
+            return None
+
+    @ta.final
+    def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:
+        if self.present:
+            return self.must()
+        else:
+            return supplier()
+
+    @ta.final
+    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
+        if self.present:
+            return self.must()
+        else:
+            raise exception_supplier()
+
+    #
+
+    @classmethod
+    def of_optional(cls, v: ta.Optional[T]) -> 'Maybe[T]':
+        if v is not None:
+            return cls.just(v)
+        else:
+            return cls.empty()
+
+    @classmethod
+    def just(cls, v: T) -> 'Maybe[T]':
+        return _JustMaybe(v)
+
+    _empty: ta.ClassVar['Maybe']
+
+    @classmethod
+    def empty(cls) -> 'Maybe[T]':
+        return Maybe._empty
+
+
+##
+
+
+class _Maybe(Maybe[T], Abstract):
+    def __lt__(self, other):
+        if not isinstance(other, _Maybe):
+            return NotImplemented
+        sp = self.present
+        op = other.present
+        if self.present and other.present:
+            return self.must() < other.must()
+        else:
+            return op and not sp
+
+
+@ta.final
+class _JustMaybe(_Maybe[T]):
+    __slots__ = ('_v', '_hash')
+
+    def __init__(self, v: T) -> None:
+        self._v = v
+
+    @property
+    def present(self) -> bool:
+        return True
+
+    def must(self) -> T:
+        return self._v
+
+    #
+
+    def __repr__(self) -> str:
+        return f'just({self._v!r})'
+
+    _hash: int
+
+    def __hash__(self) -> int:
+        try:
+            return self._hash
+        except AttributeError:
+            pass
+        h = self._hash = hash((_JustMaybe, self._v))
+        return h
+
+    def __eq__(self, other):
+        return (
+            self.__class__ is other.__class__ and
+            self._v == other._v  # noqa
+        )
+
+
+@ta.final
+class _EmptyMaybe(_Maybe[T]):
+    __slots__ = ()
+
+    @property
+    def present(self) -> bool:
+        return False
+
+    def must(self) -> T:
+        raise Maybe.ValueNotPresentError
+
+    #
+
+    def __repr__(self) -> str:
+        return 'empty()'
+
+    def __hash__(self) -> int:
+        return hash(_EmptyMaybe)
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__
+
+
+Maybe._empty = _EmptyMaybe()  # noqa
+
+
+##
+
+
+setattr(Maybe, 'just', _JustMaybe)  # noqa
+setattr(Maybe, 'empty', functools.partial(operator.attrgetter('_empty'), Maybe))
+
+
+########################################
+# ../../../omcore/lite/runtime.py
+
+
+##
+
+
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
+
+
+LITE_REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_lite_runtime_version() -> None:
+    if sys.version_info < LITE_REQUIRED_PYTHON_VERSION:
+        raise OSError(f'Requires python {LITE_REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
+# ../../../omcore/lite/timeouts.py
+"""
+TODO:
+ - Event (/ Predicate)
+"""
+
+
+##
+
+
+class Timeout(Abstract):
+    @property
+    @abc.abstractmethod
+    def can_expire(self) -> bool:
+        """Indicates whether or not this timeout will ever expire."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def expired(self) -> bool:
+        """Return whether or not this timeout has expired."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def remaining(self) -> float:
+        """Returns the time (in seconds) remaining until the timeout expires. May be negative and/or infinite."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __call__(self) -> float:
+        """Returns the time (in seconds) remaining until the timeout expires, or raises if the timeout has expired."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def or_(self, o: ta.Any) -> ta.Any:
+        """Evaluates time remaining via remaining() if this timeout can expire, otherwise returns `o`."""
+
+        raise NotImplementedError
+
+    #
+
+    @classmethod
+    def _now(cls) -> float:
+        return time.monotonic()
+
+    #
+
+    class DEFAULT:  # Noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    class _NOT_SPECIFIED:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    @classmethod
+    def of(
+            cls,
+            obj: TimeoutLike,
+            default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
+    ) -> 'Timeout':
+        if isinstance(obj, bool):
+            if obj:
+                obj = Timeout.DEFAULT
+            else:
+                obj = None
+
+        if obj is None:
+            return InfiniteTimeout()
+
+        if isinstance(obj, Timeout):
+            return obj
+
+        if isinstance(obj, (float, int)):
+            return DeadlineTimeout(cls._now() + obj)
+
+        # if isinstance(obj, CanInt):
+        #     return DeadlineTimeout(cls._now() + int(obj))
+
+        if isinstance(obj, CanFloat):
+            return DeadlineTimeout(cls._now() + float(obj))
+
+        if isinstance(obj, ta.Iterable):
+            return CompositeTimeout(*[Timeout.of(c) for c in obj])
+
+        if obj is Timeout.DEFAULT:
+            if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
+                raise RuntimeError('Must specify a default timeout')
+
+            else:
+                return Timeout.of(default)  # type: ignore[arg-type]
+
+        raise TypeError(obj)
+
+    @classmethod
+    def of_deadline(cls, deadline: float) -> 'DeadlineTimeout':
+        return DeadlineTimeout(deadline)
+
+    @classmethod
+    def of_predicate(cls, expired_fn: ta.Callable[[], bool]) -> 'PredicateTimeout':
+        return PredicateTimeout(expired_fn)
+
+
+class DeadlineTimeout(Timeout):
+    def __init__(
+            self,
+            deadline: float,
+            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
+    ) -> None:
+        super().__init__()
+
+        self.deadline = deadline
+        self.exc = exc
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.deadline!r}, {self.exc!r})'
+
+    @property
+    def can_expire(self) -> bool:
+        return True
+
+    def expired(self) -> bool:
+        return not (self.remaining() > 0)
+
+    def remaining(self) -> float:
+        return self.deadline - self._now()
+
+    def __call__(self) -> float:
+        if (rem := self.remaining()) > 0:
+            return rem
+        raise self.exc
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        return self()
+
+
+class InfiniteTimeout(Timeout):
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}()'
+
+    @property
+    def can_expire(self) -> bool:
+        return False
+
+    def expired(self) -> bool:
+        return False
+
+    def remaining(self) -> float:
+        return float('inf')
+
+    def __call__(self) -> float:
+        return float('inf')
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        return o
+
+
+class CompositeTimeout(Timeout):
+    def __init__(self, *children: Timeout) -> None:
+        super().__init__()
+
+        self.children = children
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.children!r})'
+
+    @property
+    def can_expire(self) -> bool:
+        return any(c.can_expire for c in self.children)
+
+    def expired(self) -> bool:
+        return any(c.expired() for c in self.children)
+
+    def remaining(self) -> float:
+        return min(c.remaining() for c in self.children)
+
+    def __call__(self) -> float:
+        return min(c() for c in self.children)
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        if self.can_expire:
+            return self()
+        return o
+
+
+class PredicateTimeout(Timeout):
+    def __init__(
+            self,
+            expired_fn: ta.Callable[[], bool],
+            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
+    ) -> None:
+        super().__init__()
+
+        self.expired_fn = expired_fn
+        self.exc = exc
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.expired_fn!r}, {self.exc!r})'
+
+    @property
+    def can_expire(self) -> bool:
+        return True
+
+    def expired(self) -> bool:
+        return self.expired_fn()
+
+    def remaining(self) -> float:
+        return float('inf')
+
+    def __call__(self) -> float:
+        if not self.expired_fn():
+            return float('inf')
+        raise self.exc
+
+    def or_(self, o: ta.Any) -> ta.Any:
+        return self()
+
+
+########################################
+# ../../../omcore/logs/protocols.py
+
+
+##
+
+
+@ta.runtime_checkable
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
 
 
 ########################################
@@ -2548,957 +3392,7 @@ class SpecifierSet(BaseSpecifier):
 
 
 ########################################
-# ../../../omlish/argparse/parsers.py
-
-
-##
-
-
-@dc.dataclass(eq=False)
-class ArgparseArg:
-    args: ta.Sequence[ta.Any]
-    kwargs: ta.Mapping[str, ta.Any]
-    group: ta.Optional[str] = None
-    dest: ta.Optional[str] = None
-
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        return getattr(instance.args, self.dest)  # type: ignore
-
-
-def argparse_arg(*args, **kwargs) -> ArgparseArg:
-    return ArgparseArg(
-        args=args,
-        group=kwargs.pop('group', None),
-        kwargs=kwargs,
-    )
-
-
-def argparse_arg_(*args, **kwargs) -> ta.Any:
-    return argparse_arg(*args, **kwargs)
-
-
-#
-
-
-@dc.dataclass(eq=False)
-class ArgparseCmd:
-    name: str
-    fn: ArgparseCmdFn
-    args: ta.Sequence[ArgparseArg] = ()  # noqa
-
-    # _: dc.KW_ONLY
-
-    aliases: ta.Optional[ta.Sequence[str]] = None
-    parent: ta.Optional['ArgparseCmd'] = None
-    accepts_unknown: bool = False
-    default: bool = False
-
-    no_help: bool = False
-
-    def __post_init__(self) -> None:
-        def check_name(s: str) -> None:
-            check.isinstance(s, str)
-            check.not_in('_', s)
-            check.not_empty(s)
-
-        check_name(self.name)
-        check.arg(callable(self.fn))
-        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
-
-        check.not_isinstance(self.aliases, str)
-        for a in self.aliases or []:
-            check_name(a)
-        check.isinstance(self.parent, (ArgparseCmd, type(None)))
-        check.isinstance(self.accepts_unknown, bool)
-
-        functools.update_wrapper(self, self.fn)
-
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        return dc.replace(self, fn=self.fn.__get__(instance, owner))  # noqa
-
-    def __call__(self, *args, **kwargs) -> ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]:
-        return self.fn(*args, **kwargs)
-
-
-def argparse_cmd(
-        *args: ArgparseArg,
-        name: ta.Optional[str] = None,
-
-        aliases: ta.Optional[ta.Iterable[str]] = None,
-        parent: ta.Optional[ArgparseCmd] = None,
-        accepts_unknown: bool = False,
-        default: bool = False,
-
-        no_help: bool = False,
-) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
-    for arg in args:
-        check.isinstance(arg, ArgparseArg)
-    check.isinstance(name, (str, type(None)))
-
-    check.isinstance(parent, (ArgparseCmd, type(None)))
-    check.not_isinstance(aliases, str)
-    check.isinstance(default, bool)
-
-    def inner(fn):
-        return ArgparseCmd(
-            (name if name is not None else fn.__name__).replace('_', '-'),
-            fn,
-            args,
-
-            aliases=tuple(aliases) if aliases is not None else None,
-            parent=parent,
-            accepts_unknown=accepts_unknown,
-            default=default,
-
-            no_help=no_help,
-        )
-
-    return inner
-
-
-##
-
-
-def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
-    if ann is str:
-        return {}
-    elif ann is int:
-        return {'type': int}
-    elif ann is bool:
-        return {'action': 'store_true'}
-    elif ann is list:
-        return {'action': 'append'}
-    elif is_optional_alias(ann):
-        return _get_argparse_arg_ann_kwargs(get_optional_alias_arg(ann))
-    else:
-        raise TypeError(ann)
-
-
-class _ArgparseParserClassAnnotationBox:
-    def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
-        super().__init__()
-
-        self.__annotations__ = annotations  # type: ignore
-
-
-def configure_argparse_parser_class_parser(
-        cls: type,
-        parser: ta.Optional[argparse.ArgumentParser] = None,
-) -> argparse.ArgumentParser:
-    ns = cls.__dict__
-    objs = {}
-    mro = cls.__mro__[::-1]
-    for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
-        bseen = set()  # type: ignore
-        for k, v in bns.items():
-            if isinstance(v, (ArgparseCmd, ArgparseArg)):
-                check.not_in(v, bseen)
-                bseen.add(v)
-                objs[k] = v
-            elif k in objs:
-                del [k]
-
-    #
-
-    anns = ta.get_type_hints(_ArgparseParserClassAnnotationBox({
-        **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
-        **ns.get('__annotations__', {}),
-    }), globalns=ns.get('__globals__', {}))
-
-    #
-
-    if parser is None:
-        parser = argparse.ArgumentParser()
-
-    #
-
-    subparsers = parser.add_subparsers()
-
-    default_cmd: ta.Optional[ArgparseCmd] = None
-
-    for att, obj in objs.items():
-        if isinstance(obj, ArgparseCmd):
-            if obj.parent is not None:
-                raise NotImplementedError
-
-            if obj.default:
-                if default_cmd:
-                    raise TypeError(f'Already have a default command: {default_cmd}, {obj}')
-                default_cmd = obj
-
-            for cn in [obj.name, *(obj.aliases or [])]:
-                subparser = subparsers.add_parser(
-                    cn,
-                    **(dict(add_help=False) if obj.no_help else {}),  # type: ignore[arg-type]
-                )
-
-                for arg in (obj.args or []):
-                    if (
-                            len(arg.args) == 1 and
-                            isinstance(arg.args[0], str) and
-                            not (n := check.isinstance(arg.args[0], str)).startswith('-') and
-                            'metavar' not in arg.kwargs
-                    ):
-                        subparser.add_argument(
-                            n.replace('-', '_'),
-                            **arg.kwargs,
-                            metavar=n,
-                        )
-                    else:
-                        subparser.add_argument(*arg.args, **arg.kwargs)
-
-                subparser.set_defaults(_cmd=obj)
-
-        elif isinstance(obj, ArgparseArg):
-            if obj.group is not None:
-                # FIXME: add_argument_group
-                raise NotImplementedError
-
-            if att in anns:
-                ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
-                obj.kwargs = {**ann_kwargs, **obj.kwargs}
-
-            if not obj.dest:
-                if 'dest' in obj.kwargs:
-                    obj.dest = obj.kwargs['dest']
-                else:
-                    obj.dest = obj.kwargs['dest'] = att  # type: ignore
-
-            parser.add_argument(*obj.args, **obj.kwargs)
-
-        else:
-            raise TypeError(obj)
-
-    if default_cmd is not None:
-        parser.set_defaults(_cmd=default_cmd)
-
-    return parser
-
-
-##
-
-
-class ArgparseParserClass(Abstract):
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        ns = cls.__dict__
-
-        if '_parser' in ns:
-            parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
-        else:
-            parser = argparse.ArgumentParser()
-
-        configure_argparse_parser_class_parser(cls, parser)
-
-        setattr(cls, '_parser', parser)
-
-    #
-
-    _parser: ta.ClassVar[argparse.ArgumentParser]
-
-    @classmethod
-    def get_parser(cls) -> argparse.ArgumentParser:
-        return cls._parser
-
-
-########################################
-# ../../../omlish/lite/json.py
-
-
-##
-
-
-JSON_PRETTY_INDENT = 2
-
-JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=JSON_PRETTY_INDENT,
-)
-
-json_dump_pretty: ta.Callable[..., None] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)
-json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
-
-
-##
-
-
-JSON_COMPACT_SEPARATORS = (',', ':')
-
-JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=None,
-    separators=JSON_COMPACT_SEPARATORS,
-)
-
-json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
-json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
-
-
-##
-
-
-JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
-    'pretty': JSON_PRETTY_KWARGS,
-    'compact': JSON_COMPACT_KWARGS,
-    None: {},
-}
-
-
-##
-
-
-def json_dump(
-        obj: ta.Any,
-        fp: ta.Any,
-        *,
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> None:
-    json.dump(
-        obj,
-        fp,
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
-
-
-def json_dump_encode(
-        obj: ta.Any,
-        fp: ta.Any,
-        encoding: str = 'utf-8',
-        *,
-        errors: str = 'strict',
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> None:
-    def write(s: str) -> int:
-        fp.write(s.encode(encoding, errors))
-        return len(s)
-
-    json.dump(
-        obj,
-        FnWriter(write),
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
-
-
-def json_dumps(
-        obj: ta.Any,
-        *,
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> str:
-    return json.dumps(
-        obj,
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
-
-
-########################################
-# ../../../omlish/lite/maybes.py
-
-
-##
-
-
-@functools.total_ordering
-class Maybe(ta.Generic[T]):
-    class ValueNotPresentError(BaseException):
-        pass
-
-    #
-
-    @property
-    @abc.abstractmethod
-    def present(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def must(self) -> T:
-        raise NotImplementedError
-
-    #
-
-    @abc.abstractmethod
-    def __repr__(self) -> str:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __hash__(self) -> int:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __eq__(self, other) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __lt__(self, other) -> bool:
-        raise NotImplementedError
-
-    #
-
-    @ta.final
-    def __ne__(self, other):
-        return not (self == other)
-
-    @ta.final
-    def __iter__(self) -> ta.Iterator[T]:
-        if self.present:
-            yield self.must()
-
-    @ta.final
-    def __bool__(self) -> ta.NoReturn:
-        raise TypeError
-
-    #
-
-    @ta.final
-    def if_present(self, consumer: ta.Callable[[T], None]) -> None:
-        if self.present:
-            consumer(self.must())
-
-    @ta.final
-    def filter(self, predicate: ta.Callable[[T], bool]) -> 'Maybe[T]':
-        if self.present and predicate(self.must()):
-            return self
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def map(self, mapper: ta.Callable[[T], U]) -> 'Maybe[U]':
-        if self.present:
-            return Maybe.just(mapper(self.must()))
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def flat_map(self, mapper: ta.Callable[[T], 'Maybe[U]']) -> 'Maybe[U]':
-        if self.present:
-            if not isinstance(v := mapper(self.must()), Maybe):
-                raise TypeError(v)
-            return v
-        else:
-            return Maybe.empty()
-
-    @ta.final
-    def or_else(self, other: ta.Union[T, U]) -> ta.Union[T, U]:
-        if self.present:
-            return self.must()
-        else:
-            return other
-
-    @ta.final
-    def or_none(self) -> ta.Optional[T]:
-        if self.present:
-            return self.must()
-        else:
-            return None
-
-    @ta.final
-    def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:
-        if self.present:
-            return self.must()
-        else:
-            return supplier()
-
-    @ta.final
-    def or_else_raise(self, exception_supplier: ta.Callable[[], Exception]) -> T:
-        if self.present:
-            return self.must()
-        else:
-            raise exception_supplier()
-
-    #
-
-    @classmethod
-    def of_optional(cls, v: ta.Optional[T]) -> 'Maybe[T]':
-        if v is not None:
-            return cls.just(v)
-        else:
-            return cls.empty()
-
-    @classmethod
-    def just(cls, v: T) -> 'Maybe[T]':
-        return _JustMaybe(v)
-
-    _empty: ta.ClassVar['Maybe']
-
-    @classmethod
-    def empty(cls) -> 'Maybe[T]':
-        return Maybe._empty
-
-
-##
-
-
-class _Maybe(Maybe[T], Abstract):
-    def __lt__(self, other):
-        if not isinstance(other, _Maybe):
-            return NotImplemented
-        sp = self.present
-        op = other.present
-        if self.present and other.present:
-            return self.must() < other.must()
-        else:
-            return op and not sp
-
-
-@ta.final
-class _JustMaybe(_Maybe[T]):
-    __slots__ = ('_v', '_hash')
-
-    def __init__(self, v: T) -> None:
-        self._v = v
-
-    @property
-    def present(self) -> bool:
-        return True
-
-    def must(self) -> T:
-        return self._v
-
-    #
-
-    def __repr__(self) -> str:
-        return f'just({self._v!r})'
-
-    _hash: int
-
-    def __hash__(self) -> int:
-        try:
-            return self._hash
-        except AttributeError:
-            pass
-        h = self._hash = hash((_JustMaybe, self._v))
-        return h
-
-    def __eq__(self, other):
-        return (
-            self.__class__ is other.__class__ and
-            self._v == other._v  # noqa
-        )
-
-
-@ta.final
-class _EmptyMaybe(_Maybe[T]):
-    __slots__ = ()
-
-    @property
-    def present(self) -> bool:
-        return False
-
-    def must(self) -> T:
-        raise Maybe.ValueNotPresentError
-
-    #
-
-    def __repr__(self) -> str:
-        return 'empty()'
-
-    def __hash__(self) -> int:
-        return hash(_EmptyMaybe)
-
-    def __eq__(self, other):
-        return self.__class__ is other.__class__
-
-
-Maybe._empty = _EmptyMaybe()  # noqa
-
-
-##
-
-
-setattr(Maybe, 'just', _JustMaybe)  # noqa
-setattr(Maybe, 'empty', functools.partial(operator.attrgetter('_empty'), Maybe))
-
-
-########################################
-# ../../../omlish/lite/runtime.py
-
-
-##
-
-
-@cached_nullary
-def is_debugger_attached() -> bool:
-    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
-
-
-LITE_REQUIRED_PYTHON_VERSION = (3, 8)
-
-
-def check_lite_runtime_version() -> None:
-    if sys.version_info < LITE_REQUIRED_PYTHON_VERSION:
-        raise OSError(f'Requires python {LITE_REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
-
-
-########################################
-# ../../../omlish/lite/timeouts.py
-"""
-TODO:
- - Event (/ Predicate)
-"""
-
-
-##
-
-
-class Timeout(Abstract):
-    @property
-    @abc.abstractmethod
-    def can_expire(self) -> bool:
-        """Indicates whether or not this timeout will ever expire."""
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def expired(self) -> bool:
-        """Return whether or not this timeout has expired."""
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def remaining(self) -> float:
-        """Returns the time (in seconds) remaining until the timeout expires. May be negative and/or infinite."""
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __call__(self) -> float:
-        """Returns the time (in seconds) remaining until the timeout expires, or raises if the timeout has expired."""
-
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def or_(self, o: ta.Any) -> ta.Any:
-        """Evaluates time remaining via remaining() if this timeout can expire, otherwise returns `o`."""
-
-        raise NotImplementedError
-
-    #
-
-    @classmethod
-    def _now(cls) -> float:
-        return time.monotonic()
-
-    #
-
-    class DEFAULT:  # Noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    class _NOT_SPECIFIED:  # noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    @classmethod
-    def of(
-            cls,
-            obj: TimeoutLike,
-            default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
-    ) -> 'Timeout':
-        if isinstance(obj, bool):
-            if obj:
-                obj = Timeout.DEFAULT
-            else:
-                obj = None
-
-        if obj is None:
-            return InfiniteTimeout()
-
-        if isinstance(obj, Timeout):
-            return obj
-
-        if isinstance(obj, (float, int)):
-            return DeadlineTimeout(cls._now() + obj)
-
-        # if isinstance(obj, CanInt):
-        #     return DeadlineTimeout(cls._now() + int(obj))
-
-        if isinstance(obj, CanFloat):
-            return DeadlineTimeout(cls._now() + float(obj))
-
-        if isinstance(obj, ta.Iterable):
-            return CompositeTimeout(*[Timeout.of(c) for c in obj])
-
-        if obj is Timeout.DEFAULT:
-            if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
-                raise RuntimeError('Must specify a default timeout')
-
-            else:
-                return Timeout.of(default)  # type: ignore[arg-type]
-
-        raise TypeError(obj)
-
-    @classmethod
-    def of_deadline(cls, deadline: float) -> 'DeadlineTimeout':
-        return DeadlineTimeout(deadline)
-
-    @classmethod
-    def of_predicate(cls, expired_fn: ta.Callable[[], bool]) -> 'PredicateTimeout':
-        return PredicateTimeout(expired_fn)
-
-
-class DeadlineTimeout(Timeout):
-    def __init__(
-            self,
-            deadline: float,
-            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
-    ) -> None:
-        super().__init__()
-
-        self.deadline = deadline
-        self.exc = exc
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.deadline!r}, {self.exc!r})'
-
-    @property
-    def can_expire(self) -> bool:
-        return True
-
-    def expired(self) -> bool:
-        return not (self.remaining() > 0)
-
-    def remaining(self) -> float:
-        return self.deadline - self._now()
-
-    def __call__(self) -> float:
-        if (rem := self.remaining()) > 0:
-            return rem
-        raise self.exc
-
-    def or_(self, o: ta.Any) -> ta.Any:
-        return self()
-
-
-class InfiniteTimeout(Timeout):
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}()'
-
-    @property
-    def can_expire(self) -> bool:
-        return False
-
-    def expired(self) -> bool:
-        return False
-
-    def remaining(self) -> float:
-        return float('inf')
-
-    def __call__(self) -> float:
-        return float('inf')
-
-    def or_(self, o: ta.Any) -> ta.Any:
-        return o
-
-
-class CompositeTimeout(Timeout):
-    def __init__(self, *children: Timeout) -> None:
-        super().__init__()
-
-        self.children = children
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.children!r})'
-
-    @property
-    def can_expire(self) -> bool:
-        return any(c.can_expire for c in self.children)
-
-    def expired(self) -> bool:
-        return any(c.expired() for c in self.children)
-
-    def remaining(self) -> float:
-        return min(c.remaining() for c in self.children)
-
-    def __call__(self) -> float:
-        return min(c() for c in self.children)
-
-    def or_(self, o: ta.Any) -> ta.Any:
-        if self.can_expire:
-            return self()
-        return o
-
-
-class PredicateTimeout(Timeout):
-    def __init__(
-            self,
-            expired_fn: ta.Callable[[], bool],
-            exc: ta.Union[ta.Type[BaseException], BaseException] = TimeoutError,
-    ) -> None:
-        super().__init__()
-
-        self.expired_fn = expired_fn
-        self.exc = exc
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.expired_fn!r}, {self.exc!r})'
-
-    @property
-    def can_expire(self) -> bool:
-        return True
-
-    def expired(self) -> bool:
-        return self.expired_fn()
-
-    def remaining(self) -> float:
-        return float('inf')
-
-    def __call__(self) -> float:
-        if not self.expired_fn():
-            return float('inf')
-        raise self.exc
-
-    def or_(self, o: ta.Any) -> ta.Any:
-        return self()
-
-
-########################################
-# ../../../omlish/logs/protocols.py
-
-
-##
-
-
-@ta.runtime_checkable
-class LoggerLike(ta.Protocol):
-    """Satisfied by both our Logger and stdlib logging.Logger."""
-
-    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
-
-    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
-
-    #
-
-    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-
-########################################
-# ../types.py
-
-
-##
-
-
-# See https://peps.python.org/pep-3149/
-INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
-    ('debug', 'd'),
-    ('threaded', 't'),
-])
-
-INTERP_OPT_ATTRS_BY_GLYPH: ta.Mapping[str, str] = collections.OrderedDict(
-    (g, a) for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items()
-)
-
-
-@dc.dataclass(frozen=True)
-class InterpOpts:
-    threaded: bool = False
-    debug: bool = False
-
-    def __str__(self) -> str:
-        return ''.join(g for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items() if getattr(self, a))
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpOpts':
-        return cls(**{INTERP_OPT_ATTRS_BY_GLYPH[g]: True for g in s})
-
-    @classmethod
-    def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
-        kw = {}
-        while s and (a := INTERP_OPT_ATTRS_BY_GLYPH.get(s[-1])):
-            s, kw[a] = s[:-1], True
-        return s, cls(**kw)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class InterpVersion:
-    version: Version
-    opts: InterpOpts
-
-    def __str__(self) -> str:
-        return str(self.version) + str(self.opts)
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpVersion':
-        s, o = InterpOpts.parse_suffix(s)
-        v = Version(s)
-        return cls(
-            version=v,
-            opts=o,
-        )
-
-    @classmethod
-    def try_parse(cls, s: str) -> ta.Optional['InterpVersion']:
-        try:
-            return cls.parse(s)
-        except (KeyError, InvalidVersion):
-            return None
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class InterpSpecifier:
-    specifier: Specifier
-    opts: InterpOpts
-
-    def __str__(self) -> str:
-        return str(self.specifier) + str(self.opts)
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpSpecifier':
-        s, o = InterpOpts.parse_suffix(s)
-        if not any(s.startswith(o) for o in Specifier.OPERATORS):
-            if s.count('.') < 2:
-                s = '~=' + s + '.0'
-            else:
-                s = '==' + s
-        return cls(
-            specifier=Specifier(s),
-            opts=o,
-        )
-
-    def contains(self, iv: InterpVersion) -> bool:
-        return self.specifier.contains(iv.version) and self.opts == iv.opts
-
-    def __contains__(self, iv: InterpVersion) -> bool:
-        return self.contains(iv)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Interp:
-    exe: str
-    version: InterpVersion
-
-
-########################################
-# ../../../omlish/argparse/cli.py
+# ../../../omcore/argparse/cli.py
 """
 FIXME:
  - exit_on_error lol
@@ -3602,7 +3496,7 @@ class ArgparseCli(ArgparseParserClass, Abstract):
 
 
 ########################################
-# ../../../omlish/asyncs/asyncio/timeouts.py
+# ../../../omcore/asyncs/asyncio/timeouts.py
 
 
 ##
@@ -3618,7 +3512,7 @@ def asyncio_maybe_timeout(
 
 
 ########################################
-# ../../../omlish/lite/inject.py
+# ../../../omcore/lite/inject.py
 
 
 ###
@@ -4636,7 +4530,7 @@ inj = InjectionApi()
 
 
 ########################################
-# ../../../omlish/logs/std/json.py
+# ../../../omcore/logs/std/json.py
 """
 TODO:
  - translate json keys
@@ -4693,7 +4587,7 @@ class JsonLoggingFormatter(logging.Formatter):
 
 
 ########################################
-# ../../../omlish/subprocesses/run.py
+# ../../../omcore/subprocesses/run.py
 
 
 ##
@@ -4824,7 +4718,7 @@ class SubprocessRunnable(Abstract, ta.Generic[T]):
 
 
 ########################################
-# ../../../omlish/subprocesses/wrap.py
+# ../../../omcore/subprocesses/wrap.py
 """
 This bypasses debuggers attaching to spawned subprocess children that look like python processes. See:
 
@@ -4850,52 +4744,113 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 ########################################
-# ../providers/base.py
-"""
-TODO:
- - backends
-  - local builds
-  - deadsnakes?
-  - uv
- - loose versions
-"""
+# ../types.py
 
 
 ##
 
 
-class InterpProvider(Abstract):
-    name: ta.ClassVar[str]
+# See https://peps.python.org/pep-3149/
+INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
+    ('debug', 'd'),
+    ('threaded', 't'),
+])
 
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        if Abstract not in cls.__bases__ and 'name' not in cls.__dict__:
-            sfx = 'InterpProvider'
-            if not cls.__name__.endswith(sfx):
-                raise NameError(cls)
-            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
-
-    @abc.abstractmethod
-    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
-        raise NotImplementedError
-
-    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return []
-
-    async def install_version(self, version: InterpVersion) -> Interp:
-        raise TypeError
+INTERP_OPT_ATTRS_BY_GLYPH: ta.Mapping[str, str] = collections.OrderedDict(
+    (g, a) for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items()
+)
 
 
-InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
+@dc.dataclass(frozen=True)
+class InterpOpts:
+    threaded: bool = False
+    debug: bool = False
+
+    def __str__(self) -> str:
+        return ''.join(g for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items() if getattr(self, a))
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpOpts':
+        return cls(**{INTERP_OPT_ATTRS_BY_GLYPH[g]: True for g in s})
+
+    @classmethod
+    def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
+        kw = {}
+        while s and (a := INTERP_OPT_ATTRS_BY_GLYPH.get(s[-1])):
+            s, kw[a] = s[:-1], True
+        return s, cls(**kw)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpVersion:
+    version: Version
+    opts: InterpOpts
+
+    def __str__(self) -> str:
+        return str(self.version) + str(self.opts)
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpVersion':
+        s, o = InterpOpts.parse_suffix(s)
+        v = Version(s)
+        return cls(
+            version=v,
+            opts=o,
+        )
+
+    @classmethod
+    def try_parse(cls, s: str) -> ta.Optional['InterpVersion']:
+        try:
+            return cls.parse(s)
+        except (KeyError, InvalidVersion):
+            return None
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpSpecifier:
+    specifier: Specifier
+    opts: InterpOpts
+
+    def __str__(self) -> str:
+        return str(self.specifier) + str(self.opts)
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpSpecifier':
+        s, o = InterpOpts.parse_suffix(s)
+        if not any(s.startswith(o) for o in Specifier.OPERATORS):
+            if s.count('.') < 2:
+                s = '~=' + s + '.0'
+            else:
+                s = '==' + s
+        return cls(
+            specifier=Specifier(s),
+            opts=o,
+        )
+
+    def contains(self, iv: InterpVersion) -> bool:
+        return self.specifier.contains(iv.version) and self.opts == iv.opts
+
+    def __contains__(self, iv: InterpVersion) -> bool:
+        return self.contains(iv)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Interp:
+    exe: str
+    version: InterpVersion
 
 
 ########################################
-# ../../../omlish/logs/std/standard.py
+# ../../../omcore/logs/std/standard.py
 """
 TODO:
  - structured
@@ -5021,7 +4976,7 @@ def configure_standard_logging(
 
 
 ########################################
-# ../../../omlish/subprocesses/base.py
+# ../../../omcore/subprocesses/base.py
 
 
 ##
@@ -5234,98 +5189,52 @@ class BaseSubprocesses(Abstract):
 
 
 ########################################
-# ../resolvers.py
+# ../providers/base.py
+"""
+TODO:
+ - backends
+  - local builds
+  - deadsnakes?
+  - uv
+ - loose versions
+"""
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
-class InterpResolverProviders:
-    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
+class InterpProvider(Abstract):
+    name: ta.ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if Abstract not in cls.__bases__ and 'name' not in cls.__dict__:
+            sfx = 'InterpProvider'
+            if not cls.__name__.endswith(sfx):
+                raise NameError(cls)
+            setattr(cls, 'name', snake_case(cls.__name__[:-len(sfx)]))
+
+    @abc.abstractmethod
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Awaitable[ta.Sequence[InterpVersion]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_installed_version(self, version: InterpVersion) -> ta.Awaitable[Interp]:
+        raise NotImplementedError
+
+    async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return []
+
+    async def install_version(self, version: InterpVersion) -> Interp:
+        raise TypeError
 
 
-class InterpResolver:
-    def __init__(
-            self,
-            providers: InterpResolverProviders,
-    ) -> None:
-        super().__init__()
-
-        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
-
-    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
-        lst = [
-            (i, si)
-            for i, p in enumerate(self._providers.values())
-            for si in await p.get_installed_versions(spec)
-            if spec.contains(si)
-        ]
-
-        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
-        if not slst:
-            return None
-
-        bi, bv = slst[-1]
-        bp = list(self._providers.values())[bi]
-        return (bp, bv)
-
-    async def resolve(
-            self,
-            spec: InterpSpecifier,
-            *,
-            install: bool = False,
-    ) -> ta.Optional[Interp]:
-        tup = await self._resolve_installed(spec)
-        if tup is not None:
-            bp, bv = tup
-            return await bp.get_installed_version(bv)
-
-        if not install:
-            return None
-
-        tp = list(self._providers.values())[0]  # noqa
-
-        sv = sorted(
-            [s for s in await tp.get_installable_versions(spec) if s in spec],
-            key=lambda s: s.version,
-        )
-        if not sv:
-            return None
-
-        bv = sv[-1]
-        return await tp.install_version(bv)
-
-    async def list(self, spec: InterpSpecifier) -> None:
-        print('installed:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installed_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-        print()
-
-        print('installable:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in await p.get_installable_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
+InterpProviders = ta.NewType('InterpProviders', ta.Sequence[InterpProvider])
 
 
 ########################################
-# ../../../omlish/subprocesses/asyncs.py
+# ../../../omcore/subprocesses/asyncs.py
 
 
 ##
@@ -5426,7 +5335,98 @@ class AbstractAsyncSubprocesses(BaseSubprocesses, Abstract):
 
 
 ########################################
-# ../../../omlish/asyncs/asyncio/subprocesses.py
+# ../resolvers.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpResolverProviders:
+    providers: ta.Sequence[ta.Tuple[str, InterpProvider]]
+
+
+class InterpResolver:
+    def __init__(
+            self,
+            providers: InterpResolverProviders,
+    ) -> None:
+        super().__init__()
+
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers.providers)
+
+    async def _resolve_installed(self, spec: InterpSpecifier) -> ta.Optional[ta.Tuple[InterpProvider, InterpVersion]]:
+        lst = [
+            (i, si)
+            for i, p in enumerate(self._providers.values())
+            for si in await p.get_installed_versions(spec)
+            if spec.contains(si)
+        ]
+
+        slst = sorted(lst, key=lambda t: (-t[0], t[1].version))
+        if not slst:
+            return None
+
+        bi, bv = slst[-1]
+        bp = list(self._providers.values())[bi]
+        return (bp, bv)
+
+    async def resolve(
+            self,
+            spec: InterpSpecifier,
+            *,
+            install: bool = False,
+    ) -> ta.Optional[Interp]:
+        tup = await self._resolve_installed(spec)
+        if tup is not None:
+            bp, bv = tup
+            return await bp.get_installed_version(bv)
+
+        if not install:
+            return None
+
+        tp = list(self._providers.values())[0]  # noqa
+
+        sv = sorted(
+            [s for s in await tp.get_installable_versions(spec) if s in spec],
+            key=lambda s: s.version,
+        )
+        if not sv:
+            return None
+
+        bv = sv[-1]
+        return await tp.install_version(bv)
+
+    async def list(self, spec: InterpSpecifier) -> None:
+        print('installed:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installed_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+        print()
+
+        print('installable:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in await p.get_installable_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+
+########################################
+# ../../../omcore/asyncs/asyncio/subprocesses.py
 
 
 ##

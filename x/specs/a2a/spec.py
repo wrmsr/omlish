@@ -26,8 +26,8 @@ def _main() -> None:
 
     print(spec_src)
 
-    from omlish import check
-    from omlish.text import abnf
+    from omcore import check
+    from omcore.text import abnf
     from omxtra.specs.proto.abnf import proto3_grammar
 
     parsed = check.not_none(proto3_grammar().parse(spec_src))

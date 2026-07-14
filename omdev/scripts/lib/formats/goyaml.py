@@ -3,7 +3,7 @@
 # @om-lite
 # @om-script
 # @om-generated
-# @om-amalg-output ../../../../omlish/formats/yaml/goyaml/_amalg.py
+# @om-amalg-output ../../../../omcore/formats/yaml/goyaml/_amalg.py
 # @om-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP037 UP043 UP045
 import abc
@@ -31,19 +31,19 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../../lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
-            dict(path='errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
-            dict(path='tokens.py', sha1='e9744c171d982ea8b4a6ace5f937926d51d5ec30'),
-            dict(path='ast.py', sha1='5ae8fa62a717986ac45024d5988b626850ed1786'),
-            dict(path='scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
-            dict(path='parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
-            dict(path='decoding.py', sha1='5047d6c283348c2cd4265c955bb94651e971addd'),
-            dict(path='_amalg.py', sha1='85989224f581528c4a189dca142cb3ec086ecd3c'),
+            dict(path='errors.py', sha1='298b4d892d840ce98afb520143da35c56b98fb39'),
+            dict(path='tokens.py', sha1='5dcdedc1e6af386b069afcc83783d3003bad08a6'),
+            dict(path='ast.py', sha1='e64be33431c4289953d3dcd1173cbc098250fbf6'),
+            dict(path='scanning.py', sha1='39eb73d30dd9e15a4c877d0d6c0fb865d9271a34'),
+            dict(path='parsing.py', sha1='44f0fe4afe807936df127c67f9d52837012cf13d'),
+            dict(path='decoding.py', sha1='6d728ea8efc77625dbf3b4a135edf430602f70bb'),
+            dict(path='_amalg.py', sha1='c442d50504a5899fc39a9b739dc6518849ff3220'),
         ],
     )
 

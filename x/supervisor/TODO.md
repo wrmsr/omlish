@@ -2,7 +2,7 @@ main:
 
 - !! dynamic process group updates lol
   - supervisord diff_to_active, add_process_group, do_update, etc
-- supervisor (omlish) pidfile
+- supervisor (omcore) pidfile
 - process pidfiles
 - named instances
 - nested instances

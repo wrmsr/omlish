@@ -10,7 +10,6 @@ import json
 import os.path
 import typing as ta
 
-from omdev.home.paths import get_home_paths
 from omcore.argparse.cli import ArgparseCli
 from omcore.argparse.parsers import argparse_arg
 from omcore.argparse.parsers import argparse_cmd
@@ -21,6 +20,7 @@ from omcore.lite.marshal import ObjMarshalerManager
 from omcore.lite.marshal import ObjMarshalOptions
 from omcore.lite.pycharm import PycharmRemoteDebug
 from omcore.logs.modules import get_module_logger
+from omdev.home.paths import get_home_paths
 
 from .bootstrap import MainBootstrap
 from .bootstrap_ import main_bootstrap

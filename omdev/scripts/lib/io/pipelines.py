@@ -3,7 +3,7 @@
 # @om-lite
 # @om-script
 # @om-generated
-# @om-amalg-output ../../../../omlish/io/pipelines/_amalg.py
+# @om-amalg-output ../../../../omcore/io/pipelines/_amalg.py
 # @om-git-diff-omit
 # ruff: noqa: FURB188 PYI034 UP006 UP007 UP036 UP037 UP045 UP046
 import abc
@@ -32,48 +32,48 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
-def __omlish_amalg__():  # noqa
+def __om_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='errors.py', sha1='231f62c44c201a261f2a781bcc0060e997ecf33c'),
-            dict(path='../streambufs/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
+            dict(path='errors.py', sha1='42c3991496edf534c7a09d30cff8c6b919f80c50'),
+            dict(path='../streambufs/errors.py', sha1='6b04cc2e4ba5461692128938a2bd5c261486746b'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
-            dict(path='../../lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
+            dict(path='../../lite/bytes.py', sha1='5edf3e1dd70f26415154e8d352f0983aef2c6fc6'),
             dict(path='../../lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='../../logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
-            dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
-            dict(path='../streambufs/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
-            dict(path='../../logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
-            dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
-            dict(path='../../logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='asyncs.py', sha1='a78bd64bada44716809c19e95d6ca4a96f3a28d7'),
-            dict(path='bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
-            dict(path='drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),
-            dict(path='flow/types.py', sha1='4353968e5bd490f4121eadf9e391076bd2673f28'),
-            dict(path='handlers/fns.py', sha1='6dd1901ebdbdb31caeffab06d239f1c41e3f2726'),
-            dict(path='handlers/queues.py', sha1='f49d19c5dd7de77299bedbfb3a77a36479fd1edf'),
-            dict(path='sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
-            dict(path='../streambufs/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../streambufs/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='../streambufs/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
-            dict(path='../../logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
-            dict(path='../../logs/utils.py', sha1='f19e8f456172673b7418f3413f4ccef00a4b251c'),
-            dict(path='bytes/queues.py', sha1='59355ab251e83c3ef7fbdbfa923e09d45469ee17'),
-            dict(path='handlers/flatmap.py', sha1='118478ac94449a9a0b5ba44f5f3e8a5d69bb6f65'),
-            dict(path='../streambufs/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
-            dict(path='../streambufs/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
-            dict(path='../../logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
-            dict(path='../../logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../streambufs/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
-            dict(path='../../logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
-            dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='bytes/decoders.py', sha1='ed307472f3d443f38eb33c66e0cdde9f9f1f7a00'),
-            dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='31d5a34e9f3113da152cd694e63f2b7669e745c5'),
-            dict(path='_amalg.py', sha1='9133c93944973dd6cb229e63162628d519dc5ad4'),
+            dict(path='../../logs/levels.py', sha1='bd87ff6a281e361cbab4f205802187b2080044e6'),
+            dict(path='../../logs/warnings.py', sha1='03e6c5d0c4c25b51cdd225c029e652cdf741a51a'),
+            dict(path='core.py', sha1='629ab14961ca7b35893b7e5f1e781dcafb0beacb'),
+            dict(path='../streambufs/types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
+            dict(path='../../logs/infos.py', sha1='c6a4599ad727fbee7c3d8eb1bce80846f8106079'),
+            dict(path='../../logs/metrics/base.py', sha1='38429b7e804533da9a1dd356cf563ac4cff82aa2'),
+            dict(path='../../logs/protocols.py', sha1='2e13388c65699c4aa89f32b78be8496b94fc40bb'),
+            dict(path='asyncs.py', sha1='c0eb92ac287f81aca8d1d61e6e3ae9b0873a856b'),
+            dict(path='bytes/buffering.py', sha1='bf1d8923427f11b35a9ebde1e10944786c81262f'),
+            dict(path='drivers/metadata.py', sha1='fa174d01438db50305953e0f500d303c6a80faac'),
+            dict(path='flow/types.py', sha1='81ead96b6a9487fbda313e858d75701ebe2d5518'),
+            dict(path='handlers/fns.py', sha1='d3e3c43b3359572122b8cb9018c770441c598d48'),
+            dict(path='handlers/queues.py', sha1='0672c722e377d67369da3cb4a082b4816eb84875'),
+            dict(path='sched/types.py', sha1='ff77ef20dd7750c25af4ab4826de06afe3b53bac'),
+            dict(path='../streambufs/base.py', sha1='0f0cea0fe05f9d7b4669a7b3871bc78e12af98f6'),
+            dict(path='../streambufs/framing.py', sha1='de1f818064576e855f20b005ea7855a1fd5f3f56'),
+            dict(path='../streambufs/utils.py', sha1='62d7fce79bae738c199627668bdee8bb389efa1e'),
+            dict(path='../../logs/contexts.py', sha1='529adb527492309bf8cde342271ac6ea2ebbf8a1'),
+            dict(path='../../logs/utils.py', sha1='7dd07873ddd48f99bda0cf3837e01c4c7c4cc96c'),
+            dict(path='bytes/queues.py', sha1='0b6e9de9fc1ec723fd66c59a9e1d2bf510a2f719'),
+            dict(path='handlers/flatmap.py', sha1='221fb097b9f93fcff167a8aed30a909c9ca45b01'),
+            dict(path='../streambufs/direct.py', sha1='5a629d79aa7f618dce40e11c2609bc0dcd008599'),
+            dict(path='../streambufs/scanning.py', sha1='36411208b4e6515528f0310c7052b3faf2572b24'),
+            dict(path='../../logs/base.py', sha1='4195705c64f3ec1c4263c2c76c63351d9dacdd5c'),
+            dict(path='../../logs/std/records.py', sha1='fb1e2d887248cc24b0463156836d9965a06c8ab6'),
+            dict(path='../streambufs/segmented.py', sha1='ad3c91e91d7b91396c51549fc7578419b1c3d336'),
+            dict(path='../../logs/asyncs.py', sha1='6b444494a0512f7b7ea2c93be5c4a9868deb7251'),
+            dict(path='../../logs/std/loggers.py', sha1='144a96b3b190a5641f3b7cc2656d6ffa4e45b5a9'),
+            dict(path='bytes/decoders.py', sha1='4f0df234d6fba71e485378de06fa6c1f9276e6ef'),
+            dict(path='../../logs/modules.py', sha1='b51c2d4396854b515d29cee17f906d5cc47eb7f2'),
+            dict(path='drivers/asyncio.py', sha1='7c62aa82f0b3f8125c44b11f6424ca81d7ada46d'),
+            dict(path='_amalg.py', sha1='41c208295c50c3d65bc0576ff49203cedf4e3773'),
         ],
     )
 

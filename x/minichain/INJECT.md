@@ -1,6 +1,6 @@
 # Injection in minichain (and friends)
 
-**Read [`omlish/inject/README.md`](../../omlish/inject/README.md) first.** It covers the injector itself — keys,
+**Read [`omcore/inject/README.md`](../../omcore/inject/README.md) first.** It covers the injector itself — keys,
 bindings, providers, elements, injectors, scopes. This document covers everything *between* that API and writing
 internally-idiomatic wiring in this codebase: the conventions, the recurring composition patterns, and the sharp
 edges. minichain is currently the injector's heaviest user, but nothing here is minichain-specific — these are the

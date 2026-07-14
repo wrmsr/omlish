@@ -7,15 +7,15 @@ This is my 'production' codebase - code which has graduated from and powers my v
 It's organized into a handful of toplevel libraries - the `om*` directories - which are each independently installable
 and published to pypi.
 
-The toplevel libraries have no required dependencies besides each other - `omlish` in particular has none at all - but
+The toplevel libraries have no required dependencies besides each other - `omcore` in particular has none at all - but
 there are a number of optional ones - see their respective `pyproject.toml` files for details.
 
-Standard code is written for python 3.14+, '[lite](https://github.com/wrmsr/omlish/blob/master/omlish#lite-code)' code
+Standard code is written for python 3.14+, '[lite](https://github.com/wrmsr/omlish/blob/master/omcore#lite-code)' code
 for 3.8+.
 
 # Toplevel libraries
 
-- **[omlish](https://github.com/wrmsr/omlish/blob/master/omlish#readme)** - Core foundational code - the comprehensive
+- **[omcore](https://github.com/wrmsr/omlish/blob/master/omcore#readme)** - Core foundational code - the comprehensive
   standard library, including language helpers (like lazy imports), a `dataclasses` rebuild, a dependency injector, and
   a serde system. This is the most stable of the libraries, and the bottom of the dependency graph.
 - **[omdev](https://github.com/wrmsr/omlish/blob/master/omdev#readme)** - Development utilities, including the
@@ -30,13 +30,13 @@ for 3.8+.
 Toplevel libraries are installable by name from pypi:
 
 ```bash
-pip install omlish
+pip install omcore
 ```
 
 Or directly from git via:
 
 ```bash
-pip install 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pkg/omlish'
+pip install 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pkg/omcore'
 ```
 
 The CLI is installable through uvx or pipx via:
@@ -58,6 +58,6 @@ om cli reinstall
 The structure of the repo is managed by the internal
 [pyproject](https://github.com/wrmsr/omlish/blob/master/omdev/pyproject) tool, which generates
 [`.pkg`](https://github.com/wrmsr/omlish/blob/master/.pkg) directories (which map to published packages) from each
-library's [`__about__.py`](https://github.com/wrmsr/omlish/blob/master/omlish/__about__.py). The root-level
+library's [`__about__.py`](https://github.com/wrmsr/omlish/blob/master/omcore/__about__.py). The root-level
 [`pyproject.toml`](https://github.com/wrmsr/omlish/blob/master/pyproject.toml) does not actually contain a PEP-621
 project.

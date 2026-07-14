@@ -290,7 +290,7 @@ def _main() -> None:
     # assert ta.get_type_hints(_foo) == {'x': int, 'y': int}
     assert _get_sig_params(_foo) == [('x', None), ('y', None)]
 
-    from omlish import lang
+    from omcore import lang
     lo = lang.typed_lambda(x=int, y=int)(_foo)
     assert lo(x=3, y=4) == 7
     assert ta.get_type_hints(lo) == {'x': int, 'y': int}

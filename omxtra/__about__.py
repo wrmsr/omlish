@@ -8,7 +8,7 @@ class Project(ProjectBase):
     description = 'omxtra'
 
     dependencies = [
-        f'omlish == {__version__}',
+        f'omcore == {__version__}',
     ]
 
     optional_dependencies: dict = {
@@ -34,7 +34,7 @@ class Project(ProjectBase):
     }
 
     entry_points = {
-        'omlish.manifests': {name: name},
+        'omcore.manifests': {name: name},
     }
 
 

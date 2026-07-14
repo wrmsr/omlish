@@ -1,20 +1,20 @@
 ##
 # pyproject
 
-[tool.omlish.pyproject]
+[tool.om.pyproject]
 pkgs = [
+    'omcore',
     'omdev',
     'ominfra',
-    'omlish',
     'omllm',
     'omxtra',
 ]
 
-[tool.omlish.pyproject.srcs]
+[tool.om.pyproject.srcs]
 main = [
+    'omcore',
     'omdev',
     'ominfra',
-    'omlish',
     'omllm',
     'omxtra',
 ]
@@ -27,21 +27,21 @@ all = [
 
 #
 
-[tool.omlish.pyproject.venvs._default]
+[tool.om.pyproject.venvs._default]
 interp = '@14'
 requires = ['-rrequirements-dev.txt']
 srcs = ['@main']
 use_uv = true
 
-[tool.omlish.pyproject.venvs.default]
+[tool.om.pyproject.venvs.default]
 inherits = ['_default']
 requires = ['-rrequirements-ext.txt']
 
-[tool.omlish.pyproject.venvs.debug]
+[tool.om.pyproject.venvs.debug]
 interp = '@14d'
 inherits = ['_default']
 
-[tool.omlish.pyproject.venvs.check]
+[tool.om.pyproject.venvs.check]
 inherits = ['_default']
 requires_pats = [
     'flake8(-.*)?',
@@ -49,71 +49,71 @@ requires_pats = [
     'mypy',
 ]
 
-[tool.omlish.pyproject.venvs.'14d']
+[tool.om.pyproject.venvs.'14d']
 inherits = ['_default']
 interp = '@14d'
 requires = ['-rrequirements-ext.txt']
 
-[tool.omlish.pyproject.venvs.'14t']
+[tool.om.pyproject.venvs.'14t']
 inherits = ['_default']
 interp = '@14t'
 
-[tool.omlish.pyproject.venvs.'14dt']
+[tool.om.pyproject.venvs.'14dt']
 inherits = ['_default']
 interp = '@14dt'
 
-[tool.omlish.pyproject.venvs.'15']
+[tool.om.pyproject.venvs.'15']
 inherits = ['_default']
 interp = '@15'
 
-[tool.omlish.pyproject.venvs.'15t']
+[tool.om.pyproject.venvs.'15t']
 inherits = ['_default']
 interp = '@15t'
 
 
 #
 
-[tool.omlish.pyproject.venvs._lite]
+[tool.om.pyproject.venvs._lite]
 requires = []
 srcs = []
 
-[tool.omlish.pyproject.venvs.'13']
+[tool.om.pyproject.venvs.'13']
 inherits = ['_lite']
 interp = '@13'
 
-[tool.omlish.pyproject.venvs.'12']
+[tool.om.pyproject.venvs.'12']
 inherits = ['_lite']
 interp = '@12'
 
-[tool.omlish.pyproject.venvs.'11']
+[tool.om.pyproject.venvs.'11']
 inherits = ['_lite']
 interp = '@11'
 
-[tool.omlish.pyproject.venvs.'10']
+[tool.om.pyproject.venvs.'10']
 inherits = ['_lite']
 interp = '@10'
 
-[tool.omlish.pyproject.venvs.'9']
+[tool.om.pyproject.venvs.'9']
 inherits = ['_lite']
 interp = '@9'
 
-[tool.omlish.pyproject.venvs.'8']
+[tool.om.pyproject.venvs.'8']
 inherits = ['_lite']
 interp = '@8'
 
 #
 
-[tool.omlish.pyproject.venvs.docker]
+[tool.om.pyproject.venvs.docker]
 inherits = ['_default']
 docker_service = 'omlish-dev'
 
-[tool.omlish.pyproject.venvs.docker-amd64]
+[tool.om.pyproject.venvs.docker-amd64]
 inherits = ['_default']
 docker_service = 'omlish-dev-amd64'
 
 #
 
-[tool.omlish.pyproject.venvs.deploy]
+[tool.om.pyproject.venvs.deploy]
 interp = '3.14'
 requires = ['-rrequirements.txt']
 
@@ -150,7 +150,7 @@ module = [
     'rapidocr_onnxruntime',
 
     ##
-    # omlish
+    # omcore
 
     'annotationlib',
 
@@ -379,7 +379,7 @@ ignore = [
     'B011',  # assert-false
     'S101',  # assert
 ]
-'omlish/testing/*' = [
+'omcore/testing/*' = [
     'S101',  # assert
 ]
 
@@ -439,7 +439,7 @@ ignore = [
 
 [tool.pyright]
 include = [
-    'omlish',
+    'omcore',
 ]
 
 exclude = [
