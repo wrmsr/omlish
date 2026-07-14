@@ -202,7 +202,10 @@ class _MirrorState:
         self.__unresolved_aliases: set[ta.TypeAliasType] = set()
 
         self.__type_var_namespace = _RuntimeNamespace()
-        self.__next_type_var_id = 1
+        if parent is not None:
+            self.__next_type_var_id: int = parent.__next_type_var_id + 1
+        else:
+            self.__next_type_var_id = 1
 
         self.__relevant_namespaces = {self.__type_var_namespace}
 
