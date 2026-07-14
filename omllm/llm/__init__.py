@@ -71,6 +71,7 @@ with _lang.auto_proxy_init(
     )
 
     from .types.models import (  # noqa
+        ModelKey,
         Model,
     )
 
