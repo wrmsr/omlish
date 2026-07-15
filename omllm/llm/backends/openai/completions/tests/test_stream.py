@@ -4,6 +4,7 @@ from omcore.secrets.tests.harness import HarnessSecrets
 
 from .....models.default import default_model_catalog
 from .....types.context import Context
+from .....types.messages import AiMessage
 from .....types.messages import UserMessage
 from .....types.models import ModelKey
 from .....types.options import Options
@@ -22,6 +23,10 @@ async def test_openai_chat_stream_model_async(harness):
         api_key=harness[HarnessSecrets].get_or_skip(api_key_name),
     )
 
+    #
+
+    events: list = []
+
     async with (await svc.stream(
         ctx := Context(
             system_prompt='You are a helpful assistant.',
@@ -34,7 +39,13 @@ async def test_openai_chat_stream_model_async(harness):
         ),
     )) as it:
         async for e in it:
-            print(e)
-        print(it.result.must())
+            events.append(e)
+        out = it.result.must()
 
-    print(await svc.immediate(ctx, opts))
+    assert isinstance(out, AiMessage)
+
+    #
+
+    out = await svc.immediate(ctx, opts)
+
+    assert isinstance(out, AiMessage)
