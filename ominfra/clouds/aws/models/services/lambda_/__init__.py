@@ -107,6 +107,7 @@ class LastUpdateStatusReasonCode(_base.Enum):
     FUNCTION_ERROR__TOO_MANY_EXTENSIONS = 'FunctionError.TooManyExtensions'
     FUNCTION_ERROR__INIT_RESOURCE_EXHAUSTED = 'FunctionError.InitResourceExhausted'
     DISALLOWED_BY_VPC_ENCRYPTION_CONTROL = 'DisallowedByVpcEncryptionControl'
+    DEPENDENCY_ERROR = 'DependencyError'
 
 
 LayerVersionArn = _ta.NewType('LayerVersionArn', str)
@@ -271,6 +272,7 @@ class StateReasonCode(_base.Enum):
     FUNCTION_ERROR__INIT_RESOURCE_EXHAUSTED = 'FunctionError.InitResourceExhausted'
     DISALLOWED_BY_VPC_ENCRYPTION_CONTROL = 'DisallowedByVpcEncryptionControl'
     DRAINING_DURABLE_EXECUTIONS = 'DrainingDurableExecutions'
+    DEPENDENCY_ERROR = 'DependencyError'
 
 
 SubnetId = _ta.NewType('SubnetId', str)
