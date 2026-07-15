@@ -5,6 +5,7 @@ from omcore import dataclasses as dc
 from omcore.secrets.tests.harness import HarnessSecrets
 
 from .....models.default import default_model_catalog
+from .....types.backends import ImmediateBackend
 from .....types.content import TextContent
 from .....types.content import ToolCall
 from .....types.context import Context
@@ -18,10 +19,16 @@ from ..immediate import OpenaiCompletionsImmediateBackend
 
 @pytest.mark.online
 @pytest.mark.asyncs('asyncio')
-async def test_openai_tools(harness):
+@pytest.mark.parametrize('svc_cls', [
+    OpenaiCompletionsImmediateBackend,
+])
+async def test_openai_tools(
+        harness,
+        svc_cls,
+):
     model_key, api_key_name = (ModelKey('openai', 'gpt-5.4-mini'), 'openai_api_key')
 
-    svc = OpenaiCompletionsImmediateBackend(
+    svc: ImmediateBackend = svc_cls(
         default_model_catalog()[model_key],  # noqa
         api_key=harness[HarnessSecrets].get_or_skip(api_key_name),
     )
