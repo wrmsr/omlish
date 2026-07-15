@@ -5,6 +5,7 @@ from omcore import lang
 
 from ...core.streams import Stream
 from .messages import AiMessage
+from .messages import ToolCall
 
 
 ##
@@ -23,13 +24,13 @@ type AiStream = Stream[AiStreamEvent, AiMessage]
 
 @ta.final
 @dc.dataclass(frozen=True)
-class StartAiStreamEvent(AiStreamEvent):
+class StreamStartAiStreamEvent(AiStreamEvent):
     pass
 
 
 @ta.final
 @dc.dataclass(frozen=True)
-class EndAiStreamEvent(AiStreamEvent):
+class StreamEndAiStreamEvent(AiStreamEvent):
     pass
 
 
@@ -46,11 +47,35 @@ class TextStartAiStreamEvent(AiStreamEvent):
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
 class TextDeltaAiStreamEvent(AiStreamEvent):
-    s: str
+    text: str
 
 
 @ta.final
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
 class TextEndAiStreamEvent(AiStreamEvent):
-    s: str
+    text: str
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True)
+class ToolCallStartAiStreamEvent(AiStreamEvent):
+    pass
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
+class ToolCallDeltaAiStreamEvent(AiStreamEvent):
+    text: str
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
+class ToolCallEndAiStreamEvent(AiStreamEvent):
+    tool_call: ToolCall

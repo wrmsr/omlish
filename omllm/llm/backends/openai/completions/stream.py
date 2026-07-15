@@ -10,7 +10,6 @@ from .....core.http.sse import Utf8SseDecoder
 from .....core.streams import StreamSink
 from .....core.streams import new_stream
 from ....types.backends import StreamBackend
-from ....types.content import TextContent
 from ....types.content import TextContentBuilder
 from ....types.context import Context
 from ....types.messages import AiMessage
@@ -18,8 +17,8 @@ from ....types.messages import AiMessageBuilder
 from ....types.options import Options
 from ....types.streams import AiStream
 from ....types.streams import AiStreamEvent
-from ....types.streams import EndAiStreamEvent
-from ....types.streams import StartAiStreamEvent
+from ....types.streams import StreamEndAiStreamEvent
+from ....types.streams import StreamStartAiStreamEvent
 from ....types.streams import TextDeltaAiStreamEvent
 from ....types.streams import TextEndAiStreamEvent
 from ....types.streams import TextStartAiStreamEvent
@@ -47,6 +46,11 @@ class SseEventProcessor:
 
     #
 
+    def build_message(self) -> AiMessage:
+        return self._message_builder.build()
+
+    #
+
     _events_: list[AiStreamEvent] | None = None
 
     def _emit(self, event: AiStreamEvent) -> None:
@@ -65,7 +69,7 @@ class SseEventProcessor:
     def _text_builder(self) -> TextContentBuilder:
         if (b := self._text_builder_) is None:
             b = self._text_builder_ = TextContentBuilder()
-            self._message_builder.c.append(b)
+            self._message_builder.content.append(b)
             self._emit(TextStartAiStreamEvent())
         return b
 
@@ -92,16 +96,16 @@ class SseEventProcessor:
 
         if content := delta.get('content'):
             self._emit(TextDeltaAiStreamEvent(content))
-            self._text_builder().s.write(content)
+            self._text_builder().text.write(content)
 
     def feed(self, sse: SseEvent) -> list[AiStreamEvent]:
         self._feed(sse)
         return self._flush()
 
     def _finish(self) -> None:
-        for cb in self._message_builder.c:
+        for cb in self._message_builder.content:
             if isinstance(cb, TextContentBuilder):
-                self._emit(TextEndAiStreamEvent(cb.build().s))
+                self._emit(TextEndAiStreamEvent(cb.build().text))
 
             else:
                 raise TypeError(cb)
@@ -150,7 +154,7 @@ class OpenaiCompletionsStreamBackend(BaseBackend, StreamBackend):
                 raise http.StatusHttpClientError(err_http_response)
 
             async def inner(sink: StreamSink[AiStreamEvent]) -> AiMessage:
-                await sink.emit(StartAiStreamEvent())
+                await sink.emit(StreamStartAiStreamEvent())
 
                 decoder = Utf8SseDecoder()
                 processor = SseEventProcessor()
@@ -167,8 +171,8 @@ class OpenaiCompletionsStreamBackend(BaseBackend, StreamBackend):
                 for event in processor.finish():
                     await sink.emit(event)
 
-                await sink.emit(EndAiStreamEvent())
+                await sink.emit(StreamEndAiStreamEvent())
 
-                return AiMessage([TextContent('FIXME')])
+                return processor.build_message()
 
             return await new_stream(inner)

@@ -117,7 +117,7 @@ class LlmGitMessageGenerator(GitMessageGenerator):
             ],
         )))
 
-        msg = check.isinstance(check.single(resp.c), llm.TextContent).s
+        msg = check.isinstance(check.single(resp.content), llm.TextContent).text
 
         #
 

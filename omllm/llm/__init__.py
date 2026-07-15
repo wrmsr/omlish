@@ -62,6 +62,8 @@ with _lang.auto_proxy_init(globals()):
 
         ThinkingContent,
         ThinkingContentBuilder,
+
+        ToolCall,
     )
 
     from .types.context import (  # noqa
@@ -77,6 +79,8 @@ with _lang.auto_proxy_init(globals()):
 
         AiMessage,
         AiMessageBuilder,
+
+        ToolResultMessage,
     )
 
     from .types.models import (  # noqa
@@ -92,10 +96,18 @@ with _lang.auto_proxy_init(globals()):
         AiStreamEvent,
         AiStream,
 
-        StartAiStreamEvent,
-        EndAiStreamEvent,
+        StreamStartAiStreamEvent,
+        StreamEndAiStreamEvent,
 
         TextStartAiStreamEvent,
         TextDeltaAiStreamEvent,
         TextEndAiStreamEvent,
+
+        ToolCallStartAiStreamEvent,
+        ToolCallDeltaAiStreamEvent,
+        ToolCallEndAiStreamEvent,
+    )
+
+    from .types.tools import (  # noqa
+        Tool,
     )

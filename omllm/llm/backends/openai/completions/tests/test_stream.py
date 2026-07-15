@@ -23,16 +23,18 @@ async def test_openai_chat_stream_model_async(harness):
     )
 
     async with (await svc.stream(
-        Context(
+        ctx := Context(
             system_prompt='You are a helpful assistant.',
             messages=[
                 UserMessage('hi'),
             ],
         ),
-        Options(
+        opts := Options(
             max_tokens=None,
         ),
     )) as it:
         async for o in it:
             print(o)
         print(it.result.must())
+
+    print(await svc.immediate(ctx, opts))

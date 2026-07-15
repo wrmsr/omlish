@@ -30,7 +30,7 @@ class ContentBuilder(lang.Abstract, ta.Generic[ContentT]):
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
 class TextContent(Content):
-    s: str
+    text: str
 
 
 @ta.final
@@ -38,11 +38,11 @@ class TextContentBuilder(ContentBuilder[TextContent]):
     def __init__(self) -> None:
         super().__init__()
 
-        self.s = io.StringIO()
+        self.text = io.StringIO()
 
     def build(self) -> TextContent:
         return TextContent(
-            s=self.s.getvalue(),
+            text=self.text.getvalue(),
         )
 
 
@@ -53,7 +53,7 @@ class TextContentBuilder(ContentBuilder[TextContent]):
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
 class ThinkingContent(Content):
-    s: str
+    text: str
 
 
 @ta.final
@@ -61,9 +61,21 @@ class ThinkingContentBuilder(ContentBuilder[ThinkingContent]):
     def __init__(self) -> None:
         super().__init__()
 
-        self.s = io.StringIO()
+        self.text = io.StringIO()
 
     def build(self) -> ThinkingContent:
         return ThinkingContent(
-            s=self.s.getvalue(),
+            text=self.text.getvalue(),
         )
+
+
+##
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True)
+class ToolCall(Content):
+    id: str
+    name: str
+    args: ta.Mapping[str, ta.Any]

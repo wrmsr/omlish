@@ -63,16 +63,16 @@ class AnthropicMessagesImmediateBackend(ImmediateBackend):
 
         for msg in context.messages:
             if isinstance(msg, UserMessage):
-                if isinstance(msg.c, str):
+                if isinstance(msg.content, str):
                     raw_messages.append({
                         'role': 'user',
-                        'content': msg.c,
+                        'content': msg.content,
                     })
 
-                elif isinstance(msg.c, TextContent):
+                elif isinstance(msg.content, TextContent):
                     raw_messages.append({
                         'role': 'user',
-                        'content': msg.c.s,
+                        'content': msg.content.text,
                     })
 
                 else:
@@ -81,9 +81,9 @@ class AnthropicMessagesImmediateBackend(ImmediateBackend):
             elif isinstance(msg, AiMessage):
                 text_parts: list[str] = []
 
-                for c in msg.c:
+                for c in msg.content:
                     if isinstance(c, TextContent):
-                        text_parts.append(c.s)
+                        text_parts.append(c.text)
 
                     else:
                         raise TypeError(c)
