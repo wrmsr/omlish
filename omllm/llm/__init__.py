@@ -44,8 +44,6 @@ with _lang.auto_proxy_init(globals()):
 
         ImmediateBackend,
 
-        AiMessageEvent,
-        AiMessageStream,
         StreamBackend,
     )
 
@@ -88,4 +86,12 @@ with _lang.auto_proxy_init(globals()):
 
     from .types.options import (  # noqa
         Options,
+    )
+
+    from .types.streams import (  # noqa
+        AiEvent,
+        AiStream,
+
+        StartAiEvent,
+        EndAiEvent,
     )

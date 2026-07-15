@@ -1,43 +1,36 @@
-from omcore import check
-from omcore.http import all as http
-from omcore.secrets import all as sec
-
-from ....types.backends import AiMessageStream
+from .....core import StreamSink
+from .....core import new_stream
 from ....types.backends import StreamBackend
-from ....types.compat import OpenaiCompat
+from ....types.content import TextContent
 from ....types.context import Context
-from ....types.models import Model
+from ....types.messages import AiMessage
 from ....types.options import Options
+from ....types.streams import AiEvent
+from ....types.streams import AiStream
+from ....types.streams import EndAiEvent
+from ....types.streams import StartAiEvent
+from ..base import BaseBackend
+from .requests import RequestPreparer
 
 
 ##
 
 
-class OpenaiCompletionsStreamBackend(StreamBackend):
-    def __init__(
-            self,
-            model: Model,
-            *,
-            api_key: sec.Secret | None = None,
-            http_client: http.AsyncHttpClient | None = None,
-    ) -> None:
-        super().__init__()
+class OpenaiCompletionsStreamBackend(BaseBackend, StreamBackend):
+    async def stream(self, context: Context, options: Options | None = None) -> AiStream:
+        raw_request = RequestPreparer(  # noqa
+            self._model,
+            context,
+            options,
+        ).raw_request()
 
-        self._model = model
-        self._api_key = api_key
-        self._http_client = http_client
+        raw_request['stream'] = True
 
-        self._model_http = check.not_none(model.http)
-        self._base_url = check.non_empty_str(self._model_http.base_url).rstrip('/')
+        #
 
-        if self._model.compat is not None:
-            self._compat = check.isinstance(self._model.compat, OpenaiCompat)
-        else:
-            self._compat = OpenaiCompat()
+        async def inner(sink: StreamSink[AiEvent]) -> AiMessage:
+            await sink.emit(StartAiEvent())
+            await sink.emit(EndAiEvent())
+            return AiMessage([TextContent('FIXME')])
 
-    @property
-    def model(self) -> Model:
-        return self._model
-
-    async def stream(self, context: Context, options: Options | None = None) -> AiMessageStream:
-        raise NotImplementedError
+        return await new_stream(inner)
