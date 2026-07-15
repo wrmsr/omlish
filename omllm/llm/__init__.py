@@ -33,8 +33,7 @@ with _lang.auto_proxy_init(
     )
 
     from .models.default import (  # noqa
-        DEFAULT_MODELS,
-
+        default_models,
         default_model_catalog,
     )
 
