@@ -35,4 +35,4 @@ async def test_openai_chat_stream_model_async(harness):
     )) as it:
         async for o in it:
             print(o)
-        print(it.result)
+        print(it.result.must())

@@ -11,11 +11,11 @@ from .messages import AiMessage
 
 
 @dc.dataclass(frozen=True)
-class AiEvent(lang.Abstract):
+class AiStreamEvent(lang.Abstract):
     pass
 
 
-type AiStream = Stream[AiEvent, AiMessage]
+type AiStream = Stream[AiStreamEvent, AiMessage]
 
 
 ##
@@ -23,11 +23,34 @@ type AiStream = Stream[AiEvent, AiMessage]
 
 @ta.final
 @dc.dataclass(frozen=True)
-class StartAiEvent(AiEvent):
+class StartAiStreamEvent(AiStreamEvent):
     pass
 
 
 @ta.final
 @dc.dataclass(frozen=True)
-class EndAiEvent(AiEvent):
+class EndAiStreamEvent(AiStreamEvent):
     pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class TextStartAiStreamEvent(AiStreamEvent):
+    pass
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
+class TextDeltaAiStreamEvent(AiStreamEvent):
+    s: str
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
+class TextEndAiStreamEvent(AiStreamEvent):
+    s: str

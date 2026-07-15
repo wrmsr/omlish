@@ -5,6 +5,12 @@ from ... import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
+    from json import (  # noqa
+        JSONDecodeError as DecodeError,
+    )
+
+    ##
+
     from .backends import (  # noqa
         Backend,
 

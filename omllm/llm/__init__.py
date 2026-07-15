@@ -89,9 +89,13 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .types.streams import (  # noqa
-        AiEvent,
+        AiStreamEvent,
         AiStream,
 
-        StartAiEvent,
-        EndAiEvent,
+        StartAiStreamEvent,
+        EndAiStreamEvent,
+
+        TextStartAiStreamEvent,
+        TextDeltaAiStreamEvent,
+        TextEndAiStreamEvent,
     )

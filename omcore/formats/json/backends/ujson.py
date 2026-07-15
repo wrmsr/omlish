@@ -5,6 +5,7 @@ dump(obj: ta.Any, fp: File, **DumpOpts) -> None
 dumps(obj: ta.Any, **DumpOpts) -> None
 """
 import dataclasses as dc
+import json
 import typing as ta
 
 from .... import lang
@@ -39,6 +40,16 @@ class DumpOpts:
 ##
 
 
+class UjsonDecodeError(json.JSONDecodeError):
+    def __init__(self, uje, doc):
+        self.uje = uje
+        self.doc = doc
+        ValueError.__init__(self, str(uje))
+
+    def __reduce__(self):
+        return self.__class__, (self.msg, self.doc)
+
+
 class UjsonBackend(Backend):
     def dump(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
         uj.dump(obj, fp, **kwargs)
@@ -47,10 +58,17 @@ class UjsonBackend(Backend):
         return uj.dumps(obj, **kwargs)
 
     def load(self, fp: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        return uj.load(fp, **kwargs)
+        s = fp.read()
+        try:
+            return uj.loads(s, **kwargs)
+        except uj.JSONDecodeError as e:
+            raise UjsonDecodeError(e, s) from None
 
     def loads(self, s: str | bytes | bytearray, **kwargs: ta.Any) -> ta.Any:
-        return uj.loads(s, **kwargs)
+        try:
+            return uj.loads(s, **kwargs)
+        except uj.JSONDecodeError as e:
+            raise UjsonDecodeError(e, s) from None
 
     def dump_pretty(self, obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
         uj.dump(obj, fp, indent=PRETTY_INDENT, **kwargs)

@@ -49,6 +49,9 @@ def _test_backend(be: Backend):
         be_compact = buf.getvalue()
         assert be_compact == js_compact
 
+    with pytest.raises(json.JSONDecodeError):
+        be.loads('{')
+
 
 def test_std_backend():
     _test_backend(std_backend())

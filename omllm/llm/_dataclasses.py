@@ -35,9 +35,10 @@ def _register(**kwargs):
         ('omllm.llm.types.compat', 'Compat'),
         ('omllm.llm.types.content', 'Content'),
         ('omllm.llm.types.messages', 'Message'),
-        ('omllm.llm.types.streams', 'AiEvent'),
-        ('omllm.llm.types.streams', 'EndAiEvent'),
-        ('omllm.llm.types.streams', 'StartAiEvent'),
+        ('omllm.llm.types.streams', 'AiStreamEvent'),
+        ('omllm.llm.types.streams', 'EndAiStreamEvent'),
+        ('omllm.llm.types.streams', 'StartAiStreamEvent'),
+        ('omllm.llm.types.streams', 'TextStartAiStreamEvent'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -220,6 +221,8 @@ def _process_dataclass__07984f4058a40dd1ae7a4ad479a49991bc8948f8():
     cls_names=(
         ('omllm.llm.types.content', 'TextContent'),
         ('omllm.llm.types.content', 'ThinkingContent'),
+        ('omllm.llm.types.streams', 'TextDeltaAiStreamEvent'),
+        ('omllm.llm.types.streams', 'TextEndAiStreamEvent'),
     ),
 )
 def _process_dataclass__aca71210ede98005b6653bf44d8b196a87797929():

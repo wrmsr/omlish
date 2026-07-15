@@ -1,4 +1,5 @@
 import abc
+import io
 import typing as ta
 
 from omcore import dataclasses as dc
@@ -37,11 +38,11 @@ class TextContentBuilder(ContentBuilder[TextContent]):
     def __init__(self) -> None:
         super().__init__()
 
-        self.s = ''
+        self.s = io.StringIO()
 
     def build(self) -> TextContent:
         return TextContent(
-            s=self.s,
+            s=self.s.getvalue(),
         )
 
 
@@ -60,9 +61,9 @@ class ThinkingContentBuilder(ContentBuilder[ThinkingContent]):
     def __init__(self) -> None:
         super().__init__()
 
-        self.s = ''
+        self.s = io.StringIO()
 
     def build(self) -> ThinkingContent:
         return ThinkingContent(
-            s=self.s,
+            s=self.s.getvalue(),
         )

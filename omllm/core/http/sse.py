@@ -11,7 +11,7 @@ from omcore import lang
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ServerSentEvent:
+class SseEvent:
     event: str | None
     data: str
     raw: ta.Sequence[str]
@@ -19,11 +19,11 @@ class ServerSentEvent:
 
 class SseDecoder[I](lang.Abstract):
     @abc.abstractmethod
-    def feed(self, chunk: I) -> ta.Iterator[ServerSentEvent]:
+    def feed(self, chunk: I) -> ta.Iterator[SseEvent]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def finish(self) -> ta.Iterator[ServerSentEvent]:
+    def finish(self) -> ta.Iterator[SseEvent]:
         raise NotImplementedError
 
 
@@ -46,11 +46,11 @@ class StrSseDecoder(SseDecoder[str]):
         self._buf = io.StringIO()
         self._pending_cr = False
 
-    def _flush_event(self) -> ServerSentEvent | None:
+    def _flush_event(self) -> SseEvent | None:
         if self._event is None and not self._data:
             return None
 
-        event = ServerSentEvent(
+        event = SseEvent(
             event=self._event,
             data='\n'.join(self._data),
             raw=tuple(self._raw),
@@ -60,7 +60,7 @@ class StrSseDecoder(SseDecoder[str]):
         self._raw = []
         return event
 
-    def _decode_line(self, line: str) -> ServerSentEvent | None:
+    def _decode_line(self, line: str) -> SseEvent | None:
         if line == '':
             return self._flush_event()
 
@@ -146,12 +146,12 @@ class StrSseDecoder(SseDecoder[str]):
         if pos < len(chunk):
             self._buf.write(chunk[pos:])
 
-    def feed(self, chunk: str) -> ta.Iterator[ServerSentEvent]:
+    def feed(self, chunk: str) -> ta.Iterator[SseEvent]:
         for line in self._consume_lines(chunk):
             if (event := self._decode_line(line)) is not None:
                 yield event
 
-    def finish(self) -> ta.Iterator[ServerSentEvent]:
+    def finish(self) -> ta.Iterator[SseEvent]:
         buf = self._take_buf()
         self._pending_cr = False
 
@@ -176,9 +176,9 @@ class Utf8SseDecoder(SseDecoder[lang.Bytes]):
         self._utf8 = codecs.getincrementaldecoder('utf-8')(errors='replace')
         self._sse = StrSseDecoder()
 
-    def feed(self, chunk: lang.Bytes) -> ta.Iterator[ServerSentEvent]:
+    def feed(self, chunk: lang.Bytes) -> ta.Iterator[SseEvent]:
         return self._sse.feed(self._utf8.decode(chunk))  # noqa
 
-    def finish(self) -> ta.Iterator[ServerSentEvent]:
+    def finish(self) -> ta.Iterator[SseEvent]:
         yield from self._sse.feed(self._utf8.decode(b'', True))  # noqa
         yield from self._sse.finish()
