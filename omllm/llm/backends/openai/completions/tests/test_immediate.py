@@ -7,6 +7,8 @@ from .....types.context import Context
 from .....types.messages import UserMessage
 from .....types.models import ModelKey
 from .....types.options import Options
+from .....types.tools import Tool
+from .....types.tools import ToolParam
 from ..immediate import OpenaiCompletionsImmediateBackend
 
 
@@ -64,3 +66,38 @@ class TestCerebrasBackend(BaseBackendTest):
     ])
     def model(self, request):
         return request.param
+
+
+@pytest.mark.online
+@pytest.mark.asyncs('asyncio')
+async def test_openai_tools(harness):
+    model_key, api_key_name = (ModelKey('openai', 'gpt-5.4-mini'), 'openai_api_key')
+
+    svc = OpenaiCompletionsImmediateBackend(
+        default_model_catalog()[model_key],  # noqa
+        api_key=harness[HarnessSecrets].get_or_skip(api_key_name),
+    )
+
+    out = await svc.immediate(
+        Context(
+            system_prompt='You are a helpful assistant.',
+            messages=[
+                UserMessage('hi'),
+            ],
+            tools=[
+                Tool(
+                    name='get_weather',
+                    description='Get the weather in a given location',
+                    params=[
+                        ToolParam(
+                            name='location',
+                            description='The city and state, e.g. San Francisco, CA',
+                            type='string',
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    )
+
+    print(out)

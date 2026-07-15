@@ -121,6 +121,9 @@ class SseEventProcessor:
             ))
             text.text.write(content)
 
+        if tool_calls := delta.get('tool_calls'):  # noqa
+            raise NotImplementedError
+
     def feed(self, sse: SseEvent) -> list[AiStreamEvent]:
         self._feed(sse)
         return self._flush()

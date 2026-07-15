@@ -3,6 +3,7 @@ import typing as ta
 from omcore import dataclasses as dc
 
 from .messages import Message
+from .tools import Tool
 
 
 ##
@@ -14,3 +15,5 @@ class Context:
     system_prompt: str | None = None
 
     messages: ta.Sequence[Message] = ()
+
+    tools: ta.Sequence[Tool] = ()

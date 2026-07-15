@@ -24,40 +24,40 @@ class RequestPreparer:
     ) -> None:
         super().__init__()
 
-        self.model = model
-        self.context = context
-        self.given_options = options
+        self._model = model
+        self._context = context
+        self._given_options = options
 
-        self.options = Options().merge(
+        self._options = Options().merge(
             model.default_options,
             options,
         )
 
         if model.compat is not None:
-            self.compat = check.isinstance(model.compat, OpenaiCompat)
+            self._compat = check.isinstance(model.compat, OpenaiCompat)
         else:
-            self.compat = OpenaiCompat()
+            self._compat = OpenaiCompat()
 
     @lang.cached_function
     def raw_request(self) -> dict[str, ta.Any]:
         raw_request: dict = {
-            'model': self.model.key.id,
+            'model': self._model.key.id,
         }
 
-        if self.options.max_tokens is not None:
-            raw_request[self.compat.max_tokens_field or 'max_completion_tokens'] = self.options.max_tokens
+        if self._options.max_tokens is not None:
+            raw_request[self._compat.max_tokens_field or 'max_completion_tokens'] = self._options.max_tokens
 
         #
 
         raw_messages: list[dict] = []
 
-        if self.context.system_prompt:
+        if self._context.system_prompt:
             raw_messages.append({
                 'role': 'system',
-                'content': self.context.system_prompt,
+                'content': self._context.system_prompt,
             })
 
-        for msg in self.context.messages:
+        for msg in self._context.messages:
             if isinstance(msg, UserMessage):
                 if isinstance(msg.content, str):
                     raw_messages.append({
@@ -93,6 +93,11 @@ class RequestPreparer:
                 raise TypeError(msg)
 
         raw_request['messages'] = raw_messages
+
+        #
+
+        if self._context.tools:
+            raise NotImplementedError
 
         #
 

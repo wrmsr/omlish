@@ -1,9 +1,9 @@
 import abc
 import codecs
-import dataclasses as dc
 import io
 import typing as ta
 
+from omcore import dataclasses as dc
 from omcore import lang
 
 
