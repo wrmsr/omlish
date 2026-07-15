@@ -61,7 +61,7 @@ class AnthropicMessagesImmediateBackend(ImmediateBackend):
                 'text': context.system_prompt,
             }]
 
-        for msg in context.messages:
+        for msg in context.messages or []:
             if isinstance(msg, UserMessage):
                 if isinstance(msg.content, str):
                     raw_messages.append({

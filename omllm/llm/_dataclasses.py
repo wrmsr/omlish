@@ -462,14 +462,14 @@ def _process_dataclass__3b8e700ef0ad8d5c34fff0473bc4c2ba565310cd():
         " std_params=(), kw_only_params=('system_prompt', 'messages', 'tools'), frozen=True, slots=False, post_init_par"
         "ams=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='system_prompt', kw_only=True, f"
         "n=None), ReprPlan.Field(name='messages', kw_only=True, fn=None), ReprPlan.Field(name='tools', kw_only=True, fn"
-        "=None)), id=False, terse=False, default_fn=None)))"
+        "=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='0aa4fbbeb6816476fcc371192805fc6c89b919ed',
+    plan_repr_sha1='6bddc86ea07270ffb6ce8028c896f9175ddeb8ec',
     cls_names=(
         ('omllm.llm.types.context', 'Context'),
     ),
 )
-def _process_dataclass__0aa4fbbeb6816476fcc371192805fc6c89b919ed():
+def _process_dataclass__6bddc86ea07270ffb6ce8028c896f9175ddeb8ec():
     def _process_dataclass(
         *,
         __class__,
@@ -479,6 +479,7 @@ def _process_dataclass__0aa4fbbeb6816476fcc371192805fc6c89b919ed():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
         __dataclass__None=None,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
@@ -560,9 +561,12 @@ def _process_dataclass__0aa4fbbeb6816476fcc371192805fc6c89b919ed():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"system_prompt={self.system_prompt!r}")
-            parts.append(f"messages={self.messages!r}")
-            parts.append(f"tools={self.tools!r}")
+            if (s := __dataclass__repr__default_fn(self.system_prompt)) is not None:
+                parts.append(f"system_prompt={s}")
+            if (s := __dataclass__repr__default_fn(self.messages)) is not None:
+                parts.append(f"messages={s}")
+            if (s := __dataclass__repr__default_fn(self.tools)) is not None:
+                parts.append(f"tools={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

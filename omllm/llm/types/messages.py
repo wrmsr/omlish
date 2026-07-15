@@ -70,7 +70,7 @@ class AiMessageBuilder(MessageBuilder[AiMessage]):
 
     def build(self) -> AiMessage:
         return AiMessage(
-            content=tuple(cb.build() for cb in self.content),
+            content=[cb.build() for cb in self.content],
         )
 
 
@@ -80,7 +80,7 @@ class AiMessageBuilder(MessageBuilder[AiMessage]):
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
-class ToolResultMessage:
+class ToolResultMessage(Message):
     tool_call_id: str
     tool_name: str
 

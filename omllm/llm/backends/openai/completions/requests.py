@@ -57,7 +57,7 @@ class RequestPreparer:
                 'content': self._context.system_prompt,
             })
 
-        for msg in self._context.messages:
+        for msg in self._context.messages or []:
             if isinstance(msg, UserMessage):
                 if isinstance(msg.content, str):
                     raw_messages.append({

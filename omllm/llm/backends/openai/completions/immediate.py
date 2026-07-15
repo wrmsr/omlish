@@ -1,9 +1,13 @@
+import typing as ta
+
 from omcore import check
 from omcore.formats.json import all as json
 from omcore.http import all as http
 
 from ....types.backends import ImmediateBackend
+from ....types.content import Content
 from ....types.content import TextContent
+from ....types.content import ToolCall
 from ....types.context import Context
 from ....types.messages import AiMessage
 from ....types.options import Options
@@ -57,8 +61,22 @@ class OpenaiCompletionsImmediateBackend(BaseBackend, ImmediateBackend):
         raw_msg = raw_choice['message']
         check.equal(raw_msg['role'], 'assistant')
 
-        raw_text = check.non_empty_str(raw_msg['content'])
+        content: list[Content] = []
+
+        if raw_content := raw_msg.get('content'):
+            content.append(TextContent(check.non_empty_str(raw_content)))
+
+        if raw_tool_calls := raw_msg.get('tool_calls'):
+            for raw_tool_call in raw_tool_calls:
+                check.equal(raw_tool_call['type'], 'function')
+                raw_fn = raw_tool_call['function']
+                args = json.loads(raw_fn['arguments'])
+                content.append(ToolCall(
+                    id=check.non_empty_str(raw_tool_call['id']),
+                    name=check.non_empty_str(raw_fn['name']),
+                    args=check.isinstance(args, ta.Mapping),
+                ))
 
         return AiMessage(
-            (TextContent(raw_text),),
+            ta.cast(ta.Any, content),
         )
