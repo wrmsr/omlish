@@ -2,11 +2,14 @@ import typing as ta
 
 from omcore import check
 from omcore import lang
+from omcore.formats.json import all as json
 
 from ....types.compat import OpenaiCompat
 from ....types.content import TextContent
+from ....types.content import ToolCall
 from ....types.context import Context
 from ....types.messages import AiMessage
+from ....types.messages import ToolResultMessage
 from ....types.messages import UserMessage
 from ....types.models import Model
 from ....types.options import Options
@@ -76,10 +79,21 @@ class RequestPreparer:
 
             elif isinstance(msg, AiMessage):
                 text_parts: list[str] = []
+                raw_tool_calls: list[dict] = []
 
                 for c in msg.content:
                     if isinstance(c, TextContent):
                         text_parts.append(c.text)
+
+                    elif isinstance(c, ToolCall):
+                        raw_tool_calls.append({
+                            'type': 'function',
+                            'id': c.id,
+                            'function': {
+                                'name': c.name,
+                                'arguments': json.dumps(c.args),
+                            },
+                        })
 
                     else:
                         raise TypeError(c)
@@ -87,6 +101,14 @@ class RequestPreparer:
                 raw_messages.append({
                     'role': 'assistant',
                     'content': ''.join(text_parts),
+                    **({'tool_calls': raw_tool_calls} if raw_tool_calls else {}),
+                })
+
+            elif isinstance(msg, ToolResultMessage):
+                raw_messages.append({
+                    'role': 'tool',
+                    'tool_call_id': msg.tool_call_id,
+                    'content': '\n'.join([c.text for c in msg.content]),
                 })
 
             else:

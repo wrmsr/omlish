@@ -119,8 +119,7 @@ class AnthropicMessagesImmediateBackend(ImmediateBackend):
         )
 
         if http_response.status != 200:
-            err_http_response = await http.async_read_http_client_response(http_response)
-            raise http.StatusHttpClientError(err_http_response)
+            raise http.StatusHttpClientError(http_response)
 
         raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
 

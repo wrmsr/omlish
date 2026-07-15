@@ -111,6 +111,7 @@ async def test_openai_tools(harness):
 
     ctx = dc.replace(ctx, messages=[
         *(ctx.messages or []),
+        out,
         ToolResultMessage(
             tool_call_id=tc.id,
             tool_name=tc.name,
