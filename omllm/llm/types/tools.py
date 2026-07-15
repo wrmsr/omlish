@@ -5,6 +5,7 @@ from omcore import cached
 from omcore import check
 from omcore import collections as col
 from omcore import dataclasses as dc
+from omcore import lang
 
 
 ##
@@ -12,6 +13,7 @@ from omcore import dataclasses as dc
 
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ToolParam:
     name: str = dc.xfield(coerce=check.non_empty_str)
     description: str | None = None
@@ -21,10 +23,11 @@ class ToolParam:
 
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class Tool:
-    name: str
-    description: str
-    params: ta.Sequence[ToolParam]
+    name: str = dc.xfield(coerce=check.non_empty_str)
+    description: str | None = None
+    params: ta.Sequence[ToolParam] = ()
 
     @cached.property
     @dc.init

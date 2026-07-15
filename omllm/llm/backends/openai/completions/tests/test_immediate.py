@@ -82,7 +82,7 @@ async def test_openai_tools(harness):
         Context(
             system_prompt='You are a helpful assistant.',
             messages=[
-                UserMessage('hi'),
+                UserMessage('What is the weather in Edinburgh, Scotland?'),
             ],
             tools=[
                 Tool(
