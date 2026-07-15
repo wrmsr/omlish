@@ -8,7 +8,7 @@ __revision__ = None
 class ProjectBase:
     name: str | None = None
     authors = [{'name': 'wrmsr'}]
-    urls = {'source': 'https://github.com/wrmsr/omlish'}
+    urls = {'source': 'https://github.com/wrmsr/om'}
     license = 'BSD-3-Clause'
     readme = 'README.md'
     requires_python = '>=3.14'

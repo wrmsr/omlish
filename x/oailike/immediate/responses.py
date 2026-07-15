@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish import dataclasses as dc
+from omcore import dataclasses as dc
 
 from ..responses import Usage
 from ..tools import ToolCall

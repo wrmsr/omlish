@@ -23,7 +23,7 @@ def test_keywords():
         'tags': ['home', 'green'],
     }
 
-    schema_id_root = 'https://github.com/wrmsr/omlish/jsonschemas/'
+    schema_id_root = 'https://github.com/wrmsr/om/jsonschemas/'
 
     warehouse_location_schema = {
         '$id': schema_id_root + 'geographical-location.schema.json',

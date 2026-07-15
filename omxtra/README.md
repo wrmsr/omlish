@@ -8,7 +8,7 @@ unpublished `x` root dir, or just being deleted.
 
 # Notable packages
 
-- **[text.antlr](https://github.com/wrmsr/omlish/blob/master/omxtra/text/antlr)** -
-  [ANTLR](https://www.antlr.org/)-related code. The codebase is generally moving away from antlr in favor of an internal
-  [abnf engine](https://github.com/wrmsr/omlish/blob/master/oextra/text/abnf), but I have other projects that need the
-  full power of antlr, so it may remain as an optional dep for utility code (much like sqlalchemy).
+- **[text.antlr](https://github.com/wrmsr/om/blob/master/omxtra/text/antlr)** - [ANTLR](https://www.antlr.org/)-related
+  code. The codebase is generally moving away from antlr in favor of an internal [abnf
+  engine](https://github.com/wrmsr/om/blob/master/oextra/text/abnf), but I have other projects that need the full power
+  of antlr, so it may remain as an optional dep for utility code (much like sqlalchemy).

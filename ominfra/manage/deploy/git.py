@@ -4,7 +4,7 @@ TODO:
  - parse refs, resolve revs
  - non-subtree shallow clone
 
-github.com/wrmsr/omlish@rev
+github.com/wrmsr/om@rev
 """
 import functools
 import os.path

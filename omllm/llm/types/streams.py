@@ -3,7 +3,7 @@ import typing as ta
 from omcore import dataclasses as dc
 from omcore import lang
 
-from ...core import Stream
+from ...core.streams import Stream
 from .messages import AiMessage
 
 

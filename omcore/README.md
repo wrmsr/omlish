@@ -5,161 +5,157 @@ dependencies of any kind**.
 
 # Notable packages
 
-- **[lang](https://github.com/wrmsr/omlish/blob/master/omcore/lang)** - The standard library of this standard library.
+- **[lang](https://github.com/wrmsr/om/blob/master/omcore/lang)** - The standard library of this standard library.
   Usually imported as a whole (`from omcore import lang`), it contains an array of general purpose utilities used
   practically everywhere. It is kept relatively lightweight: its heaviest import is stdlib dataclasses and its
   transitives. Some of its contents include:
 
-  - **[cached](https://github.com/wrmsr/omlish/blob/master/omcore/lang/cached)** - The standard `cached_function` /
+  - **[cached](https://github.com/wrmsr/om/blob/master/omcore/lang/cached)** - The standard `cached_function` /
     `cached_property` tools, which are more capable than
     [`functools.lru_cache`](https://docs.python.org/3/library/functools.html#functools.lru_cache).
-  - **[imports](https://github.com/wrmsr/omlish/blob/master/omcore/lang/imports.py)** - Import tools like:
+  - **[imports](https://github.com/wrmsr/om/blob/master/omcore/lang/imports.py)** - Import tools like:
     - `proxy_import` - For late-loaded imports.
     - `proxy_init` - For late-loaded module globals.
     - `auto_proxy_init` - For automatic late-loaded package exports.
-  - **[classes](https://github.com/wrmsr/omlish/blob/master/omcore/lang/classes)** - Class tools and bases, such as
+  - **[classes](https://github.com/wrmsr/om/blob/master/omcore/lang/classes)** - Class tools and bases, such as
     `Abstract` (which checks at subclass definition not instantiation), `Sealed` / `PackageSealed`, and `Final`.
-  - **[maybes](https://github.com/wrmsr/omlish/blob/master/omcore/lite/maybes.py)** - A simple, nestable formalization
-    of the presence or absence of an object, as in [many](https://en.cppreference.com/w/cpp/utility/optional)
+  - **[maybes](https://github.com/wrmsr/om/blob/master/omcore/lite/maybes.py)** - A simple, nestable formalization of
+    the presence or absence of an object, as in [many](https://en.cppreference.com/w/cpp/utility/optional)
     [other](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html)
     [languages](https://doc.rust-lang.org/std/option/).
 
-- **[bootstrap](https://github.com/wrmsr/omlish/blob/master/omcore/bootstrap)** - A centralized, configurable,
-  all-in-one collection of various process-initialization minutiae like resource limiting, profiling, remote debugging,
-  log configuration, environment variables, et cetera. Usable as a context manager or via its
-  [cli](https://github.com/wrmsr/omlish/blob/master/omcore/bootstrap/main.py).
+- **[bootstrap](https://github.com/wrmsr/om/blob/master/omcore/bootstrap)** - A centralized, configurable, all-in-one
+  collection of various process-initialization minutiae like resource limiting, profiling, remote debugging, log
+  configuration, environment variables, et cetera. Usable as a context manager or via its
+  [cli](https://github.com/wrmsr/om/blob/master/omcore/bootstrap/main.py).
 
-- **[collections](https://github.com/wrmsr/omlish/blob/master/omcore/collections)** - A handful of collection utilities
-  and simple implementations, including:
+- **[collections](https://github.com/wrmsr/om/blob/master/omcore/collections)** - A handful of collection utilities and
+  simple implementations, including:
 
-  - **[cache](https://github.com/wrmsr/omlish/blob/master/omcore/collections/cache)** - A configurable LRU / LFU cache
-    with options like ttl and  max size / weight.
-  - **[hasheq](https://github.com/wrmsr/omlish/blob/master/omcore/collections/hasheq.py)** - A dict taking an external
+  - **[cache](https://github.com/wrmsr/om/blob/master/omcore/collections/cache)** - A configurable LRU / LFU cache with
+    options like ttl and  max size / weight.
+  - **[hasheq](https://github.com/wrmsr/om/blob/master/omcore/collections/hasheq.py)** - A dict taking an external
     `__hash__` / `__eq__` implementation.
-  - **[identity](https://github.com/wrmsr/omlish/blob/master/omcore/collections/identity.py)** - Identity-keyed
-    collections.
-  - **[sorted](https://github.com/wrmsr/omlish/blob/master/omcore/collections/sorted)** - Interfaces for value-sorted
+  - **[identity](https://github.com/wrmsr/om/blob/master/omcore/collections/identity.py)** - Identity-keyed collections.
+  - **[sorted](https://github.com/wrmsr/om/blob/master/omcore/collections/sorted)** - Interfaces for value-sorted
     collections and key-sorted mappings, and a simple but correct skiplist-backed implementation.
-  - **[persistent](https://github.com/wrmsr/omlish/blob/master/omcore/collections/persistent)** - Interfaces for
+  - **[persistent](https://github.com/wrmsr/om/blob/master/omcore/collections/persistent)** - Interfaces for
     [persistent](https://en.wikipedia.org/wiki/Persistent_data_structure) maps, and a simple but correct treap-backed
     implementation.
 
-- **[dataclasses](https://github.com/wrmsr/omlish/blob/master/omcore/dataclasses)** - A fully-compatible
-  reimplementation of stdlib [dataclasses](https://docs.python.org/3/library/dataclasses.html) with numerous
-  enhancements and additional features. The
-  [full stdlib test suite](https://github.com/wrmsr/omlish/blob/master/omcore/dataclasses/tests/cpython) is run against
-  it ensuring compatibility - they *are* dataclasses. Current enhancements include:
+- **[dataclasses](https://github.com/wrmsr/om/blob/master/omcore/dataclasses)** - A fully-compatible reimplementation of
+  stdlib [dataclasses](https://docs.python.org/3/library/dataclasses.html) with numerous enhancements and additional
+  features. The [full stdlib test suite](https://github.com/wrmsr/om/blob/master/omcore/dataclasses/tests/cpython) is
+  run against it ensuring compatibility - they *are* dataclasses. Current enhancements include:
 
   - Simple field coercion and validation.
   - Any number of `@dc.init` or `@dc.validate` methods, not just a central `__post_init__`.
   - Optional generic type parameter substitution in generated `__init__` methods, enabling accurate reflection.
-  - An optional [metaclass](https://github.com/wrmsr/omlish/blob/master/omcore/dataclasses/metaclass) which removes the
-    need for re-decorating subclasses (with support for inheritance of dataclass parameters like `frozen`), and some
-    basic [base classes](https://github.com/wrmsr/omlish/blob/master/omcore/dataclasses/metaclass/bases.py).
+  - An optional [metaclass](https://github.com/wrmsr/om/blob/master/omcore/dataclasses/metaclass) which removes the need
+    for re-decorating subclasses (with support for inheritance of dataclass parameters like `frozen`), and some basic
+    [base classes](https://github.com/wrmsr/om/blob/master/omcore/dataclasses/metaclass/bases.py).
   - Support for ahead-of-time / build-time code generation, significantly reducing import times.
 
   The stdlib-equivalent api is exported in such a way as to appear to be direct aliases for the stdlib api itself,
   simplifying tool support.
 
-- **[dispatch](https://github.com/wrmsr/omlish/blob/master/omcore/dispatch)** - A beefed-up version of
+- **[dispatch](https://github.com/wrmsr/om/blob/master/omcore/dispatch)** - A beefed-up version of
   [functools.singledispatch](https://docs.python.org/3/library/functools.html#functools.singledispatch), most notably
   supporting MRO-honoring method impl dispatch.
 
-- **[formats](https://github.com/wrmsr/omlish/blob/master/omcore/formats)** - Tools for various data formats, including:
+- **[formats](https://github.com/wrmsr/om/blob/master/omcore/formats)** - Tools for various data formats, including:
 
-  - **[json](https://github.com/wrmsr/omlish/blob/master/omcore/formats/json)** - Tools for json, including abstraction
-    over various backends and a self-contained streaming / incremental parser.
-  - **[json5](https://github.com/wrmsr/omlish/blob/master/omcore/formats/json5)** - A self-contained and tested
+  - **[json](https://github.com/wrmsr/om/blob/master/omcore/formats/json)** - Tools for json, including abstraction over
+    various backends and a self-contained streaming / incremental parser.
+  - **[json5](https://github.com/wrmsr/om/blob/master/omcore/formats/json5)** - A self-contained and tested
     [Json5](https://json5.org/) parser.
-  - **[toml](https://github.com/wrmsr/omlish/blob/master/omcore/formats/toml)** - Toml tools, including a
-    [lite](#lite-code) version of the stdlib parser (for use in older pythons).
-  - **[goyaml](https://github.com/wrmsr/omlish/blob/master/omcore/formats/yaml/goyaml)** - A **manual**, near-direct,
+  - **[toml](https://github.com/wrmsr/om/blob/master/omcore/formats/toml)** - Toml tools, including a [lite](#lite-code)
+    version of the stdlib parser (for use in older pythons).
+  - **[goyaml](https://github.com/wrmsr/om/blob/master/omcore/formats/yaml/goyaml)** - A **manual**, near-direct,
     'lite'-compatible translation of [go-yaml](https://github.com/goccy/go-yaml/).
 
   https://github.com/goccy/go-yaml/tree/8dd51ebb7f36f616b85f7b0e54539afa4341f22a
 
-- **[http](https://github.com/wrmsr/omlish/blob/master/omcore/http)** - HTTP code, including:
+- **[http](https://github.com/wrmsr/om/blob/master/omcore/http)** - HTTP code, including:
 
-  - **[clients](https://github.com/wrmsr/omlish/blob/master/omcore/http/clients)** - An abstraction over HTTP clients,
-    with urllib and httpx implementations.
+  - **[clients](https://github.com/wrmsr/om/blob/master/omcore/http/clients)** - An abstraction over HTTP clients, with
+    urllib and httpx implementations.
 
-- **[inject](https://github.com/wrmsr/omlish/blob/master/omcore/inject)** - A
-  [guice](https://github.com/google/guice)-style dependency injector.
+- **[inject](https://github.com/wrmsr/om/blob/master/omcore/inject)** - A [guice](https://github.com/google/guice)-style
+  dependency injector.
 
-- **[io](https://github.com/wrmsr/omlish/blob/master/omcore/io)** - IO tools, including:
+- **[io](https://github.com/wrmsr/om/blob/master/omcore/io)** - IO tools, including:
 
-  - **[compress](https://github.com/wrmsr/omlish/blob/master/omcore/io/compress)** - Abstraction over various
-    compression schemes, with particular attention to incremental operation. For example it includes
-    [an incremental reformulation of stdlib's gzip](https://github.com/wrmsr/omlish/blob/master/omcore/io/compress/gzip.py).
-  - **[fdio](https://github.com/wrmsr/omlish/blob/master/omcore/io/fdio)** - An implementation of classic
+  - **[compress](https://github.com/wrmsr/om/blob/master/omcore/io/compress)** - Abstraction over various compression
+    schemes, with particular attention to incremental operation. For example it includes [an incremental reformulation
+    of stdlib's gzip](https://github.com/wrmsr/om/blob/master/omcore/io/compress/gzip.py).
+  - **[fdio](https://github.com/wrmsr/om/blob/master/omcore/io/fdio)** - An implementation of classic
     [selector](https://docs.python.org/3/library/selectors.html)-style IO dispatch, akin to the deprecated
     [asyncore](https://docs.python.org/3.11/library/asyncore.html). While more modern asyncio style code is generally
-    preferred, it nearly always involves
-    [background threads](https://github.com/python/cpython/blob/95d9dea1c4ed1b1de80074b74301cee0b38d5541/Lib/asyncio/unix_events.py#L1349)
-    making it [unsuitable for forking processes](https://rachelbythebay.com/w/2011/06/07/forked/).
+    preferred, it nearly always involves [background
+    threads](https://github.com/python/cpython/blob/95d9dea1c4ed1b1de80074b74301cee0b38d5541/Lib/asyncio/uni
+    x_events.py#L1349) making it [unsuitable for forking processes](https://rachelbythebay.com/w/2011/06/07/forked/).
 
-- **[jmespath](https://github.com/wrmsr/omlish/blob/master/omcore/specs/jmespath)** - A vendoring of
-  [jmespath community edition](https://github.com/jmespath-community/python-jmespath), modernized and adapted to this
-  codebase.
+- **[jmespath](https://github.com/wrmsr/om/blob/master/omcore/specs/jmespath)** - A vendoring of [jmespath community
+  edition](https://github.com/jmespath-community/python-jmespath), modernized and adapted to this codebase.
 
-- **[marshal](https://github.com/wrmsr/omlish/blob/master/omcore/marshal)** - A
+- **[marshal](https://github.com/wrmsr/om/blob/master/omcore/marshal)** - A
   [jackson](https://github.com/FasterXML/jackson)-style serde system.
 
-- **[manifests](https://github.com/wrmsr/omlish/blob/master/omcore/manifests)** - A system for sharing lightweight
-  metadata within / across codebases.
+- **[manifests](https://github.com/wrmsr/om/blob/master/omcore/manifests)** - A system for sharing lightweight metadata
+  within / across codebases.
 
-- **[reflect](https://github.com/wrmsr/omlish/blob/master/omcore/reflect)** - Reflection utilities, including primarily
-  a formalization of stdlib type annotations for use at runtime, decoupled from stdlib impl detail. Keeping this working
+- **[reflect](https://github.com/wrmsr/om/blob/master/omcore/reflect)** - Reflection utilities, including primarily a
+  formalization of stdlib type annotations for use at runtime, decoupled from stdlib impl detail. Keeping this working
   is notoriously difficult across python versions (one of the primary reasons for only supporting 3.14+).
 
-- **[sql](https://github.com/wrmsr/omlish/blob/master/omcore/sql)** - A collection of SQL utilities, including:
+- **[sql](https://github.com/wrmsr/om/blob/master/omcore/sql)** - A collection of SQL utilities, including:
 
-  - **[api](https://github.com/wrmsr/omlish/blob/master/omcore/sql/api)** - An abstracted api for SQL interaction, with
+  - **[api](https://github.com/wrmsr/om/blob/master/omcore/sql/api)** - An abstracted api for SQL interaction, with
     support for dbapi compatible drivers (and a SQLAlchemy adapter).
-  - **[queries](https://github.com/wrmsr/omlish/blob/master/omcore/sql/queries)** - A SQL query builder with a fluent
+  - **[queries](https://github.com/wrmsr/om/blob/master/omcore/sql/queries)** - A SQL query builder with a fluent
     interface.
-  - **[alchemy](https://github.com/wrmsr/omlish/blob/master/omcore/sql/alchemy)** - SQLAlchemy utilities. The codebase
-    has moved away from SQLAlchemy in favor of its own internal SQL api, but it will likely still remain as an optional
-    dep for the api adapter.
+  - **[alchemy](https://github.com/wrmsr/om/blob/master/omcore/sql/alchemy)** - SQLAlchemy utilities. The codebase has
+    moved away from SQLAlchemy in favor of its own internal SQL api, but it will likely still remain as an optional dep
+    for the api adapter.
 
-- **[testing](https://github.com/wrmsr/omlish/blob/master/omcore/testing)** - Test - primarily pytest - helpers,
-  including:
+- **[testing](https://github.com/wrmsr/om/blob/master/omcore/testing)** - Test - primarily pytest - helpers, including:
 
-  - **['harness'](https://github.com/wrmsr/omlish/blob/master/omcore/testing/pytest/inject/harness.py)** - An all-in-one
+  - **['harness'](https://github.com/wrmsr/om/blob/master/omcore/testing/pytest/inject/harness.py)** - An all-in-one
     fixture marrying it to the codebase's dependency injector.
-  - **[plugins/async](https://github.com/wrmsr/omlish/blob/master/omcore/testing/pytest/plugins/asyncs)** - An in-house
+  - **[plugins/async](https://github.com/wrmsr/om/blob/master/omcore/testing/pytest/plugins/asyncs)** - An in-house
     async-backend abstraction plugin, capable of handling all of asyncio / trio / trio-asyncio /
     *any-future-event-loop-impl* without having multiple fighting plugins (*[I know, I know](https://xkcd.com/927/)*).
-  - **[plugins](https://github.com/wrmsr/omlish/blob/master/omcore/testing/pytest/plugins)** - Various other plugins.
+  - **[plugins](https://github.com/wrmsr/om/blob/master/omcore/testing/pytest/plugins)** - Various other plugins.
 
-- **[typedvalues](https://github.com/wrmsr/omlish/blob/master/omcore/typedvalues)** - A little toolkit around 'boxed'
+- **[typedvalues](https://github.com/wrmsr/om/blob/master/omcore/typedvalues)** - A little toolkit around 'boxed'
   values, whose 'box' types convey more information than the bare values themselves. A rebellion against kwargs / env
   vars / giant config objects: instead of `foo(bar=1, baz=2)`, you do `foo(Bar(1), Baz(2))`.
 
-- **[lite](https://github.com/wrmsr/omlish/blob/master/omcore/lite)** - The standard library of 'lite' code. This is the
+- **[lite](https://github.com/wrmsr/om/blob/master/omcore/lite)** - The standard library of 'lite' code. This is the
   only package beneath `lang`, and parts of it are re-exported by it for deduplication. On top of miscellaneous
   utilities it contains a handful of independent, self-contained, significantly simplified 'lite' equivalents of some
   major core packages:
 
-  - **[lite/inject.py](https://github.com/wrmsr/omlish/blob/master/omcore/lite/inject.py)** - The lite injector, which
-    is more conservative with features and reflection than the core injector. The codebase's
+  - **[lite/inject.py](https://github.com/wrmsr/om/blob/master/omcore/lite/inject.py)** - The lite injector, which is
+    more conservative with features and reflection than the core injector. The codebase's
     [MiniGuice](https://github.com/google/guice/commit/70248eafa90cd70a68b293763e53f6aec656e73c).
-  - **[lite/marshal.py](https://github.com/wrmsr/omlish/blob/master/omcore/lite/marshal.py)** - The lite marshalling
-    system, which is a classic canned setup of simple type-specific 2-method classes and limited generic handling.
+  - **[lite/marshal.py](https://github.com/wrmsr/om/blob/master/omcore/lite/marshal.py)** - The lite marshalling system,
+    which is a classic canned setup of simple type-specific 2-method classes and limited generic handling.
 
 # Lite code
 
 A subset of this codebase is written in a 'lite' style (non-'lite' code is referred to as *standard* code). While
 standard code is written for python 3.14+, 'lite' code is written for 3.8+, and is written in a style conducive to
-[amalgamation](https://github.com/wrmsr/omlish/blob/master/omdev#amalgamation) in which multiple python source files are
+[amalgamation](https://github.com/wrmsr/om/blob/master/omdev#amalgamation) in which multiple python source files are
 stitched together into one single self-contained python script.
 
 Code written in this style has notable differences from standard code, including (but not limited to):
 
 - No name mangling is done in amalgamation, which means (among other things) that code must be written expecting to be
   all dumped into the same giant namespace. Where a standard class might be
-  [`omcore.inject.keys.Key`](https://github.com/wrmsr/omlish/blob/master/omcore/inject/keys.py), a lite equivalent might
-  be [`omcore.lite.inject.InjectorKey`](https://github.com/wrmsr/omlish/blob/master/omcore/lite/inject.py).
+  [`omcore.inject.keys.Key`](https://github.com/wrmsr/om/blob/master/omcore/inject/keys.py), a lite equivalent might be
+  [`omcore.lite.inject.InjectorKey`](https://github.com/wrmsr/om/blob/master/omcore/lite/inject.py).
 - All internal imports `import` each individual item out of modules rather than importing the modules and referencing
   their contents. Where standard code would `from .. import x; x.y`, lite code would `from ..x import y; y`. As a result
   there are frequently 'api' non-instantiated namespace classes serving the purpose of modules - just handy bags of
@@ -167,19 +163,19 @@ Code written in this style has notable differences from standard code, including
 - As lite code is tested in 3.8+ but core code requires 3.14+, packages containing lite code can't import anything
   standard in their (and their ancestors') `__init__.py`'s. Furthermore, `__init__.py` files are omitted outright in
   amalgamation, so they effectively must be empty in any package containing any lite code. As a result there are
-  frequently [`all.py`](https://github.com/wrmsr/omlish/blob/master/omcore/configs/all.py) files in mixed-lite packages
+  frequently [`all.py`](https://github.com/wrmsr/om/blob/master/omcore/configs/all.py) files in mixed-lite packages
   which serve the purpose of `__init__.py` for standard usage - where importing standard packages from standard code
-  would be done via `from .. import lang`, importing mixed-lite packages from standard code would be done via
-  `from ..configs import all as cfgs`.
+  would be done via `from .. import lang`, importing mixed-lite packages from standard code would be done via `from
+  ..configs import all as cfgs`.
 
 # Dependencies
 
 This library has no required dependencies of any kind, but there are some optional integrations - see
-[`__about__.py`](https://github.com/wrmsr/omlish/blob/master/omcore/__about__.py) for a full list, but some specific
+[`__about__.py`](https://github.com/wrmsr/om/blob/master/omcore/__about__.py) for a full list, but some specific
 examples are:
 
 - **asttokens / executing** - For getting runtime source representations of function call arguments, an optional
-  capability of [check](https://github.com/wrmsr/omlish/blob/master/omcore/check.py).
+  capability of [check](https://github.com/wrmsr/om/blob/master/omcore/check.py).
 - **pytest** - What is used for all standard testing - as lite code has no dependencies of any kind its testing uses
   stdlib's [unittest](https://docs.python.org/3/library/unittest.html).
 - **anyio** - While lite code must use only asyncio, some async standard code sometimes is written to anyio.

@@ -10,19 +10,19 @@ and published to pypi.
 The toplevel libraries have no required dependencies besides each other - `omcore` in particular has none at all - but
 there are a number of optional ones - see their respective `pyproject.toml` files for details.
 
-Standard code is written for python 3.14+, '[lite](https://github.com/wrmsr/omlish/blob/master/omcore#lite-code)' code
+Standard code is written for python 3.14+, '[lite](https://github.com/wrmsr/om/blob/master/omcore#lite-code)' code
 for 3.8+.
 
 # Toplevel libraries
 
-- **[omcore](https://github.com/wrmsr/omlish/blob/master/omcore#readme)** - Core foundational code - the comprehensive
+- **[omcore](https://github.com/wrmsr/om/blob/master/omcore#readme)** - Core foundational code - the comprehensive
   standard library, including language helpers (like lazy imports), a `dataclasses` rebuild, a dependency injector, and
   a serde system. This is the most stable of the libraries, and the bottom of the dependency graph.
-- **[omdev](https://github.com/wrmsr/omlish/blob/master/omdev#readme)** - Development utilities, including the
+- **[omdev](https://github.com/wrmsr/om/blob/master/omdev#readme)** - Development utilities, including the
   all-in-one `om` CLI, the amalgamator, the `pyproject` tool, and the ci engine. This is intended to not generally be
   present in production environments.
-- **[omllm](https://github.com/wrmsr/omlish/blob/master/omllm#readme)** - LLM code.
-- **[ominfra](https://github.com/wrmsr/omlish/blob/master/ominfra#readme)** - Infrastructure and cloud code, including
+- **[omllm](https://github.com/wrmsr/om/blob/master/omllm#readme)** - LLM code.
+- **[ominfra](https://github.com/wrmsr/om/blob/master/ominfra#readme)** - Infrastructure and cloud code, including
   a boto alternative and a remote management tool.
 
 # Installation
@@ -36,13 +36,13 @@ pip install omcore
 Or directly from git via:
 
 ```bash
-pip install 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pkg/omcore'
+pip install 'git+https://github.com/wrmsr/om@master#subdirectory=.pkg/omcore'
 ```
 
 The CLI is installable through uvx or pipx via:
 
 ```bash
-curl -LsSf 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py' | python3 -
+curl -LsSf 'https://raw.githubusercontent.com/wrmsr/om/master/omdev/cli/install.py' | python3 -
 ```
 
 Additional deps to be injected may be appended to the command.
@@ -56,8 +56,8 @@ om cli reinstall
 # Project structure
 
 The structure of the repo is managed by the internal
-[pyproject](https://github.com/wrmsr/omlish/blob/master/omdev/pyproject) tool, which generates
-[`.pkg`](https://github.com/wrmsr/omlish/blob/master/.pkg) directories (which map to published packages) from each
-library's [`__about__.py`](https://github.com/wrmsr/omlish/blob/master/omcore/__about__.py). The root-level
-[`pyproject.toml`](https://github.com/wrmsr/omlish/blob/master/pyproject.toml) does not actually contain a PEP-621
+[pyproject](https://github.com/wrmsr/om/blob/master/omdev/pyproject) tool, which generates
+[`.pkg`](https://github.com/wrmsr/om/blob/master/.pkg) directories (which map to published packages) from each
+library's [`__about__.py`](https://github.com/wrmsr/om/blob/master/omcore/__about__.py). The root-level
+[`pyproject.toml`](https://github.com/wrmsr/om/blob/master/pyproject.toml) does not actually contain a PEP-621
 project.

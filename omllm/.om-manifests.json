@@ -12,5 +12,29 @@
         "aliases": null
       }
     }
+  },
+  {
+    "module": ".dev.huggingface.cli",
+    "attr": "_CLI_MODULE",
+    "file": "omllm/dev/huggingface/cli.py",
+    "line": 203,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "hf",
+        "module": "omllm.dev.huggingface.cli"
+      }
+    }
+  },
+  {
+    "module": ".dev.ollama.cli",
+    "attr": "_CLI_MODULE",
+    "file": "omllm/dev/ollama/cli.py",
+    "line": 31,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "ollama",
+        "module": "omllm.dev.ollama.cli"
+      }
+    }
   }
 ]

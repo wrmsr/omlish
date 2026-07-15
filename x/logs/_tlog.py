@@ -32,13 +32,13 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# ../../omlish/lite/reflect.py
+# ../../omcore/lite/reflect.py
 T = ta.TypeVar('T')
 
-# ../../omlish/logs/levels.py
+# ../../omcore/logs/levels.py
 LogLevel = int  # ta.TypeAlias
 
-# ../../omlish/logs/typed/types.py
+# ../../omcore/logs/typed/types.py
 U = ta.TypeVar('U')
 TypedLoggerValueT = ta.TypeVar('TypedLoggerValueT', bound='TypedLoggerValue')
 TypedLoggerValueOrProvider = ta.Union['TypedLoggerValue', 'TypedLoggerValueProvider']  # ta.TypeAlias
@@ -49,13 +49,13 @@ TypedLoggerFieldValue = ta.Union[TypedLoggerValueOrProviderOrAbsent, ta.Type['Ty
 ResolvedTypedLoggerFieldValue = ta.Union[TypedLoggerValueOrAbsent, 'TypedLoggerConstFieldValue']  # ta.TypeAlias
 UnwrappedTypedLoggerFieldValue = ta.Union[TypedLoggerValueOrAbsent, ta.Any]  # ta.TypeAlias
 
-# ../../omlish/logs/typed/bindings.py
+# ../../omcore/logs/typed/bindings.py
 TypedLoggerBindingItem = ta.Union['TypedLoggerField', 'TypedLoggerValueOrProvider', 'TypedLoggerBindings', 'TypedLoggerValueWrapper']  # ta.TypeAlias  # noqa
 TypedLoggerValueWrapperFn = ta.Callable[[ta.Any], 'TypedLoggerValue']  # ta.TypeAlias
 
 
 ########################################
-# ../../../omlish/lite/abstract.py
+# ../../../omcore/lite/abstract.py
 
 
 ##
@@ -175,7 +175,7 @@ class Abstract:
 
 
 ########################################
-# ../../../omlish/lite/reflect.py
+# ../../../omcore/lite/reflect.py
 
 
 ##
@@ -264,7 +264,7 @@ def get_literal_type_args(spec: ta.Any) -> ta.Iterable[ta.Any]:
 
 
 ########################################
-# ../../../omlish/lite/strings.py
+# ../../../omcore/lite/strings.py
 
 
 ##
@@ -362,7 +362,7 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
-# ../../../omlish/lite/wrappers.py
+# ../../../omcore/lite/wrappers.py
 
 
 ##
@@ -386,7 +386,7 @@ def update_wrapper_no_annotations(wrapper, wrapped):
 
 
 ########################################
-# ../../../omlish/logs/callers.py
+# ../../../omcore/logs/callers.py
 
 
 ##
@@ -431,14 +431,14 @@ class LoggingCaller(ta.NamedTuple):
 
 
 ########################################
-# ../../../omlish/logs/levels.py
+# ../../../omcore/logs/levels.py
 
 
 ##
 
 
 ########################################
-# ../../../omlish/logs/typed/types.py
+# ../../../omcore/logs/typed/types.py
 
 
 ##
@@ -895,7 +895,7 @@ def unwrap_typed_logger_field_value(rfv):
 
 
 ########################################
-# ../../../omlish/logs/typed/bindings.py
+# ../../../omcore/logs/typed/bindings.py
 """
 TODO:
  - optimization of just using ChainMap when override?
@@ -1296,7 +1296,7 @@ def as_typed_logger_bindings(
 
 
 ########################################
-# ../../../omlish/logs/typed/contexts.py
+# ../../../omcore/logs/typed/contexts.py
 
 
 ##
@@ -1422,7 +1422,7 @@ class TypedLoggerContext:
 
 
 ########################################
-# ../../../omlish/logs/typed/values.py
+# ../../../omcore/logs/typed/values.py
 
 
 ##
@@ -1525,7 +1525,7 @@ class StandardTypedLoggerValues:
 
 
 ########################################
-# ../../../omlish/logs/typed/tests/api.py
+# ../../../omcore/logs/typed/tests/api.py
 
 
 ##

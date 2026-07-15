@@ -3,12 +3,12 @@ import os
 import sys
 import typing as ta
 
-from omdev.cli import CliModule
 from omcore import lang
 from omcore.argparse import all as ap
 from omcore.formats.json import all as json
 from omcore.logs import all as logs
 from omcore.term.confirm import confirm_action
+from omdev.cli import CliModule
 
 
 with lang.auto_proxy_import(globals()):
@@ -200,7 +200,7 @@ def _main() -> None:
     Cli()()
 
 
-# DISABLED: # @om-manifest
+# @om-manifest
 _CLI_MODULE = CliModule('hf', __name__)
 
 

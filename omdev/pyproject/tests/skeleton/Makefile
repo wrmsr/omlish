@@ -6,7 +6,7 @@ clean:
 		.venvs*
 
 pyproject.py:
-	curl https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/scripts/pyproject.py > pyproject.py
+	curl https://raw.githubusercontent.com/wrmsr/om/master/omdev/scripts/pyproject.py > pyproject.py
 	chmod a+x pyproject.py
 
 VENV?=default

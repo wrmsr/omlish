@@ -19,12 +19,12 @@ def test_default():
 
     for spec in [
         specs.GitSpec(
-            'https://github.com/wrmsr/omlish',
+            'https://github.com/wrmsr/om',
             rev='b5afdda1733e406bf98c88cf526b04423e74581e',
             subtrees=('docker/compose.yml',),
         ),
         specs.GithubContentSpec(
-            'wrmsr/omlish',
+            'wrmsr/om',
             'b5afdda1733e406bf98c88cf526b04423e74581e',
             ('README.rst',),
         ),

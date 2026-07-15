@@ -2,8 +2,9 @@ from omcore import resources as rs
 from omcore.formats.json import all as json
 from omcore.http import all as http
 
-from .....core import StreamSink
-from .....core import new_stream
+from .....core.http.sse import Utf8SseDecoder
+from .....core.streams import StreamSink
+from .....core.streams import new_stream
 from ....types.backends import StreamBackend
 from ....types.content import TextContent
 from ....types.context import Context
@@ -58,11 +59,14 @@ class OpenaiCompletionsStreamBackend(BaseBackend, StreamBackend):
             async def inner(sink: StreamSink[AiEvent]) -> AiMessage:
                 await sink.emit(StartAiEvent())
 
-                while True:
-                    if not (b := await http_response.stream.read1()):
-                        break
+                decoder = Utf8SseDecoder()
 
-                    print(b)
+                while read := await http_response.stream.read1():
+                    for item in decoder.feed(read):
+                        print(item)
+
+                for item in decoder.finish():
+                    print(item)
 
                 await sink.emit(EndAiEvent())
 

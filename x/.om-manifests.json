@@ -1171,30 +1171,6 @@
     }
   },
   {
-    "module": ".ommlds.backends.huggingface.cli",
-    "attr": "_CLI_MODULE",
-    "file": "x/ommlds/backends/huggingface/cli.py",
-    "line": 203,
-    "value": {
-      "!omdev.cli.types.CliModule": {
-        "name": "hf",
-        "module": "x.ommlds.backends.huggingface.cli"
-      }
-    }
-  },
-  {
-    "module": ".ommlds.backends.ollama.cli",
-    "attr": "_CLI_MODULE",
-    "file": "x/ommlds/backends/ollama/cli.py",
-    "line": 31,
-    "value": {
-      "!omdev.cli.types.CliModule": {
-        "name": "ollama",
-        "module": "x.ommlds.backends.ollama.cli"
-      }
-    }
-  },
-  {
     "module": ".ommlds.tools.git",
     "attr": null,
     "file": "x/ommlds/tools/git.py",

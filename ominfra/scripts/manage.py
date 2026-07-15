@@ -170,7 +170,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omdev/interp/uv/uv.py', sha1='1239cb13aad6669a638fdc2c390442a8588460b2'),
             dict(path='commands/subprocess.py', sha1='dfc9a7dfec1d8514b2a30f9685dd92f81b6d3bb0'),
             dict(path='deploy/conf/inject.py', sha1='ce887c9f8773a40e65e91f5b44b2bf051b7930f7'),
-            dict(path='deploy/git.py', sha1='08853103ff991ce82469990b966fcc4e20d31351'),
+            dict(path='deploy/git.py', sha1='01eec7fc7564eef717df26ab3ad2d48c22312fc2'),
             dict(path='deploy/paths/inject.py', sha1='9a21dc122a90c6e540ec38abe18cf6a9886a8aea'),
             dict(path='deploy/systemd.py', sha1='b49196fefdea2330c58c4eb55a5726ef266cb95a'),
             dict(path='remote/execution.py', sha1='3f0c82256063cd7fd20815d6a64cff07431708b1'),
@@ -15030,7 +15030,7 @@ TODO:
  - parse refs, resolve revs
  - non-subtree shallow clone
 
-github.com/wrmsr/omlish@rev
+github.com/wrmsr/om@rev
 """
 
 

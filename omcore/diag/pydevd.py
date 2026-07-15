@@ -140,7 +140,7 @@ def _pydevd() -> types.ModuleType | None:
 
 def is_present() -> bool:
     # FIXME: try to use `lang.can_import('pydevd'), but raises with:
-    # INTERNALERROR>   File "/Users/spinlock/src/wrmsr/omlish/omcore/lang/imports/resolving.py", line 16, in can_import
+    # INTERNALERROR>   File "/Users/spinlock/src/wrmsr/om/omcore/lang/imports/resolving.py", line 16, in can_import
     # INTERNALERROR>     spec = importlib.util.find_spec(name, package)
     # INTERNALERROR>   File "<frozen importlib.util>", line 111, in find_spec
     # INTERNALERROR> ValueError: pydevd.__spec__ is None

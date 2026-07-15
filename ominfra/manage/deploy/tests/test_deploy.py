@@ -121,7 +121,7 @@ SUPERVISOR_SPEC = DeployAppSpec(
     git=DeployGitSpec(
         repo=DeployGitRepo(
             host='github.com',
-            path='wrmsr/omlish',
+            path='wrmsr/om',
         ),
         rev=DeployRev('a2fc184a53ba524221b2443750c2493765d34efd'),
         subtrees=[
