@@ -1,6 +1,7 @@
 import typing as ta
 
 from omcore import check
+from omcore import collections as col
 from omcore import resources as rs
 from omcore.formats.json import all as json
 from omcore.http import all as http
@@ -24,6 +25,7 @@ from ....types.streams import StreamStartAiStreamEvent
 from ....types.streams import TextDeltaAiStreamEvent
 from ....types.streams import TextEndAiStreamEvent
 from ....types.streams import TextStartAiStreamEvent
+from ....types.streams import ToolCallStartAiStreamEvent
 from ..base import BaseBackend
 from .requests import RequestPreparer
 
@@ -53,8 +55,7 @@ class SseEventProcessor:
         self._text_: TextContentBuilder | None = None
 
         self._tool_calls_by_id_: dict[str, ToolCallBuilder] = {}
-        self._tool_calls_by_index_: dict[int, ToolCallBuilder] = {}
-        self._indexes_by_tool_call_: dict[ToolCallBuilder,int] = {}
+        self._tool_calls_by_index_: col.MutableBiMap[int, ToolCallBuilder] = col.make_mutable_bi_map()
 
     #
 
@@ -107,24 +108,35 @@ class SseEventProcessor:
         if id is not None:
             if (b := self._tool_calls_by_id_.get(id)) is not None:
                 if index is not None:
-                    if (xi := self._indexes_by_tool_call_.get(b)) is not None:
-                        check.equal(xi, index)
-                        check.is_(self._tool_calls_by_index_[index], b)
+                    if (xb := self._tool_calls_by_index_.get(index)) is not None:
+                        check.is_(b, xb)
                     else:
-                        self._indexes_by_tool_call_[b] = index
                         self._tool_calls_by_index_[index] = b
                 return b
 
         if index is not None:
             if (b := self._tool_calls_by_index_.get(index)) is not None:
-                if index is not None:
-                    check.not_in(index, self._tool_calls_by_index_)
-                    check.not_in(b, self._indexes_by_tool_call_)
-                    self._indexes_by_tool_call_[b] = index
-                    self._tool_calls_by_index_[index] = b
+                if id is not None:
+                    check.none(b.id)
+                    check.not_in(id, self._tool_calls_by_id_)
+                    b.id = id
+                    self._tool_calls_by_id_[id] = b
                 return b
 
-        raise NotImplementedError
+        b = ToolCallBuilder()
+        i = self._add_content(b)
+        self._emit(ToolCallStartAiStreamEvent(
+            content_index=i,
+        ))
+
+        if id is not None:
+            b.id = id
+            self._tool_calls_by_id_[id] = b
+
+        if index is not None:
+            self._tool_calls_by_index_[index] = b
+
+        return b
 
     #
 
@@ -155,8 +167,12 @@ class SseEventProcessor:
             ))
             text.text.write(raw_content)
 
-        if raw_tool_calls := raw_delta.get('tool_calls'):  # noqa
+        if raw_tool_calls := raw_delta.get('tool_calls'):
             for raw_tool_call in raw_tool_calls:  # noqa
+                tool_call = self._tool_call(  # noqa
+                    id=check.isinstance(raw_tool_call.get('id'), (str, None)),
+                    index=check.isinstance(raw_tool_call.get('index'), (int, None)),
+                )
                 raise NotImplementedError
 
     def feed(self, sse: SseEvent) -> list[AiStreamEvent]:

@@ -15,8 +15,8 @@ def test_tuple_bi_multi_map() -> None:
     })
 
     assert m['b'] == (3, 4)
-    assert m.inverse()[2] == 'a'
-    assert m.inverse().inverse()['b'] == (3, 4)
+    assert m.inverse[2] == 'a'
+    assert m.inverse.inverse['b'] == (3, 4)
 
 
 def test_frozenset_bi_multi_map() -> None:
@@ -27,5 +27,5 @@ def test_frozenset_bi_multi_map() -> None:
     })
 
     assert m['b'] == frozenset([3, 4])
-    assert m.inverse()[2] == 'a'
-    assert m.inverse().inverse()['b'] == frozenset([3, 4])
+    assert m.inverse[2] == 'a'
+    assert m.inverse.inverse['b'] == frozenset([3, 4])

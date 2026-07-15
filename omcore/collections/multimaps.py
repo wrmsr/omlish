@@ -24,12 +24,14 @@ AbstractSetMultiMap: ta.TypeAlias = MultiMap[K, V, ta.AbstractSet[V]]
 
 
 class BiMultiMap(MultiMap[K, V, MV], abc.ABC, ta.Generic[K, V, MV]):
+    @property
     @abc.abstractmethod
     def inverse(self) -> InverseBiMultiMap[K, V, MV]:
         raise NotImplementedError
 
 
 class InverseBiMultiMap(ta.Mapping[V, K], abc.ABC, ta.Generic[K, V, MV]):
+    @property
     @abc.abstractmethod
     def inverse(self) -> BiMultiMap[K, V, MV]:
         raise NotImplementedError
@@ -49,6 +51,7 @@ class InverseBiMultiMapImpl(InverseBiMultiMap[K, V, MV], ta.Generic[K, V, MV]):
         self._m = m
         self._dct = dct
 
+    @property
     def inverse(self) -> BiMultiMap[K, V, MV]:
         return self._m
 
@@ -84,6 +87,7 @@ class BaseBiMultiMap(BiMultiMap[K, V, MV], abc.ABC, ta.Generic[K, V, MV]):
     def _aggregate_values(self, vs: list[V]) -> MV:
         raise NotImplementedError
 
+    @property
     def inverse(self) -> InverseBiMultiMap[K, V, MV]:
         return self._i
 
