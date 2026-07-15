@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/om'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
-version = '0.0.29'
+version = '0.0.30'
 classifiers = [
     'Intended Audience :: Developers',
     'Operating System :: OS Independent',
@@ -23,13 +23,13 @@ classifiers = [
 ]
 description = 'omdev'
 dependencies = [
-    'omcore == 0.0.29',
+    'omcore == 0.0.30',
 ]
 
 [project.optional-dependencies]
 all = [
-    'ominfra == 0.0.29',
-    'omllm == 0.0.29',
+    'ominfra == 0.0.30',
+    'omllm == 0.0.30',
     'black ~= 26.5',
     'pycparser ~= 3.0',
     'pcpp ~= 1.30',
@@ -49,10 +49,10 @@ all = [
     'textual-speedups ~= 0.2',
 ]
 ominfra = [
-    'ominfra == 0.0.29',
+    'ominfra == 0.0.30',
 ]
 omllm = [
-    'omllm == 0.0.29',
+    'omllm == 0.0.30',
 ]
 black = [
     'black ~= 26.5',
