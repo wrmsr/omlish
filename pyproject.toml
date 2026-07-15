@@ -105,11 +105,11 @@ interp = '@8'
 
 [tool.om.pyproject.venvs.docker]
 inherits = ['_default']
-docker_service = 'omlish-dev'
+docker_service = 'om-dev'
 
 [tool.om.pyproject.venvs.docker-amd64]
 inherits = ['_default']
-docker_service = 'omlish-dev-amd64'
+docker_service = 'om-dev-amd64'
 
 #
 

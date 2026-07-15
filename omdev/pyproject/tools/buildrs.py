@@ -50,7 +50,7 @@ def _main() -> None:
             cwd=rs_pkg_dir,
             env={
                 **os.environ,
-                'OMLISH_PYCHARM_RUNHACK_ENABLED': '0',
+                'OM_PYCHARM_RUNHACK_ENABLED': '0',
             },
             check=True,
         )

@@ -9,7 +9,7 @@
     {
       "name": "journald2aws",
       "group": "journald2aws",
-      "command": "python3 ominfra/scripts/journald2aws.py --config-file ~/.omlish/journald2aws.json --real",
+      "command": "python3 ominfra/scripts/journald2aws.py --config-file ~/.om/journald2aws.json --real",
       "directory": "~/src/omlish2",
       "stderr": {
         "file": "/dev/fd/1",

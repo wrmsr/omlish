@@ -13,9 +13,9 @@ def test_imports():
 #
 #     async def run():
 #         conn = await asyncpg.connect(
-#             host='omlish-postgres',
+#             host='om-postgres',
 #             user='postgres',
-#             password='omlish',
+#             password='om',
 #         )
 #
 #         values = await conn.fetch(
@@ -38,5 +38,5 @@ def test_pg_ping():
     subprocess.check_call([
         'ping',
         '-c', '1',
-        'omlish-postgres',
+        'om-postgres',
     ])

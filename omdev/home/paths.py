@@ -14,8 +14,8 @@ from omcore.os.environ import EnvVar
 ##
 
 
-HOME_DIR_ENV_VAR = EnvVar('OMLISH_HOME')
-DEFAULT_HOME_DIR = '~/.omlish'
+HOME_DIR_ENV_VAR = EnvVar('OM_HOME')
+DEFAULT_HOME_DIR = '~/.om'
 
 
 def get_home_dir() -> str:
@@ -99,8 +99,8 @@ def get_home_paths() -> HomePaths:
 ##
 
 
-CACHE_DIR_ENV_VAR = EnvVar('OMLISH_CACHE')
-DEFAULT_CACHE_DIR = '~/.cache/omlish'
+CACHE_DIR_ENV_VAR = EnvVar('OM_CACHE')
+DEFAULT_CACHE_DIR = '~/.cache/om'
 
 
 def get_cache_dir() -> str:

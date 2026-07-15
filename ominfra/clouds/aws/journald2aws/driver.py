@@ -71,7 +71,7 @@ class JournalctlToAwsDriver(ExitStacked):
 
         #
 
-        aws_log_group_name: str = 'omlish'
+        aws_log_group_name: str = 'om'
         aws_log_stream_name: ta.Optional[str] = None
 
         aws_access_key_id: ta.Optional[str] = None

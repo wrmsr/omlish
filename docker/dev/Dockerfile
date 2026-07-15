@@ -175,7 +175,7 @@ apt-get install -y $DEPS ;\
 ## user
 
 RUN (\
-export NEW_USER='omlish' ;\
+export NEW_USER='om' ;\
 export NEW_UID='4317' ;\
 export NEW_GID='4317' ;\
 \
@@ -198,7 +198,7 @@ echo "${NEW_USER} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${NEW_USER} ;\
 chmod 0440 /etc/sudoers.d/${NEW_USER} ;\
 )
 
-USER omlish
+USER om
 
 
 ## firefox
@@ -410,7 +410,7 @@ done ;\
 ## pyenv
 
 RUN \
-  --mount=target=/omlish/.pyenv_cache,type=cache,sharing=locked,uid=4317,gid=4317 \
+  --mount=target=/om/.pyenv_cache,type=cache,sharing=locked,uid=4317,gid=4317 \
 ( \
 export PYENV_VERSIONS='3.8.20 3.13.14 3.14.6 3.14.6t 3.15.0b3 3.15.0b3t' ;\
 \
@@ -442,7 +442,7 @@ sudo chgrp -R $(id -gn) "$WORKDIR" ;\
 ## chgrp
 
 RUN (\
-export CHGRP_ROOTS='/omlish /work' ;\
+export CHGRP_ROOTS='/om /work' ;\
 \
 set -ex ;\
 umask 0002 ;\
@@ -469,13 +469,13 @@ sudo mkdir /var/run/sshd ;\
 
 ## configs
 
-RUN cat > /omlish/.gdbinit <<'EOF' && chmod 664 /omlish/.gdbinit
+RUN cat > /om/.gdbinit <<'EOF' && chmod 664 /om/.gdbinit
 handle SIGUSR1 nostop noprint
 handle SIGUSR2 nostop noprint
 EOF
 
 
-RUN cat > /omlish/.sqliterc <<'EOF' && chmod 664 /omlish/.sqliterc
+RUN cat > /om/.sqliterc <<'EOF' && chmod 664 /om/.sqliterc
 .headers on
 .mode line
 .timer on
@@ -483,7 +483,7 @@ RUN cat > /omlish/.sqliterc <<'EOF' && chmod 664 /omlish/.sqliterc
 EOF
 
 
-RUN cat > /omlish/.tmux.conf <<'EOF' && chmod 664 /omlish/.tmux.conf
+RUN cat > /om/.tmux.conf <<'EOF' && chmod 664 /om/.tmux.conf
 setw -g mode-keys vi
 set -g status-keys vi
 set -sg escape-time 0
@@ -495,7 +495,7 @@ set -g extended-keys on
 EOF
 
 
-RUN cat > /omlish/.vimrc <<'EOF' && chmod 664 /omlish/.vimrc
+RUN cat > /om/.vimrc <<'EOF' && chmod 664 /om/.vimrc
 set number
 syntax on
 filetype indent plugin on
@@ -509,10 +509,10 @@ EOF
 ## scripts
 
 RUN (\
-mkdir /omlish/scripts && chmod -R g=u /omlish/scripts ;\
+mkdir /om/scripts && chmod -R g=u /om/scripts ;\
 )
 
-RUN cat > /omlish/scripts/install-claude <<'EOF' && chmod 664 /omlish/scripts/install-claude
+RUN cat > /om/scripts/install-claude <<'EOF' && chmod 664 /om/scripts/install-claude
 #!/bin/bash
 set -e
 
@@ -520,7 +520,7 @@ curl -fsSL 'https://claude.ai/install.sh' | bash
 EOF
 
 
-RUN cat > /omlish/scripts/install-codex <<'EOF' && chmod 664 /omlish/scripts/install-codex
+RUN cat > /om/scripts/install-codex <<'EOF' && chmod 664 /om/scripts/install-codex
 #!/bin/bash
 set -e
 
@@ -528,7 +528,7 @@ npm i -g @openai/codex
 EOF
 
 
-RUN cat > /omlish/scripts/install-pi <<'EOF' && chmod 664 /omlish/scripts/install-pi
+RUN cat > /om/scripts/install-pi <<'EOF' && chmod 664 /om/scripts/install-pi
 #!/bin/bash
 set -e
 
@@ -536,7 +536,7 @@ curl -fsSL https://pi.dev/install.sh | sh
 EOF
 
 
-RUN cat > /omlish/scripts/run-dbus <<'EOF' && chmod 664 /omlish/scripts/run-dbus
+RUN cat > /om/scripts/run-dbus <<'EOF' && chmod 664 /om/scripts/run-dbus
 #!/bin/bash
 set -ex
 
@@ -546,11 +546,11 @@ EOF
 
 
 RUN (\
-chmod a+x /omlish/scripts/* ;\
+chmod a+x /om/scripts/* ;\
 )
 
 RUN (\
-echo '\n\nexport PATH="$HOME/scripts:$PATH"' >> /omlish/.bashrc ;\
+echo '\n\nexport PATH="$HOME/scripts:$PATH"' >> /om/.bashrc ;\
 )
 
 

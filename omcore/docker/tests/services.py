@@ -7,7 +7,7 @@ from ..compose import ComposeConfig
 
 
 Prefix = ta.NewType('Prefix', str)
-DEFAULT_PREFIX = Prefix('omlish-')
+DEFAULT_PREFIX = Prefix('om-')
 
 DEFAULT_CONFIG_FILE_PATH = 'docker/compose.yml'
 

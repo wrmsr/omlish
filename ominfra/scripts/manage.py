@@ -95,7 +95,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/logs/warnings.py', sha1='03e6c5d0c4c25b51cdd225c029e652cdf741a51a'),
             dict(path='../../omcore/os/deathsig.py', sha1='be09a6fd1f168c1a6c9b66afee54733896c94810'),
             dict(path='../../omcore/os/environ.py', sha1='52998c8802914655fe20f0a44b3f151687b12fba'),
-            dict(path='../../omcore/os/linux.py', sha1='06bb65727e72e50d6ac86d0dba9dfb471daad352'),
+            dict(path='../../omcore/os/linux.py', sha1='3737d208fd874e4b3f8e8e6cd4ff5c994072f9da'),
             dict(path='../../omcore/os/paths.py', sha1='d9cc256d0d39be0ebc9ee4c87ab386af0c5fa98f'),
             dict(path='../../omcore/shlex.py', sha1='a0507bf476ce0e1035b405129bac05d8d225041d'),
             dict(path='../../omdev/packaging/versions.py', sha1='cd6a636f9944f3c8b410c40a5212b538cc7f4200'),
@@ -117,7 +117,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/logs/protocols.py', sha1='2e13388c65699c4aa89f32b78be8496b94fc40bb'),
             dict(path='../../omcore/os/atomics.py', sha1='2e8bdffc2d762a7fccd4fc8630e3e3dbbea7ea0c'),
             dict(path='../../omcore/text/indent.py', sha1='c5629b68ef0d0825c59e8ea1f4d2a16cb7f2435b'),
-            dict(path='../../omdev/home/paths.py', sha1='ee4fc10063d31909839dbcf1530fdcfff898dcfe'),
+            dict(path='../../omdev/home/paths.py', sha1='5092354b186f79d8abd54d74dc08d850e645f09e'),
             dict(path='../../omdev/packaging/specifiers.py', sha1='d1a6a73c198a9266a605234efeb8bef2b940eeb5'),
             dict(path='deploy/paths/specs.py', sha1='10e10dce4dc9dd95ac4fae4e503df0d875159b2b'),
             dict(path='remote/config.py', sha1='aae286c7cf7b73708c0a1f7b69cd2cc6f17540f7'),
@@ -4098,7 +4098,7 @@ ID=ubuntu
 ID_LIKE=debian
 UBUNTU_CODENAME=jammy
 
-➜  omlish git:(master) docker run -i python:3.13 cat /etc/os-release
+➜  om git:(master) docker run -i python:3.13 cat /etc/os-release
 PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
 NAME="Debian GNU/Linux"
 VERSION_ID="12"
@@ -8279,8 +8279,8 @@ TODO:
 ##
 
 
-HOME_DIR_ENV_VAR = EnvVar('OMLISH_HOME')
-DEFAULT_HOME_DIR = '~/.omlish'
+HOME_DIR_ENV_VAR = EnvVar('OM_HOME')
+DEFAULT_HOME_DIR = '~/.om'
 
 
 def get_home_dir() -> str:
@@ -8364,8 +8364,8 @@ def get_home_paths() -> HomePaths:
 ##
 
 
-CACHE_DIR_ENV_VAR = EnvVar('OMLISH_CACHE')
-DEFAULT_CACHE_DIR = '~/.cache/omlish'
+CACHE_DIR_ENV_VAR = EnvVar('OM_CACHE')
+DEFAULT_CACHE_DIR = '~/.cache/om'
 
 
 def get_cache_dir() -> str:

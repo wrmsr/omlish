@@ -44,6 +44,6 @@ Some of this code, when asked, will store things on the local filesystem. The on
 explicitly specified as command or function arguments) are managed in
 [home.paths](https://github.com/wrmsr/om/blob/master/omdev/home/paths.py), and are the following:
 
-- `$OMLISH_HOME`, default of `~/.omlish` - persistent things like config and state.
-- `$OMLISH_CACHE`, default of `~/.cache/omlish` - used for things like the local ci cache and [various
-  other](https://github.com/search?q=repo%3Awrmsr%2Fomlish+%22dcache.%22&type=code) cached data.
+- `$OM_HOME`, default of `~/.om` - persistent things like config and state.
+- `$OM_CACHE`, default of `~/.cache/om` - used for things like the local ci cache and [various
+  other](https://github.com/search?q=repo%3Awrmsr%2Fom+%22dcache.%22&type=code) cached data.

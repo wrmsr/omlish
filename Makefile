@@ -486,12 +486,12 @@ docker-stop:
 	${DOCKER_COMPOSE} stop
 
 DOCKER_DEV_CONTAINERS=\
-	omlish-dev \
-	# omlish-dev-amd64 \
+	om-dev \
+	# om-dev-amd64 \
 
 DOCKER_LITE_CONTAINERS=\
-	omlish-mysql \
-	omlish-postgres \
+	om-mysql \
+	om-postgres \
 
 .PHONY: docker-rebuild
 docker-rebuild: docker-stop
@@ -524,10 +524,10 @@ docker-dev-temp-bash:
 ### CI
 
 CI_PROJECT_DIR:=.
-CI_SERVICE:=omlish-ci
+CI_SERVICE:=om-ci
 CI_RUN:=\
 	./python omdev/scripts/ci.py run \
-		--cache-dir ~/.cache/omlish/ci \
+		--cache-dir ~/.cache/om/ci \
 		--github-detect \
 		-e CI=1 \
 		$$CI_RUN_OPTS
@@ -638,11 +638,11 @@ build-rs:
 
 .PHONY: my-repl
 my-repl: venv
-	${PYTHON} -m omdev.tools.sqlrepl repl mysql docker/compose.yml:omlish-mysql
+	${PYTHON} -m omdev.tools.sqlrepl repl mysql docker/compose.yml:om-mysql
 
 .PHONY: pg-repl
 pg-repl: venv
-	${PYTHON} -m omdev.tools.sqlrepl repl postgres docker/compose.yml:omlish-postgres
+	${PYTHON} -m omdev.tools.sqlrepl repl postgres docker/compose.yml:om-postgres
 
 .PHONY: secret-pg-repl
 secret-pg-repl: venv

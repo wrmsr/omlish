@@ -110,7 +110,7 @@ def __om_amalg__():  # noqa
             dict(path='../../../threadworkers.py', sha1='3ecad2a49598539a113d0ef2a97b632871ecb400'),
             dict(path='poster.py', sha1='c08f413405f6e410bd060536b4a55d060bfa5080'),
             dict(path='../../../journald/tailer.py', sha1='ece26cf4d19b819a87d1f3393f92c2f2da439dc2'),
-            dict(path='driver.py', sha1='8c6a06cbdfc72974acaeb89a01afcdc2560462d5'),
+            dict(path='driver.py', sha1='456aec1a6b219acfc720b74800e27cf00999e294'),
             dict(path='main.py', sha1='a32f5780a5a399084020622fc444d8602c605293'),
         ],
     )
@@ -9701,7 +9701,7 @@ class JournalctlToAwsDriver(ExitStacked):
 
         #
 
-        aws_log_group_name: str = 'omlish'
+        aws_log_group_name: str = 'om'
         aws_log_stream_name: ta.Optional[str] = None
 
         aws_access_key_id: ta.Optional[str] = None

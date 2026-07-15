@@ -5,7 +5,7 @@
     --user=0:0 \
     --env=EXTERNAL_UID=1000 \
     --env=EXTERNAL_GID=1000 \
-    --env=INTERNAL_USER=omlish \
+    --env=INTERNAL_USER=om \
     --rm -it bash
 
 ====
@@ -40,7 +40,7 @@ unset INTERNAL_USER
 unset INTERNAL_UID
 unset INTERNAL_HOME
 
-exec gosu omlish bash  # "$@"
+exec gosu om bash  # "$@"
 """
 import os.path
 import platform
@@ -96,7 +96,7 @@ class RunArgs:
     extra_args: ta.Sequence[str] | None = None
 
 
-LABEL_PREFIX = 'omlish.dockerdev'
+LABEL_PREFIX = 'om.dockerdev'
 
 
 @dc.dataclass(frozen=True)

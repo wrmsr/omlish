@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 """
 TODO:
- - ~/.cache/omlish/interp/standalone/...
+ - ~/.cache/om/interp/standalone/...
  - remove fallback
 """
 # MIT License

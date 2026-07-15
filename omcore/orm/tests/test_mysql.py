@@ -30,7 +30,7 @@ def test_pymysql(harness) -> None:
         password=check.not_none(p_u.password),
     )) as c:
         with c.cursor() as cur:
-            cur.execute('create database if not exists omlish_test')
+            cur.execute('create database if not exists om_test')
         c.commit()
 
     db = sql.api.DbapiDb(
@@ -40,7 +40,7 @@ def test_pymysql(harness) -> None:
             port=check.not_none(p_u.port),
             user=p_u.username,
             password=check.not_none(p_u.password),
-            database='omlish_test',
+            database='om_test',
             autocommit=True,
         ),
         adapter=sql.be.mysql.adapters.mysql_adapter(),

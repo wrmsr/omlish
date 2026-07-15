@@ -14,12 +14,12 @@ Inputs:
 
 ==
 
-run --cache-dir omdev/ci/tests/cache -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
+run --cache-dir omdev/ci/tests/cache -e CI=1 omdev/ci/tests/project om-ci pytest tests
 
-run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
-run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build --always-pull -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
+run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build -e CI=1 omdev/ci/tests/project om-ci pytest tests
+run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build --always-pull -e CI=1 omdev/ci/tests/project om-ci pytest tests
 
-run --cache-dir ~/.cache/omlish/ci . omlish-ci bash
+run --cache-dir ~/.cache/om/ci . om-ci bash
 """  # noqa
 import abc
 import argparse
@@ -246,7 +246,7 @@ def __om_amalg__():  # noqa
             dict(path='docker/cacheserved/cache.py', sha1='0ae76cfd4a0c88ca1087d4fc304e80ca59d42c62'),
             dict(path='docker/inject.py', sha1='4755881c4f90bfa7508c4e8aa03d9f030a9123d8'),
             dict(path='inject.py', sha1='277c5529fd72cc023f136da599e10f9547ef9d60'),
-            dict(path='cli.py', sha1='8b5dee160252974c0d5fc1b205ca80bd14e7fae2'),
+            dict(path='cli.py', sha1='457b154c601f8cfe7387fefc0be85c2a03b300d3'),
         ],
     )
 

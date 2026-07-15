@@ -37,8 +37,8 @@ def test_render_create_table(harness) -> None:
         )))
         cursor = es.enter_context(contextlib.closing(conn.cursor()))
 
-        cursor.execute('create database if not exists omlish_test')
-        cursor.execute('use omlish_test')
+        cursor.execute('create database if not exists om_test')
+        cursor.execute('use om_test')
         cursor.execute('drop table if exists test_render_create_table')
 
         tbl = lower_table_elements(TableDef('test_render_create_table', Elements(

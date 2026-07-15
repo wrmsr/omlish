@@ -8,7 +8,7 @@ TODO:
    - can fast-build new (temp) image w preamble (probably slow and garbagey)
  - launch / manage compose services
  - more cache dirs
- - --mount=type=bind,src="$(pwd)",dst=/omlish/pwd
+ - --mount=type=bind,src="$(pwd)",dst=/om/pwd
  - build --no-cache / cache bust
    - build args
  - `run --pull=never`, `build --pull=false`
@@ -22,7 +22,7 @@ if [ -t 1 ] ; then TTY_ENV_ARGS="-e LINES=$(tput lines) -e COLUMNS=$(tput cols)"
 
 ====
 
-tag = f'omlish-dockerdev--{time.time_ns()}--{os.getpid()}'
+tag = f'om-dockerdev--{time.time_ns()}--{os.getpid()}'
 subprocess.check_call(['docker', 'tag', obi, tag])
 try:
     cfg = dc.replace(cfg, base_image=tag)  # noqa

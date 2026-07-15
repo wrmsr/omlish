@@ -1,6 +1,6 @@
 base_image = 'ubuntu:24.04'
 
-user = 'omlish'
+user = 'om'
 
 dep_sets = [
     'system',
@@ -44,5 +44,5 @@ pyenv_version_keys = [
 workdir = '/work'
 
 [cache_mounts]
-'pip' = '/omlish/.cache/pip'
-'uv' = '/omlish/.cache/uv'
+'pip' = '/om/.cache/pip'
+'uv' = '/om/.cache/uv'

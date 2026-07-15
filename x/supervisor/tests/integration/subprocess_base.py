@@ -155,7 +155,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
                     os.getcwd(),
                     *([pp] if (pp := os.environ.get('PYTHONPATH')) else []),
                 ]),
-                'OMLISH_PYCHARM_RUNHACK_ENABLED': '0',
+                'OM_PYCHARM_RUNHACK_ENABLED': '0',
             },
             cwd=str(self.temp_dir),
         )

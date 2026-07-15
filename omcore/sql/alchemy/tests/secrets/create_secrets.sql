@@ -1,5 +1,5 @@
 create role secrets_owner_role;
-grant connect on database omlish to secrets_owner_role;
+grant connect on database om to secrets_owner_role;
 create user secrets_owner with password 'secrets_owner_password';
 grant secrets_owner_role to secrets_owner;
 
@@ -40,7 +40,7 @@ alter function secrets.access_secret owner to secrets_owner_role;
 --
 
 create role secrets_reader_role;
-grant connect on database omlish to secrets_reader_role;
+grant connect on database om to secrets_reader_role;
 create user secrets_reader with password 'secrets_reader_password';
 grant secrets_reader_role to secrets_reader;
 

@@ -8,12 +8,12 @@ Inputs:
 
 ==
 
-run --cache-dir omdev/ci/tests/cache -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
+run --cache-dir omdev/ci/tests/cache -e CI=1 omdev/ci/tests/project om-ci pytest tests
 
-run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
-run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build --always-pull -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
+run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build -e CI=1 omdev/ci/tests/project om-ci pytest tests
+run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build --always-pull -e CI=1 omdev/ci/tests/project om-ci pytest tests
 
-run --cache-dir ~/.cache/omlish/ci . omlish-ci bash
+run --cache-dir ~/.cache/om/ci . om-ci bash
 """  # noqa
 import argparse
 import asyncio

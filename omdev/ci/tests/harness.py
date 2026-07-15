@@ -72,7 +72,7 @@ class CiHarness(AsyncExitStacked):
             docker_file=self.docker_file(),
 
             compose_file=os.path.join(self.temp_project_dir(), 'compose.yml'),
-            service='omlish-ci',
+            service='om-ci',
 
             cmd=ShellCmd('cat /.timestamp'),
 

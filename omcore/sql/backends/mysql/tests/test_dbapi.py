@@ -24,7 +24,7 @@ def test_mysql(harness):
         try:
             conn: pymysql.Connection = es.enter_context(contextlib.closing(pymysql.connect(  # noqa
                 host=pu.hostname,
-                database='omlish',
+                database='om',
                 user=pu.username,
                 password=check.not_none(pu.password),
                 port=check.not_none(pu.port),

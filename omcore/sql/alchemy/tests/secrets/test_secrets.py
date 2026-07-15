@@ -5,14 +5,14 @@ https://www.postgresql.org/docs/current/pgcrypto.html
 
 ======
 
-create database omlish;
-grant connect on database omlish to postgres;
-use omlish;
+create database om;
+grant connect on database om to postgres;
+use om;
 
 --
 
-PGPASSWORD=secrets_owner_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 --user secrets_owner --dbname omlish
-PGPASSWORD=secrets_reader_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 --user secrets_reader --dbname omlish
+PGPASSWORD=secrets_owner_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 --user secrets_owner --dbname om
+PGPASSWORD=secrets_reader_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 --user secrets_reader --dbname om
 
 set search_path to secrets, public;
 """

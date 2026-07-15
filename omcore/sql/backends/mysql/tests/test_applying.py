@@ -55,8 +55,8 @@ def test_migrate_table(harness) -> None:
 
     async def inner() -> None:
         async with adb.connect() as conn:
-            await qf.exec(conn, 'create database if not exists omlish_test')
-            await qf.exec(conn, 'use omlish_test')
+            await qf.exec(conn, 'create database if not exists om_test')
+            await qf.exec(conn, 'use om_test')
             await qf.exec(conn, f'drop table if exists {tn}')
 
             base = TableDef(tn, Elements(Column('id', Integer()), PrimaryKey(['id'])))
@@ -105,8 +105,8 @@ def test_migrate_table_with_index(harness) -> None:
 
     async def inner() -> None:
         async with adb.connect() as conn:
-            await qf.exec(conn, 'create database if not exists omlish_test')
-            await qf.exec(conn, 'use omlish_test')
+            await qf.exec(conn, 'create database if not exists om_test')
+            await qf.exec(conn, 'use om_test')
             await qf.exec(conn, f'drop table if exists {tn}')
 
             # mysql can't index a String (-> TEXT) column without a key length, so index an integer column here
@@ -152,8 +152,8 @@ def test_migrate_table_alter_column(harness) -> None:
 
     async def inner() -> None:
         async with adb.connect() as conn:
-            await qf.exec(conn, 'create database if not exists omlish_test')
-            await qf.exec(conn, 'use omlish_test')
+            await qf.exec(conn, 'create database if not exists om_test')
+            await qf.exec(conn, 'use om_test')
             await qf.exec(conn, f'drop table if exists {tn}')
 
             await migrate_table(conn, TableDef(tn, Elements(

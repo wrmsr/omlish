@@ -30,7 +30,7 @@ t1 = sa.Table(
     't1',
     meta,
     sa.Column('name', sa.String(50), primary_key=True),
-    schema='omlish',
+    schema='om',
 )
 
 
@@ -43,8 +43,8 @@ def _test_mysql(url: str) -> None:
         es.enter_context(lang.defer(engine.dispose))
 
         with engine.begin() as conn:
-            conn.execute(sa.text('create database if not exists omlish'))
-            conn.execute(sa.text('use omlish'))
+            conn.execute(sa.text('create database if not exists om'))
+            conn.execute(sa.text('use om'))
 
             meta.drop_all(bind=conn)
             meta.create_all(bind=conn)
@@ -96,8 +96,8 @@ async def _test_mysql_async(url: str) -> None:
         await aes.enter_async_context(lang.adefer(engine.dispose()))
 
         async with engine.begin() as conn:
-            await conn.execute(sa.text('create database if not exists omlish'))
-            await conn.execute(sa.text('use omlish'))
+            await conn.execute(sa.text('create database if not exists om'))
+            await conn.execute(sa.text('use om'))
 
             await conn.run_sync(meta.drop_all)
             await conn.run_sync(meta.create_all)
