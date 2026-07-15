@@ -261,7 +261,7 @@ export JDKS='zulu21-ca-jdk zulu25-ca-jdk zulu26-ca-jdk' ;\
 set -ex ;\
 umask 0002 ;\
 \
-sudo apt install gnupg ca-certificates curl ;\
+sudo apt install -y gnupg ca-certificates curl ;\
 curl -s 'https://repos.azul.com/azul-repo.key' | sudo gpg --dearmor -o /usr/share/keyrings/azul.gpg ;\
 echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | sudo tee /etc/apt/sources.list.d/zulu.list ;\
 \
