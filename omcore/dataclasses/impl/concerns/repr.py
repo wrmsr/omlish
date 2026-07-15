@@ -45,7 +45,10 @@ class ReprGenerator(Generator[ReprPlan]):
         fs: ta.Sequence[FieldSpec]
         if ctx.cs.terse_repr:
             # If terse repr will match init param order
-            fs = ifs.all
+            fs = [
+                *[f for f in ifs.all if not f.kw_only],
+                *[f for f in ifs.all if f.kw_only],
+            ]
         else:
             # Otherwise default to dc.fields() order
             fs = sorted(ctx.cs.fields, key=lambda f: f.repr_priority or 0)

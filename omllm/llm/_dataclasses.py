@@ -38,7 +38,6 @@ def _register(**kwargs):
         ('omllm.llm.types.streams', 'AiStreamEvent'),
         ('omllm.llm.types.streams', 'StreamEndAiStreamEvent'),
         ('omllm.llm.types.streams', 'StreamStartAiStreamEvent'),
-        ('omllm.llm.types.streams', 'TextStartAiStreamEvent'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -222,9 +221,6 @@ def _process_dataclass__07984f4058a40dd1ae7a4ad479a49991bc8948f8():
     cls_names=(
         ('omllm.llm.types.content', 'TextContent'),
         ('omllm.llm.types.content', 'ThinkingContent'),
-        ('omllm.llm.types.streams', 'TextDeltaAiStreamEvent'),
-        ('omllm.llm.types.streams', 'TextEndAiStreamEvent'),
-        ('omllm.llm.types.streams', 'ToolCallDeltaAiStreamEvent'),
     ),
 )
 def _process_dataclass__2a492b3cc5746e3dba06e0f58873bda78f8c73a7():
@@ -1319,20 +1315,21 @@ def _process_dataclass__23ed12131a94a17096003f4c9205c00a29aee61c():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('tool_call',)), EqPlan(fields=('tool_call',)), FrozenPlan(fields=('tool_call',), a"
-        "llow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('tool_call',), cache=True), InitPlan(fields=("
-        "InitPlan.Field(name='tool_call', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e),), self_param='self', std_params=('tool_call',), kw_only_params=(), frozen=True, slots=False, post_init_par"
-        "ams=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='tool_call', kw_only=False, fn=N"
-        "one),), id=False, terse=True, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('content_index',)), EqPlan(fields=('content_index',)), FrozenPlan(fields=('content"
+        "_index',), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('content_index',), cache=False), "
+        "InitPlan(fields=(InitPlan.Field(name='content_index', annotation=OpRef(name='init.fields.0.annotation'), defau"
+        "lt=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
+        "=None, check_type=None),), self_param='self', std_params=(), kw_only_params=('content_index',), frozen=True, s"
+        "lots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='conten"
+        "t_index', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='199288abc8cc782bdb170dcdb1c83637a3f5d470',
+    plan_repr_sha1='8b93f579e9d14927b8f9e080e28cd444d77c7026',
     cls_names=(
-        ('omllm.llm.types.streams', 'ToolCallEndAiStreamEvent'),
+        ('omllm.llm.types.streams', 'ContentAiStreamEvent'),
+        ('omllm.llm.types.streams', 'TextStartAiStreamEvent'),
     ),
 )
-def _process_dataclass__199288abc8cc782bdb170dcdb1c83637a3f5d470():
+def _process_dataclass__8b93f579e9d14927b8f9e080e28cd444d77c7026():
     def _process_dataclass(
         *,
         __class__,
@@ -1347,6 +1344,235 @@ def _process_dataclass__199288abc8cc782bdb170dcdb1c83637a3f5d470():
             if self.__class__ is not __class__:
                 raise TypeError(self)
             return __class__(  # noqa
+                content_index=self.content_index,
+            )
+
+        __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.content_index == other.content_index
+            )
+
+        __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
+
+        __dataclass___frozen_fields = {
+            'content_index',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__class__, self).__setattr__(name, value)
+
+        __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__class__, self).__delattr__(name)
+
+        __dataclass__set_cls_attr(__class__, '__delattr__', __delattr__, 'raise', set_qualname=True)
+
+        def __hash__(self):
+            return hash((
+                self.content_index,
+            ))
+
+        __dataclass__set_cls_attr(__class__, '__hash__', __hash__, 'replace', set_qualname=True)
+
+        def __init__(
+            self,
+            *,
+            content_index: __dataclass__init__fields__0__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'content_index', content_index)
+
+        __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"content_index={self.content_index!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('content_index', 'text')), EqPlan(fields=('content_index', 'text')), FrozenPlan(fi"
+        "elds=('content_index', 'text'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('content_ind"
+        "ex', 'text'), cache=True), InitPlan(fields=(InitPlan.Field(name='content_index', annotation=OpRef(name='init.f"
+        "ields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INST"
+        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='text', annotation=OpRef(name='init.fi"
+        "elds.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('text',), kw_only_params=('"
+        "content_index',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fie"
+        "lds=(ReprPlan.Field(name='text', kw_only=False, fn=None), ReprPlan.Field(name='content_index', kw_only=True, f"
+        "n=None)), id=False, terse=True, default_fn=None)))"
+    ),
+    plan_repr_sha1='6ec0fa6131765fb8aeb272cd50f97d3cebf5c411',
+    cls_names=(
+        ('omllm.llm.types.streams', 'TextDeltaAiStreamEvent'),
+        ('omllm.llm.types.streams', 'TextEndAiStreamEvent'),
+        ('omllm.llm.types.streams', 'ToolCallDeltaAiStreamEvent'),
+    ),
+)
+def _process_dataclass__6ec0fa6131765fb8aeb272cd50f97d3cebf5c411():
+    def _process_dataclass(
+        *,
+        __class__,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__set_cls_attr,
+    ):
+        def __copy__(self):
+            if self.__class__ is not __class__:
+                raise TypeError(self)
+            return __class__(  # noqa
+                content_index=self.content_index,
+                text=self.text,
+            )
+
+        __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.content_index == other.content_index and
+                self.text == other.text
+            )
+
+        __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
+
+        __dataclass___frozen_fields = {
+            'content_index',
+            'text',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__class__, self).__setattr__(name, value)
+
+        __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__class__, self).__delattr__(name)
+
+        __dataclass__set_cls_attr(__class__, '__delattr__', __delattr__, 'raise', set_qualname=True)
+
+        def __hash__(self):
+            try:
+                return self.__dataclass_hash__
+            except AttributeError:
+                pass
+            object.__setattr__(
+                self,
+                '__dataclass_hash__',
+                h := hash((
+                    self.content_index,
+                    self.text,
+                ))
+            )
+            return h
+
+        __dataclass__set_cls_attr(__class__, '__hash__', __hash__, 'replace', set_qualname=True)
+
+        def __init__(
+            self,
+            text: __dataclass__init__fields__1__annotation,
+            *,
+            content_index: __dataclass__init__fields__0__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'content_index', content_index)
+            __dataclass__object_setattr(self, 'text', text)
+
+        __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"{self.text!r}")
+            parts.append(f"content_index={self.content_index!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('content_index', 'tool_call')), EqPlan(fields=('content_index', 'tool_call')), Fro"
+        "zenPlan(fields=('content_index', 'tool_call'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', field"
+        "s=('content_index', 'tool_call'), cache=True), InitPlan(fields=(InitPlan.Field(name='content_index', annotatio"
+        "n=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tool_call', annot"
+        "ation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('t"
+        "ool_call',), kw_only_params=('content_index',), frozen=True, slots=False, post_init_params=None, init_fns=(), "
+        "validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='tool_call', kw_only=False, fn=None), ReprPlan.Field(na"
+        "me='content_index', kw_only=True, fn=None)), id=False, terse=True, default_fn=None)))"
+    ),
+    plan_repr_sha1='8979899b272f9867717857f9c97e2af99d4df08c',
+    cls_names=(
+        ('omllm.llm.types.streams', 'ToolCallEndAiStreamEvent'),
+    ),
+)
+def _process_dataclass__8979899b272f9867717857f9c97e2af99d4df08c():
+    def _process_dataclass(
+        *,
+        __class__,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__set_cls_attr,
+    ):
+        def __copy__(self):
+            if self.__class__ is not __class__:
+                raise TypeError(self)
+            return __class__(  # noqa
+                content_index=self.content_index,
                 tool_call=self.tool_call,
             )
 
@@ -1358,12 +1584,14 @@ def _process_dataclass__199288abc8cc782bdb170dcdb1c83637a3f5d470():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
+                self.content_index == other.content_index and
                 self.tool_call == other.tool_call
             )
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
         __dataclass___frozen_fields = {
+            'content_index',
             'tool_call',
         }
 
@@ -1396,6 +1624,7 @@ def _process_dataclass__199288abc8cc782bdb170dcdb1c83637a3f5d470():
                 self,
                 '__dataclass_hash__',
                 h := hash((
+                    self.content_index,
                     self.tool_call,
                 ))
             )
@@ -1405,8 +1634,11 @@ def _process_dataclass__199288abc8cc782bdb170dcdb1c83637a3f5d470():
 
         def __init__(
             self,
-            tool_call: __dataclass__init__fields__0__annotation,
+            tool_call: __dataclass__init__fields__1__annotation,
+            *,
+            content_index: __dataclass__init__fields__0__annotation,
         ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'content_index', content_index)
             __dataclass__object_setattr(self, 'tool_call', tool_call)
 
         __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
@@ -1415,6 +1647,7 @@ def _process_dataclass__199288abc8cc782bdb170dcdb1c83637a3f5d470():
         def __repr__(self):
             parts = []
             parts.append(f"{self.tool_call!r}")
+            parts.append(f"content_index={self.content_index!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1428,29 +1661,36 @@ def _process_dataclass__199288abc8cc782bdb170dcdb1c83637a3f5d470():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=()), EqPlan(fields=()), FrozenPlan(fields=(), allow_dynamic_dunder_attrs=False), Ha"
-        "shPlan(action='add', fields=(), cache=True), InitPlan(fields=(), self_param='self', std_params=(), kw_only_par"
-        "ams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(), id"
-        "=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('content_index',)), EqPlan(fields=('content_index',)), FrozenPlan(fields=('content"
+        "_index',), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('content_index',), cache=True), I"
+        "nitPlan(fields=(InitPlan.Field(name='content_index', annotation=OpRef(name='init.fields.0.annotation'), defaul"
+        "t=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None),), self_param='self', std_params=(), kw_only_params=('content_index',), frozen=True, sl"
+        "ots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='content"
+        "_index', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='447556a8265d1a163711eb3619fb5c0c1c7dc6d4',
+    plan_repr_sha1='2f297aff3600bf09ca74d5106118f3c78a4c2890',
     cls_names=(
         ('omllm.llm.types.streams', 'ToolCallStartAiStreamEvent'),
     ),
 )
-def _process_dataclass__447556a8265d1a163711eb3619fb5c0c1c7dc6d4():
+def _process_dataclass__2f297aff3600bf09ca74d5106118f3c78a4c2890():
     def _process_dataclass(
         *,
         __class__,
+        __dataclass__init__fields__0__annotation,
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
         __dataclass__None=None,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
         __dataclass__set_cls_attr,
     ):
         def __copy__(self):
             if self.__class__ is not __class__:
                 raise TypeError(self)
-            return __class__()  # noqa
+            return __class__(  # noqa
+                content_index=self.content_index,
+            )
 
         __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
 
@@ -1459,13 +1699,20 @@ def _process_dataclass__447556a8265d1a163711eb3619fb5c0c1c7dc6d4():
                 return True
             if self.__class__ is not other.__class__:
                 return NotImplemented
-            return True
+            return (
+                self.content_index == other.content_index
+            )
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
+
+        __dataclass___frozen_fields = {
+            'content_index',
+        }
 
         def __setattr__(self, name, value):
             if (
                 type(self) is __class__
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
             super(__class__, self).__setattr__(name, value)
@@ -1475,6 +1722,7 @@ def _process_dataclass__447556a8265d1a163711eb3619fb5c0c1c7dc6d4():
         def __delattr__(self, name):
             if (
                 type(self) is __class__
+                or name in __dataclass___frozen_fields
             ):
                 raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
             super(__class__, self).__delattr__(name)
@@ -1489,7 +1737,9 @@ def _process_dataclass__447556a8265d1a163711eb3619fb5c0c1c7dc6d4():
             object.__setattr__(
                 self,
                 '__dataclass_hash__',
-                h := hash(())
+                h := hash((
+                    self.content_index,
+                ))
             )
             return h
 
@@ -1497,14 +1747,22 @@ def _process_dataclass__447556a8265d1a163711eb3619fb5c0c1c7dc6d4():
 
         def __init__(
             self,
+            *,
+            content_index: __dataclass__init__fields__0__annotation,
         ) -> __dataclass__None:
-            pass
+            __dataclass__object_setattr(self, 'content_index', content_index)
 
         __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
-            return f"{self.__class__.__qualname__}()"
+            parts = []
+            parts.append(f"content_index={self.content_index!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
 
         __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
 
