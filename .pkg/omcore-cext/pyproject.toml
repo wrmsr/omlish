@@ -15,7 +15,6 @@ readme = 'README.md'
 requires-python = '>=3.14'
 version = '0.0.29'
 classifiers = [
-    'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
     'Operating System :: OS Independent',
     'Operating System :: POSIX',

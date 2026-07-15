@@ -16,8 +16,6 @@ class ProjectBase:
     version = __version__
 
     classifiers = [
-        'Development Status :: 2 - Pre-Alpha',
-
         'Intended Audience :: Developers',
 
         'Operating System :: OS Independent',
