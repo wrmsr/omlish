@@ -25,6 +25,8 @@ from ....types.streams import StreamStartAiStreamEvent
 from ....types.streams import TextDeltaAiStreamEvent
 from ....types.streams import TextEndAiStreamEvent
 from ....types.streams import TextStartAiStreamEvent
+from ....types.streams import ToolCallDeltaAiStreamEvent
+from ....types.streams import ToolCallEndAiStreamEvent
 from ....types.streams import ToolCallStartAiStreamEvent
 from ..base import BaseBackend
 from .requests import RequestPreparer
@@ -173,7 +175,21 @@ class SseEventProcessor:
                     id=check.isinstance(raw_tool_call.get('id'), (str, None)),
                     index=check.isinstance(raw_tool_call.get('index'), (int, None)),
                 )
-                raise NotImplementedError
+
+                raw_fn = raw_tool_call.get('function') or {}
+                if not tool_call.name and (raw_fn_name := raw_fn.get('name')):
+                    tool_call.name = raw_fn_name
+
+                args_delta = ''
+                if raw_args := raw_fn.get('arguments'):
+                    args_delta = check.isinstance(raw_args, str)
+                    tool_call.partial_args.write(args_delta)
+                    tool_call.parse_args()
+
+                self._emit(ToolCallDeltaAiStreamEvent(
+                    args_delta,
+                    content_index=self._content_index(tool_call),
+                ))
 
     def feed(self, sse: SseEvent) -> list[AiStreamEvent]:
         self._feed(sse)
@@ -184,6 +200,12 @@ class SseEventProcessor:
             if isinstance(content, TextContentBuilder):
                 self._emit(TextEndAiStreamEvent(
                     content.build().text,
+                    content_index=self._content_index(content),
+                ))
+
+            elif isinstance(content, ToolCallBuilder):
+                self._emit(ToolCallEndAiStreamEvent(
+                    content.build(),
                     content_index=self._content_index(content),
                 ))
 

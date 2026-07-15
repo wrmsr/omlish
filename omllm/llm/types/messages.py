@@ -1,3 +1,4 @@
+# ruff: noqa: UP007
 import abc
 import typing as ta
 
@@ -9,6 +10,7 @@ from .content import TextContentBuilder
 from .content import ThinkingContent
 from .content import ThinkingContentBuilder
 from .content import ToolCall
+from .content import ToolCallBuilder
 
 
 MessageT = ta.TypeVar('MessageT', bound='Message')
@@ -58,7 +60,11 @@ class UserMessageBuilder(MessageBuilder[UserMessage]):
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
 class AiMessage(Message):
-    content: ta.Sequence[TextContent | ThinkingContent | ToolCall]
+    content: ta.Sequence[ta.Union[
+        TextContent,
+        ThinkingContent,
+        ToolCall,
+    ]]
 
 
 @ta.final
@@ -66,7 +72,11 @@ class AiMessageBuilder(MessageBuilder[AiMessage]):
     def __init__(self) -> None:
         super().__init__()
 
-        self.content: list[TextContentBuilder | ThinkingContentBuilder] = []
+        self.content: list[ta.Union[
+            TextContentBuilder,
+            ThinkingContentBuilder,
+            ToolCallBuilder,
+        ]] = []
 
     def build(self) -> AiMessage:
         return AiMessage(

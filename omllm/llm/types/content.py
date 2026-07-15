@@ -5,6 +5,7 @@ import typing as ta
 from omcore import check
 from omcore import dataclasses as dc
 from omcore import lang
+from omcore.formats.json import all as json
 
 
 ContentT = ta.TypeVar('ContentT', bound='Content')
@@ -89,6 +90,13 @@ class ToolCallBuilder(ContentBuilder[ToolCall]):
         self.id: str | None = None
         self.name: str | None = None
         self.args: ta.Mapping[str, ta.Any] | None = None
+        self.partial_args: io.StringIO = io.StringIO()
+
+    def parse_args(self) -> None:
+        try:
+            self.args = json.loads(self.partial_args.getvalue())
+        except json.DecodeError:
+            pass
 
     def build(self) -> ToolCall:
         return ToolCall(
