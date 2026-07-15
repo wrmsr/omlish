@@ -7,9 +7,9 @@ from ....types.backends import ImmediateBackend
 from ....types.content import TextContent
 from ....types.context import Context
 from ....types.messages import AiMessage
-from ....types.messages import UserMessage
 from ....types.models import Model
 from ....types.options import Options
+from .requests import RequestPreparer
 
 
 ##
@@ -37,66 +37,11 @@ class AnthropicMessagesImmediateBackend(ImmediateBackend):
         return self._model
 
     async def immediate(self, context: Context, options: Options | None = None) -> AiMessage:
-        effective_options = Options().merge(
-            self._model.default_options,
+        raw_request = RequestPreparer(
+            self._model,
+            context,
             options,
-        )
-
-        #
-
-        raw_request: dict = {
-            'model': self._model.key.id,
-        }
-
-        if effective_options.max_tokens is not None:
-            raw_request['max_tokens'] = effective_options.max_tokens
-
-        #
-
-        raw_messages: list[dict] = []
-
-        if context.system_prompt:
-            raw_request['system'] = [{
-                'type': 'text',
-                'text': context.system_prompt,
-            }]
-
-        for msg in context.messages or []:
-            if isinstance(msg, UserMessage):
-                if isinstance(msg.content, str):
-                    raw_messages.append({
-                        'role': 'user',
-                        'content': msg.content,
-                    })
-
-                elif isinstance(msg.content, TextContent):
-                    raw_messages.append({
-                        'role': 'user',
-                        'content': msg.content.text,
-                    })
-
-                else:
-                    raise TypeError(msg)
-
-            elif isinstance(msg, AiMessage):
-                text_parts: list[str] = []
-
-                for c in msg.content:
-                    if isinstance(c, TextContent):
-                        text_parts.append(c.text)
-
-                    else:
-                        raise TypeError(c)
-
-                raw_messages.append({
-                    'role': 'assistant',
-                    'content': ''.join(text_parts),
-                })
-
-            else:
-                raise TypeError(msg)
-
-        raw_request['messages'] = raw_messages
+        ).raw_request()
 
         #
 
