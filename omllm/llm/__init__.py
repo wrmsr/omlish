@@ -41,6 +41,8 @@ with _lang.auto_proxy_init(
 
     from .types.backends import (  # noqa
         Backend,
+        ImmediateBackend,
+        StreamBackend,
     )
 
     from .types.compat import (  # noqa

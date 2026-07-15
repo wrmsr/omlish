@@ -18,6 +18,12 @@ class Backend(lang.Abstract):
     def model(self) -> Model:
         raise NotImplementedError
 
+
+class ImmediateBackend(Backend, lang.Abstract):
     @abc.abstractmethod
     def complete(self, context: Context, options: Options | None = None) -> ta.Awaitable[AiMessage]:
         raise NotImplementedError
+
+
+class StreamBackend(Backend, lang.Abstract):
+    pass

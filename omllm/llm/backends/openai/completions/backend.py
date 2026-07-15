@@ -3,7 +3,7 @@ from omcore.formats.json import all as json
 from omcore.http import all as http
 from omcore.secrets import all as sec
 
-from ....types.backends import Backend
+from ....types.backends import ImmediateBackend
 from ....types.compat import OpenaiCompat
 from ....types.content import TextContent
 from ....types.context import Context
@@ -16,7 +16,7 @@ from ....types.options import Options
 ##
 
 
-class OpenaiCompletionsBackend(Backend):
+class OpenaiCompletionsBackend(ImmediateBackend):
     def __init__(
             self,
             model: Model,
