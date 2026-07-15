@@ -141,7 +141,7 @@ class HttpClientError(Exception):
 
 @dc.dataclass()
 class StatusHttpClientError(HttpClientError):
-    response: HttpClientResponse
+    response: BaseHttpClientResponse
 
 
 ##

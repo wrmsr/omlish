@@ -1,3 +1,7 @@
+from omcore import resources as rs
+from omcore.formats.json import all as json
+from omcore.http import all as http
+
 from .....core import StreamSink
 from .....core import new_stream
 from ....types.backends import StreamBackend
@@ -28,9 +32,40 @@ class OpenaiCompletionsStreamBackend(BaseBackend, StreamBackend):
 
         #
 
-        async def inner(sink: StreamSink[AiEvent]) -> AiMessage:
-            await sink.emit(StartAiEvent())
-            await sink.emit(EndAiEvent())
-            return AiMessage([TextContent('FIXME')])
+        http_headers = {
+            **({'authorization': f'Bearer {self._api_key.reveal()}'} if self._api_key is not None else {}),
+            'content-type': 'application/json',
+            'accept': 'application/json',
+            **(self._model_http.extra_headers or {}),
+        }
 
-        return await new_stream(inner)
+        http_request = http.HttpClientRequest(
+            self._base_url + '/chat/completions',
+            headers=http_headers,
+            data=json.dumps(raw_request).encode('utf-8'),
+        )
+
+        #
+
+        async with await rs.async_contextual_or_new(bind=True) as rm:  # noqa
+            http_client = await rm.enter_async_context(http.manage_async_client(self._http_client))
+            http_response = await rm.enter_async_context(await http_client.stream_request(http_request))
+
+            if http_response.status != 200:
+                err_http_response = await http.async_read_http_client_response(http_response)
+                raise http.StatusHttpClientError(err_http_response)
+
+            async def inner(sink: StreamSink[AiEvent]) -> AiMessage:
+                await sink.emit(StartAiEvent())
+
+                while True:
+                    if not (b := await http_response.stream.read1()):
+                        break
+
+                    print(b)
+
+                await sink.emit(EndAiEvent())
+
+                return AiMessage([TextContent('FIXME')])
+
+            return await new_stream(inner)
