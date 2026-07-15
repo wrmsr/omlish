@@ -2,6 +2,7 @@ import abc
 import io
 import typing as ta
 
+from omcore import check
 from omcore import dataclasses as dc
 from omcore import lang
 
@@ -79,3 +80,19 @@ class ToolCall(Content):
     id: str
     name: str
     args: ta.Mapping[str, ta.Any]
+
+
+class ToolCallBuilder(ContentBuilder[ToolCall]):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.id: str | None = None
+        self.name: str | None = None
+        self.args: ta.Mapping[str, ta.Any] | None = None
+
+    def build(self) -> ToolCall:
+        return ToolCall(
+            id=check.non_empty_str(self.id),
+            name=check.non_empty_str(self.name),
+            args=check.not_none(self.args),
+        )

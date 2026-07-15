@@ -10,7 +10,9 @@ from .....core.http.sse import Utf8SseDecoder
 from .....core.streams import StreamSink
 from .....core.streams import new_stream
 from ....types.backends import StreamBackend
+from ....types.content import ContentBuilder
 from ....types.content import TextContentBuilder
+from ....types.content import ToolCallBuilder
 from ....types.context import Context
 from ....types.messages import AiMessage
 from ....types.messages import AiMessageBuilder
@@ -42,21 +44,26 @@ class SseEventProcessor:
     def __init__(self) -> None:
         super().__init__()
 
-        self._message_builder = AiMessageBuilder()
+        self._message = AiMessageBuilder()
+
+        self._events_: list[AiStreamEvent] = []
+
+        self._content_indexes_: dict[ContentBuilder, int] = {}
+
+        self._text_: TextContentBuilder | None = None
+
+        self._tool_calls_by_index_: dict[int, ToolCallBuilder] = {}
+        self._tool_calls_by_id_: dict[str, ToolCallBuilder] = {}
 
     #
 
     def build_message(self) -> AiMessage:
-        return self._message_builder.build()
+        return self._message.build()
 
     #
 
-    _events_: list[AiStreamEvent] | None = None
-
     def _emit(self, event: AiStreamEvent) -> None:
-        if (lst := self._events_) is None:
-            lst = self._events_ = []
-        lst.append(event)
+        self._events_.append(event)
 
     def _flush(self) -> list[AiStreamEvent]:
         ret, self._events_ = self._events_, []
@@ -64,13 +71,25 @@ class SseEventProcessor:
 
     #
 
-    _text_builder_: TextContentBuilder | None = None
+    def _add_content(self, content: ContentBuilder) -> int:
+        check.not_in(content, self._content_indexes_)
+        i = len(self._message.content)
+        self._message.content.append(ta.cast(ta.Any, content))
+        self._content_indexes_[content] = i
+        return i
 
-    def _text_builder(self) -> TextContentBuilder:
-        if (b := self._text_builder_) is None:
-            b = self._text_builder_ = TextContentBuilder()
-            self._message_builder.content.append(b)
-            self._emit(TextStartAiStreamEvent())
+    def _content_index(self, content: ContentBuilder) -> int:
+        return self._content_indexes_[content]
+
+    #
+
+    def _text(self) -> TextContentBuilder:
+        if (b := self._text_) is None:
+            b = self._text_ = TextContentBuilder()
+            i = self._add_content(b)
+            self._emit(TextStartAiStreamEvent(
+                content_index=i,
+            ))
         return b
 
     #
@@ -95,20 +114,27 @@ class SseEventProcessor:
         delta = check.isinstance(delta, ta.Mapping)
 
         if content := delta.get('content'):
-            self._emit(TextDeltaAiStreamEvent(content))
-            self._text_builder().text.write(content)
+            text = self._text()
+            self._emit(TextDeltaAiStreamEvent(
+                content,
+                content_index=self._content_index(text),
+            ))
+            text.text.write(content)
 
     def feed(self, sse: SseEvent) -> list[AiStreamEvent]:
         self._feed(sse)
         return self._flush()
 
     def _finish(self) -> None:
-        for cb in self._message_builder.content:
-            if isinstance(cb, TextContentBuilder):
-                self._emit(TextEndAiStreamEvent(cb.build().text))
+        for content in self._message.content:
+            if isinstance(content, TextContentBuilder):
+                self._emit(TextEndAiStreamEvent(
+                    content.build().text,
+                    content_index=self._content_index(content),
+                ))
 
             else:
-                raise TypeError(cb)
+                raise TypeError(content)
 
     def finish(self) -> list[AiStreamEvent]:
         self._finish()

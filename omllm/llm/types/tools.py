@@ -10,4 +10,4 @@ import typing as ta
 class Tool:
     name: str
     description: str
-    parameters: ta.Mapping[str, ta.Any]
+    params: ta.Mapping[str, ta.Any]

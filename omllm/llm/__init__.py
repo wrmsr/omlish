@@ -64,6 +64,7 @@ with _lang.auto_proxy_init(globals()):
         ThinkingContentBuilder,
 
         ToolCall,
+        ToolCallBuilder,
     )
 
     from .types.context import (  # noqa
@@ -95,6 +96,8 @@ with _lang.auto_proxy_init(globals()):
     from .types.streams import (  # noqa
         AiStreamEvent,
         AiStream,
+
+        ContentAiStreamEvent,
 
         StreamStartAiStreamEvent,
         StreamEndAiStreamEvent,

@@ -37,23 +37,31 @@ class StreamEndAiStreamEvent(AiStreamEvent):
 #
 
 
+@dc.dataclass(frozen=True)
+class ContentAiStreamEvent(AiStreamEvent, lang.Abstract):
+    content_index: int = dc.field(kw_only=True)
+
+
+#
+
+
 @ta.final
 @dc.dataclass(frozen=True)
-class TextStartAiStreamEvent(AiStreamEvent):
+class TextStartAiStreamEvent(ContentAiStreamEvent):
     pass
 
 
 @ta.final
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
-class TextDeltaAiStreamEvent(AiStreamEvent):
+class TextDeltaAiStreamEvent(ContentAiStreamEvent):
     text: str
 
 
 @ta.final
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
-class TextEndAiStreamEvent(AiStreamEvent):
+class TextEndAiStreamEvent(ContentAiStreamEvent):
     text: str
 
 
@@ -63,19 +71,19 @@ class TextEndAiStreamEvent(AiStreamEvent):
 @ta.final
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
-class ToolCallStartAiStreamEvent(AiStreamEvent):
+class ToolCallStartAiStreamEvent(ContentAiStreamEvent):
     pass
 
 
 @ta.final
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
-class ToolCallDeltaAiStreamEvent(AiStreamEvent):
+class ToolCallDeltaAiStreamEvent(ContentAiStreamEvent):
     text: str
 
 
 @ta.final
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
-class ToolCallEndAiStreamEvent(AiStreamEvent):
+class ToolCallEndAiStreamEvent(ContentAiStreamEvent):
     tool_call: ToolCall

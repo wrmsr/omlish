@@ -33,8 +33,8 @@ async def test_openai_chat_stream_model_async(harness):
             max_tokens=None,
         ),
     )) as it:
-        async for o in it:
-            print(o)
+        async for e in it:
+            print(e)
         print(it.result.must())
 
     print(await svc.immediate(ctx, opts))
