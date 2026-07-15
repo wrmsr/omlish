@@ -7,7 +7,7 @@ from .....types.context import Context
 from .....types.messages import UserMessage
 from .....types.models import ModelKey
 from .....types.options import Options
-from ..backend import OpenaiCompletionsBackend
+from ..immediate import OpenaiCompletionsImmediateBackend
 
 
 class BaseBackendTest:
@@ -22,12 +22,12 @@ class BaseBackendTest:
     ):
         model_key, api_key_name = model
 
-        svc = OpenaiCompletionsBackend(
+        svc = OpenaiCompletionsImmediateBackend(
             default_model_catalog()[model_key],  # noqa
             api_key=harness[HarnessSecrets].get_or_skip(api_key_name),
         )
 
-        out = await svc.complete(
+        out = await svc.immediate(
             Context(
                 system_prompt='You are a helpful assistant.',
                 messages=[

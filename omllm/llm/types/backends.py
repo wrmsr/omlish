@@ -3,6 +3,7 @@ import typing as ta
 
 from omcore import lang
 
+from ...core import Stream
 from .context import Context
 from .messages import AiMessage
 from .models import Model
@@ -19,11 +20,26 @@ class Backend(lang.Abstract):
         raise NotImplementedError
 
 
+##
+
+
 class ImmediateBackend(Backend, lang.Abstract):
     @abc.abstractmethod
-    def complete(self, context: Context, options: Options | None = None) -> ta.Awaitable[AiMessage]:
+    def immediate(self, context: Context, options: Options | None = None) -> ta.Awaitable[AiMessage]:
         raise NotImplementedError
 
 
-class StreamBackend(Backend, lang.Abstract):
+##
+
+
+class AiMessageEvent(lang.Abstract):
     pass
+
+
+type AiMessageStream = Stream[AiMessageEvent, AiMessage]
+
+
+class StreamBackend(Backend, lang.Abstract):
+    @abc.abstractmethod
+    def stream(self, context: Context, options: Options | None = None) -> ta.Awaitable[AiMessageStream]:
+        raise NotImplementedError

@@ -15,7 +15,7 @@ from ....types.options import Options
 ##
 
 
-class AnthropicMessagesBackend(ImmediateBackend):
+class AnthropicMessagesImmediateBackend(ImmediateBackend):
     def __init__(
             self,
             model: Model,
@@ -36,7 +36,7 @@ class AnthropicMessagesBackend(ImmediateBackend):
     def model(self) -> Model:
         return self._model
 
-    async def complete(self, context: Context, options: Options | None = None) -> AiMessage:
+    async def immediate(self, context: Context, options: Options | None = None) -> AiMessage:
         effective_options = Options().merge(
             self._model.default_options,
             options,

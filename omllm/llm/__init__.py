@@ -15,15 +15,15 @@ _dc.init_package(
 from omcore import lang as _lang  # noqa
 
 
-with _lang.auto_proxy_init(
-        globals(),
-        # disable=True,
-        # eager=True,
-):
+with _lang.auto_proxy_init(globals()):
     ##
 
-    from .backends.openai.completions.backend import (  # noqa
-        OpenaiCompletionsBackend,
+    from .backends.anthropic.messages.immediate import (  # noqa
+        AnthropicMessagesImmediateBackend,
+    )
+
+    from .backends.openai.completions.immediate import (  # noqa
+        OpenaiCompletionsImmediateBackend,
     )
 
     ##
@@ -41,7 +41,11 @@ with _lang.auto_proxy_init(
 
     from .types.backends import (  # noqa
         Backend,
+
         ImmediateBackend,
+
+        AiMessageEvent,
+        AiMessageStream,
         StreamBackend,
     )
 
