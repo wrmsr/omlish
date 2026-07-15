@@ -18,6 +18,10 @@ with _lang.auto_proxy_init(globals()):
         BiMap,
 
         make_bi_map,
+
+        MutableBiMap,
+
+        make_mutable_bi_map,
     )
 
     from . import cache  # noqa
@@ -113,6 +117,7 @@ with _lang.auto_proxy_init(globals()):
 
         MissingDict,
 
+        DictFactory,
         dict_factory,
 
         IterValuesView,

@@ -52,8 +52,9 @@ class SseEventProcessor:
 
         self._text_: TextContentBuilder | None = None
 
-        self._tool_calls_by_index_: dict[int, ToolCallBuilder] = {}
         self._tool_calls_by_id_: dict[str, ToolCallBuilder] = {}
+        self._tool_calls_by_index_: dict[int, ToolCallBuilder] = {}
+        self._indexes_by_tool_call_: dict[ToolCallBuilder,int] = {}
 
     #
 
@@ -94,35 +95,69 @@ class SseEventProcessor:
 
     #
 
+    def _tool_call(
+            self,
+            *,
+            id: str | None = None,  # noqa
+            index: int | None = None,
+    ) -> ToolCallBuilder:
+        if id is not None and index is None:
+            raise ValueError('id or index must be specified')
+
+        if id is not None:
+            if (b := self._tool_calls_by_id_.get(id)) is not None:
+                if index is not None:
+                    if (xi := self._indexes_by_tool_call_.get(b)) is not None:
+                        check.equal(xi, index)
+                        check.is_(self._tool_calls_by_index_[index], b)
+                    else:
+                        self._indexes_by_tool_call_[b] = index
+                        self._tool_calls_by_index_[index] = b
+                return b
+
+        if index is not None:
+            if (b := self._tool_calls_by_index_.get(index)) is not None:
+                if index is not None:
+                    check.not_in(index, self._tool_calls_by_index_)
+                    check.not_in(b, self._indexes_by_tool_call_)
+                    self._indexes_by_tool_call_[b] = index
+                    self._tool_calls_by_index_[index] = b
+                return b
+
+        raise NotImplementedError
+
+    #
+
     def _feed(self, sse: SseEvent) -> None:
         if sse.data == '[DONE]':
             return
 
         try:
-            chunk = json.loads(sse.data)
+            raw_chunk = json.loads(sse.data)
         except (json.DecodeError, ValueError):
             return
-        chunk = check.isinstance(chunk, ta.Mapping)
+        raw_chunk = check.isinstance(raw_chunk, ta.Mapping)
 
-        if 'error' in chunk and chunk.get('error'):
-            raise RuntimeError(_stringify_error(chunk['error']))
+        if 'error' in raw_chunk and raw_chunk.get('error'):
+            raise RuntimeError(_stringify_error(raw_chunk['error']))
 
-        choice = check.single(chunk['choices'])
+        raw_choice = check.single(raw_chunk['choices'])
 
-        if (delta := choice.get('delta')) is None:
+        if (raw_delta := raw_choice.get('delta')) is None:
             return
-        delta = check.isinstance(delta, ta.Mapping)
+        raw_delta = check.isinstance(raw_delta, ta.Mapping)
 
-        if content := delta.get('content'):
+        if raw_content := raw_delta.get('content'):
             text = self._text()
             self._emit(TextDeltaAiStreamEvent(
-                content,
+                raw_content,
                 content_index=self._content_index(text),
             ))
-            text.text.write(content)
+            text.text.write(raw_content)
 
-        if tool_calls := delta.get('tool_calls'):  # noqa
-            raise NotImplementedError
+        if raw_tool_calls := raw_delta.get('tool_calls'):  # noqa
+            for raw_tool_call in raw_tool_calls:  # noqa
+                raise NotImplementedError
 
     def feed(self, sse: SseEvent) -> list[AiStreamEvent]:
         self._feed(sse)

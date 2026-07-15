@@ -11,7 +11,23 @@ V = ta.TypeVar('V')
 ##
 
 
-def yield_dict_init(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterator[tuple[ta.Any, ta.Any]]:
+@ta.overload
+def yield_dict_init(**kwargs: V) -> ta.Iterator[tuple[str, V]]: ...
+
+
+@ta.overload
+def yield_dict_init(dct: ta.Mapping[K, V]) -> ta.Iterator[tuple[K, V]]: ...
+
+
+@ta.overload
+def yield_dict_init(items: ta.Iterable[tuple[K, V]]) -> ta.Iterator[tuple[K, V]]: ...
+
+
+@ta.overload
+def yield_dict_init(*args: ta.Any, **kwargs: ta.Any) -> ta.Iterator[tuple[ta.Any, ta.Any]]: ...
+
+
+def yield_dict_init(*args, **kwargs):
     if len(args) > 1:
         raise TypeError
 

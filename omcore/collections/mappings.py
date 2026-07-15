@@ -81,11 +81,14 @@ class MissingDict(dict[K, V]):
 ##
 
 
+type DictFactory[K, V] = ta.Callable[..., ta.MutableMapping[K, V]]
+
+
 def dict_factory[K, V](
         *,
         identity: bool = False,
         weak: bool = False,
-) -> ta.Callable[..., ta.MutableMapping[K, V]]:
+) -> DictFactory[K, V]:
     if identity:
         if weak:
             return _identity.IdentityWeakKeyDictionary

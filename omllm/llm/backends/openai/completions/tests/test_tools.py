@@ -14,13 +14,14 @@ from .....types.messages import UserMessage
 from .....types.models import ModelKey
 from .....types.tools import Tool
 from .....types.tools import ToolParam
-from ..immediate import OpenaiCompletionsImmediateBackend
+from ..stream import OpenaiCompletionsStreamBackend
 
 
 @pytest.mark.online
 @pytest.mark.asyncs('asyncio')
 @pytest.mark.parametrize('svc_cls', [
-    OpenaiCompletionsImmediateBackend,
+    # OpenaiCompletionsImmediateBackend,
+    OpenaiCompletionsStreamBackend,
 ])
 async def test_openai_tools(
         harness,
