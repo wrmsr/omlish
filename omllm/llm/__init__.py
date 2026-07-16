@@ -26,6 +26,10 @@ with _lang.auto_proxy_init(globals()):
         OpenaiCompletionsImmediateBackend,
     )
 
+    from .backends.openai.completions.stream import (  # noqa
+        OpenaiCompletionsStreamBackend,
+    )
+
     ##
 
     from .models.catalog import (  # noqa
