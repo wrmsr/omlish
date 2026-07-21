@@ -1,10 +1,17 @@
 import typing as ta
 
 from omcore import dataclasses as dc
+from omcore import lang
 
 from .. import llm
+from .events import AgentEndEvent
+from .events import AgentStartEvent
+from .events import Event
 from .events import EventSink
+from .events import TurnEndEvent
+from .events import TurnStartEvent
 from .types import Context
+from .types import Message
 
 
 ##
@@ -12,8 +19,19 @@ from .types import Context
 
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class LoopConfig:
     llm_options: llm.Options | None = None
+
+
+@ta.final
+@dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
+class LoopResult:
+    config: LoopConfig
+    context: Context
+
+    new_messages: ta.Sequence[Message] | None = None
 
 
 class Loop:
@@ -36,8 +54,18 @@ class Loop:
         self._sink = sink
         self._llm_backend = llm_backend
 
+        #
+
         self._config = config
         self._context = context
+
+        self._new_messages: list[Message] = []
+
+    #
+
+    async def _emit(self, event: Event) -> None:
+        if (sink := self._sink) is not None:
+            await sink(event)
 
     #
 
@@ -58,13 +86,58 @@ class Loop:
 
     #
 
-    async def _step(self) -> None:
-        out = await self._llm_complete()  # noqa
+    @dc.dataclass(frozen=True, kw_only=True)
+    class _TurnResult:
+        should_continue: bool
 
-        raise NotImplementedError
+    async def _turn(self) -> _TurnResult:
+        await self._emit(TurnStartEvent())
+
+        message = await self._llm_complete()  # noqa
+
+        self._new_messages.append(message)
+
+        if message.stop_reason is not None:
+            await self._emit(TurnEndEvent(
+                message=message,
+            ))
+
+            return self._TurnResult(
+                should_continue=False,
+            )
+
+        tool_calls = [c for c in message.content if isinstance(c, llm.ToolCall)]
+        if tool_calls:
+            raise NotImplementedError
+
+        await self._emit(TurnEndEvent(
+            message=message,
+        ))
+
+        return self._TurnResult(
+            should_continue=bool(tool_calls),
+        )
 
     #
 
-    async def run(self) -> None:
+    async def run(self) -> LoopResult:
+        await self._emit(AgentStartEvent())
+
         while True:
-            await self._step()
+            turn_result = await self._turn()
+
+            if not turn_result.should_continue:
+                break
+
+        await self._emit(AgentEndEvent(
+            context=self._context,
+
+            new_messages=self._new_messages,
+        ))
+
+        return LoopResult(
+            config=self._config,
+            context=self._context,
+
+            new_messages=self._new_messages,
+        )

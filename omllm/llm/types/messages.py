@@ -16,6 +16,13 @@ from .content import ToolCallBuilder
 MessageT = ta.TypeVar('MessageT', bound='Message')
 
 
+StopReason: ta.TypeAlias = ta.Literal[
+    'stop',
+    'length',
+    'error',
+]
+
+
 ##
 
 
@@ -58,13 +65,15 @@ class UserMessageBuilder(MessageBuilder[UserMessage]):
 
 @ta.final
 @dc.dataclass(frozen=True)
-@dc.extra_class_params(cache_hash=True, terse_repr=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True, default_repr_fn=lang.opt_repr)
 class AiMessage(Message):
     content: ta.Sequence[ta.Union[
         TextContent,
         ThinkingContent,
         ToolCall,
     ]]
+
+    stop_reason: StopReason | None = None
 
 
 @ta.final

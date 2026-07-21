@@ -26,10 +26,17 @@ with _lang.auto_proxy_init(globals()):
     from .events import (  # noqa
         Event,
         EventSink,
+
+        AgentStartEvent,
+        AgentEndEvent,
+
+        TurnStartEvent,
+        TurnEndEvent,
     )
 
     from .loop import (  # noqa
         LoopConfig,
+        LoopResult,
         Loop,
     )
 

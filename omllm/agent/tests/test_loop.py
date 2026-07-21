@@ -4,6 +4,7 @@ from omcore.secrets.tests.harness import HarnessSecrets
 
 from ... import llm
 from ..loop import Loop
+from ..types import Context
 
 
 @pytest.mark.asyncs('asyncio')
@@ -20,6 +21,13 @@ async def test_loop(harness):
 
     loop = Loop(
         llm_backend=svc,
+        context=Context(
+            messages=[
+                llm.UserMessage('Hi there!'),
+            ],
+        ),
     )
 
-    await loop.run()
+    loop_res = await loop.run()
+
+    print(loop_res)
