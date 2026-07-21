@@ -29,9 +29,13 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'omdev == 0.0.30',
+    'huggingface-hub ~= 1.24',
 ]
 omdev = [
     'omdev == 0.0.30',
+]
+huggingface = [
+    'huggingface-hub ~= 1.24',
 ]
 
 [project.entry-points]

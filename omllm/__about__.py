@@ -15,6 +15,10 @@ class Project(ProjectBase):
         'omdev': [
             f'omdev == {__version__}',
         ],
+
+        'huggingface': [
+            'huggingface-hub ~= 1.24',
+        ],
     }
 
     entry_points = {

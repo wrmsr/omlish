@@ -91,7 +91,7 @@ services:
   # ext
 
   om-elasticsearch:
-    image: 'elasticsearch:8.19.18'
+    image: 'elasticsearch:8.19.19'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'

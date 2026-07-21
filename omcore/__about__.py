@@ -90,7 +90,7 @@ class Project(ProjectBase):
             'mysql-connector-python ~= 9.7',
             'mysqlclient ~= 2.2',
 
-            'snowflake-connector-python ~= 4.6',
+            'snowflake-connector-python ~= 4.7',
 
             'aiomysql ~= 0.3',
             'aiosqlite ~= 0.22',

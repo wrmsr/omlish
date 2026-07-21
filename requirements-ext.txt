@@ -11,13 +11,13 @@
 # infra
 
 google-api-python-client==2.198.0
-google-cloud-compute==1.49.0
+google-cloud-compute==1.50.0
 
 
 ##
 # ml
 
-matplotlib==3.11.0
+matplotlib==3.11.1
 
 torch==2.13.0
 torchvision==0.28.0
@@ -72,7 +72,7 @@ unicorn==2.1.4
 ##
 # bins
 
-deno==2.9.2
+deno==2.9.3
 playwright==1.61.0
 ripgrep==15.1.0
 
