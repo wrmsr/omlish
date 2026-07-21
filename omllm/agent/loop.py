@@ -12,6 +12,7 @@ from .events import EventSink
 from .events import TurnEndEvent
 from .events import TurnStartEvent
 from .messages import Message
+from .tools import ToolContext
 
 
 ##
@@ -77,6 +78,11 @@ class Loop:
                 m
                 for m in self._context.messages
             ] if self._context.messages is not None else None,
+
+            tools=[
+                t.llm_tool
+                for t in self._context.tools
+            ] if self._context.tools else None,
         )
 
         return await self._llm_backend.immediate(
@@ -108,7 +114,14 @@ class Loop:
 
         tool_calls = [c for c in message.content if isinstance(c, llm.ToolCall)]
         if tool_calls:
-            raise NotImplementedError
+            for tool_call in tool_calls:
+                tool = self._context.tools_by_name[tool_call.name]
+
+                tool_result = await tool.executor(ToolContext(  # noqa
+                    llm_tool_call=tool_call,
+                ))
+
+                raise NotImplementedError
 
         await self._emit(TurnEndEvent(
             message=message,
