@@ -158,6 +158,9 @@ dep-about: venv
 .PHONY: gen
 gen: gen-amalg gen-dockerdev gen-cmake gen-aws gen-manifest gen-dataclass gen-pkg
 
+.PHONY: gen-online
+gen-online: gen-aws-instance-types gen-modeldb
+
 .PHONY: gen-amalg
 gen-amalg: venv
 	${PYTHON} -m omdev.amalg gen \
@@ -624,7 +627,7 @@ dep-update-rs:
 	for R in ${SRCS} ; do \
 		for F in $$(find "$$R" -type f -name 'Cargo.toml') ; do \
 			echo "$$F" ; \
-			(cd $$(dirname "$$F") && cargo upgrade) ; \
+			(cd $$(dirname "$$F") && cargo upgrade --verbose) ; \
 			echo ; \
 		done ; \
 	done
