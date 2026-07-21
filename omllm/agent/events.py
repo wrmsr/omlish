@@ -3,8 +3,8 @@ import typing as ta
 from omcore import dataclasses as dc
 from omcore import lang
 
-from .types import Context
-from .types import Message
+from .contexts import Context
+from .messages import Message
 
 
 ##

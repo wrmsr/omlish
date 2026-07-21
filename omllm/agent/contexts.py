@@ -3,13 +3,7 @@ import typing as ta
 from omcore import dataclasses as dc
 from omcore import lang
 
-from .. import llm
-
-
-##
-
-
-type Message = llm.Message
+from .messages import Message
 
 
 ##

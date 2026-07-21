@@ -3,8 +3,8 @@ import pytest
 from omcore.secrets.tests.harness import HarnessSecrets
 
 from ... import llm
+from ..contexts import Context
 from ..loop import Loop
-from ..types import Context
 
 
 @pytest.mark.asyncs('asyncio')

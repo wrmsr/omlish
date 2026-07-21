@@ -36,6 +36,8 @@ def _register(**kwargs):
         ('omllm.agent.events', 'AgentStartEvent'),
         ('omllm.agent.events', 'Event'),
         ('omllm.agent.events', 'TurnStartEvent'),
+        ('omllm.agent.tools', 'ToolContext'),
+        ('omllm.agent.tools', 'ToolResult'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -96,6 +98,124 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         @__dataclass___recursive_repr()
         def __repr__(self):
             return f"{self.__class__.__qualname__}()"
+
+        __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('system_prompt', 'messages')), EqPlan(fields=('system_prompt', 'messages')), Froze"
+        "nPlan(fields=('system_prompt', 'messages'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=("
+        "'system_prompt', 'messages'), cache=False), InitPlan(fields=(InitPlan.Field(name='system_prompt', annotation=O"
+        "pRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='messages', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.def"
+        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None)), self_param='self', std_params=(), kw_only_params=('system_prompt', 'messages'), froze"
+        "n=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(nam"
+        "e='system_prompt', kw_only=True, fn=None), ReprPlan.Field(name='messages', kw_only=True, fn=None)), id=False, "
+        "terse=False, default_fn=OpRef(name='repr.default_fn'))))"
+    ),
+    plan_repr_sha1='8c15443ace66a1540c6ca6fc9f379f44cb5a184f',
+    cls_names=(
+        ('omllm.agent.contexts', 'Context'),
+    ),
+)
+def _process_dataclass__8c15443ace66a1540c6ca6fc9f379f44cb5a184f():
+    def _process_dataclass(
+        *,
+        __class__,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__repr__default_fn,
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__set_cls_attr,
+    ):
+        def __copy__(self):
+            if self.__class__ is not __class__:
+                raise TypeError(self)
+            return __class__(  # noqa
+                system_prompt=self.system_prompt,
+                messages=self.messages,
+            )
+
+        __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.system_prompt == other.system_prompt and
+                self.messages == other.messages
+            )
+
+        __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
+
+        __dataclass___frozen_fields = {
+            'system_prompt',
+            'messages',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__class__, self).__setattr__(name, value)
+
+        __dataclass__set_cls_attr(__class__, '__setattr__', __setattr__, 'raise', set_qualname=True)
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __class__
+                or name in __dataclass___frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__class__, self).__delattr__(name)
+
+        __dataclass__set_cls_attr(__class__, '__delattr__', __delattr__, 'raise', set_qualname=True)
+
+        def __hash__(self):
+            return hash((
+                self.system_prompt,
+                self.messages,
+            ))
+
+        __dataclass__set_cls_attr(__class__, '__hash__', __hash__, 'replace', set_qualname=True)
+
+        def __init__(
+            self,
+            *,
+            system_prompt: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            messages: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'system_prompt', system_prompt)
+            __dataclass__object_setattr(self, 'messages', messages)
+
+        __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            if (s := __dataclass__repr__default_fn(self.system_prompt)) is not None:
+                parts.append(f"system_prompt={s}")
+            if (s := __dataclass__repr__default_fn(self.messages)) is not None:
+                parts.append(f"messages={s}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
 
         __dataclass__set_cls_attr(__class__, '__repr__', __repr__, 'raise', set_qualname=True)
 
@@ -653,32 +773,27 @@ def _process_dataclass__d8cd9b543e3e280695523fcb05b7483616a3e008():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('system_prompt', 'messages')), EqPlan(fields=('system_prompt', 'messages')), Froze"
-        "nPlan(fields=('system_prompt', 'messages'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=("
-        "'system_prompt', 'messages'), cache=False), InitPlan(fields=(InitPlan.Field(name='system_prompt', annotation=O"
-        "pRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='messages', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None)), self_param='self', std_params=(), kw_only_params=('system_prompt', 'messages'), froze"
-        "n=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(nam"
-        "e='system_prompt', kw_only=True, fn=None), ReprPlan.Field(name='messages', kw_only=True, fn=None)), id=False, "
-        "terse=False, default_fn=OpRef(name='repr.default_fn'))))"
+        "Plans(tup=(CopyPlan(fields=('llm', 'fn')), EqPlan(fields=('llm', 'fn')), FrozenPlan(fields=('llm', 'fn'), allo"
+        "w_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('llm', 'fn'), cache=False), InitPlan(fields=(Ini"
+        "tPlan.Field(name='llm', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='fn', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_pa"
+        "ram='self', std_params=(), kw_only_params=('llm', 'fn'), frozen=True, slots=False, post_init_params=None, init"
+        "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='llm', kw_only=True, fn=None), ReprPlan.Field("
+        "name='fn', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='8c15443ace66a1540c6ca6fc9f379f44cb5a184f',
+    plan_repr_sha1='3da890aaa7d0ecf9f578c8fc8a3a30817b3cbeec',
     cls_names=(
-        ('omllm.agent.types', 'Context'),
+        ('omllm.agent.tools', 'Tool'),
     ),
 )
-def _process_dataclass__8c15443ace66a1540c6ca6fc9f379f44cb5a184f():
+def _process_dataclass__3da890aaa7d0ecf9f578c8fc8a3a30817b3cbeec():
     def _process_dataclass(
         *,
         __class__,
         __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__repr__default_fn,
         __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
         __dataclass__None=None,  # noqa
         __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
@@ -689,8 +804,8 @@ def _process_dataclass__8c15443ace66a1540c6ca6fc9f379f44cb5a184f():
             if self.__class__ is not __class__:
                 raise TypeError(self)
             return __class__(  # noqa
-                system_prompt=self.system_prompt,
-                messages=self.messages,
+                llm=self.llm,
+                fn=self.fn,
             )
 
         __dataclass__set_cls_attr(__class__, '__copy__', __copy__, 'raise', set_qualname=True)
@@ -701,15 +816,15 @@ def _process_dataclass__8c15443ace66a1540c6ca6fc9f379f44cb5a184f():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.system_prompt == other.system_prompt and
-                self.messages == other.messages
+                self.llm == other.llm and
+                self.fn == other.fn
             )
 
         __dataclass__set_cls_attr(__class__, '__eq__', __eq__, 'raise', set_qualname=True)
 
         __dataclass___frozen_fields = {
-            'system_prompt',
-            'messages',
+            'llm',
+            'fn',
         }
 
         def __setattr__(self, name, value):
@@ -734,8 +849,8 @@ def _process_dataclass__8c15443ace66a1540c6ca6fc9f379f44cb5a184f():
 
         def __hash__(self):
             return hash((
-                self.system_prompt,
-                self.messages,
+                self.llm,
+                self.fn,
             ))
 
         __dataclass__set_cls_attr(__class__, '__hash__', __hash__, 'replace', set_qualname=True)
@@ -743,21 +858,19 @@ def _process_dataclass__8c15443ace66a1540c6ca6fc9f379f44cb5a184f():
         def __init__(
             self,
             *,
-            system_prompt: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            messages: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            llm: __dataclass__init__fields__0__annotation,
+            fn: __dataclass__init__fields__1__annotation,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'system_prompt', system_prompt)
-            __dataclass__object_setattr(self, 'messages', messages)
+            __dataclass__object_setattr(self, 'llm', llm)
+            __dataclass__object_setattr(self, 'fn', fn)
 
         __dataclass__set_cls_attr(__class__, '__init__', __init__, 'raise', set_qualname=True)
 
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            if (s := __dataclass__repr__default_fn(self.system_prompt)) is not None:
-                parts.append(f"system_prompt={s}")
-            if (s := __dataclass__repr__default_fn(self.messages)) is not None:
-                parts.append(f"messages={s}")
+            parts.append(f"llm={self.llm!r}")
+            parts.append(f"fn={self.fn!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

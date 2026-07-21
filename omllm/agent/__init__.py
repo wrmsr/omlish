@@ -23,6 +23,10 @@ with _lang.auto_proxy_init(globals()):
         Agent,
     )
 
+    from .contexts import (  # noqa
+        Context,
+    )
+
     from .events import (  # noqa
         Event,
         EventSink,
@@ -40,6 +44,12 @@ with _lang.auto_proxy_init(globals()):
         Loop,
     )
 
-    from .types import (  # noqa
-        Context,
+    from .messages import (  # noqa
+        Message,
+    )
+
+    from .tools import (  # noqa
+        ToolContext,
+        ToolResult,
+        Tool,
     )
