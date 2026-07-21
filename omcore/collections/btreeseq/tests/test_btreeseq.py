@@ -208,6 +208,10 @@ class _BaseBtreeSeqTests:
 
         self._check_seq(s, list(range(1000)) + list(range(100)) + list(range(4000, 5000)))
 
+        s = s.append(5000)
+
+        self._check_seq(s, list(range(1000)) + list(range(100)) + list(range(4000, 5000)) + [5000])
+
     def test_random_against_list(self):
         rng = random.Random(0)
 
