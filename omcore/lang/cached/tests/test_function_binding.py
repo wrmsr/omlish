@@ -4,6 +4,8 @@ caching of bound wrappers, classmethod owner-caching, staticmethods, runtime-bou
 custom __get__ descriptors.
 """
 import functools
+import gc
+import weakref
 
 import pytest
 
@@ -245,3 +247,39 @@ def test_mismatched_attr_name_breaks_instance_caching():
     assert c.foo() == 2  # not cached: each `c.foo` access rebinds under key '_impl', never 'foo'
     assert '_impl' in c.__dict__
     assert 'foo' not in c.__dict__
+
+
+##
+
+
+@pytest.mark.parametrize('bound_first', [True, False])
+def test_do_you_seriously_globally_cache_self(bound_first):
+    mc = 0
+
+    class C:
+        @cached_function
+        def m(self):
+            nonlocal mc
+            mc += 1
+            return self
+
+    ws: weakref.WeakSet[C] = weakref.WeakSet()
+
+    for _ in range(lc := 1000):
+        c = C()
+        ws.add(c)
+
+        if bound_first:
+            assert c.m() is c
+            assert C.m(c) is c
+        else:
+            assert c.m() is c
+            assert C.m(c) is c
+
+        del c
+
+    gc.collect()
+
+    assert lc == mc
+
+    assert not ws

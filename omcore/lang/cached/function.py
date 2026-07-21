@@ -277,8 +277,8 @@ class _BindKind(enum.Enum):
 class _CacheSpec(ta.NamedTuple):
     """
     The axes of a cache configuration that shape its generated code. Fields not meaningful for a given bind kind are
-    normalized to their defaults so the species cache shares maximally. A future cext species is one heap type
-    switching on these axes.
+    normalized to their defaults so the species cache shares maximally. A future cext species is one heap type switching
+    on these axes.
     """
 
     bind_kind: _BindKind
@@ -469,8 +469,8 @@ class _FullCachedFunction(_CachedFunction[T], Abstract):
     ) -> None:
         super().__init__()
 
-        # Metadata is copied first so the state set below can't be clobbered by entries in a wrapped function's
-        # __dict__ (such as when wrapping another cached function).
+        # Metadata is copied first so the state set below can't be clobbered by entries in a wrapped function's __dict__
+        # (such as when wrapping another cached function).
         if not opts.no_wrapper_update:
             functools.update_wrapper(self, fn)
 
@@ -749,8 +749,7 @@ class _UnboundCachedMethod:
             raise TypeError(self) from None
 
     def __call__(self, instance, /, *args, **kwargs):
-        desc = self._desc
-        name = desc._name  # noqa
+        name = (desc := self._desc)._name  # noqa
 
         if (d := getattr(instance, '__dict__', None)) is not None and (b := d.get(name, _MISSING)) is not _MISSING:
             # Something already occupies the attribute slot on the instance: if it's our own bound wrapper, use it -
