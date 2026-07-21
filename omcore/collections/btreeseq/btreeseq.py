@@ -116,7 +116,9 @@ class BtreeSeq(
         return self.splice(idx, idx + 1, ())
 
     def append(self, item: T) -> ta.Self:
-        return self.splice(len(self), len(self), (item,))
+        ln = len(self)
+
+        return self.splice(ln, ln, (item,))
 
     def extend(self, items: ta.Iterable[T]) -> ta.Self:
         ln = len(self)
