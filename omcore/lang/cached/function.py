@@ -39,7 +39,7 @@ component. Classmethod-scope wrappers install on the owner class analogously. `A
 own per-instance cache exactly as `inst.f(...)` would. All generated source is registered with linecache under virtual
 filenames, so debuggers can step it and tracebacks render it.
 
-A future optional cext will replace the generated species with a single heap type switching on the same _CacheSpec axes
+A future optional cext may replace the generated species with a single heap type switching on the same _CacheSpec axes
 (python-level codegen becomes C-level iffing) - _get_species is the single seam where that swaps in. The cext can cover
 the NULLARY and GENERAL tiers first (calling the python key maker for the latter); INLINE species may remain
 python-only until vectorcall-based argument parsing is warranted.
@@ -109,6 +109,10 @@ def _register_gen_src(name: str, src: str) -> str:
         linecache.cache[filename] = (len(src), None, src.splitlines(keepends=True), filename)
 
     return filename
+
+
+def _exec_src(src: str, filename: str, ns: ta.Any) -> None:
+    exec(compile(src, filename, 'exec'), ns)  # noqa
 
 
 ##
@@ -205,7 +209,7 @@ def _make_unwrapped_cache_key_maker(
     )
 
     filename = _register_gen_src(f'key_maker__{getattr(fn, "__qualname__", "?")}', rendered)
-    exec(compile(rendered, filename, 'exec'), ns)  # noqa
+    _exec_src(rendered, filename, ns)  # noqa
 
     kfn: CacheKeyMaker = ns['__func__']  # type: ignore[assignment]
     return kfn
@@ -1088,7 +1092,7 @@ def _get_species(spec: _CacheSpec) -> type:
     cg = _SpeciesCodeGen(spec)
     src = cg.render()
     ns = dict(cg.ns)
-    exec(compile(src, _register_gen_src(cg.call_name, src), 'exec'), ns)  # noqa
+    _exec_src(src, _register_gen_src(cg.call_name, src), ns)  # noqa
 
     dct: dict = {'__call__': ns[cg.call_name]}
     if spec.bind_kind is _BindKind.DESCRIPTOR:

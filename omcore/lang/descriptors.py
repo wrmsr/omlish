@@ -57,7 +57,12 @@ def unwrap_method_descriptors(fn: ta.Any) -> ta.Any:
 ##
 
 
-def unwrap_func_with_partials(fn: ta.Any) -> tuple[ta.Any, list[functools.partial]]:
+class UnwrappedFuncWithPartials(ta.NamedTuple):
+    unwrapped: ta.Any
+    partials: tuple[functools.partial, ...]
+
+
+def unwrap_func_with_partials(fn: ta.Any) -> UnwrappedFuncWithPartials:
     ps = []
     while True:
         if is_method_descriptor(fn) or isinstance(fn, types.MethodType):
@@ -81,7 +86,7 @@ def unwrap_func_with_partials(fn: ta.Any) -> tuple[ta.Any, list[functools.partia
         else:
             break
 
-    return fn, ps
+    return UnwrappedFuncWithPartials(fn, tuple(ps))
 
 
 def unwrap_func(fn: ta.Any) -> ta.Any:
@@ -92,7 +97,7 @@ def unwrap_func(fn: ta.Any) -> ta.Any:
 ##
 
 
-def unwrap_callable_with_partials(obj: ta.Any) -> tuple[ta.Any, list[functools.partial]]:
+def unwrap_callable_with_partials(obj: ta.Any) -> UnwrappedFuncWithPartials:
     if isinstance(obj, type):
         obj = obj.__call__
     return unwrap_func_with_partials(obj)

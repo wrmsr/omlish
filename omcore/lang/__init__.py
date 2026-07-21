@@ -255,6 +255,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         is_method_descriptor,
         unwrap_method_descriptors,
 
+        UnwrappedFuncWithPartials,
         unwrap_func_with_partials,
         unwrap_func,
 
