@@ -2,6 +2,14 @@ import typing as ta
 
 from omcore import dataclasses as dc
 
+from .. import llm
+
+
+##
+
+
+type Message = llm.Message
+
 
 ##
 
@@ -9,4 +17,6 @@ from omcore import dataclasses as dc
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
 class Context:
-    pass
+    system_prompt: str | None = None
+
+    messages: ta.Sequence[Message] | None = None

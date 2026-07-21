@@ -13,7 +13,7 @@ from .types import Context
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
 class LoopConfig:
-    pass
+    llm_options: llm.Options | None = None
 
 
 class Loop:
@@ -39,5 +39,32 @@ class Loop:
         self._config = config
         self._context = context
 
+    #
+
+    async def _llm_complete(self) -> llm.AiMessage:
+        llm_context = llm.Context(
+            system_prompt=self._context.system_prompt,
+
+            messages=[  # noqa
+                m
+                for m in self._context.messages
+            ] if self._context.messages is not None else None,
+        )
+
+        return await self._llm_backend.immediate(
+            llm_context,
+            self._config.llm_options,
+        )
+
+    #
+
+    async def _step(self) -> None:
+        out = await self._llm_complete()  # noqa
+
+        raise NotImplementedError
+
+    #
+
     async def run(self) -> None:
-        pass
+        while True:
+            await self._step()
