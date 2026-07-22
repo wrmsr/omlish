@@ -13,6 +13,8 @@ V = ta.TypeVar('V')
 
 
 class PersistentSequence(ta.Sequence[T], lang.Abstract, ta.Generic[T]):
+    __slots__ = ()
+
     @abc.abstractmethod
     def __len__(self) -> int:
         raise NotImplementedError
@@ -69,6 +71,8 @@ class PersistentSequence(ta.Sequence[T], lang.Abstract, ta.Generic[T]):
 
 
 class PersistentMap(lang.Abstract, ta.Generic[K, V]):
+    __slots__ = ()
+
     @abc.abstractmethod
     def __len__(self) -> int:
         raise NotImplementedError
@@ -108,6 +112,8 @@ class PersistentMapping(
     lang.Abstract,
     ta.Generic[K, V],
 ):
+    __slots__ = ()
+
     @abc.abstractmethod
     def __contains__(self, item: K) -> bool:  # type: ignore[override]
         raise NotImplementedError

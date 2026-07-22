@@ -105,6 +105,8 @@ def dict_factory[K, V](
 
 @ta.final
 class IterValuesView(collections.abc.ValuesView[V]):
+    __slots__ = ()
+
     _mapping: IterValuesViewMapping[ta.Any, V]
 
     def __iter__(self) -> ta.Iterator[V]:
@@ -112,6 +114,8 @@ class IterValuesView(collections.abc.ValuesView[V]):
 
 
 class IterValuesViewMapping(collections.abc.Mapping[K, V]):
+    __slots__ = ()
+
     @ta.final
     def values(self) -> IterValuesView[V]:
         return IterValuesView(self)
@@ -126,6 +130,8 @@ class IterValuesViewMapping(collections.abc.Mapping[K, V]):
 
 @ta.final
 class IterItemsView(collections.abc.ItemsView[K, V]):
+    __slots__ = ()
+
     _mapping: IterItemsViewMapping[K, V]
 
     def __iter__(self) -> ta.Iterator[tuple[K, V]]:
@@ -133,6 +139,8 @@ class IterItemsView(collections.abc.ItemsView[K, V]):
 
 
 class IterItemsViewMapping(collections.abc.Mapping[K, V]):
+    __slots__ = ()
+
     @ta.final
     def items(self) -> IterItemsView[K, V]:
         return IterItemsView(self)

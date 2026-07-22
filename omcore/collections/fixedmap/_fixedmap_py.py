@@ -1,3 +1,5 @@
+import sys
+import types
 import typing as ta
 
 from ... import lang
@@ -14,11 +16,43 @@ V = ta.TypeVar('V')
 ##
 
 
+_UHASH_MASK = 2 * sys.maxsize + 1  # (Py_uhash_t)-1
+
+
+def _hash_items(items: ta.Iterable[ta.Any]) -> int:
+    # Order-insensitive hash, frozenset's entry mixing over hash((key, value)) pairs: mapping equality (both against
+    # other FixedMaps and against dicts) is content-based and ignores key order, so the hash must be too. MUST stay
+    # bit-identical to FixedMap_hash in _fixedmap.cc -- equal maps must hash equal across the two implementations,
+    # which coexist in-process.
+    h = 0
+    n = 0
+
+    for it in items:
+        eh = hash(it) & _UHASH_MASK
+        h ^= ((eh ^ 89869747) ^ ((eh << 16) & _UHASH_MASK)) * 3644798167 & _UHASH_MASK
+        n += 1
+
+    h ^= ((n + 1) * 1927868237) & _UHASH_MASK
+    h ^= (h >> 11) ^ (h >> 25)
+    h = (h * 69069 + 907133923) & _UHASH_MASK
+
+    if h in (_UHASH_MASK, 0):
+        # -1 is reserved by CPython; 0 is the C implementation's "uncomputed" cache sentinel.
+        h = 590923713
+
+    if h > sys.maxsize:
+        h -= _UHASH_MASK + 1
+
+    return h
+
+
 @ta.final
 class FixedMapKeys(
     BaseFixedMapKeys[K],
     ta.Generic[K],
 ):
+    __slots__ = ('_keys', '_key_indexes')
+
     def __init__(self, keys: ta.Iterable[K]) -> None:
         self._keys = keys = tuple(keys)
         key_indexes: dict[K, int] = {}
@@ -36,10 +70,10 @@ class FixedMapKeys(
 
     @property
     def debug(self) -> ta.Mapping[K, int]:
-        return self._key_indexes
+        return types.MappingProxyType(self._key_indexes)
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.debug!r})'
+        return f'{type(self).__name__}({self._key_indexes!r})'
 
     #
 
@@ -75,6 +109,8 @@ class FixedMap(
     ta.Mapping[K, V],
     ta.Generic[K, V],
 ):
+    __slots__ = ('_keys', '_values', '_hash')
+
     def __init__(self, keys: FixedMapKeys[K], values: ta.Sequence[V]) -> None:
         self._keys, self._values = keys, tuple(values)
 
@@ -104,7 +140,7 @@ class FixedMap(
             return self._hash
         except AttributeError:
             pass
-        self._hash = h = hash(tuple(zip(self._keys, self._values, strict=True)))
+        self._hash = h = _hash_items(zip(self._keys, self._values, strict=True))
         return h
 
     #

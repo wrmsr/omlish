@@ -17,6 +17,8 @@ V = ta.TypeVar('V')
 
 
 class SortedIter(lang.Abstract, ta.Generic[T]):
+    __slots__ = ()
+
     @abc.abstractmethod
     def iter(self) -> ta.Iterator[T]:
         raise NotImplementedError
@@ -40,6 +42,8 @@ class SortedCollection(
     lang.Abstract,
     ta.Generic[T],
 ):
+    __slots__ = ()
+
     Comparator = ta.Callable[[U, U], int]
 
     @staticmethod
@@ -77,6 +81,8 @@ class SortedCollection(
 
 
 class SortedItems(lang.Abstract, ta.Generic[K, V]):
+    __slots__ = ()
+
     @abc.abstractmethod
     def iteritems(self) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
@@ -100,7 +106,7 @@ class SortedMapping(
     lang.Abstract,
     ta.Generic[K, V],
 ):
-    pass
+    __slots__ = ()
 
 
 class SortedMutableMapping(
@@ -109,7 +115,7 @@ class SortedMutableMapping(
     lang.Abstract,
     ta.Generic[K, V],
 ):
-    pass
+    __slots__ = ()
 
 
 ##

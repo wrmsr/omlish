@@ -19,4 +19,4 @@ class PersistentSortedMapping(
     lang.Abstract,
     ta.Generic[K, V],
 ):
-    pass
+    __slots__ = ()

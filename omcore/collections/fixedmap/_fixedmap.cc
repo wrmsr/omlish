@@ -1,7 +1,6 @@
 // @om-cext
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include <structmember.h>
 #include <atomic>
 
 #define _MODULE_NAME "_fixedmap"
@@ -35,27 +34,18 @@ struct FixedMapViewObject {
     FixedMapObject* map;
 };
 
-// Iterator modes
-enum IterMode {
-    ITER_KEYS_VALUES = 0,
-    ITER_KEYS_ITEMS = 1,
-    ITER_MAP_ITEMS = 2
-};
-
-struct FixedMapIterObject {
-    PyObject_HEAD
-    PyObject* source;
-    int mode;
-    Py_ssize_t index;
-};
-
 typedef struct fixedmap_state {
     PyTypeObject* FixedMapKeys_Type;
     PyTypeObject* FixedMap_Type;
-    PyTypeObject* FixedMapIter_Type;
     PyTypeObject* FixedMapValuesView_Type;
     PyTypeObject* FixedMapItemsView_Type;
-    PyObject *DuplicateKeyError;
+    PyObject* DuplicateKeyError;
+    // collections.abc.Mapping -- both for the richcompare fallback gate and to register our types against for
+    // isinstance parity with the pure-python implementation.
+    PyObject* MappingABC;
+    // builtins.zip -- items iteration is just zip(keys_tuple, values_tuple), which also reuses its result tuple for
+    // refcount-1 consumers (faster than a bespoke iterator packing a fresh tuple per element).
+    PyObject* ZipBuiltin;
 } fixedmap_state;
 
 static inline fixedmap_state* get_module_state(PyObject* module) {
@@ -87,87 +77,16 @@ static int dummy_init(PyObject* self, PyObject* args, PyObject* kwds) {
 }
 
 //
-// FixedMapIter Implementation
+// Utilities
 //
 
-static int FixedMapIter_traverse(FixedMapIterObject* self, visitproc visit, void* arg) {
-    Py_VISIT(self->source);
-    return 0;
-}
-
-static int FixedMapIter_clear(FixedMapIterObject* self) {
-    Py_CLEAR(self->source);
-    return 0;
-}
-
-static void FixedMapIter_dealloc(FixedMapIterObject* self) {
-    PyTypeObject *tp = Py_TYPE(self);
-    PyObject_GC_UnTrack(self);
-    FixedMapIter_clear(self);
-    tp->tp_free((PyObject*)self);
-    Py_DECREF(tp);
-}
-
-static PyObject* FixedMapIter_iternext(FixedMapIterObject* self) {
-    std::atomic_ref<Py_ssize_t> index_ref(self->index);
-    Py_ssize_t i = index_ref.fetch_add(1, std::memory_order_relaxed);
-
-    if (self->mode == ITER_KEYS_VALUES || self->mode == ITER_KEYS_ITEMS) {
-        FixedMapKeysObject* keys = (FixedMapKeysObject*)self->source;
-        if (i >= PyTuple_GET_SIZE(keys->keys_tuple)) {
-            return NULL;
-        }
-
-        if (self->mode == ITER_KEYS_VALUES) {
-            return PyLong_FromSsize_t(i);
-        } else {  // ITER_KEYS_ITEMS
-            PyObject* key = PyTuple_GET_ITEM(keys->keys_tuple, i);
-            PyObject* val = PyLong_FromSsize_t(i);
-            if (!val) {
-                return NULL;
-            }
-            PyObject* tuple = PyTuple_Pack(2, key, val);
-            Py_DECREF(val);
-            return tuple;
-        }
-    } else {
-        FixedMapObject* map = (FixedMapObject*)self->source;
-        if (i >= PyTuple_GET_SIZE(map->values_tuple)) {
-            return NULL;
-        }
-
-        PyObject* key = PyTuple_GET_ITEM(map->keys->keys_tuple, i);
-        PyObject* val = PyTuple_GET_ITEM(map->values_tuple, i);
-        return PyTuple_Pack(2, key, val);
-    }
-}
-
-static PyType_Slot FixedMapIter_slots[] = {
-    {Py_tp_dealloc, (void*)FixedMapIter_dealloc},
-    {Py_tp_traverse, (void*)FixedMapIter_traverse},
-    {Py_tp_clear, (void*)FixedMapIter_clear},
-    {Py_tp_iter, (void*)PyObject_SelfIter},
-    {Py_tp_iternext, (void*)FixedMapIter_iternext},
-    {0, NULL}
-};
-
-static PyType_Spec FixedMapIter_spec = {
-    .name = _MODULE_FULL_NAME ".FixedMapIter",
-    .basicsize = sizeof(FixedMapIterObject),
-    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
-    .slots = FixedMapIter_slots,
-};
-
-static PyObject* new_iterator(PyObject* source, int mode, fixedmap_state* state) {
-    FixedMapIterObject* iter = PyObject_GC_New(FixedMapIterObject, state->FixedMapIter_Type);
-    if (!iter) {
-        return NULL;
-    }
-    iter->source = Py_NewRef(source);
-    iter->mode = mode;
-    iter->index = 0;
-    PyObject_GC_Track(iter);
-    return (PyObject*)iter;
+static PyObject* new_items_iter(FixedMapObject* map, fixedmap_state* state) {
+    return PyObject_CallFunctionObjArgs(
+        state->ZipBuiltin,
+        map->keys->keys_tuple,
+        map->values_tuple,
+        NULL
+    );
 }
 
 //
@@ -175,6 +94,7 @@ static PyObject* new_iterator(PyObject* source, int mode, fixedmap_state* state)
 //
 
 static int FixedMapView_traverse(FixedMapViewObject* self, visitproc visit, void* arg) {
+    Py_VISIT(Py_TYPE(self));
     Py_VISIT(self->map);
     return 0;
 }
@@ -201,8 +121,7 @@ static PyObject* FixedMapValuesView_iter(FixedMapViewObject* self) {
 }
 
 static PyObject* FixedMapItemsView_iter(FixedMapViewObject* self) {
-    fixedmap_state* state = get_type_state(Py_TYPE(self));
-    return new_iterator((PyObject*)self->map, ITER_MAP_ITEMS, state);
+    return new_items_iter(self->map, get_type_state(Py_TYPE(self)));
 }
 
 static PyType_Slot FixedMapValuesView_slots[] = {
@@ -252,6 +171,7 @@ static PyObject* new_view(FixedMapObject* map, PyTypeObject* type) {
 //
 
 static int FixedMapKeys_traverse(FixedMapKeysObject* self, visitproc visit, void* arg) {
+    Py_VISIT(Py_TYPE(self));
     Py_VISIT(self->keys_tuple);
     Py_VISIT(self->key_indexes);
     return 0;
@@ -327,6 +247,11 @@ static int FixedMapKeys_lookup_index(FixedMapKeysObject* self, PyObject* key, Py
 }
 
 static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+    if (kwds != NULL && PyDict_GET_SIZE(kwds) != 0) {
+        PyErr_SetString(PyExc_TypeError, "FixedMapKeys() takes no keyword arguments");
+        return NULL;
+    }
+
     PyObject* keys_arg;
     if (!PyArg_ParseTuple(args, "O", &keys_arg)) {
         return NULL;
@@ -427,9 +352,7 @@ static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* 
         return NULL;
     }
 
-    if (!PyObject_GC_IsTracked((PyObject*)self)) {
-        PyObject_GC_Track(self);
-    }
+    // tp_alloc (PyType_GenericAlloc) already GC-tracked the object.
     return (PyObject*)self;
 }
 
@@ -580,6 +503,7 @@ static PyType_Spec FixedMapKeys_spec = {
 //
 
 static int FixedMap_traverse(FixedMapObject* self, visitproc visit, void* arg) {
+    Py_VISIT(Py_TYPE(self));
     Py_VISIT(self->keys);
     Py_VISIT(self->values_tuple);
     return 0;
@@ -600,6 +524,11 @@ static void FixedMap_dealloc(FixedMapObject* self) {
 }
 
 static PyObject* FixedMap_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+    if (kwds != NULL && PyDict_GET_SIZE(kwds) != 0) {
+        PyErr_SetString(PyExc_TypeError, "FixedMap() takes no keyword arguments");
+        return NULL;
+    }
+
     PyObject* keys_arg;
     PyObject* values_arg;
 
@@ -629,45 +558,57 @@ static PyObject* FixedMap_new(PyTypeObject* type, PyObject* args, PyObject* kwds
 
     self->keys = (FixedMapKeysObject*)Py_NewRef(keys_obj);
     self->hash_cache = 0;
-    if (!PyObject_GC_IsTracked((PyObject*)self)) {
-        PyObject_GC_Track(self);
-    }
+    // tp_alloc (PyType_GenericAlloc) already GC-tracked the object.
     return (PyObject*)self;
 }
 
 static Py_hash_t FixedMap_hash(FixedMapObject* self) {
     std::atomic_ref<Py_hash_t> cache(self->hash_cache);
-    Py_hash_t h = cache.load(std::memory_order_acquire);
-    if (h != 0) {
-        return h;
+    Py_hash_t cached = cache.load(std::memory_order_acquire);
+    if (cached != 0) {
+        return cached;
     }
     if (Py_EnterRecursiveCall(" in FixedMap hash")) {
         return -1;
     }
 
-    Py_hash_t kh = PyObject_Hash((PyObject*)self->keys);
-    if (kh == -1) {
-        Py_LeaveRecursiveCall();
-        return -1;
-    }
-
+    // Order-insensitive hash, frozenset's entry mixing over hash((key, value)) pairs: mapping equality (both against
+    // other FixedMaps and against dicts) is content-based and ignores key order, so the hash must be too. MUST stay
+    // bit-identical to _hash_items in _fixedmap_py.py -- equal maps must hash equal across the two implementations,
+    // which coexist in-process.
     Py_ssize_t size = PyTuple_GET_SIZE(self->values_tuple);
-    Py_hash_t res = 0x9e3779b9;
+    Py_uhash_t h = 0;
     for (Py_ssize_t i = 0; i < size; i++) {
-        Py_hash_t vh = PyObject_Hash(PyTuple_GET_ITEM(self->values_tuple, i));
-        if (vh == -1) {
+        PyObject* pair = PyTuple_Pack(
+            2,
+            PyTuple_GET_ITEM(self->keys->keys_tuple, i),
+            PyTuple_GET_ITEM(self->values_tuple, i)
+        );
+        if (!pair) {
             Py_LeaveRecursiveCall();
             return -1;
         }
-        res = (res ^ vh) * 1000003 + (82520L + size + size + 2);
+        Py_hash_t ph = PyObject_Hash(pair);
+        Py_DECREF(pair);
+        if (ph == -1) {
+            Py_LeaveRecursiveCall();
+            return -1;
+        }
+        Py_uhash_t eh = (Py_uhash_t)ph;
+        h ^= ((eh ^ 89869747UL) ^ (eh << 16)) * 3644798167UL;
     }
-    res ^= kh;
     Py_LeaveRecursiveCall();
-    if (res == -1) {
-        res = -2;
-    } else if (res == 0) {
-        res = 1;
+
+    h ^= ((Py_uhash_t)size + 1) * 1927868237UL;
+    h ^= (h >> 11) ^ (h >> 25);
+    h = h * 69069UL + 907133923UL;
+
+    if (h == (Py_uhash_t)-1 || h == 0) {
+        // -1 is reserved by CPython; 0 is this cache's "uncomputed" sentinel.
+        h = 590923713UL;
     }
+
+    Py_hash_t res = (Py_hash_t)h;
     cache.store(res, std::memory_order_release);
     return res;
 }
@@ -703,6 +644,18 @@ static PyObject* FixedMap_richcompare(PyObject* a, PyObject* b, int op) {
             PyObject* ret = PyObject_RichCompare(ma->values_tuple, mb->values_tuple, op);
             Py_LeaveRecursiveCall();
             return ret;
+        }
+    } else if (!PyDict_Check(b)) {
+        // Only mappings compare content-wise, mirroring collections.abc.Mapping.__eq__ -- anything else must get
+        // NotImplemented, not a TypeError from blindly subscripting it below.
+        int is_map = PyObject_IsInstance(b, state->MappingABC);
+        if (is_map < 0) {
+            Py_LeaveRecursiveCall();
+            return NULL;
+        }
+        if (!is_map) {
+            Py_LeaveRecursiveCall();
+            Py_RETURN_NOTIMPLEMENTED;
         }
     }
 
@@ -865,7 +818,7 @@ static PyObject* FixedMap_itervalues(FixedMapObject* self, PyObject* Py_UNUSED(i
 }
 
 static PyObject* FixedMap_iteritems(FixedMapObject* self, PyObject* Py_UNUSED(ignored)) {
-    return new_iterator((PyObject*)self, ITER_MAP_ITEMS, get_type_state(Py_TYPE(self)));
+    return new_items_iter(self, get_type_state(Py_TYPE(self)));
 }
 
 static PyObject* FixedMap_iter(FixedMapObject* self) {
@@ -952,14 +905,6 @@ static int fixedmap_exec(PyObject* module) {
         return -1;
     }
 
-    state->FixedMapIter_Type = (PyTypeObject*)PyType_FromModuleAndSpec(module, &FixedMapIter_spec, NULL);
-    if (!state->FixedMapIter_Type) {
-        return -1;
-    }
-    if (PyModule_AddType(module, state->FixedMapIter_Type) < 0) {
-        return -1;
-    }
-
     state->FixedMapValuesView_Type = (PyTypeObject*)PyType_FromModuleAndSpec(module, &FixedMapValuesView_spec, NULL);
     if (!state->FixedMapValuesView_Type) {
         return -1;
@@ -991,6 +936,35 @@ static int fixedmap_exec(PyObject* module) {
         return -1;
     }
 
+    PyObject* cabc = PyImport_ImportModule("collections.abc");
+    if (!cabc) {
+        return -1;
+    }
+    state->MappingABC = PyObject_GetAttrString(cabc, "Mapping");
+    Py_DECREF(cabc);
+    if (!state->MappingABC) {
+        return -1;
+    }
+
+    // Register for isinstance parity with the pure-python implementation, whose classes inherit the abc.
+    PyTypeObject* register_types[] = {state->FixedMapKeys_Type, state->FixedMap_Type};
+    for (PyTypeObject* rt : register_types) {
+        PyObject* r = PyObject_CallMethod(state->MappingABC, "register", "O", (PyObject*)rt);
+        if (!r) {
+            return -1;
+        }
+        Py_DECREF(r);
+    }
+
+    PyObject* builtins = PyImport_ImportModule("builtins");
+    if (!builtins) {
+        return -1;
+    }
+    state->ZipBuiltin = PyObject_GetAttrString(builtins, "zip");
+    Py_DECREF(builtins);
+    if (!state->ZipBuiltin) {
+        return -1;
+    }
 
     return 0;
 }
@@ -999,10 +973,11 @@ static int fixedmap_traverse(PyObject* module, visitproc visit, void* arg) {
     fixedmap_state* state = get_module_state(module);
     Py_VISIT(state->FixedMapKeys_Type);
     Py_VISIT(state->FixedMap_Type);
-    Py_VISIT(state->FixedMapIter_Type);
     Py_VISIT(state->FixedMapValuesView_Type);
     Py_VISIT(state->FixedMapItemsView_Type);
     Py_VISIT(state->DuplicateKeyError);
+    Py_VISIT(state->MappingABC);
+    Py_VISIT(state->ZipBuiltin);
     return 0;
 }
 
@@ -1010,10 +985,11 @@ static int fixedmap_clear(PyObject* module) {
     fixedmap_state* state = get_module_state(module);
     Py_CLEAR(state->FixedMapKeys_Type);
     Py_CLEAR(state->FixedMap_Type);
-    Py_CLEAR(state->FixedMapIter_Type);
     Py_CLEAR(state->FixedMapValuesView_Type);
     Py_CLEAR(state->FixedMapItemsView_Type);
     Py_CLEAR(state->DuplicateKeyError);
+    Py_CLEAR(state->MappingABC);
+    Py_CLEAR(state->ZipBuiltin);
     return 0;
 }
 

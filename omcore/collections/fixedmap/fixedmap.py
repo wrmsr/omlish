@@ -16,6 +16,8 @@ class FixedMapKeys(
     lang.Abstract,
     ta.Generic[K],
 ):
+    __slots__ = ()
+
     @property
     @abc.abstractmethod
     def fixed_keys(self) -> tuple[K, ...]:
@@ -40,6 +42,8 @@ class FixedMap(
     lang.Abstract,
     ta.Generic[K, V],
 ):
+    __slots__ = ()
+
     @property
     @abc.abstractmethod
     def fixed_keys(self) -> FixedMapKeys[K]:
