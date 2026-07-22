@@ -1,3 +1,5 @@
+import bisect
+import itertools
 import typing as ta
 
 from ... import dataclasses as dc
@@ -30,7 +32,10 @@ class _Leaf(ta.Generic[T]):
 @dc.dataclass(frozen=True, slots=True)
 class _Branch(ta.Generic[T]):
     children: tuple[Node[T], ...]
-    counts: tuple[int, ...]
+    # Cumulative child counts: offsets[i] is the total count of children[:i + 1], so offsets[-1] == count and child i
+    # spans positions [offsets[i - 1], offsets[i]) with an implicit leading 0. Cumulative (rather than per-child) so
+    # descents bisect instead of scanning.
+    offsets: tuple[int, ...]
     count: int
     height: int
 
@@ -52,10 +57,12 @@ def _make_branch_raw(children: tuple[Node[T], ...]) -> Node[T] | None:
     if len(children) == 1:
         return children[0]
 
+    offsets = tuple(itertools.accumulate(c.count for c in children))
+
     return _Branch(
         children=children,
-        counts=tuple(c.count for c in children),
-        count=sum(c.count for c in children),
+        offsets=offsets,
+        count=offsets[-1],
         height=1 + max(c.height for c in children),
     )
 
@@ -117,6 +124,12 @@ def _concat(a: Node[T] | None, b: Node[T] | None) -> Node[T] | None:
     # RRB-strict); everything downstream is count- and isinstance-driven, so that's fine. Relies on: height == 0 <=>
     # leaf, since unary collapse keeps every branch at height >= 1 with >= 2 children. This is also the lone consumer
     # of the stored height field.
+    #
+    # On the unequal-height paths, the recursive result is bounded by max(child height, other height) + 1 <= the
+    # taller side's own height. When it *reaches* that bound (a merge one level down overflowed and packed into a
+    # fresh parent), its children are spliced in as siblings -- b+tree split propagation. Keeping it as an opaque
+    # child instead would nest one level per overflow, degenerating a spine of repeated appends into a linked list of
+    # packed pairs.
     if a is None:
         return b
 
@@ -139,25 +152,29 @@ def _concat(a: Node[T] | None, b: Node[T] | None) -> Node[T] | None:
     if a.height > b.height:
         ab = ta.cast('_Branch[T]', a)
 
-        return _pack_children((*ab.children[:-1], ta.cast('Node[T]', _concat(ab.children[-1], b))))
+        sub = ta.cast('Node[T]', _concat(ab.children[-1], b))
+
+        if sub.height == ab.height:
+            return _pack_children((*ab.children[:-1], *ta.cast('_Branch[T]', sub).children))
+
+        return _pack_children((*ab.children[:-1], sub))
 
     bb = ta.cast('_Branch[T]', b)
 
-    return _pack_children((ta.cast('Node[T]', _concat(a, bb.children[0])), *bb.children[1:]))
+    sub = ta.cast('Node[T]', _concat(a, bb.children[0]))
+
+    if sub.height == bb.height:
+        return _pack_children((*ta.cast('_Branch[T]', sub).children, *bb.children[1:]))
+
+    return _pack_children((sub, *bb.children[1:]))
 
 
 def _find_child(n: _Branch[T], idx: int) -> tuple[int, int]:
-    base = 0
+    # First child whose end offset exceeds idx. An out-of-range idx lands on len(children) and the caller's child
+    # access raises -- per the backend contract, the wrapper owns validation.
+    i = bisect.bisect_right(n.offsets, idx)
 
-    for i, count in enumerate(n.counts):
-        nxt = base + count
-
-        if idx < nxt:
-            return i, idx - base
-
-        base = nxt
-
-    raise IndexError(idx)
+    return i, idx - (n.offsets[i - 1] if i else 0)
 
 
 def _get(n: Node[T], idx: int) -> T:
@@ -172,24 +189,30 @@ def _iter_items(n: Node[T] | None) -> ta.Iterator[T]:
     if n is None:
         return
 
-    if isinstance(n, _Leaf):
-        yield from n.items
-        return
+    st: list[Node[T]] = [n]
 
-    for child in n.children:
-        yield from _iter_items(child)
+    while st:
+        m = st.pop()
+
+        if isinstance(m, _Leaf):
+            yield from m.items
+        else:
+            st.extend(reversed(m.children))
 
 
 def _iter_items_desc(n: Node[T] | None) -> ta.Iterator[T]:
     if n is None:
         return
 
-    if isinstance(n, _Leaf):
-        yield from reversed(n.items)
-        return
+    st: list[Node[T]] = [n]
 
-    for child in reversed(n.children):
-        yield from _iter_items_desc(child)
+    while st:
+        m = st.pop()
+
+        if isinstance(m, _Leaf):
+            yield from reversed(m.items)
+        else:
+            st.extend(m.children)
 
 
 def _iter_items_from(n: Node[T] | None, idx: int) -> ta.Iterator[T]:
@@ -200,87 +223,77 @@ def _iter_items_from(n: Node[T] | None, idx: int) -> ta.Iterator[T]:
         yield from _iter_items(n)
         return
 
-    if isinstance(n, _Leaf):
-        yield from n.items[idx:]
-        return
+    # Descend to the leaf containing idx, stacking the right siblings passed at each level. Deeper siblings are pushed
+    # later and so pop first, which is exactly sequence order.
+    st: list[Node[T]] = []
 
-    base = 0
-    started = False
+    while isinstance(n, _Branch):
+        ci, idx = _find_child(n, idx)
 
-    for child in n.children:
-        if started:
-            yield from _iter_items(child)
+        if ci + 1 < len(n.children):
+            st.extend(reversed(n.children[ci + 1:]))
+
+        n = n.children[ci]
+
+    yield from n.items[idx:]
+
+    while st:
+        m = st.pop()
+
+        if isinstance(m, _Leaf):
+            yield from m.items
         else:
-            nxt = base + child.count
-
-            if idx < nxt:
-                yield from _iter_items_from(child, idx - base)
-                started = True
-
-            base = nxt
+            st.extend(reversed(m.children))
 
 
-def _split(n: Node[T] | None, idx: int) -> tuple[Node[T] | None, Node[T] | None]:
-    if n is None:
-        return None, None
+def _take(n: Node[T] | None, idx: int) -> Node[T] | None:
+    # Prefix [:idx]. With _drop, replaces a two-sided split: only the kept side is ever constructed, so a splice needs
+    # no intermediate 'rest' tree and never packs a discarded segment.
+    if n is None or idx >= n.count:
+        return n
 
     if idx <= 0:
-        return None, n
-
-    if idx >= n.count:
-        return n, None
+        return None
 
     if isinstance(n, _Leaf):
-        return (
-            _make_leaf(n.items[:idx]),
-            _make_leaf(n.items[idx:]),
-        )
+        return _make_leaf(n.items[:idx])
 
-    left_children: list[Node[T]] = []
-    right_children: list[Node[T]] = []
+    ci = bisect.bisect_left(n.offsets, idx)
+    base = n.offsets[ci - 1] if ci else 0
 
-    base = 0
-    done = False
+    # 0 < idx - base <= children[ci].count here, so the recursion yields a node -- possibly children[ci] itself,
+    # shared whole, when idx lands exactly on its end.
+    sub = ta.cast('Node[T]', _take(n.children[ci], idx - base))
 
-    for child in n.children:
-        nxt = base + child.count
+    return _pack_children((*n.children[:ci], sub))
 
-        if done:
-            right_children.append(child)
 
-        elif idx <= base:
-            right_children.append(child)
+def _drop(n: Node[T] | None, idx: int) -> Node[T] | None:
+    # Suffix [idx:].
+    if n is None or idx <= 0:
+        return n
 
-        elif idx >= nxt:
-            left_children.append(child)
+    if idx >= n.count:
+        return None
 
-        else:
-            left, right = _split(child, idx - base)
+    if isinstance(n, _Leaf):
+        return _make_leaf(n.items[idx:])
 
-            if left is not None:
-                left_children.append(left)
+    ci = bisect.bisect_right(n.offsets, idx)
+    base = n.offsets[ci - 1] if ci else 0
 
-            if right is not None:
-                right_children.append(right)
+    # 0 <= idx - base < children[ci].count here, so the recursion yields a node -- possibly children[ci] itself,
+    # shared whole, when idx lands exactly on its start.
+    sub = ta.cast('Node[T]', _drop(n.children[ci], idx - base))
 
-            done = True
-
-        base = nxt
-
-    return (
-        _pack_children(tuple(left_children)),
-        _pack_children(tuple(right_children)),
-    )
+    return _pack_children((sub, *n.children[ci + 1:]))
 
 
 def _slice(n: Node[T] | None, start: int, stop: int) -> Node[T] | None:
-    if n is None or start == stop:
+    if n is None or start >= stop:
         return None
 
-    _, rest = _split(n, start)
-    mid, _ = _split(rest, stop - start)
-
-    return mid
+    return _take(_drop(n, start), stop - start)
 
 
 def _replace_same(
@@ -302,39 +315,80 @@ def _replace_same(
     if isinstance(n, _Leaf):
         stop = start + (lim - off)
 
+        for i in range(off, lim):
+            if n.items[start - off + i] is not items[i]:
+                break
+        else:
+            # Identity no-op, mirroring btreemap's identical-value reinsert: the branch level below short-circuits on
+            # 'sub is child', so replacing a run with the very same objects reuses the whole tree (and the wrapper's
+            # 'root is self._root' check then returns self).
+            return n
+
         return ta.cast('Node[T]', _make_leaf(n.items[:start] + items[off:lim] + n.items[stop:]))
 
-    children = list(n.children)
     end = start + (lim - off)
-    base = 0
+    ci = bisect.bisect_right(n.offsets, start)
+    children = list(n.children)
+    base = n.offsets[ci - 1] if ci else 0
     item_off = off
+    changed = False
 
-    for i, child in enumerate(n.children):
-        nxt = base + child.count
-
-        if nxt <= start:
-            base = nxt
-            continue
-
+    for i in range(ci, len(n.children)):
         if base >= end:
             break
+
+        child = n.children[i]
+        nxt = n.offsets[i]
 
         child_start = max(start, base) - base
         child_stop = min(end, nxt) - base
         item_lim = item_off + (child_stop - child_start)
 
-        children[i] = _replace_same(child, child_start, items, item_off, item_lim)
+        sub = _replace_same(child, child_start, items, item_off, item_lim)
+
+        if sub is not child:
+            children[i] = sub
+            changed = True
 
         item_off = item_lim
         base = nxt
 
+    if not changed:
+        return n
+
     # Shape-preserving by induction (leaves replace equal-length runs, so every child's count is unchanged), which
-    # makes counts/count/height all reusable as-is -- sharing the counts tuple across versions. len(children) ==
+    # makes offsets/count/height all reusable as-is -- sharing the offsets tuple across versions. len(children) ==
     # len(n.children) >= 2, so _make_branch_raw's unary collapse cannot apply and bypassing it is safe.
     return _Branch(
         children=tuple(children),
-        counts=n.counts,
+        offsets=n.offsets,
         count=n.count,
+        height=n.height,
+    )
+
+
+def _append_small(n: Node[T], items: tuple[T, ...]) -> Node[T] | None:
+    # Right-spine append fast path: when the run fits in the rightmost leaf, rebuild just the spine -- no
+    # _pack_children sweeps, no recomputation beyond the final offset. Returns None when the run doesn't fit, leaving
+    # the general splice path (whose _concat compacts and splits as needed) to handle it -- that happens at most once
+    # per MAX_LEAF_LEN single-item appends, keeping the amortized cost low.
+    if isinstance(n, _Leaf):
+        if len(n.items) + len(items) > MAX_LEAF_LEN:
+            return None
+
+        return _make_leaf(n.items + items)
+
+    res = _append_small(n.children[-1], items)
+
+    if res is None:
+        return None
+
+    # res has the same height as the child it replaces (by induction: leaves stay leaves, branches reuse their
+    # height), so height, sibling structure, and every non-final offset carry over unchanged.
+    return _Branch(
+        children=(*n.children[:-1], res),
+        offsets=(*n.offsets[:-1], n.count + len(items)),
+        count=n.count + len(items),
         height=n.height,
     )
 
@@ -356,8 +410,11 @@ def _splice(
 
         return _replace_same(n, start, items)
 
-    left, rest = _split(n, start)
-    _, right = _split(rest, remove_len)
+    if start == stop == n.count and (res := _append_small(n, items)) is not None:
+        return res
+
+    left = _take(n, start)
+    right = _drop(n, stop)
     mid = from_iterable(items)
 
     return _concat(_concat(left, mid), right)
@@ -379,7 +436,13 @@ class BtreeSeqIterator(ta.Iterator[T], ta.Generic[T]):
         return self
 
     def __next__(self) -> T:
-        return self.next()
+        if (nxt := self._next) is not _MISSING:
+            self._next = _MISSING
+            return nxt
+
+        return next(self._it)
+
+    next = __next__
 
     def has_next(self) -> bool:
         if self._next is not _MISSING:
@@ -391,14 +454,6 @@ class BtreeSeqIterator(ta.Iterator[T], ta.Generic[T]):
             return False
 
         return True
-
-    def next(self) -> T:
-        if self._next is not _MISSING:
-            ret = self._next
-            self._next = _MISSING
-            return ret
-
-        return next(self._it)
 
 
 ##

@@ -166,6 +166,26 @@ class _BaseBtreeSeqTests:
 
         self._check_seq(s2, list(range(4)) + list(range(16, 20)))
 
+    def test_identical_replace_shares_root(self):
+        v = ['boxed']
+        s: BtreeSeq[ta.Any] = self.new_btree_seq(range(100))
+        s = s.with_(50, v)
+
+        s2 = s.with_(50, v)
+        assert s2 is s
+
+        s3 = s.with_(50, ['boxed'])
+        assert s3 is not s
+        assert s3._root is not s._root
+
+    def test_many_appends(self):
+        s: BtreeSeq = self.new_btree_seq()
+
+        for i in range(2000):
+            s = s.append(i)
+
+        self._check_seq(s, list(range(2000)))
+
     def test_iterator_has_next_and_next(self):
         s = self.new_btree_seq(range(3))
 
@@ -268,16 +288,18 @@ class TestPyBtreeSeq(_BaseBtreeSeqTests):
             return n.count
 
         assert isinstance(n, _btreeseq_py._Branch)
-        assert len(n.children) == len(n.counts)
+        assert len(n.children) == len(n.offsets)
         assert len(n.children) >= 2
         assert len(n.children) <= _btreeseq_py.MAX_BRANCH_LEN
-        assert n.count == sum(n.counts)
+        assert n.count == n.offsets[-1]
         assert n.height == 1 + max(c.height for c in n.children)
 
         total = 0
+        base = 0
 
-        for c, count in zip(n.children, n.counts):
-            assert c.count == count
+        for c, off in zip(n.children, n.offsets):
+            assert c.count == off - base
+            base = off
             total += cls._check_node(c)
 
         assert total == n.count
@@ -298,6 +320,31 @@ class TestPyBtreeSeq(_BaseBtreeSeqTests):
         if isinstance(n, _btreeseq_py._Branch):
             for c in n.children:
                 yield from cls._walk_nodes(c)
+
+    @classmethod
+    def _max_depth(cls, n):
+        if isinstance(n, _btreeseq_py._Leaf):
+            return 1
+
+        return 1 + max(cls._max_depth(c) for c in n.children)
+
+    def test_append_depth_stays_logarithmic(self):
+        s: BtreeSeq = self.new_btree_seq()
+
+        for i in range(4000):
+            s = s.append(i)
+
+        assert self._max_depth(s._root) <= 6
+        self._check_seq(s, list(range(4000)))
+
+    def test_prepend_depth_stays_logarithmic(self):
+        s: BtreeSeq = self.new_btree_seq()
+
+        for i in range(4000):
+            s = s.splice(0, 0, (i,))
+
+        assert self._max_depth(s._root) <= 6
+        self._check_seq(s, list(range(3999, -1, -1)))
 
     def test_no_unary_branches_after_many_prefix_deletes(self):
         s = self.new_btree_seq(range(3000))

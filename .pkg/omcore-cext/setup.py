@@ -14,6 +14,11 @@ st.setup(
             extra_compile_args=['-std=c++20'],
         ),
         st.Extension(
+            name='omcore.collections.btreeseq._btreeseq',
+            sources=['omcore/collections/btreeseq/_btreeseq.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
             name='omcore.collections.fixedmap._fixedmap',
             sources=['omcore/collections/fixedmap/_fixedmap.cc'],
             extra_compile_args=['-std=c++20'],

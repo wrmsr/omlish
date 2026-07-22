@@ -127,10 +127,12 @@ static void BtreeNode_dealloc(BtreeNode *self) {
 
 
 static PyObject *BtreeNode_repr(BtreeNode *self) {
+    // %zd, not %hu: PyUnicode_FromFormat supports only a fixed subset of printf codes, and short modifiers are not
+    // in it (they fail at runtime with SystemError, not at compile time).
     return PyUnicode_FromFormat(
-        "BtreeNode(kind=%s, len=%hu, count=%zd)",
+        "BtreeNode(kind=%s, len=%zd, count=%zd)",
         self->is_leaf ? "leaf" : "branch",
-        self->len,
+        (Py_ssize_t)self->len,
         self->count
     );
 }
