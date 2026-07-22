@@ -1,12 +1,11 @@
 """Persistent counted B+-ish search tree with dense leaves and opportunistic compaction."""
 import typing as ta
 
+from ... import lang
 from ..intersections import PersistentSortedMapping
 from ..iterators import HasNextIterator
 from ..mappings import IterItemsViewMapping
 from ..mappings import IterValuesViewMapping
-from ..mappings import iteritems_itervalues
-from ..mappings import map_contains
 from . import _btreemap_py as _backend
 
 
@@ -18,11 +17,16 @@ else:
     _backend = _btreemap  # noqa
 
 
+T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
 ##
+
+
+class _MISSING(lang.Marker):  # noqa
+    pass
 
 
 class BtreeMap(
@@ -57,13 +61,23 @@ class BtreeMap(
     def __getitem__(self, item: K) -> V:
         return self._backend.find(self._root, item, self._cmp)
 
+    @ta.overload
+    def get(self, key: K, /) -> V | None: ...
+
+    @ta.overload
+    def get(self, key: K, /, default: V | T) -> V | T: ...
+
+    def get(self, key, /, default=None):
+        return self._backend.find_or(self._root, key, default, self._cmp)
+
     def __iter__(self) -> ta.Iterator[K]:
-        for k, _ in self.iteritems():
-            yield k
+        return self._backend.iter_keys(self._root)
 
-    __contains__ = map_contains
+    def __contains__(self, item: K) -> bool:  # type: ignore[override]
+        return self._backend.find_or(self._root, item, _MISSING, self._cmp) is not _MISSING
 
-    itervalues = iteritems_itervalues
+    def itervalues(self) -> ta.Iterator[V]:
+        return self._backend.iter_values(self._root)
 
     def iteritems(self) -> HasNextIterator[tuple[K, V]]:
         return self._backend.iter(self._root)
@@ -78,8 +92,13 @@ class BtreeMap(
         return self._backend.riter_from(self._root, k, self._cmp)
 
     def with_(self, k: K, v: V) -> ta.Self:
+        root = self._backend.insert(self._root, k, v, self._cmp)
+
+        if root is self._root:
+            return self
+
         return self.__class__(
-            _root=self._backend.insert(self._root, k, v, self._cmp),
+            _root=root,
             _cmp=self._cmp,
         )
 
@@ -95,12 +114,10 @@ class BtreeMap(
         )
 
     def default(self, k: K, v: V) -> ta.Self:
-        try:
-            self[k]  # noqa
-        except KeyError:
-            return self.with_(k, v)
-        else:
+        if self._backend.find_or(self._root, k, _MISSING, self._cmp) is not _MISSING:
             return self
+
+        return self.with_(k, v)
 
 
 def new_btree_map(

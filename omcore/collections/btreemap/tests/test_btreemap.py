@@ -91,6 +91,33 @@ class _BaseBtreeMapTests:
             (2, 'b'),
         ]
 
+    def test_get(self):
+        m = self.new_btree_map([
+            (1, 'a'),
+            (2, 'b'),
+        ])
+
+        assert m.get(1) == 'a'
+        assert m.get(2, 'x') == 'b'
+        assert m.get(3) is None
+        assert m.get(3, 'x') == 'x'
+
+        e: BtreeMap = self.new_btree_map()
+        assert e.get(1) is None
+        assert e.get(1, 'x') == 'x'
+
+    def test_identical_value_reinsert_shares_root(self):
+        v = ['boxed']
+        m: BtreeMap[int, ta.Any] = self.new_btree_map((i, str(i)) for i in range(100))
+        m = m.with_(50, v)
+
+        m2 = m.with_(50, v)
+        assert m2 is m
+
+        m3 = m.with_(50, ['boxed'])
+        assert m3 is not m
+        assert m3._root is not m._root
+
     def test_default(self):
         m = self.new_btree_map([
             (1, 'a'),
@@ -161,6 +188,26 @@ class _BaseBtreeMapTests:
         assert list(m.items_from_desc(4)) == [(i, str(i)) for i in range(4, -1, -1)]
         assert list(m.items_from_desc(45)) == [(i, str(i)) for i in range(9, -1, -1)]
 
+    def test_key_and_value_iteration(self):
+        n = 300
+        m = self.new_btree_map((i, str(i)) for i in range(n))
+
+        assert list(m) == list(range(n))
+        assert list(m.keys()) == list(range(n))
+        assert list(m.values()) == [str(i) for i in range(n)]
+
+        for i in range(0, n, 3):
+            m = m.without(i)
+
+        remaining = [i for i in range(n) if i % 3]
+
+        assert list(m) == remaining
+        assert list(m.values()) == [str(i) for i in remaining]
+
+        e: BtreeMap = self.new_btree_map()
+        assert list(e) == []
+        assert list(e.values()) == []
+
     def test_iterator_has_next_and_next(self):
         m = self.new_btree_map((i, str(i)) for i in range(3))
 
@@ -208,6 +255,11 @@ class _BaseBtreeMapTests:
 
         assert m[k1a] == 'aa'
         assert [v for _, v in m.iteritems()] == ['aa', 'b']
+
+        assert m.get(self._Key(2)) == 'b'
+        assert m.get(self._Key(3)) is None
+        assert self._Key(1) in m
+        assert self._Key(3) not in m
 
     def test_large_sequential(self):
         m: BtreeMap = self.new_btree_map()

@@ -1,4 +1,5 @@
 import abc
+import bisect
 import typing as ta
 
 from ... import dataclasses as dc
@@ -97,6 +98,12 @@ def _key_index(
         k: K,
         cmp: Comparator[K],
 ) -> tuple[int, bool]:
+    # Identity dispatch on _default_cmp: bisect runs the same lower_bound search ('<'-driven, as is the loop below) in
+    # C. Only the found check differs ('==' vs neither-less-nor-greater), which agrees for any sanely ordered type.
+    if cmp is _default_cmp:
+        lo = bisect.bisect_left(keys, k)  # type: ignore[call-overload]
+        return lo, lo < len(keys) and keys[lo] == k
+
     lo = 0
     hi = len(keys)
 
@@ -116,15 +123,18 @@ def _child_index(
         k: K,
         cmp: Comparator[K],
 ) -> int:
-    lo = 0
-    hi = len(keys)
+    if cmp is _default_cmp:
+        lo = bisect.bisect_left(keys, k)  # type: ignore[call-overload]
+    else:
+        lo = 0
+        hi = len(keys)
 
-    while lo < hi:
-        mid = (lo + hi) // 2
-        if cmp(keys[mid], k) < 0:
-            lo = mid + 1
-        else:
-            hi = mid
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if cmp(keys[mid], k) < 0:
+                lo = mid + 1
+            else:
+                hi = mid
 
     if lo == len(keys):
         return len(keys) - 1
@@ -141,6 +151,11 @@ def _leaf_insert(
     idx, found = _key_index(l.keys, k, cmp)
 
     if found:
+        if l.values[idx] is v:
+            # No-op by identity, mirroring _leaf_delete's miss path: every level above short-circuits on 'res is old',
+            # so an identical-value reinsert reuses the entire tree.
+            return l
+
         # Value replacement keeps the *old* key object (dict semantics) and reuses l.keys outright. Identity is
         # load-bearing here: unchanged leaf keys means every ancestor's 'is' check sees "max unchanged" and reuses its
         # own keys tuple too, so the whole keys spine is shared across versions.
@@ -188,6 +203,9 @@ def _branch_insert(
     old = b.children[idx]
 
     res = _insert(old, k, v, cmp)
+
+    if res is old:
+        return b
 
     if not isinstance(res, _Split):
         return _replace_child(b, idx, res)
@@ -610,6 +628,20 @@ def find(
     return ta.cast(V, v)
 
 
+def find_or(
+        root: Node | None,
+        k: K,
+        default: ta.Any,
+        cmp: Comparator[K] | None,
+) -> ta.Any:
+    v = _find(root, k, cmp if cmp is not None else _default_cmp)
+
+    if v is _EMPTY:
+        return default
+
+    return v
+
+
 def insert(
         root: Node | None,
         k: K,
@@ -656,6 +688,31 @@ def len_(root: Node | None) -> int:  # noqa
 
 def iter(root: Node | None) -> BtreeMapIterator[K, V]:  # noqa
     return BtreeMapIterator.first(root)
+
+
+def _iter_leaves(root: Node | None) -> ta.Iterator[_Leaf[ta.Any, ta.Any]]:
+    if root is None:
+        return
+
+    st: list[Node] = [root]
+
+    while st:
+        n = st.pop()
+
+        if isinstance(n, _Leaf):
+            yield n
+        else:
+            st.extend(reversed(n.children))
+
+
+def iter_keys(root: Node | None) -> ta.Iterator[ta.Any]:
+    for leaf in _iter_leaves(root):
+        yield from leaf.keys
+
+
+def iter_values(root: Node | None) -> ta.Iterator[ta.Any]:
+    for leaf in _iter_leaves(root):
+        yield from leaf.values
 
 
 def riter(root: Node | None) -> BtreeMapReverseIterator[K, V]:

@@ -4,10 +4,11 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 
 
 #define _MODULE_NAME "_btreemap"
-#define _PACKAGE_NAME "omcore.collections.btree"
+#define _PACKAGE_NAME "omcore.collections.btreemap"
 #define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
 
 
@@ -200,6 +201,18 @@ struct BtreeIterFrame {
 };
 
 
+// What BtreeIter_next yields per element.
+static constexpr int ITER_KIND_ITEMS = 0;
+static constexpr int ITER_KIND_KEYS = 1;
+static constexpr int ITER_KIND_VALUES = 2;
+
+
+// Frames held inline in the BtreeIter allocation itself. 16 keeps the object under pymalloc's small-object limit
+// (one pool allocation, no separate PyMem buffer), and with the >= 2-children invariant a height-17 tree needs
+// > 2^16 keys in maximally degenerate shape -- iter_push's spill path is a correctness backstop, not a normal path.
+static constexpr Py_ssize_t BTREE_ITER_INLINE_FRAMES = 16;
+
+
 // Locking discipline (free-threaded builds): the post-construction mutable state (stack, stack_cap, stack_top, leaf,
 // idx) is touched in exactly three contexts:
 //
@@ -208,7 +221,8 @@ struct BtreeIterFrame {
 //   2. BtreeIter_next -- guarded by a per-object critical section (a no-op on GIL builds);
 //   3. tp_clear -- only ever invoked by GC, which is stop-the-world on free-threaded builds.
 //
-// Anything new that mutates an iterator after construction must join scheme 2.
+// Anything new that mutates an iterator after construction must join scheme 2. reverse and kind are immutable after
+// construction and may be read without locking.
 
 struct BtreeIter {
     PyObject_HEAD
@@ -216,7 +230,8 @@ struct BtreeIter {
     // Strong ref keeping the whole immutable tree alive.
     BtreeNode *root;
 
-    // Borrowed refs into root.
+    // Borrowed refs into root. stack points at inline_stack until the depth exceeds BTREE_ITER_INLINE_FRAMES, after
+    // which it spills to a PyMem allocation.
     BtreeIterFrame *stack;
     Py_ssize_t stack_cap;
     Py_ssize_t stack_top;
@@ -225,6 +240,9 @@ struct BtreeIter {
     Py_ssize_t idx;
 
     unsigned char reverse;
+    unsigned char kind;
+
+    BtreeIterFrame inline_stack[BTREE_ITER_INLINE_FRAMES];
 };
 
 
@@ -254,7 +272,10 @@ static void BtreeIter_dealloc(BtreeIter *self) {
 
     PyObject_GC_UnTrack(self);
     Py_XDECREF(self->root);
-    PyMem_Free(self->stack);
+
+    if (self->stack != self->inline_stack) {
+        PyMem_Free(self->stack);
+    }
 
     tp->tp_free((PyObject *)self);
     Py_DECREF(tp);
@@ -270,17 +291,33 @@ static int iter_push(BtreeIter *self, BtreeNode *node, Py_ssize_t idx) {
     if (self->stack_top >= self->stack_cap) {
         Py_ssize_t new_cap = self->stack_cap * 2;
 
-        BtreeIterFrame *new_stack = (BtreeIterFrame *)PyMem_Realloc(
-            self->stack,
-            (size_t)new_cap * sizeof(BtreeIterFrame)
-        );
+        if (self->stack == self->inline_stack) {
+            BtreeIterFrame *new_stack = (BtreeIterFrame *)PyMem_Malloc(
+                (size_t)new_cap * sizeof(BtreeIterFrame)
+            );
 
-        if (new_stack == nullptr) {
-            PyErr_NoMemory();
-            return -1;
+            if (new_stack == nullptr) {
+                PyErr_NoMemory();
+                return -1;
+            }
+
+            memcpy(new_stack, self->stack, (size_t)self->stack_top * sizeof(BtreeIterFrame));
+            self->stack = new_stack;
+        }
+        else {
+            BtreeIterFrame *new_stack = (BtreeIterFrame *)PyMem_Realloc(
+                self->stack,
+                (size_t)new_cap * sizeof(BtreeIterFrame)
+            );
+
+            if (new_stack == nullptr) {
+                PyErr_NoMemory();
+                return -1;
+            }
+
+            self->stack = new_stack;
         }
 
-        self->stack = new_stack;
         self->stack_cap = new_cap;
     }
 
@@ -432,14 +469,19 @@ static int iter_has_next(BtreeIter *self) {
 
 
 static PyObject *BtreeIter_next(BtreeIter *self) {
-    // Allocated speculatively, *outside* the critical section: PyTuple_New can trigger GC and run arbitrary Python
-    // code, which must never happen while the lock is held. Nothing inside the section below can re-enter Python:
-    // iter_normalize is pointer walks plus at most a PyMem_Realloc, and the rest is increfs and array stores. A side
-    // benefit of preallocating is that a MemoryError here mutates nothing -- the element stays unconsumed.
-    PyObject *ret = PyTuple_New(2);
+    PyObject *ret = nullptr;
 
-    if (ret == nullptr) {
-        return nullptr;
+    if (self->kind == ITER_KIND_ITEMS) {
+        // Allocated speculatively, *outside* the critical section: PyTuple_New can trigger GC and run arbitrary Python
+        // code, which must never happen while the lock is held. Nothing inside the section below can re-enter Python:
+        // iter_normalize is pointer walks plus at most a PyMem alloc, and the rest is increfs and array stores. A side
+        // benefit of preallocating is that a MemoryError here mutates nothing -- the element stays unconsumed. The
+        // keys/values kinds allocate nothing at all: a bare incref is safe inside the section.
+        ret = PyTuple_New(2);
+
+        if (ret == nullptr) {
+            return nullptr;
+        }
     }
 
     int have = 0;
@@ -447,8 +489,18 @@ static PyObject *BtreeIter_next(BtreeIter *self) {
     Py_BEGIN_CRITICAL_SECTION((PyObject *)self);
 
     if (iter_normalize(self) == 0 && self->leaf != nullptr) {
-        PyTuple_SET_ITEM(ret, 0, Py_NewRef(node_key(self->leaf, self->idx)));
-        PyTuple_SET_ITEM(ret, 1, Py_NewRef(leaf_value(self->leaf, self->idx)));
+        switch (self->kind) {
+        case ITER_KIND_ITEMS:
+            PyTuple_SET_ITEM(ret, 0, Py_NewRef(node_key(self->leaf, self->idx)));
+            PyTuple_SET_ITEM(ret, 1, Py_NewRef(leaf_value(self->leaf, self->idx)));
+            break;
+        case ITER_KIND_KEYS:
+            ret = Py_NewRef(node_key(self->leaf, self->idx));
+            break;
+        default:
+            ret = Py_NewRef(leaf_value(self->leaf, self->idx));
+            break;
+        }
 
         if (self->reverse) {
             --self->idx;
@@ -464,8 +516,8 @@ static PyObject *BtreeIter_next(BtreeIter *self) {
 
     if (!have) {
         // Either iter_normalize failed (exception already set) or the iterator is exhausted (bare nullptr ==
-        // StopIteration). Tuple dealloc handles the null items.
-        Py_DECREF(ret);
+        // StopIteration). ret is only non-null in items mode, whose tuple dealloc handles the null items.
+        Py_XDECREF(ret);
         return nullptr;
     }
 
@@ -549,6 +601,56 @@ static int do_cmp(PyObject *cmp, PyObject *a, PyObject *b, int *out) {
     }
 
     *out = (val > 0) - (val < 0);
+    return 0;
+}
+
+
+// The binary searches only branch on "less" and the found checks only on "equal", so with the default comparator a
+// single rich-compare suffices where do_cmp would pay two. The custom-cmp path necessarily still computes the full
+// 3-way.
+
+static int do_lt(PyObject *cmp, PyObject *a, PyObject *b, int *out) {
+    if (cmp == nullptr) {
+        int lt = PyObject_RichCompareBool(a, b, Py_LT);
+
+        if (lt < 0) {
+            return -1;
+        }
+
+        *out = lt;
+        return 0;
+    }
+
+    int diff;
+
+    if (do_cmp(cmp, a, b, &diff) < 0) {
+        return -1;
+    }
+
+    *out = diff < 0;
+    return 0;
+}
+
+
+static int do_eq(PyObject *cmp, PyObject *a, PyObject *b, int *out) {
+    if (cmp == nullptr) {
+        int eq = PyObject_RichCompareBool(a, b, Py_EQ);
+
+        if (eq < 0) {
+            return -1;
+        }
+
+        *out = eq;
+        return 0;
+    }
+
+    int diff;
+
+    if (do_cmp(cmp, a, b, &diff) < 0) {
+        return -1;
+    }
+
+    *out = diff == 0;
     return 0;
 }
 
@@ -714,12 +816,12 @@ static int key_index(
     while (lo < hi) {
         Py_ssize_t mid = (lo + hi) / 2;
 
-        int diff;
-        if (do_cmp(cmp, node_key(n, mid), k, &diff) < 0) {
+        int lt;
+        if (do_lt(cmp, node_key(n, mid), k, &lt) < 0) {
             return -1;
         }
 
-        if (diff < 0) {
+        if (lt) {
             lo = mid + 1;
         }
         else {
@@ -730,12 +832,9 @@ static int key_index(
     int found = 0;
 
     if (lo < n->len) {
-        int diff;
-        if (do_cmp(cmp, node_key(n, lo), k, &diff) < 0) {
+        if (do_eq(cmp, node_key(n, lo), k, &found) < 0) {
             return -1;
         }
-
-        found = diff == 0;
     }
 
     *out_idx = lo;
@@ -757,12 +856,12 @@ static int child_index(
     while (lo < hi) {
         Py_ssize_t mid = (lo + hi) / 2;
 
-        int diff;
-        if (do_cmp(cmp, node_key(n, mid), k, &diff) < 0) {
+        int lt;
+        if (do_lt(cmp, node_key(n, mid), k, &lt) < 0) {
             return -1;
         }
 
-        if (diff < 0) {
+        if (lt) {
             lo = mid + 1;
         }
         else {
@@ -976,6 +1075,14 @@ static int leaf_insert_impl(
         return -1;
     }
 
+    if (found && leaf_value(n, idx) == v) {
+        // No-op by identity, mirroring the delete miss path: every level above short-circuits on pointer equality, so
+        // an identical-value reinsert reuses the entire tree.
+        out->split = 0;
+        out->node = (BtreeNode *)Py_NewRef((PyObject *)n);
+        return 0;
+    }
+
     Py_ssize_t len = n->len + (found ? 0 : 1);
 
     PyObject *keys[MAX_LEAF_LEN + 1];
@@ -1084,6 +1191,14 @@ static int branch_insert_impl(
     }
 
     if (!res.split) {
+        if (res.node == old_child) {
+            insert_result_clear(&res);
+
+            out->split = 0;
+            out->node = (BtreeNode *)Py_NewRef((PyObject *)n);
+            return 0;
+        }
+
         out->split = 0;
         out->node = replace_child(state, n, idx, res.node);
 
@@ -1378,7 +1493,8 @@ static PyObject *btree_find_impl(
 static BtreeIter *make_iter(
     btree_state *state,
     BtreeNode *root,
-    int reverse
+    int reverse,
+    int kind
 ) {
     BtreeIter *iter = PyObject_GC_New(BtreeIter, state->BtreeIterType);
 
@@ -1387,24 +1503,13 @@ static BtreeIter *make_iter(
     }
 
     iter->root = nullptr;
-    iter->stack = nullptr;
-    iter->stack_cap = 64;
+    iter->stack = iter->inline_stack;
+    iter->stack_cap = BTREE_ITER_INLINE_FRAMES;
     iter->stack_top = 0;
     iter->leaf = nullptr;
     iter->idx = 0;
     iter->reverse = (unsigned char)reverse;
-
-    iter->stack = (BtreeIterFrame *)PyMem_Malloc(
-        (size_t)iter->stack_cap * sizeof(BtreeIterFrame)
-    );
-
-    if (iter->stack == nullptr) {
-        // Safe pre-track: PyObject_GC_UnTrack in dealloc is a guarded no-op on never-tracked objects -- the trashcan
-        // protocol depends on exactly that.
-        Py_DECREF(iter);
-        PyErr_NoMemory();
-        return nullptr;
-    }
+    iter->kind = (unsigned char)kind;
 
     if (root != nullptr) {
         iter->root = (BtreeNode *)Py_NewRef((PyObject *)root);
@@ -1417,9 +1522,10 @@ static BtreeIter *make_iter(
 
 static PyObject *make_first_iter(
     btree_state *state,
-    BtreeNode *root
+    BtreeNode *root,
+    int kind
 ) {
-    BtreeIter *iter = make_iter(state, root, 0);
+    BtreeIter *iter = make_iter(state, root, 0, kind);
 
     if (iter == nullptr) {
         return nullptr;
@@ -1438,7 +1544,7 @@ static PyObject *make_last_iter(
     btree_state *state,
     BtreeNode *root
 ) {
-    BtreeIter *iter = make_iter(state, root, 1);
+    BtreeIter *iter = make_iter(state, root, 1, ITER_KIND_ITEMS);
 
     if (iter == nullptr) {
         return nullptr;
@@ -1459,7 +1565,7 @@ static PyObject *make_from_iter(
     PyObject *k,
     PyObject *cmp
 ) {
-    BtreeIter *iter = make_iter(state, root, 0);
+    BtreeIter *iter = make_iter(state, root, 0, ITER_KIND_ITEMS);
 
     if (iter == nullptr) {
         return nullptr;
@@ -1519,7 +1625,7 @@ static PyObject *make_from_reverse_iter(
     PyObject *k,
     PyObject *cmp
 ) {
-    BtreeIter *iter = make_iter(state, root, 1);
+    BtreeIter *iter = make_iter(state, root, 1, ITER_KIND_ITEMS);
 
     if (iter == nullptr) {
         return nullptr;
@@ -1582,7 +1688,7 @@ static PyObject *BtreeNode_iter(PyObject *self) {
 
     btree_state *state = get_btree_state(module);
 
-    return make_first_iter(state, node);
+    return make_first_iter(state, node, ITER_KIND_ITEMS);
 }
 
 
@@ -1638,6 +1744,40 @@ static PyObject *btree_find_func(PyObject *module, PyObject *args) {
 
     PyErr_SetObject(PyExc_KeyError, key);
     return nullptr;
+}
+
+
+static PyObject *btree_find_or_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+    PyObject *key;
+    PyObject *default_obj;
+    PyObject *c_obj;
+
+    if (!PyArg_ParseTuple(args, "OOOO:find_or", &n_obj, &key, &default_obj, &c_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    PyObject *cmp = (c_obj == Py_None) ? nullptr : c_obj;
+
+    PyObject *ret = btree_find_impl(n, key, cmp);
+
+    if (ret != nullptr) {
+        return ret;
+    }
+
+    if (PyErr_Occurred()) {
+        return nullptr;
+    }
+
+    return Py_NewRef(default_obj);
 }
 
 
@@ -1768,7 +1908,45 @@ static PyObject *btree_iter_func(PyObject *module, PyObject *args) {
         return nullptr;
     }
 
-    return make_first_iter(state, n);
+    return make_first_iter(state, n, ITER_KIND_ITEMS);
+}
+
+
+static PyObject *btree_iter_keys_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+
+    if (!PyArg_ParseTuple(args, "O:iter_keys", &n_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    return make_first_iter(state, n, ITER_KIND_KEYS);
+}
+
+
+static PyObject *btree_iter_values_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+
+    if (!PyArg_ParseTuple(args, "O:iter_values", &n_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    return make_first_iter(state, n, ITER_KIND_VALUES);
 }
 
 
@@ -1847,10 +2025,13 @@ PyDoc_STRVAR(btree_doc, "Native C++ implementation of persistent B+ tree map ope
 static PyMethodDef btree_methods[] = {
     {"new", (PyCFunction)btree_new_func, METH_VARARGS, "new(key, value)"},
     {"find", (PyCFunction)btree_find_func, METH_VARARGS, "find(root, key, cmp)"},
+    {"find_or", (PyCFunction)btree_find_or_func, METH_VARARGS, "find_or(root, key, default, cmp)"},
     {"insert", (PyCFunction)btree_insert_func, METH_VARARGS, "insert(root, key, value, cmp)"},
     {"delete", (PyCFunction)btree_delete_func, METH_VARARGS, "delete(root, key, cmp)"},
     {"len_", (PyCFunction)btree_len_func, METH_VARARGS, "len(root)"},
     {"iter", (PyCFunction)btree_iter_func, METH_VARARGS, "iter(root)"},
+    {"iter_keys", (PyCFunction)btree_iter_keys_func, METH_VARARGS, "iter_keys(root)"},
+    {"iter_values", (PyCFunction)btree_iter_values_func, METH_VARARGS, "iter_values(root)"},
     {"riter", (PyCFunction)btree_riter_func, METH_VARARGS, "riter(root)"},
     {"iter_from", (PyCFunction)btree_iter_from_func, METH_VARARGS, "iter_from(root, key, cmp)"},
     {"riter_from", (PyCFunction)btree_riter_from_func, METH_VARARGS, "riter_from(root, key, cmp)"},
