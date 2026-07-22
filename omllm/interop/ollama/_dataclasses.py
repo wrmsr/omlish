@@ -48,7 +48,7 @@ def _register(**kwargs):
     ),
     plan_repr_sha1='845e863b03ee92ab7c5b27be3dfabfb54b948c5d',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'BaseGenerateRequest'),
+        ('omllm.interop.ollama.protocol', 'BaseGenerateRequest'),
     ),
 )
 def _process_dataclass__845e863b03ee92ab7c5b27be3dfabfb54b948c5d():
@@ -218,7 +218,7 @@ def _process_dataclass__845e863b03ee92ab7c5b27be3dfabfb54b948c5d():
     ),
     plan_repr_sha1='ff952d251592dac3d7f2feab97f6ba7327fb59cf',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'BaseGenerateResponse'),
+        ('omllm.interop.ollama.protocol', 'BaseGenerateResponse'),
     ),
 )
 def _process_dataclass__ff952d251592dac3d7f2feab97f6ba7327fb59cf():
@@ -401,7 +401,7 @@ def _process_dataclass__ff952d251592dac3d7f2feab97f6ba7327fb59cf():
     ),
     plan_repr_sha1='3310a48624d055c5c24df97f58e5c8f296523505',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'BaseRequest'),
+        ('omllm.interop.ollama.protocol', 'BaseRequest'),
     ),
 )
 def _process_dataclass__3310a48624d055c5c24df97f58e5c8f296523505():
@@ -505,7 +505,7 @@ def _process_dataclass__3310a48624d055c5c24df97f58e5c8f296523505():
     ),
     plan_repr_sha1='a0c68d946968391197d0c66f362ca6c3fed8d7a2',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'BaseStreamableRequest'),
+        ('omllm.interop.ollama.protocol', 'BaseStreamableRequest'),
     ),
 )
 def _process_dataclass__a0c68d946968391197d0c66f362ca6c3fed8d7a2():
@@ -638,7 +638,7 @@ def _process_dataclass__a0c68d946968391197d0c66f362ca6c3fed8d7a2():
     ),
     plan_repr_sha1='82c5163f58a3474e87891ea77e9a516262229fcb',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'ChatRequest'),
+        ('omllm.interop.ollama.protocol', 'ChatRequest'),
     ),
 )
 def _process_dataclass__82c5163f58a3474e87891ea77e9a516262229fcb():
@@ -847,7 +847,7 @@ def _process_dataclass__82c5163f58a3474e87891ea77e9a516262229fcb():
     ),
     plan_repr_sha1='dac8dcd8a727fd97c28c2f8626f44faf4f4ca9b2',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'ChatResponse'),
+        ('omllm.interop.ollama.protocol', 'ChatResponse'),
     ),
 )
 def _process_dataclass__dac8dcd8a727fd97c28c2f8626f44faf4f4ca9b2():
@@ -1089,7 +1089,7 @@ def _process_dataclass__dac8dcd8a727fd97c28c2f8626f44faf4f4ca9b2():
     ),
     plan_repr_sha1='58e923af7691586ec0776b8606ce86598dc1d4c9',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'GenerateRequest'),
+        ('omllm.interop.ollama.protocol', 'GenerateRequest'),
     ),
 )
 def _process_dataclass__58e923af7691586ec0776b8606ce86598dc1d4c9():
@@ -1355,7 +1355,7 @@ def _process_dataclass__58e923af7691586ec0776b8606ce86598dc1d4c9():
     ),
     plan_repr_sha1='1780464430302ec4395b3fae362aed738e67bc3e',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'GenerateResponse'),
+        ('omllm.interop.ollama.protocol', 'GenerateResponse'),
     ),
 )
 def _process_dataclass__1780464430302ec4395b3fae362aed738e67bc3e():
@@ -1600,7 +1600,7 @@ def _process_dataclass__1780464430302ec4395b3fae362aed738e67bc3e():
     ),
     plan_repr_sha1='39f7bcef98c1ad6b9fc898613abfef167e9b916f',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'ListModelResponse'),
+        ('omllm.interop.ollama.protocol', 'ListModelResponse'),
     ),
 )
 def _process_dataclass__39f7bcef98c1ad6b9fc898613abfef167e9b916f():
@@ -1786,7 +1786,7 @@ def _process_dataclass__39f7bcef98c1ad6b9fc898613abfef167e9b916f():
     ),
     plan_repr_sha1='5ed26fc5132f873daeaffa682785bd1b47768acb',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'Message'),
+        ('omllm.interop.ollama.protocol', 'Message'),
     ),
 )
 def _process_dataclass__5ed26fc5132f873daeaffa682785bd1b47768acb():
@@ -1942,7 +1942,7 @@ def _process_dataclass__5ed26fc5132f873daeaffa682785bd1b47768acb():
     ),
     plan_repr_sha1='7d5771c082d3ad6a1d478102e83deb352ad93e34',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'Message.ToolCall'),
+        ('omllm.interop.ollama.protocol', 'Message.ToolCall'),
     ),
 )
 def _process_dataclass__7d5771c082d3ad6a1d478102e83deb352ad93e34():
@@ -2058,7 +2058,7 @@ def _process_dataclass__7d5771c082d3ad6a1d478102e83deb352ad93e34():
     ),
     plan_repr_sha1='c679b8dd972a245826381e3200fe81df0cd736c1',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'Message.ToolCall.Function'),
+        ('omllm.interop.ollama.protocol', 'Message.ToolCall.Function'),
     ),
 )
 def _process_dataclass__c679b8dd972a245826381e3200fe81df0cd736c1():
@@ -2192,7 +2192,7 @@ def _process_dataclass__c679b8dd972a245826381e3200fe81df0cd736c1():
     ),
     plan_repr_sha1='6d086e850feb59746e721b8edda1c8a1d7256381',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'ModelDetails'),
+        ('omllm.interop.ollama.protocol', 'ModelDetails'),
     ),
 )
 def _process_dataclass__6d086e850feb59746e721b8edda1c8a1d7256381():
@@ -2441,7 +2441,7 @@ def _process_dataclass__6d086e850feb59746e721b8edda1c8a1d7256381():
     ),
     plan_repr_sha1='1d54dfd0bc748ba9b648de2a2d9e173d264be1fd',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'Options'),
+        ('omllm.interop.ollama.protocol', 'Options'),
     ),
 )
 def _process_dataclass__1d54dfd0bc748ba9b648de2a2d9e173d264be1fd():
@@ -2838,7 +2838,7 @@ def _process_dataclass__1d54dfd0bc748ba9b648de2a2d9e173d264be1fd():
     ),
     plan_repr_sha1='98e20371eacca6bc272118f8eb67b1dcfcf27443',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'Tool'),
+        ('omllm.interop.ollama.protocol', 'Tool'),
     ),
 )
 def _process_dataclass__98e20371eacca6bc272118f8eb67b1dcfcf27443():
@@ -2959,7 +2959,7 @@ def _process_dataclass__98e20371eacca6bc272118f8eb67b1dcfcf27443():
     ),
     plan_repr_sha1='c2256e8aae1a7cdef13cab0a48a15a27471904f0',
     cls_names=(
-        ('omllm.dev.ollama.protocol', 'Tool.Function'),
+        ('omllm.interop.ollama.protocol', 'Tool.Function'),
     ),
 )
 def _process_dataclass__c2256e8aae1a7cdef13cab0a48a15a27471904f0():
