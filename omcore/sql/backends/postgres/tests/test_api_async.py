@@ -1,5 +1,6 @@
 import concurrent.futures as cf
 import contextlib
+import sys
 import typing as ta
 import urllib.parse
 
@@ -55,6 +56,7 @@ async def test_pg8000(harness):
         print(await qf.query_all(adb, Q.select([1])))
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 15), reason='Fatal Python error: Segmentation fault')
 @pytest.mark.asyncs('asyncio')
 @ptu.skip.if_cant_import('asyncpg')
 async def test_asyncpg(harness):

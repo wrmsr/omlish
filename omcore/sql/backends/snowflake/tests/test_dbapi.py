@@ -1,4 +1,5 @@
 import contextlib
+import sys
 import typing as ta
 import urllib.parse
 
@@ -9,6 +10,7 @@ from .....secrets.tests.harness import HarnessSecrets
 from .....testing import pytest as ptu
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 15), reason='Fatal Python error: Segmentation fault')
 @ptu.skip.if_cant_import('snowflake.connector')
 @pytest.mark.online
 def test_snowflake(harness):

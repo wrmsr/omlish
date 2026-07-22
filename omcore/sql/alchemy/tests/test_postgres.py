@@ -1,4 +1,5 @@
 import contextlib
+import sys
 
 import pytest
 import sqlalchemy as sa
@@ -67,6 +68,7 @@ def test_postgres_pg8000(harness) -> None:
     _test_postgres(url)
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 15), reason='Fatal Python error: Bus error')
 @ptu.skip.if_cant_import('psycopg2')
 @mark_sql_backend('postgres')
 def test_postgres_psycopg2(harness) -> None:

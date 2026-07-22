@@ -1,19 +1,35 @@
+import functools
 import types
 import typing as ta
 
-from .descriptors import unwrap_func
+from .descriptors import is_method_descriptor
 
 
 ##
 
 
-class _EmptyClass:
-    pass
+def _get_override_not_needed_attrs() -> frozenset[str]:
+    class Empty:
+        pass
+
+    class Annotated:
+        x: int
+
+    ks = {
+        *Empty.__dict__,
+        *Annotated.__dict__,
+    }
+
+    # Annotation machinery may materialize additional class-dict entries lazily (e.g. PEP 649's __annotations_cache__
+    # on evaluation) - which can happen to a base class before a subclass is created - so capture those too.
+    Annotated.__annotations__  # noqa
+    ks.update(Annotated.__dict__)
+
+    ks.discard('x')
+    return frozenset(ks)
 
 
-_OVERRIDE_NOT_NEEDED_ATTRS: ta.AbstractSet[str] = {
-    *_EmptyClass.__dict__,
-}
+_OVERRIDE_NOT_NEEDED_ATTRS: ta.AbstractSet[str] = _get_override_not_needed_attrs()
 
 
 def needs_override(attr: str, obj: ta.Any) -> bool:
@@ -27,12 +43,32 @@ def needs_override(attr: str, obj: ta.Any) -> bool:
 
 
 def is_override(obj: ta.Any) -> bool:
-    if isinstance(obj, types.FunctionType):
-        fn = unwrap_func(obj)
-        if getattr(fn, '__override__', False):
+    """
+    Checks for a `@typing.override`-set flag at every layer of a wrapper chain - the flag lands on whatever object the
+    decorator was applied to, which need not be the innermost function (`@override` atop a wrapping decorator) nor a
+    plain function at all (classmethods, staticmethods, properties).
+    """
+
+    if isinstance(obj, property):
+        return any(
+            a is not None and is_override(a)
+            for a in (obj.fget, obj.fset, obj.fdel)
+        )
+
+    while True:
+        if getattr(obj, '__override__', False):
             return True
 
-    return False
+        if is_method_descriptor(obj) or isinstance(obj, types.MethodType):
+            obj = obj.__func__
+        elif (nxt := getattr(obj, '__wrapped__', None)) is not None:
+            if nxt is obj:
+                return False
+            obj = nxt
+        elif isinstance(obj, functools.partial):
+            obj = obj.func
+        else:
+            return False
 
 
 ##

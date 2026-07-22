@@ -1,5 +1,6 @@
-# ruff: noqa: PT009 UP006 UP007 UP036 UP045
+# ruff: noqa: PT009 PT027 UP006 UP007 UP036 UP045
 import abc
+import collections
 import dataclasses as dc
 import datetime
 import enum
@@ -395,3 +396,63 @@ class TestUnions(AbstractTestMarshal):
             self._assert_marshal((('abc',), str | ta.Sequence[str]))
             self._assert_marshal((('a', 'b', 'c'), str | ta.Sequence[str]))
             self._assert_marshal((None, str | ta.Sequence[str] | None))
+
+
+##
+
+
+@dc.dataclass
+class NonInitFieldDc:
+    x: int
+    y: int = dc.field(default=0, init=False)
+
+
+@dc.dataclass
+class SimpleDc:
+    x: int
+
+
+UntypedNt = collections.namedtuple('UntypedNt', 'x y')  # noqa
+
+
+class TypedNt(ta.NamedTuple):
+    x: int
+    y: str
+
+
+class TestFieldsMarshaling(unittest.TestCase):
+    def test_non_init_fields_roundtrip(self):
+        # init=False fields are excluded from both directions - unmarshal passes every key as a ctor kwarg.
+        o = NonInitFieldDc(1)
+        m = msh.marshal_obj(o)
+        self.assertEqual(m, {'x': 1})
+        u: NonInitFieldDc = msh.unmarshal_obj(m, NonInitFieldDc)
+        self.assertEqual(u, o)
+
+    def test_marshaler_cache_keyed_by_kwargs(self):
+        # strict first, then non-strict
+        mgr = msh.ObjMarshalerManagerImpl()
+        mgr.get_obj_marshaler(SimpleDc)
+        ns = mgr.get_obj_marshaler(SimpleDc, non_strict_fields=True)
+        self.assertEqual(ns.unmarshal({'x': 1, 'zzz': 2}, mgr.make_context(None)), SimpleDc(1))
+
+        # non-strict first, then strict
+        mgr = msh.ObjMarshalerManagerImpl()
+        mgr.get_obj_marshaler(SimpleDc, non_strict_fields=True)
+        st = mgr.get_obj_marshaler(SimpleDc)
+        with self.assertRaises(KeyError):
+            st.unmarshal({'x': 1, 'zzz': 2}, mgr.make_context(None))
+
+    def test_untyped_namedtuple(self):
+        o = UntypedNt(1, 'a')
+        m = msh.marshal_obj(o)
+        self.assertEqual(m, {'x': 1, 'y': 'a'})
+        u: UntypedNt = msh.unmarshal_obj(m, UntypedNt)
+        self.assertEqual(u, o)
+
+    def test_typed_namedtuple(self):
+        o = TypedNt(1, 'a')
+        m = msh.marshal_obj(o)
+        self.assertEqual(m, {'x': 1, 'y': 'a'})
+        u: TypedNt = msh.unmarshal_obj(m, TypedNt)
+        self.assertEqual(u, o)

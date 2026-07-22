@@ -82,7 +82,7 @@ def __om_amalg__():  # noqa
             dict(path='../../../../omcore/formats/yaml/backends.py', sha1='b6bdba7cc029eaa23f6d029731a12db355d32bf9'),
             dict(path='../../../../omcore/io/streambufs/types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
             dict(path='../../../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../../../omcore/lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
+            dict(path='../../../../omcore/lite/marshal.py', sha1='1519ac9a1c5c41d79ac2145e034f30995495da52'),
             dict(path='../../../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omcore/logs/infos.py', sha1='c6a4599ad727fbee7c3d8eb1bce80846f8106079'),
             dict(path='../../../../omcore/logs/metrics/base.py', sha1='38429b7e804533da9a1dd356cf563ac4cff82aa2'),
@@ -4354,7 +4354,7 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
         self._registered_obj_marshalers = registered_obj_marshalers
 
         self._lock = threading.RLock()
-        self._marshalers: ta.Dict[ta.Any, ObjMarshaler] = dict(_DEFAULT_OBJ_MARSHALERS)
+        self._derived_obj_marshalers: ta.Dict[ta.Any, ObjMarshaler] = {}
         self._proxies: ta.Dict[ta.Any, ProxyObjMarshaler] = {}
 
     #
@@ -4421,6 +4421,9 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
                             omit_if_none=check.isinstance(f.metadata.get(OBJ_MARSHALER_OMIT_IF_NONE, False), bool),
                         )
                         for f in dc.fields(ty)
+                        # init=False fields are excluded from both directions - unmarshal passes every key as a ctor
+                        # kwarg, so marshaling them would produce round-trip-asymmetric output.
+                        if f.init
                         if (fk := f.metadata.get(OBJ_MARSHALER_FIELD_KEY, f.name)) is not None
                     ],
                     non_strict=non_strict_fields,
@@ -4433,7 +4436,8 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
                         FieldsObjMarshaler.Field(
                             att=p.name,
                             key=p.name,
-                            m=rec(p.annotation),
+                            # Untyped collections.namedtuple fields have empty annotations - marshal them dynamically.
+                            m=rec(p.annotation if p.annotation is not inspect.Parameter.empty else ta.Any),
                         )
                         for p in inspect.signature(ty).parameters.values()
                     ],
@@ -4524,9 +4528,18 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
             **kwargs: ta.Any,
     ) -> ObjMarshaler:
         with self._lock:
+            ck = (ty, tuple(sorted(kwargs.items())))
             if not no_cache:
+                # Explicitly set marshalers (and the defaults) are authoritative regardless of construction kwargs.
                 try:
                     return self._obj_marshalers[ty]
+                except KeyError:
+                    pass
+
+                # Derived marshalers are cached under their construction kwargs - a strict marshaler must not be
+                # returned for a non-strict request, nor vice versa.
+                try:
+                    return self._derived_obj_marshalers[ck]
                 except KeyError:
                     pass
 
@@ -4550,7 +4563,7 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
             p._m = m  # noqa
 
             if not no_cache:
-                self._obj_marshalers[ty] = m
+                self._derived_obj_marshalers[ck] = m
             return m
 
     def make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':

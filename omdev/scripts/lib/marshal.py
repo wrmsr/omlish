@@ -45,7 +45,7 @@ def __om_amalg__():  # noqa
             dict(path='objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
             dict(path='strings.py', sha1='b31b8e4b0e4fec4562ea3fa602e4ef2475e5fe7c'),
-            dict(path='marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
+            dict(path='marshal.py', sha1='1519ac9a1c5c41d79ac2145e034f30995495da52'),
         ],
     )
 
@@ -1591,7 +1591,7 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
         self._registered_obj_marshalers = registered_obj_marshalers
 
         self._lock = threading.RLock()
-        self._marshalers: ta.Dict[ta.Any, ObjMarshaler] = dict(_DEFAULT_OBJ_MARSHALERS)
+        self._derived_obj_marshalers: ta.Dict[ta.Any, ObjMarshaler] = {}
         self._proxies: ta.Dict[ta.Any, ProxyObjMarshaler] = {}
 
     #
@@ -1658,6 +1658,9 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
                             omit_if_none=check.isinstance(f.metadata.get(OBJ_MARSHALER_OMIT_IF_NONE, False), bool),
                         )
                         for f in dc.fields(ty)
+                        # init=False fields are excluded from both directions - unmarshal passes every key as a ctor
+                        # kwarg, so marshaling them would produce round-trip-asymmetric output.
+                        if f.init
                         if (fk := f.metadata.get(OBJ_MARSHALER_FIELD_KEY, f.name)) is not None
                     ],
                     non_strict=non_strict_fields,
@@ -1670,7 +1673,8 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
                         FieldsObjMarshaler.Field(
                             att=p.name,
                             key=p.name,
-                            m=rec(p.annotation),
+                            # Untyped collections.namedtuple fields have empty annotations - marshal them dynamically.
+                            m=rec(p.annotation if p.annotation is not inspect.Parameter.empty else ta.Any),
                         )
                         for p in inspect.signature(ty).parameters.values()
                     ],
@@ -1761,9 +1765,18 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
             **kwargs: ta.Any,
     ) -> ObjMarshaler:
         with self._lock:
+            ck = (ty, tuple(sorted(kwargs.items())))
             if not no_cache:
+                # Explicitly set marshalers (and the defaults) are authoritative regardless of construction kwargs.
                 try:
                     return self._obj_marshalers[ty]
+                except KeyError:
+                    pass
+
+                # Derived marshalers are cached under their construction kwargs - a strict marshaler must not be
+                # returned for a non-strict request, nor vice versa.
+                try:
+                    return self._derived_obj_marshalers[ck]
                 except KeyError:
                     pass
 
@@ -1787,7 +1800,7 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
             p._m = m  # noqa
 
             if not no_cache:
-                self._obj_marshalers[ty] = m
+                self._derived_obj_marshalers[ck] = m
             return m
 
     def make_context(self, opts: ta.Optional[ObjMarshalOptions]) -> 'ObjMarshalContext':

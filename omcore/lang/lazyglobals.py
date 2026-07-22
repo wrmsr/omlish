@@ -31,7 +31,7 @@ class LazyGlobals:
         self._update_globals = update_globals
 
         self._attr_fns: dict[str, ta.Callable[[], ta.Any]] = {}
-        self._fallback_fns: list[ta.Callable[[str], ta.Callable[[], ta.Any]]] = []
+        self._fallback_fns: list[ta.Callable[[str], ta.Callable[[], ta.Any] | None]] = []
 
     @classmethod
     def install(cls, globals: ta.MutableMapping[str, ta.Any]) -> 'LazyGlobals':  # noqa
@@ -67,7 +67,9 @@ class LazyGlobals:
         self._attr_fns[attr] = fn
         return self
 
-    def add_fallback_fn(self, fn: ta.Callable[[str], ta.Callable[[], ta.Any]]) -> LazyGlobals:
+    def add_fallback_fn(self, fn: ta.Callable[[str], ta.Callable[[], ta.Any] | None]) -> LazyGlobals:
+        """Fallbacks decline an attr by returning None, or claim it by returning a zero-arg value getter."""
+
         self._fallback_fns.append(fn)
         return self
 
@@ -77,10 +79,15 @@ class LazyGlobals:
         if (attr_fn := self._attr_fns.get(attr)) is not None:
             val = attr_fn()
 
-        elif (fallbacks := [(fb_fn, fb_fn(attr)) for fb_fn in self._fallback_fns]):
+        elif (fallbacks := [
+            (fb_fn, val_fn)
+            for fb_fn in self._fallback_fns
+            if (val_fn := fb_fn(attr)) is not None
+        ]):
             if len(fallbacks) > 1:
                 raise AmbiguousLazyGlobalsFallbackError(attr, [fb_fn for fb_fn, _ in fallbacks])
-            [(_, val)] = fallbacks
+            [(_, val_fn)] = fallbacks
+            val = val_fn()
 
         else:
             raise AttributeError(attr)
