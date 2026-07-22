@@ -299,7 +299,7 @@ class _ImportCaptureHook:
                     i = m.initial_module_dict[a]
 
                 except KeyError:
-                    if o is not m.children[a].module_obj:
+                    if (c := m.children.get(a)) is None or o is not c.module_obj:
                         raise ImportCaptureErrors.AttrError(m.name, a) from None
 
                 else:

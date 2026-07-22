@@ -327,8 +327,16 @@ class OverridesInjectorBindings(InjectorBindings):
     m: ta.Mapping[InjectorKey, InjectorBinding]
 
     def bindings(self) -> ta.Iterator[InjectorBinding]:
+        seen: ta.Set[InjectorKey] = set()
         for b in self.p.bindings():
-            yield self.m.get(b.key, b)
+            if (o := self.m.get(b.key)) is not None:
+                # All of an overridden key's base bindings are replaced by the override exactly once - yielding it once
+                # per matching base binding would duplicate array contributions.
+                if b.key not in seen:
+                    seen.add(b.key)
+                    yield o
+            else:
+                yield b
 
 
 def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:

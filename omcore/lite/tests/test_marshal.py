@@ -3,11 +3,13 @@ import abc
 import collections
 import dataclasses as dc
 import datetime
+import decimal
 import enum
 import json
 import sys
 import typing as ta
 import unittest
+import uuid
 
 from .. import marshal as msh
 
@@ -456,3 +458,23 @@ class TestFieldsMarshaling(unittest.TestCase):
         self.assertEqual(m, {'x': 1, 'y': 'a'})
         u: TypedNt = msh.unmarshal_obj(m, TypedNt)
         self.assertEqual(u, o)
+
+
+##
+
+
+class TestPrimitiveUnions(unittest.TestCase):
+    def test_non_primitive_member_roundtrip(self):
+        # The non-primitive member is tried first on unmarshal - a value parseable as it unmarshals as it, so its
+        # instances round-trip even though their wire form is one of the union's primitive types.
+        for v, ty in [
+            (decimal.Decimal('1.5'), ta.Union[str, decimal.Decimal]),
+            ('hello', ta.Union[str, decimal.Decimal]),
+            (uuid.UUID('12345678-1234-5678-1234-567812345678'), ta.Union[str, uuid.UUID]),
+            (3, ta.Union[int, decimal.Decimal]),
+            (2.5, ta.Union[float, int]),
+        ]:
+            m = msh.marshal_obj(v, ty)
+            u: ta.Any = msh.unmarshal_obj(m, ty)
+            self.assertEqual(u, v)
+            self.assertIs(type(u), type(v))

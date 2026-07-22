@@ -56,7 +56,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omcore/lite/cached.py', sha1='4f5466ce20a485428519e284b2a388a9ef8e4786'),
             dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../omcore/lite/injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
+            dict(path='../../omcore/lite/injectinspect.py', sha1='fb45c2fdf144bdbe558e3427f38bc39121e277bd'),
             dict(path='../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
             dict(path='../../omcore/lite/reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
             dict(path='../../omcore/lite/strings.py', sha1='b31b8e4b0e4fec4562ea3fa602e4ef2475e5fe7c'),
@@ -74,7 +74,7 @@ def __om_amalg__():  # noqa
             dict(path='../packaging/specifiers.py', sha1='d1a6a73c198a9266a605234efeb8bef2b940eeb5'),
             dict(path='../../omcore/argparse/cli.py', sha1='cbfc5b8a9863db3e643df46f268937cbba65b126'),
             dict(path='../../omcore/asyncs/asyncio/timeouts.py', sha1='cfde8108f1128ceea3502c77eefb015fb43a6239'),
-            dict(path='../../omcore/lite/inject.py', sha1='8136e16e99019cf01fc18a4b87d0fa1a9d55e23f'),
+            dict(path='../../omcore/lite/inject.py', sha1='93121be32ed6ada3bb274951e94836196eccf257'),
             dict(path='../../omcore/logs/std/json.py', sha1='d1ff35ac871de63efec2b64ae5c63e63d295a8d5'),
             dict(path='../../omcore/subprocesses/run.py', sha1='425596d73f3b5cbe1ab936718c77e39a88283350'),
             dict(path='../../omcore/subprocesses/wrap.py', sha1='12d94dc2357951cd0fed1c50a46817d30d628927'),
@@ -1073,13 +1073,22 @@ def _do_injection_inspect(obj: ta.Any) -> InjectionInspection:
             f'{obj}',
         )
 
+    if isinstance(uw, type):
+        # Type hints must come from the constructor function, not the class - get_type_hints on a class returns its
+        # (mro-merged) class-attribute annotations, which can shadow ctor params by name and never cover string ctor
+        # annotations (e.g. under `from __future__ import annotations`).
+        uw_init = uw.__init__  # type: ignore[misc]
+        type_hints = ta.get_type_hints(uw_init) if uw_init is not object.__init__ else {}
+    else:
+        type_hints = ta.get_type_hints(uw)
+
     return InjectionInspection(
         obj,
         uw,
         tgt,
 
         inspect.signature(tgt),
-        ta.get_type_hints(uw),
+        type_hints,
         1 if has_args_offset else 0,
     )
 
@@ -3819,8 +3828,16 @@ class OverridesInjectorBindings(InjectorBindings):
     m: ta.Mapping[InjectorKey, InjectorBinding]
 
     def bindings(self) -> ta.Iterator[InjectorBinding]:
+        seen: ta.Set[InjectorKey] = set()
         for b in self.p.bindings():
-            yield self.m.get(b.key, b)
+            if (o := self.m.get(b.key)) is not None:
+                # All of an overridden key's base bindings are replaced by the override exactly once - yielding it once
+                # per matching base binding would duplicate array contributions.
+                if b.key not in seen:
+                    seen.add(b.key)
+                    yield o
+            else:
+                yield b
 
 
 def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:

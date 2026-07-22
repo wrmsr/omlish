@@ -67,13 +67,22 @@ def _do_injection_inspect(obj: ta.Any) -> InjectionInspection:
             f'{obj}',
         )
 
+    if isinstance(uw, type):
+        # Type hints must come from the constructor function, not the class - get_type_hints on a class returns its
+        # (mro-merged) class-attribute annotations, which can shadow ctor params by name and never cover string ctor
+        # annotations (e.g. under `from __future__ import annotations`).
+        uw_init = uw.__init__  # type: ignore[misc]
+        type_hints = ta.get_type_hints(uw_init) if uw_init is not object.__init__ else {}
+    else:
+        type_hints = ta.get_type_hints(uw)
+
     return InjectionInspection(
         obj,
         uw,
         tgt,
 
         inspect.signature(tgt),
-        ta.get_type_hints(uw),
+        type_hints,
         1 if has_args_offset else 0,
     )
 

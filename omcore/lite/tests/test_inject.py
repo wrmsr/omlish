@@ -82,6 +82,19 @@ class TestOverride(unittest.TestCase):
         self.assertEqual(i1.provide(int), 421)
         self.assertEqual(i1.provide(str), 'abc')
 
+    def test_override_array(self):
+        # Overriding an array key replaces all of its base bindings with the override exactly once.
+        b0 = inj.as_bindings(
+            inj.bind(1, array=True),
+            inj.bind(2, array=True),
+        )
+        i0 = inj.create_injector(b0)
+        self.assertEqual(i0.provide(inj.array(int)), [1, 2])
+
+        b1 = inj.override(b0, inj.bind(3, array=True))
+        i1 = inj.create_injector(b1)
+        self.assertEqual(i1.provide(inj.array(int)), [3])
+
 
 class TestArrays(unittest.TestCase):
     def test_arrays(self):

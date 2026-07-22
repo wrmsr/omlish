@@ -13,6 +13,7 @@ from omcore.lite.marshal import ObjMarshalerManager
 from omcore.lite.marshal import marshal_obj
 from omcore.lite.marshal import unmarshal_obj
 from omcore.lite.tests.pytest import pytest_mark
+from omcore.testing.unittest.skips import unittest_mark
 
 from ..conf.specs import DeployAppConfFile
 from ..conf.specs import DeployAppConfLink
@@ -174,6 +175,8 @@ class TestDeploy(unittest.IsolatedAsyncioTestCase):
     @pytest_mark('timeout', 5 * 60)
     @pytest_mark('slow')
     @pytest_mark('online')
+    @unittest_mark('slow')
+    @unittest_mark('online')
     async def test_deploy(self):
         deploy_home = DeployHome(os.path.join(tempfile.mkdtemp(), 'deploy'))
 

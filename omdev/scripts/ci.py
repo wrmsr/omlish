@@ -107,7 +107,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../omcore/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
             dict(path='../../omcore/lite/dataclasses.py', sha1='3b669fb919a91a6d5dd21c4dbf5ab63650e1bac7'),
-            dict(path='../../omcore/lite/injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
+            dict(path='../../omcore/lite/injectinspect.py', sha1='fb45c2fdf144bdbe558e3427f38bc39121e277bd'),
             dict(path='../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
             dict(path='../../omcore/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
@@ -136,7 +136,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/io/pipelines/core.py', sha1='629ab14961ca7b35893b7e5f1e781dcafb0beacb'),
             dict(path='../../omcore/io/streambufs/types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
             dict(path='../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../omcore/lite/marshal.py', sha1='1519ac9a1c5c41d79ac2145e034f30995495da52'),
+            dict(path='../../omcore/lite/marshal.py', sha1='ac3c3893224557048f8cd1b637edd60747d261e7'),
             dict(path='../../omcore/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
             dict(path='../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../omcore/lite/timeouts.py', sha1='e7b2d3b364e7b99aba287f0f97f4dc8a5492bd94'),
@@ -166,7 +166,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/io/streambufs/base.py', sha1='0f0cea0fe05f9d7b4669a7b3871bc78e12af98f6'),
             dict(path='../../omcore/io/streambufs/framing.py', sha1='de1f818064576e855f20b005ea7855a1fd5f3f56'),
             dict(path='../../omcore/io/streambufs/utils.py', sha1='62d7fce79bae738c199627668bdee8bb389efa1e'),
-            dict(path='../../omcore/lite/inject.py', sha1='8136e16e99019cf01fc18a4b87d0fa1a9d55e23f'),
+            dict(path='../../omcore/lite/inject.py', sha1='93121be32ed6ada3bb274951e94836196eccf257'),
             dict(path='../../omcore/logs/contexts.py', sha1='529adb527492309bf8cde342271ac6ea2ebbf8a1'),
             dict(path='../../omcore/logs/std/json.py', sha1='d1ff35ac871de63efec2b64ae5c63e63d295a8d5'),
             dict(path='../../omcore/logs/utils.py', sha1='7dd07873ddd48f99bda0cf3837e01c4c7c4cc96c'),
@@ -2881,13 +2881,22 @@ def _do_injection_inspect(obj: ta.Any) -> InjectionInspection:
             f'{obj}',
         )
 
+    if isinstance(uw, type):
+        # Type hints must come from the constructor function, not the class - get_type_hints on a class returns its
+        # (mro-merged) class-attribute annotations, which can shadow ctor params by name and never cover string ctor
+        # annotations (e.g. under `from __future__ import annotations`).
+        uw_init = uw.__init__  # type: ignore[misc]
+        type_hints = ta.get_type_hints(uw_init) if uw_init is not object.__init__ else {}
+    else:
+        type_hints = ta.get_type_hints(uw)
+
     return InjectionInspection(
         obj,
         uw,
         tgt,
 
         inspect.signature(tgt),
-        ta.get_type_hints(uw),
+        type_hints,
         1 if has_args_offset else 0,
     )
 
@@ -8976,12 +8985,27 @@ class PrimitiveUnionObjMarshaler(ObjMarshaler):
             raise TypeError(o)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if self._x is not None:
+            # The non-primitive member must be tried first - its marshaled form may itself be one of the union's
+            # primitive types (e.g. Union[str, Decimal] wires Decimal as a str), which primitive-first dispatch would
+            # shadow entirely. Such wire values are inherently ambiguous - the non-primitive parse is accepted only
+            # when it faithfully round-trips back to the wire value, so lenient member unmarshalers (e.g. a Sequence
+            # member iterating a str) don't capture values belonging to a primitive member.
+            try:
+                v = self._x.unmarshal(o, ctx)
+            except Exception:  # noqa
+                pass
+            else:
+                if not isinstance(o, self._pt):
+                    return v
+                try:
+                    if self._x.marshal(v, ctx) == o:
+                        return v
+                except Exception:  # noqa
+                    pass
         if isinstance(o, self._pt):
             return o
-        elif self._x is not None:
-            return self._x.unmarshal(o, ctx)
-        else:
-            raise TypeError(o)
+        raise TypeError(o)
 
 
 class LiteralObjMarshaler(ObjMarshaler):
@@ -14342,8 +14366,16 @@ class OverridesInjectorBindings(InjectorBindings):
     m: ta.Mapping[InjectorKey, InjectorBinding]
 
     def bindings(self) -> ta.Iterator[InjectorBinding]:
+        seen: ta.Set[InjectorKey] = set()
         for b in self.p.bindings():
-            yield self.m.get(b.key, b)
+            if (o := self.m.get(b.key)) is not None:
+                # All of an overridden key's base bindings are replaced by the override exactly once - yielding it once
+                # per matching base binding would duplicate array contributions.
+                if b.key not in seen:
+                    seen.add(b.key)
+                    yield o
+            else:
+                yield b
 
 
 def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:

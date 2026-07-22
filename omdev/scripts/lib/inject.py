@@ -33,10 +33,10 @@ def __om_amalg__():  # noqa
         src_files=[
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
+            dict(path='injectinspect.py', sha1='fb45c2fdf144bdbe558e3427f38bc39121e277bd'),
             dict(path='reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
             dict(path='maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
-            dict(path='inject.py', sha1='8136e16e99019cf01fc18a4b87d0fa1a9d55e23f'),
+            dict(path='inject.py', sha1='93121be32ed6ada3bb274951e94836196eccf257'),
         ],
     )
 
@@ -858,13 +858,22 @@ def _do_injection_inspect(obj: ta.Any) -> InjectionInspection:
             f'{obj}',
         )
 
+    if isinstance(uw, type):
+        # Type hints must come from the constructor function, not the class - get_type_hints on a class returns its
+        # (mro-merged) class-attribute annotations, which can shadow ctor params by name and never cover string ctor
+        # annotations (e.g. under `from __future__ import annotations`).
+        uw_init = uw.__init__  # type: ignore[misc]
+        type_hints = ta.get_type_hints(uw_init) if uw_init is not object.__init__ else {}
+    else:
+        type_hints = ta.get_type_hints(uw)
+
     return InjectionInspection(
         obj,
         uw,
         tgt,
 
         inspect.signature(tgt),
-        ta.get_type_hints(uw),
+        type_hints,
         1 if has_args_offset else 0,
     )
 
@@ -1491,8 +1500,16 @@ class OverridesInjectorBindings(InjectorBindings):
     m: ta.Mapping[InjectorKey, InjectorBinding]
 
     def bindings(self) -> ta.Iterator[InjectorBinding]:
+        seen: ta.Set[InjectorKey] = set()
         for b in self.p.bindings():
-            yield self.m.get(b.key, b)
+            if (o := self.m.get(b.key)) is not None:
+                # All of an overridden key's base bindings are replaced by the override exactly once - yielding it once
+                # per matching base binding would duplicate array contributions.
+                if b.key not in seen:
+                    seen.add(b.key)
+                    yield o
+            else:
+                yield b
 
 
 def injector_override(p: InjectorBindings, *args: InjectorBindingOrBindings) -> InjectorBindings:

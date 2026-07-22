@@ -1,11 +1,37 @@
 import math
 
+import pytest
+
+from ..capture import ImportCaptureErrors
+from ..proxy import _ProxyImporter
 from ..proxy import proxy_import
 
 
 def test_proxy():
     sys = proxy_import('sys')
     assert sys.version_info[0] == 3
+
+
+def test_proxy_importer_module_tree():
+    pi = _ProxyImporter()
+    with pi._lock:  # noqa
+        c = pi._get_or_make_module_locked('a.b.c')  # noqa
+        a = pi._modules_by_name['a']  # noqa
+        b = pi._modules_by_name['a.b']  # noqa
+
+    assert c.parent is b
+    assert b.parent is a
+    assert a.parent is None
+    assert c.root is a
+    assert b.root is a
+    assert a.root is a
+    assert a.descendants == {b, c}
+    assert not b.descendants
+
+
+def test_capture_foreign_attr_error():
+    with pytest.raises(ImportCaptureErrors.AttrError):
+        from . import badcapture  # noqa
 
 
 def test_auto_proxy_init():

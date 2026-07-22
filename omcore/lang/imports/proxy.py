@@ -160,9 +160,9 @@ class _ProxyImporter:
         module = self._modules_by_name[name] = _ProxyImporter._Module(
             name,
             self._handle_module_getattr,
+            parent=parent,
         )
 
-        self._modules_by_name[name] = module
         self._modules_by_proxy_obj[module.proxy_obj] = module
 
         if parent is not None:

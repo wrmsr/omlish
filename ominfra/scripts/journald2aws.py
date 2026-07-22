@@ -82,7 +82,7 @@ def __om_amalg__():  # noqa
             dict(path='../../../../omcore/formats/yaml/backends.py', sha1='b6bdba7cc029eaa23f6d029731a12db355d32bf9'),
             dict(path='../../../../omcore/io/streambufs/types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
             dict(path='../../../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../../../omcore/lite/marshal.py', sha1='1519ac9a1c5c41d79ac2145e034f30995495da52'),
+            dict(path='../../../../omcore/lite/marshal.py', sha1='ac3c3893224557048f8cd1b637edd60747d261e7'),
             dict(path='../../../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omcore/logs/infos.py', sha1='c6a4599ad727fbee7c3d8eb1bce80846f8106079'),
             dict(path='../../../../omcore/logs/metrics/base.py', sha1='38429b7e804533da9a1dd356cf563ac4cff82aa2'),
@@ -3962,12 +3962,27 @@ class PrimitiveUnionObjMarshaler(ObjMarshaler):
             raise TypeError(o)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if self._x is not None:
+            # The non-primitive member must be tried first - its marshaled form may itself be one of the union's
+            # primitive types (e.g. Union[str, Decimal] wires Decimal as a str), which primitive-first dispatch would
+            # shadow entirely. Such wire values are inherently ambiguous - the non-primitive parse is accepted only
+            # when it faithfully round-trips back to the wire value, so lenient member unmarshalers (e.g. a Sequence
+            # member iterating a str) don't capture values belonging to a primitive member.
+            try:
+                v = self._x.unmarshal(o, ctx)
+            except Exception:  # noqa
+                pass
+            else:
+                if not isinstance(o, self._pt):
+                    return v
+                try:
+                    if self._x.marshal(v, ctx) == o:
+                        return v
+                except Exception:  # noqa
+                    pass
         if isinstance(o, self._pt):
             return o
-        elif self._x is not None:
-            return self._x.unmarshal(o, ctx)
-        else:
-            raise TypeError(o)
+        raise TypeError(o)
 
 
 class LiteralObjMarshaler(ObjMarshaler):

@@ -9,7 +9,7 @@ services:
       - 'om-s3'
 
   om-postgres:
-    image: 'postgres:17.9'
+    image: 'postgres:17.10'
     restart: 'unless-stopped'
     environment:
       POSTGRES_USER: 'postgres'

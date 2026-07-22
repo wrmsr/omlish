@@ -43,7 +43,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omcore/lite/reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
             dict(path='../../omcore/lite/strings.py', sha1='b31b8e4b0e4fec4562ea3fa602e4ef2475e5fe7c'),
-            dict(path='../../omcore/lite/marshal.py', sha1='1519ac9a1c5c41d79ac2145e034f30995495da52'),
+            dict(path='../../omcore/lite/marshal.py', sha1='ac3c3893224557048f8cd1b637edd60747d261e7'),
             dict(path='dumping.py', sha1='4837c54c1019dcb85fbfaa8086f5efb98025358a'),
         ],
     )
@@ -1321,12 +1321,27 @@ class PrimitiveUnionObjMarshaler(ObjMarshaler):
             raise TypeError(o)
 
     def unmarshal(self, o: ta.Any, ctx: 'ObjMarshalContext') -> ta.Any:
+        if self._x is not None:
+            # The non-primitive member must be tried first - its marshaled form may itself be one of the union's
+            # primitive types (e.g. Union[str, Decimal] wires Decimal as a str), which primitive-first dispatch would
+            # shadow entirely. Such wire values are inherently ambiguous - the non-primitive parse is accepted only
+            # when it faithfully round-trips back to the wire value, so lenient member unmarshalers (e.g. a Sequence
+            # member iterating a str) don't capture values belonging to a primitive member.
+            try:
+                v = self._x.unmarshal(o, ctx)
+            except Exception:  # noqa
+                pass
+            else:
+                if not isinstance(o, self._pt):
+                    return v
+                try:
+                    if self._x.marshal(v, ctx) == o:
+                        return v
+                except Exception:  # noqa
+                    pass
         if isinstance(o, self._pt):
             return o
-        elif self._x is not None:
-            return self._x.unmarshal(o, ctx)
-        else:
-            raise TypeError(o)
+        raise TypeError(o)
 
 
 class LiteralObjMarshaler(ObjMarshaler):
