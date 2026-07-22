@@ -23,8 +23,8 @@ bitsandbytes==0.49.2
 black==26.5.1
 blinker==1.9.0
 blobfile==3.2.0
-boto3==1.43.53
-botocore==1.43.53
+boto3==1.43.54
+botocore==1.43.54
 botocore-stubs==1.43.14
 brotli==1.2.0
 build==1.5.1
@@ -143,7 +143,7 @@ opencv-python==5.0.0.93
 orjson==3.11.9
 outcome==1.3.0.post0
 packaging==26.2
-pandas==3.0.3
+pandas==3.0.5
 paramiko==5.0.0
 parso==0.8.7
 pathspec==1.1.1
@@ -209,7 +209,7 @@ rfc3986==2.0.0
 rich==15.0.0
 ripgrep==15.1.0
 ruff==0.15.22
-s3transfer==0.19.1
+s3transfer==0.19.2
 safetensors==0.8.0
 scikit-image==0.26.0
 scikit-learn==1.9.0
@@ -267,7 +267,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.27.0
 types-awscrt==0.34.1
-types-boto3==1.43.53
+types-boto3==1.43.54
 types-docutils==0.22.3.20260712
 types-greenlet==3.5.0.20260518
 types-paramiko==5.0.0.20260617

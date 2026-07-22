@@ -100,3 +100,4 @@ debugpy==1.8.21
 # fsspec==2026.6.0  # via datasets
 # mpmath==1.4.1  # via sympy
 jaraco.functools==4.6.0
+pandas==3.0.5
