@@ -186,10 +186,17 @@ class ParsedHttpHeaders:
         return ', '.join(values)
 
     def get(self, name: str, default: ta.Optional[str] = None) -> ta.Optional[str]:
-        try:
-            return self[name]
-        except KeyError:
+        key = name.lower()
+        values = self._entries.get(key)
+        if not values:
             return default
+
+        # Never raise NoCombineHeaderHttpParseError from get(): for a no-combine header return the first value (use
+        # get_all() for the rest) rather than a corrupt comma-joined string.
+        if key in self._NO_COMBINE_HEADERS:
+            return values[0]
+
+        return ', '.join(values)
 
     def get_all(self, name: str) -> ta.List[str]:
         return list(self._entries.get(name.lower(), []))
@@ -281,7 +288,7 @@ class PreparedParsedHttpHeaders:
             ', '.join([
                 f'{f.name}={v!r}'
                 for f in dc.fields(self)
-                if (v := getattr(self, f.name) is not None)
+                if (v := getattr(self, f.name)) is not None
             ]),
             ')',
         ])
@@ -361,7 +368,7 @@ class HttpParser:
         reject_non_visible_ascii_request_target: bool = False
         max_header_count: int = 128
         max_header_length: ta.Optional[int] = 8192
-        max_content_length_str_len: ta.Optional[int] = None
+        max_content_length_str_len: ta.Optional[int] = 20
 
     def __init__(self, config: Config = Config()) -> None:
         super().__init__()
@@ -388,9 +395,10 @@ class HttpParser:
         # 1. Verify terminator
         ctx.verify_terminator()
 
-        # 2. Split off start-line
+        # 2. Split off start-line (slice ctx.data, the normalized bytes copy, so downstream fields like request_target
+        # are always bytes even when the caller passed a bytearray)
         start_line_end = ctx.find_line_end(0)
-        start_line_bytes = data[:start_line_end]
+        start_line_bytes = ctx.data[:start_line_end]
 
         # 3. Determine message kind
         kind = ctx.detect_kind(start_line_bytes)
@@ -535,8 +543,18 @@ class _HttpParseContext:
     def verify_terminator(self) -> None:
         data = self.data
 
-        idx = data.find(self._CRLFCRLF)
-        if idx >= 0:
+        if not self.config.allow_bare_lf:
+            # Strict: the first (hence only) empty line must be CRLFCRLF and must sit at the very end - nothing may
+            # follow the header terminator.
+            idx = data.find(self._CRLFCRLF)
+            if idx < 0:
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
+                    message='Header block does not end with CRLFCRLF',
+                    line=0,
+                    offset=len(data),
+                )
+
             after = idx + 4
             if after < len(data):
                 raise HeaderFieldHttpParseError(
@@ -545,22 +563,21 @@ class _HttpParseContext:
                     line=0,
                     offset=after,
                 )
+
             return
 
-        # Bare-LF mode: require the header block to END with LF LF, not just contain it.
-        if self.config.allow_bare_lf:
-            if data.endswith(b'\n\n'):
-                return
-            raise HeaderFieldHttpParseError(
-                code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
-                message='Header block does not end with LFLF',
-                line=0,
-                offset=len(data),
-            )
+        # Bare-LF allowed: line endings may be LF or CRLF, so the terminating empty line can be LFLF, CRLF-LF, LF-CRLF
+        # or CRLFCRLF - i.e. the data must end with LFLF or LF-CRLF. We must NOT reuse the strict 'first CRLFCRLF at
+        # end' rule here: an earlier bare-LF empty line is the real terminator, and honoring a later CRLFCRLF instead
+        # would silently drop the fields in between. parse_header_fields stops at the FIRST empty line and
+        # authoritatively rejects anything after it; here we only require that some terminator exists so a truly
+        # unterminated block is reported cleanly and early.
+        if data.endswith((b'\n\n', b'\n\r\n')):
+            return
 
         raise HeaderFieldHttpParseError(
             code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
-            message='Header block does not end with CRLFCRLF',
+            message='Header block does not end with an empty line',
             line=0,
             offset=len(data),
         )
@@ -582,17 +599,20 @@ class _HttpParseContext:
 
         while True:
             # Let C-level .find() locate the first occurrence of each interesting byte.
-            nul_at = data.find(b'\x00', pos)
             cr_at = data.find(b'\r', pos)
             lf_at = data.find(b'\n', pos)
 
             # Replace "not found" (-1) with length so min() picks the real hits.
-            if nul_at < 0:
-                nul_at = length
             if cr_at < 0:
                 cr_at = length
             if lf_at < 0:
                 lf_at = length
+
+            # NUL is always an error; only search for it within the current line (bounded by the nearest CR/LF)
+            # instead of scanning to the end of the buffer on every line.
+            nul_at = data.find(b'\x00', pos, min(cr_at, lf_at))
+            if nul_at < 0:
+                nul_at = length
 
             first = min(nul_at, cr_at, lf_at)
 
@@ -896,12 +916,28 @@ class _HttpParseContext:
         self.current_line = 1  # line 0 is the start-line
 
         while pos < len(data):
-            # Check for the empty line that terminates headers
+            # Check for the empty line that terminates headers. Whichever empty-line form we stop at, nothing may
+            # follow it: this is the authoritative trailing-data check. verify_terminator only gates existence and in
+            # bare-LF mode cannot tell which empty line parsing will actually stop at.
             if data[pos] == self._CR and pos + 1 < len(data) and data[pos + 1] == self._LF:
-                # Could be the terminator (\r\n at start of a "line" = empty line)
+                # \r\n at the start of a "line" = empty line = terminator.
+                if pos + 2 != len(data):
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.TRAILING_DATA,
+                        message=f'Unexpected {len(data) - (pos + 2)} byte(s) after header terminator',
+                        line=self.current_line,
+                        offset=pos + 2,
+                    )
                 break
 
             if self.config.allow_bare_lf and data[pos] == self._LF:
+                if pos + 1 != len(data):
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.TRAILING_DATA,
+                        message=f'Unexpected {len(data) - (pos + 1)} byte(s) after header terminator',
+                        line=self.current_line,
+                        offset=pos + 1,
+                    )
                 break
 
             # Max header count check
@@ -978,10 +1014,23 @@ class _HttpParseContext:
         return headers
 
     @classmethod
-    def _strip_ows(cls, data: Bytes) -> Bytes:
+    def _strip_ows_bytes(cls, data: Bytes) -> Bytes:
         """Strip leading and trailing optional whitespace (SP / HTAB)."""
 
         return data.strip(b' \t')
+
+    @classmethod
+    def _strip_ows_str(cls, s: str) -> str:
+        """
+        Strip only HTTP OWS (SP / HTAB) from a str.
+
+        ``str.strip()`` with no argument also removes Unicode whitespace such as U+0085 and U+00A0. Those are reachable
+        here: obs-text bytes (0x80-0xFF) are permitted in field values by default and decode (latin-1) to exactly those
+        codepoints, so bare ``strip()`` would silently discard bytes a peer keeps - a parser-differential / smuggling
+        risk. HTTP OWS is only SP and HTAB, so strip exactly those.
+        """
+
+        return s.strip(' \t')
 
     # token: 1+ tchar bytes
     _RE_TOKEN: ta.ClassVar[re.Pattern] = re.compile(rb"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+\Z")
@@ -1069,7 +1118,7 @@ class _HttpParseContext:
         # Process field-value
 
         # Strip OWS
-        value_stripped = self._strip_ows(value_bytes)
+        value_stripped = self._strip_ows_bytes(value_bytes)
 
         # Check for empty value
         if not value_stripped and self.config.reject_empty_header_values:
@@ -1190,11 +1239,13 @@ class _HttpParseContext:
                 )
 
             for part in v.split(','):
-                stripped = part.strip()
+                stripped = self._strip_ows_str(part)
 
                 # NOTE: must be ASCII digits only. str.isdigit() is True for non-ASCII numerics present in the
-                # latin-1-decoded value (e.g. superscripts U+00B2/B3/B9), but int() rejects those with a ValueError -
-                # which would escape as an uncaught exception rather than a clean parse error.
+                # latin-1-decoded value (e.g. superscripts U+00B2/B3/B9); int() rejects those with a ValueError. Also,
+                # obs-text bytes that decode to Unicode whitespace (U+0085, U+00A0) are permitted in a field value by
+                # default - stripping only ASCII OWS above keeps them here so isascii() rejects them rather than
+                # silently treating '42\xa0' as '42'.
                 if not (stripped.isascii() and stripped.isdigit()):
                     raise SemanticHeaderHttpParseError(
                         code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
@@ -1210,7 +1261,16 @@ class _HttpParseContext:
                         message=f'Content-Length value string too long: {stripped!r}',
                     )
 
-                parsed_values.append(int(stripped))
+                # int() raises ValueError above sys.get_int_max_str_digits() (default 4300, backported to all
+                # maintained 3.8+ releases). max_content_length_str_len bounds this by default, but it may be None, so
+                # guard the conversion and surface a clean parse error rather than letting the ValueError escape.
+                try:
+                    parsed_values.append(int(stripped))
+                except ValueError:
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
+                        message=f'Content-Length value could not be parsed as an integer: {stripped!r}',
+                    ) from None
 
         if not parsed_values:
             raise SemanticHeaderHttpParseError(
@@ -1235,14 +1295,8 @@ class _HttpParseContext:
                     ),
                 )
 
-        val = parsed_values[0]
-        if val < 0:
-            raise SemanticHeaderHttpParseError(
-                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
-                message=f'Content-Length is negative: {val}',
-            )
-
-        prepared.content_length = val
+        # A negative value is impossible here: isdigit() rejects a leading '-', so parsed_values are all >= 0.
+        prepared.content_length = parsed_values[0]
 
     _KNOWN_CODINGS: ta.ClassVar[ta.FrozenSet[str]] = frozenset([
         'chunked',
@@ -1264,7 +1318,7 @@ class _HttpParseContext:
             return
 
         combined = headers['transfer-encoding']
-        codings = [c.strip().lower() for c in combined.split(',') if c.strip()]
+        codings = [s.lower() for s in map(self._strip_ows_str, combined.split(',')) if s]
 
         if not codings:
             raise SemanticHeaderHttpParseError(
@@ -1357,7 +1411,7 @@ class _HttpParseContext:
                 )
 
         if values:
-            host_val = values[0].strip()
+            host_val = self._strip_ows_str(values[0])
 
             # Minimal validation: reject any whitespace/control chars. Host is an authority, and
             # allowing OWS creates parsing inconsistencies across components.
@@ -1391,7 +1445,7 @@ class _HttpParseContext:
 
         parts: ta.List[str] = []
         for part in value.split(','):
-            stripped = part.strip()
+            stripped = cls._strip_ows_str(part)
             if stripped:
                 parts.append(stripped)
         return parts
@@ -1457,12 +1511,12 @@ class _HttpParseContext:
 
         params: ta.Dict[str, str] = {}
 
-        remaining = params_str.strip()
+        remaining = cls._strip_ows_str(params_str)
         while remaining:
             if not remaining.startswith(';'):
                 break
 
-            remaining = remaining[1:].strip()
+            remaining = cls._strip_ows_str(remaining[1:])
             if not remaining:
                 break
 
@@ -1476,24 +1530,24 @@ class _HttpParseContext:
                 remaining = remaining[semi_idx:]
                 continue
 
-            pname = remaining[:eq_idx].strip().lower()
-            remaining = remaining[eq_idx + 1:].strip()
+            pname = cls._strip_ows_str(remaining[:eq_idx]).lower()
+            remaining = cls._strip_ows_str(remaining[eq_idx + 1:])
 
             if remaining.startswith('"'):
                 try:
                     pvalue, end_pos = cls._parse_quoted_string(remaining, 0)
                 except ValueError:
                     break
-                remaining = remaining[end_pos:].strip()
+                remaining = cls._strip_ows_str(remaining[end_pos:])
 
             else:
                 semi_idx = remaining.find(';')
 
                 if semi_idx < 0:
-                    pvalue = remaining.strip()
+                    pvalue = cls._strip_ows_str(remaining)
                     remaining = ''
                 else:
-                    pvalue = remaining[:semi_idx].strip()
+                    pvalue = cls._strip_ows_str(remaining[:semi_idx])
                     remaining = remaining[semi_idx:]
 
             if pname:
@@ -1510,10 +1564,10 @@ class _HttpParseContext:
         # media-type = type "/" subtype *( OWS ";" OWS parameter )
         semi_idx = raw.find(';')
         if semi_idx < 0:
-            media_type = raw.strip().lower()
+            media_type = self._strip_ows_str(raw).lower()
             params: ta.Dict[str, str] = {}
         else:
-            media_type = raw[:semi_idx].strip().lower()
+            media_type = self._strip_ows_str(raw[:semi_idx]).lower()
             params = self._parse_media_type_params(raw[semi_idx:])
 
         if '/' not in media_type:
@@ -1545,9 +1599,9 @@ class _HttpParseContext:
 
         semi_idx = element.find(';')
         if semi_idx < 0:
-            return element.strip().lower(), 1.0, {}
+            return cls._strip_ows_str(element).lower(), 1.0, {}
 
-        token = element[:semi_idx].strip().lower()
+        token = cls._strip_ows_str(element[:semi_idx]).lower()
         params = cls._parse_media_type_params(element[semi_idx:])
 
         q = 1.0
@@ -1625,7 +1679,7 @@ class _HttpParseContext:
         if 'expect' not in headers:
             return
 
-        raw = headers['expect'].strip().lower()
+        raw = self._strip_ows_str(headers['expect']).lower()
         if raw != '100-continue':
             raise SemanticHeaderHttpParseError(
                 code=SemanticHeaderHttpParseErrorCode.INVALID_EXPECT,
@@ -1661,12 +1715,13 @@ class _HttpParseContext:
           - asctime:      Sun Nov  6 08:49:37 1994
         """
 
-        value = value.strip()
+        value = cls._strip_ows_str(value)
 
-        # Try IMF-fixdate: day-name "," SP date1 SP time-of-day SP GMT
-        # date1 = day SP month SP year (4-digit)
+        # The two comma-bearing formats: IMF-fixdate (day-name "," SP day SP month SP 4-digit-year SP time SP GMT) and
+        # RFC 850 (day-name "," SP DD-Mon-YY SP time SP GMT). They are told apart below by field count and the '-' in
+        # the RFC-850 date. asctime (no comma) is handled in the else branch.
         if ',' in value:
-            after_comma = value.split(',', 1)[1].strip()
+            after_comma = cls._strip_ows_str(value.split(',', 1)[1])
             parts = after_comma.split()
 
             if len(parts) == 3 and parts[2].upper() == 'GMT' and '-' in parts[0]:
@@ -1766,8 +1821,8 @@ class _HttpParseContext:
                 directives[part.lower()] = None
                 continue
 
-            name = part[:eq_idx].strip().lower()
-            value = part[eq_idx + 1:].strip()
+            name = self._strip_ows_str(part[:eq_idx]).lower()
+            value = self._strip_ows_str(part[eq_idx + 1:])
             if value.startswith('"'):
                 try:
                     value, _ = self._parse_quoted_string(value, 0)
@@ -1831,7 +1886,7 @@ class _HttpParseContext:
         if 'authorization' not in headers:
             return
 
-        raw = headers['authorization'].strip()
+        raw = self._strip_ows_str(headers['authorization'])
         if not raw:
             raise SemanticHeaderHttpParseError(
                 code=SemanticHeaderHttpParseErrorCode.INVALID_AUTHORIZATION,

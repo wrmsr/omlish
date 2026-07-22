@@ -1591,10 +1591,15 @@ class TestRequestSmuggling(unittest.TestCase):
             hp.parse_http_message(data)
 
     def test_content_length_overflow_attempt(self) -> None:
-        """Very large CL value - should parse as int without crashing."""
+        """Very large CL value - rejected by the default max_content_length_str_len, accepted when disabled."""
 
         data = _resp(headers=[('Content-Length', '99999999999999999999999999999999')])
-        msg = hp.parse_http_message(data)
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
+            hp.parse_http_message(data)
+
+        # Disabling the length cap lets it parse as an arbitrary-precision int (still under int()'s digit limit).
+        cfg = hp.HttpParser.Config(max_content_length_str_len=None)
+        msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.content_length, 99999999999999999999999999999999)
 
     def test_content_length_max_str_len(self) -> None:
@@ -2375,6 +2380,170 @@ class TestParsingQValue(unittest.TestCase):
     def test_te_valid_qvalue_still_parses(self):
         msg = self.parse_req(b'GET / HTTP/1.1\r\nHost: x\r\nTE: trailers, gzip;q=0.5\r\n\r\n')
         assert 'trailers' in msg.prepared.te
+
+
+##
+# 27. Content-Length integer-conversion limit (int() raises above sys.get_int_max_str_digits())
+
+
+class TestContentLengthDigitLimit(unittest.TestCase):
+    def test_huge_content_length_default_is_clean_error(self) -> None:
+        """A > int-digit-limit CL must raise a clean parse error, never an escaping ValueError."""
+
+        data = _resp(headers=[('Content-Length', '9' * 5000)])
+        with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+            hp.parse_http_message(data)
+        self.assertEqual(cm.exception.code, hp.SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH)
+
+    def test_huge_content_length_uncapped_is_still_clean_error(self) -> None:
+        """With the length cap disabled the guarded int() still turns the limit ValueError into a parse error."""
+
+        data = _resp(headers=[('Content-Length', '9' * 5000)])
+        cfg = hp.HttpParser.Config(max_content_length_str_len=None)
+        try:
+            hp.parse_http_message(data, config=cfg)
+            self.fail('expected a parse error')
+        except hp.SemanticHeaderHttpParseError as e:
+            self.assertEqual(e.code, hp.SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH)
+        except ValueError:
+            self.fail('int() ValueError escaped as a non-HttpParseError')
+
+    def test_default_cap_boundary(self) -> None:
+        # 20 digits (the default ceiling) parses; 21 is rejected.
+        ok = _resp(headers=[('Content-Length', '1' * 20)])
+        self.assertEqual(hp.parse_http_message(ok).prepared.content_length, int('1' * 20))
+
+        too_long = _resp(headers=[('Content-Length', '1' * 21)])
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
+            hp.parse_http_message(too_long)
+
+    def test_realistic_large_content_length_parses(self) -> None:
+        # 2**63 is 19 digits - comfortably under the default cap.
+        data = _resp(headers=[('Content-Length', str(2 ** 63))])
+        self.assertEqual(hp.parse_http_message(data).prepared.content_length, 2 ** 63)
+
+
+##
+# 28. obs-text bytes must not be silently treated as whitespace in semantic fields
+
+
+class TestObsTextSemanticStripping(unittest.TestCase):
+    def test_content_length_trailing_obs_text_rejected(self) -> None:
+        # U+0085 (NEL) and U+00A0 (NBSP) are obs-text bytes allowed in a value by default, and str.strip()/int()
+        # treat them as whitespace - they must not silently normalize 'Content-Length: 42\xa0' to 42.
+        for suffix in (b'\xa0', b'\x85'):
+            data = b'HTTP/1.1 200 OK\r\nContent-Length: 42' + suffix + b'\r\n\r\n'
+            with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+                hp.parse_http_message(data)
+            self.assertEqual(cm.exception.code, hp.SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH)
+
+    def test_content_length_ascii_ows_still_stripped(self) -> None:
+        data = b'HTTP/1.1 200 OK\r\nContent-Length:  42  \r\n\r\n'
+        self.assertEqual(hp.parse_http_message(data).prepared.content_length, 42)
+
+    def test_transfer_encoding_obs_text_not_folded_to_chunked(self) -> None:
+        data = b'POST / HTTP/1.1\r\nHost: x\r\nTransfer-Encoding: chunked\xa0\r\n\r\n'
+        with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+            hp.parse_http_message(data, mode=hp.HttpParser.Mode.REQUEST)
+        self.assertEqual(cm.exception.code, hp.SemanticHeaderHttpParseErrorCode.INVALID_TRANSFER_ENCODING)
+
+    def test_transfer_encoding_ascii_ows_still_stripped(self) -> None:
+        data = b'POST / HTTP/1.1\r\nHost: x\r\nTransfer-Encoding:  chunked \r\n\r\n'
+        cfg = hp.HttpParser.Config(allow_content_length_with_te=True)
+        self.assertEqual(hp.parse_http_message(data, config=cfg).prepared.transfer_encoding, ['chunked'])
+
+    def test_host_obs_text_preserved_not_stripped(self) -> None:
+        # The differential came from silently stripping obs-text; the fix keeps the byte so we agree with a
+        # byte-oriented peer (Host permits obs-text by design).
+        data = b'GET / HTTP/1.1\r\nHost: example.com\xa0\r\n\r\n'
+        msg = hp.parse_http_message(data, mode=hp.HttpParser.Mode.REQUEST)
+        self.assertEqual(msg.prepared.host, 'example.com\xa0')
+
+
+##
+# 29. Bare-LF terminator consistency between verify_terminator and parse_header_fields
+
+
+class TestBareLfTerminatorConsistency(unittest.TestCase):
+    def test_header_after_bare_lf_empty_line_not_dropped(self) -> None:
+        # A bare-LF empty line after a CRLF header line is a terminator; the trailing (real) terminator must not let
+        # the intervening Transfer-Encoding be silently dropped.
+        cfg = hp.HttpParser.Config(allow_bare_lf=True)
+        data = b'GET / HTTP/1.1\r\nHost: a\r\n\nTransfer-Encoding: chunked\r\n\r\n'
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
+            hp.parse_http_message(data, mode=hp.HttpParser.Mode.REQUEST, config=cfg)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.TRAILING_DATA)
+
+    def test_trailing_block_after_lflf_rejected(self) -> None:
+        cfg = hp.HttpParser.Config(allow_bare_lf=True)
+        data = b'GET / HTTP/1.1\nHost: a\n\nSMUGGLED / HTTP/1.1\nHost: b\n\n'
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
+            hp.parse_http_message(data, mode=hp.HttpParser.Mode.REQUEST, config=cfg)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.TRAILING_DATA)
+
+    def test_strict_mode_still_rejects_same_input(self) -> None:
+        data = b'GET / HTTP/1.1\r\nHost: a\r\n\nTransfer-Encoding: chunked\r\n\r\n'
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
+            hp.parse_http_message(data, mode=hp.HttpParser.Mode.REQUEST)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.BARE_LF)
+
+    def test_legit_bare_lf_still_parses(self) -> None:
+        cfg = hp.HttpParser.Config(allow_bare_lf=True, allow_missing_host=True)
+        data = b'GET / HTTP/1.1\nHost: x\n\n'
+        msg = hp.parse_http_message(data, mode=hp.HttpParser.Mode.REQUEST, config=cfg)
+        self.assertEqual(msg.prepared.host, 'x')
+
+    def test_mixed_endings_with_crlf_terminator_parses(self) -> None:
+        # bare-LF start line, CRLF header, CRLFCRLF terminator: verify_terminator now recognizes the LF-CRLF ending.
+        cfg = hp.HttpParser.Config(allow_bare_lf=True)
+        data = b'GET / HTTP/1.1\nHost: a\r\n\r\n'
+        msg = hp.parse_http_message(data, mode=hp.HttpParser.Mode.REQUEST, config=cfg)
+        self.assertEqual(msg.prepared.host, 'a')
+
+    def test_trailers_bare_lf_trailing_block_rejected(self) -> None:
+        cfg = hp.HttpParser.Config(allow_bare_lf=True)
+        data = b'X-A: 1\n\nX-B: 2\n\n'
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
+            hp.parse_http_trailers(data, config=cfg)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.TRAILING_DATA)
+
+
+##
+# 30. Repr, bytearray typing, get() fallback, and NUL scan
+
+
+class TestReviewFixes(unittest.TestCase):
+    def test_prepared_repr_shows_values_not_booleans(self) -> None:
+        data = b'HTTP/1.1 200 OK\r\nContent-Length: 42\r\nContent-Type: text/html\r\n\r\n'
+        text = repr(hp.parse_http_message(data).prepared)
+        self.assertIn('content_length=42', text)
+        self.assertIn("media_type='text/html'", text)
+        self.assertNotIn('content_length=True', text)
+
+    def test_bytearray_input_yields_bytes_request_target(self) -> None:
+        data = bytearray(b'GET /foo HTTP/1.1\r\nHost: x\r\n\r\n')
+        msg = hp.parse_http_message(data)
+        self.assertIsInstance(check.not_none(msg.request_line).request_target, bytes)
+        self.assertEqual(check.not_none(msg.request_line).request_target, b'/foo')
+
+    def test_get_no_combine_header_returns_first_value(self) -> None:
+        data = _resp(headers=[('Set-Cookie', 'a=1'), ('Set-Cookie', 'b=2')])
+        headers = hp.parse_http_message(data).headers
+        self.assertEqual(headers.get('set-cookie'), 'a=1')
+        self.assertEqual(headers.get('Set-Cookie'), 'a=1')  # case-insensitive
+        self.assertEqual(headers.get_all('set-cookie'), ['a=1', 'b=2'])
+
+    def test_get_missing_returns_default(self) -> None:
+        headers = hp.parse_http_message(_resp()).headers
+        self.assertIsNone(headers.get('missing'))
+        self.assertEqual(headers.get('missing', 'fallback'), 'fallback')
+
+    def test_nul_in_later_header_line_still_detected(self) -> None:
+        # Guards the bounded NUL scan in find_line_end: a NUL on a subsequent line must still be caught.
+        data = b'HTTP/1.1 200 OK\r\nX-A: ok\r\nX-B: ba\x00d\r\n\r\n'
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
+            hp.parse_http_message(data)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.NUL_IN_HEADER)
 
 
 if __name__ == '__main__':
