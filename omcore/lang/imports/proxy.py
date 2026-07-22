@@ -521,8 +521,6 @@ class _AutoProxyImport(_AutoProxy):
                 self._mod_globals[a] = pm
 
         if self._eager:
-            # Actually import now - errors surface at module-body time. Note that pi.lookup on a registered module
-            # name would merely return its (still-lazy) proxy.
             for ci in cap.imports.values():
                 importlib.import_module(ci.module.name)
 

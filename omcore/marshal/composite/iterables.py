@@ -19,17 +19,11 @@ from ..api.types import Unmarshaler
 from ..api.values import Value
 from ..factories.method import MarshalerFactoryMethodClass
 from ..factories.method import UnmarshalerFactoryMethodClass
+from .api import DEFAULT_ITERABLE_CONCRETE_TYPES
 from .api import DefaultIterableConstructors
 
 
 ##
-
-
-DEFAULT_ITERABLE_CONCRETE_TYPES: dict[type[collections.abc.Iterable], type[collections.abc.Iterable]] = {
-    collections.abc.Iterable: tuple,  # type: ignore
-    collections.abc.Sequence: tuple,  # type: ignore
-    collections.abc.MutableSequence: list,  # type: ignore
-}
 
 
 def get_default_iterable_constructor(

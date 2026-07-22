@@ -13,17 +13,10 @@ from ...api.types import MarshalerFactory
 from ...api.types import Unmarshaler
 from ...api.types import UnmarshalerFactory
 from ...api.values import Value
+from .api import PRIMITIVE_UNION_TYPES
 
 
 ##
-
-
-PRIMITIVE_UNION_TYPES: tuple[type, ...] = (
-    float,
-    int,
-    str,
-    bool,
-)
 
 
 class DestructuredPrimitiveUnionType(ta.NamedTuple):

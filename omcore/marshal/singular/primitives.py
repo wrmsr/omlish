@@ -13,20 +13,7 @@ from ..api.types import Unmarshaler
 from ..api.values import Value
 from ..factories.typemap import TypeMapMarshalerFactory
 from ..factories.typemap import TypeMapUnmarshalerFactory
-
-
-##
-
-
-PRIMITIVE_TYPES: tuple[type, ...] = (
-    type(None),
-
-    bool,
-    int,
-    float,
-    str,
-    bytes,
-)
+from .api import PRIMITIVE_TYPES
 
 
 ##

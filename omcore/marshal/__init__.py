@@ -121,7 +121,10 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .composite.api import (  # noqa
+        DEFAULT_ITERABLE_CONCRETE_TYPES,
         DefaultIterableConstructors,
+
+        DEFAULT_MAPPING_CONCRETE_TYPES,
         DefaultMappingConstructors,
     )
 
@@ -135,9 +138,13 @@ with _lang.auto_proxy_init(globals()):
         OptionalUnmarshaler,
     )
 
-    from .composite.unions.literals import (  # noqa
+    from .composite.unions.api import (  # noqa
         LITERAL_UNION_TYPES,
 
+        PRIMITIVE_UNION_TYPES,
+    )
+
+    from .composite.unions.literals import (  # noqa
         LiteralUnionMarshaler,
         LiteralUnionMarshalerFactory,
         LiteralUnionUnmarshaler,
@@ -145,7 +152,6 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .composite.unions.primitives import (  # noqa
-        PRIMITIVE_UNION_TYPES,
         PrimitiveUnionMarshaler,
         PrimitiveUnionMarshalerFactory,
         PrimitiveUnionUnmarshaler,
@@ -301,6 +307,10 @@ with _lang.auto_proxy_init(globals()):
         make_polymorphism_unmarshaler,
     )
 
+    from .singular.api import (  # noqa
+        PRIMITIVE_TYPES,
+    )
+
     from .singular.base64 import (  # noqa
         Base64MarshalerUnmarshaler,
 
@@ -321,8 +331,6 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .singular.primitives import (  # noqa
-        PRIMITIVE_TYPES,
-
         PrimitiveMarshalerUnmarshaler,
         PRIMITIVE_MARSHALER_FACTORY,
         PRIMITIVE_UNMARSHALER_FACTORY,

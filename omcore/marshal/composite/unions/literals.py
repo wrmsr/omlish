@@ -14,15 +14,10 @@ from ...api.types import MarshalerFactory
 from ...api.types import Unmarshaler
 from ...api.types import UnmarshalerFactory
 from ...api.values import Value
+from .api import LITERAL_UNION_TYPES
 
 
 ##
-
-
-LITERAL_UNION_TYPES: tuple[type, ...] = (
-    int,
-    str,
-)
 
 
 class DestructuredLiteralUnionType(ta.NamedTuple):

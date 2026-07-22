@@ -14,16 +14,11 @@ from ..api.types import Unmarshaler
 from ..api.values import Value
 from ..factories.method import MarshalerFactoryMethodClass
 from ..factories.method import UnmarshalerFactoryMethodClass
+from .api import DEFAULT_MAPPING_CONCRETE_TYPES
 from .api import DefaultMappingConstructors
 
 
 ##
-
-
-DEFAULT_MAPPING_CONCRETE_TYPES: dict[type[collections.abc.Mapping], type[collections.abc.Mapping]] = {
-    collections.abc.Mapping: dict,  # type: ignore
-    collections.abc.MutableMapping: dict,  # type: ignore
-}
 
 
 def get_default_mapping_constructor(
