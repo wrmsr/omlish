@@ -250,15 +250,31 @@ def test_without_present():
         _ = m2[2]
 
 
-def test_without_missing_is_noop_by_contents():
+def test_without_missing_is_noop_by_identity():
     m = new_map()
     for k, v in [(1, 'a'), (2, 'b')]:
         m = m.with_(k, v)
 
     m2 = m.without(999)
 
+    assert m2 is m
     assert len(m2) == len(m)
     assert items_list(m2) == items_list(m)
+
+
+def test_get():
+    m = new_map()
+    m = m.with_(1, 'a')
+    m = m.with_(2, 'b')
+
+    assert m.get(1) == 'a'
+    assert m.get(2, 'x') == 'b'
+    assert m.get(3) is None
+    assert m.get(3, 'x') == 'x'
+
+    e = new_map()
+    assert e.get(1) is None
+    assert e.get(1, 'x') == 'x'
 
 
 def test_default_inserts_only_when_missing():

@@ -199,11 +199,12 @@ class _BaseTreapTests:
         assert inorder(n) == sorted(vals)
         self.validate_treap(n)
 
-    def test_delete_missing_is_content_noop(self):
+    def test_delete_missing_is_noop_by_identity(self):
         vals = [5, 2, 8, 1, 3, 7, 9]
         n = self.build_tree(vals, seed=5)
         n2 = self.treap.delete(n, 12345, int_cmp)
 
+        assert n2 is n
         assert inorder(n2) == sorted(vals)
         self.validate_treap(n2)
 

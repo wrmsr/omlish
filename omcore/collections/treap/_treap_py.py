@@ -264,8 +264,15 @@ def intersect(
     return TreapNode(_value=n._value, _priority=n._priority, _left=left, _right=right)
 
 
-def delete(n: TreapNode[T] | None, v: T, c: Comparer[T]) -> TreapNode[T] | None:
-    left, _, right = split(n, v, c)
+def delete(n: TreapNode[T] | None, v: T, c: Comparer[T] | None) -> TreapNode[T] | None:
+    left, dupe, right = split(n, v, c)
+
+    if dupe is None:
+        # No-op by content: v was absent, so the split halves reassemble to the same contents. Return the original
+        # (sharing it wholesale) instead of joining the freshly rebuilt spines back together -- callers (and the
+        # TreapMap wrapper) rely on the identity to detect the no-op.
+        return n
+
     return _join(left, right)
 
 

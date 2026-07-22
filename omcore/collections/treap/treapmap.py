@@ -22,10 +22,10 @@ from ..intersections import PersistentSortedMapping
 from ..mappings import IterItemsViewMapping
 from ..mappings import IterValuesViewMapping
 from ..mappings import iteritems_itervalues
-from ..mappings import map_contains
 from . import treap
 
 
+T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
@@ -64,12 +64,23 @@ class TreapMap(
             raise KeyError(item)
         return n.value[1]  # type: ignore[return-value]
 
+    @ta.overload
+    def get(self, key: K, /) -> V | None: ...
+
+    @ta.overload
+    def get(self, key: K, /, default: V | T) -> V | T: ...
+
+    def get(self, key, /, default=None):
+        n = treap.find(self._n, (key, None), self._c)  # type: ignore
+        return n.value[1] if n is not None else default
+
     def __iter__(self) -> ta.Iterator[K]:
         i = self.iteritems()
         while i.has_next():
             yield i.next()[0]
 
-    __contains__ = map_contains
+    def __contains__(self, item: K) -> bool:  # type: ignore[override]
+        return treap.find(self._n, (item, None), self._c) is not None  # type: ignore
 
     itervalues = iteritems_itervalues
 
@@ -104,15 +115,17 @@ class TreapMap(
 
     def without(self, k: K) -> TreapMap[K, V]:
         n = treap.delete(self._n, (k, None), self._c)  # type: ignore
+
+        if n is self._n:
+            return self
+
         return TreapMap(_n=n, _c=self._c)  # type: ignore[arg-type]
 
     def default(self, k: K, v: V) -> TreapMap[K, V]:
-        try:
-            self[k]  # noqa
-        except KeyError:
-            return self.with_(k, v)
-        else:
+        if treap.find(self._n, (k, None), self._c) is not None:  # type: ignore
             return self
+
+        return self.with_(k, v)
 
 
 def new_treap_map(
@@ -157,7 +170,7 @@ class BaseTreapMapIterator(lang.Abstract, ta.Iterator[tuple[K, V]], ta.Generic[K
 
 @ta.final
 class TreapMapIterator(BaseTreapMapIterator[K, V]):
-    __slots__ = BaseTreapMapIterator.__slots__  # noqa
+    __slots__ = ()
 
     def next(self) -> tuple[K, V]:
         n = self._n
@@ -178,7 +191,7 @@ class TreapMapIterator(BaseTreapMapIterator[K, V]):
 
 @ta.final
 class TreapMapReverseIterator(BaseTreapMapIterator[K, V]):
-    __slots__ = BaseTreapMapIterator.__slots__  # noqa
+    __slots__ = ()
 
     def next(self) -> tuple[K, V]:
         n = self._n

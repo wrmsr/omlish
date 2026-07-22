@@ -1,7 +1,6 @@
 // @om-cext
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
-#include "structmember.h"
 
 #include <random>
 
@@ -41,19 +40,25 @@ struct TreapNode {
     Py_ssize_t count;
 };
 
+// GC protocol notes, relied on non-locally (mirroring _btreemap.cc):
+//
+//  - Instances of heap types (PyType_FromSpec) own a strong reference to their type -- the Py_DECREF(tp) in the
+//    deallocs pays it back -- so tp_traverse must Py_VISIT the type, or instance -> type -> module cycles are invisible
+//    to GC and the types/module state leak on interpreter teardown.
+//
+//  - TreapNode deliberately has no tp_clear, tuple-style. Nodes are immutable after construction and built bottom-up
+//    from already-finished objects, so a pure-node reference cycle is unconstructible; any real cycle through a node
+//    also passes through some mutable participant (a dict, a module, a TreapIter, ...), and GC breaks the cycle
+//    *there*, after which node refcounts fall and ordinary dealloc runs. Consequence: a live node is never observable
+//    in a partially-cleared state, which is what licenses the absence of any "cleared node" defensive checks in
+//    find/iteration below.
+
 static int TreapNode_traverse(TreapNode *self, visitproc visit, void *arg)
 {
+    Py_VISIT(Py_TYPE(self));
     Py_VISIT(self->value);
     Py_VISIT(self->left);
     Py_VISIT(self->right);
-    return 0;
-}
-
-static int TreapNode_clear(TreapNode *self)
-{
-    Py_CLEAR(self->value);
-    Py_CLEAR(self->left);
-    Py_CLEAR(self->right);
     return 0;
 }
 
@@ -61,20 +66,14 @@ static void TreapNode_dealloc(TreapNode *self)
 {
     PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
-    TreapNode_clear(self);
+    Py_XDECREF(self->value);
+    Py_XDECREF(self->left);
+    Py_XDECREF(self->right);
     tp->tp_free((PyObject *)self);
     Py_DECREF(tp);
 }
 
 static PyObject *TreapNode_repr(TreapNode *self) {
-    if (self->value == nullptr) {
-        return PyUnicode_FromFormat(
-            "TreapNode(<cleared>, priority=%ld, count=%zd)",
-            self->priority,
-            self->count
-        );
-    }
-
     return PyUnicode_FromFormat(
         "TreapNode(value=%R, priority=%ld, count=%zd)",
         self->value,
@@ -85,10 +84,6 @@ static PyObject *TreapNode_repr(TreapNode *self) {
 
 static PyObject *TreapNode_get_value(TreapNode *self, void *closure)
 {
-    if (self->value == nullptr) {
-        PyErr_SetString(PyExc_RuntimeError, "TreapNode has been cleared");
-        return nullptr;
-    }
     return Py_NewRef(self->value);
 }
 
@@ -133,7 +128,6 @@ static PyGetSetDef TreapNode_getset[] = {
 static PyType_Slot TreapNode_slots[] = {
     {Py_tp_dealloc, (void *)TreapNode_dealloc},
     {Py_tp_traverse, (void *)TreapNode_traverse},
-    {Py_tp_clear, (void *)TreapNode_clear},
     {Py_tp_repr, (void *)TreapNode_repr},
     {Py_tp_iter, (void *)TreapNode_iter},
     {Py_tp_getset, (void *)TreapNode_getset},
@@ -154,6 +148,15 @@ static PyType_Spec TreapNode_spec = {
 // Holds a single strong ref to the root node, which keeps the entire immutable tree alive. Stack entries and current
 // pointer are borrowed refs into that tree.
 //
+// Locking discipline (free-threaded builds): the post-construction mutable state (stack, stack_cap, stack_top,
+// current) is touched in exactly three contexts:
+//
+//   1. construction (TreapNode_iter) -- the object is not yet visible to any other thread, so no locking is needed;
+//   2. TreapIter_next -- guarded by a per-object critical section (a no-op on GIL builds);
+//   3. tp_clear -- only ever invoked by GC, which is stop-the-world on free-threaded builds.
+//
+// Anything new that mutates an iterator after construction must join scheme 2.
+//
 
 struct TreapIter {
     PyObject_HEAD
@@ -166,6 +169,7 @@ struct TreapIter {
 
 static int TreapIter_traverse(TreapIter *self, visitproc visit, void *arg)
 {
+    Py_VISIT(Py_TYPE(self));
     Py_VISIT(self->root);
     return 0;
 }
@@ -190,9 +194,15 @@ static void TreapIter_dealloc(TreapIter *self)
 
 static PyObject *TreapIter_next(TreapIter *self)
 {
-    TreapNode *current = self->current;
+    PyObject *ret = nullptr;
+    int ok = 1;
 
-    while (current != nullptr) {
+    Py_BEGIN_CRITICAL_SECTION((PyObject *)self);
+
+    // The descent advances self->current as it pushes, not a local, so a mid-descent allocation failure leaves the
+    // iterator resumable instead of re-pushing the same frames on retry. Nothing here can re-enter Python: it is
+    // pointer walks, increfs, and at most a PyMem_Realloc.
+    while (self->current != nullptr) {
         if (self->stack_top >= self->stack_cap) {
             Py_ssize_t new_cap = self->stack_cap * 2;
             TreapNode **new_stack = (TreapNode **) PyMem_Realloc(
@@ -200,28 +210,28 @@ static PyObject *TreapIter_next(TreapIter *self)
                 (size_t) new_cap * sizeof(TreapNode *)
             );
             if (new_stack == nullptr) {
-                return PyErr_NoMemory();
+                PyErr_NoMemory();
+                ok = 0;
+                break;
             }
             self->stack = new_stack;
             self->stack_cap = new_cap;
         }
-        self->stack[self->stack_top++] = current;
-        current = current->left;
+        self->stack[self->stack_top++] = self->current;
+        self->current = self->current->left;
     }
 
-    if (self->stack_top == 0) {
-        return nullptr;  // StopIteration
+    if (ok && self->stack_top > 0) {
+        TreapNode *node = self->stack[--self->stack_top];
+        self->current = node->right;
+        ret = Py_NewRef(node->value);
     }
 
-    TreapNode *node = self->stack[--self->stack_top];
-    self->current = node->right;
+    Py_END_CRITICAL_SECTION();
 
-    if (node->value == nullptr) {
-        PyErr_SetString(PyExc_RuntimeError, "iterated over a cleared TreapNode");
-        return nullptr;
-    }
-
-    return Py_NewRef(node->value);
+    // nullptr: either the realloc failed (exception already set) or the iterator is exhausted (bare nullptr ==
+    // StopIteration).
+    return ret;
 }
 
 static PyObject *TreapIter_iter(PyObject *self)
@@ -251,10 +261,6 @@ static PyType_Spec TreapIter_spec = {
 static PyObject *TreapNode_iter(PyObject *self)
 {
     TreapNode *node = (TreapNode *)self;
-    if (node->value == nullptr) {
-        PyErr_SetString(PyExc_ValueError, "cannot iterate a cleared TreapNode");
-        return nullptr;
-    }
 
     PyObject *module = PyType_GetModule(Py_TYPE(self));
     if (module == nullptr) {
@@ -654,7 +660,16 @@ static TreapNode *treap_delete_impl(
         return nullptr;
     }
 
-    Py_XDECREF(dupe);
+    if (dupe == nullptr) {
+        // No-op by content: v was absent, so the split halves reassemble to the same contents. Return the original
+        // (sharing it wholesale) instead of joining the freshly rebuilt spines back together -- callers (and the
+        // TreapMap wrapper) rely on the identity to detect the no-op.
+        Py_XDECREF(left);
+        Py_XDECREF(right);
+        return (TreapNode *)Py_XNewRef((PyObject *)n);
+    }
+
+    Py_DECREF(dupe);
 
     TreapNode *result = treap_join_impl(state, left, right);
     Py_XDECREF(left);
@@ -1020,6 +1035,10 @@ static int treap_exec(PyObject *module)
         nullptr
     );
     if (state->TreapIterType == nullptr) {
+        return -1;
+    }
+
+    if (PyModule_AddType(module, state->TreapIterType) < 0) {
         return -1;
     }
 
