@@ -37,8 +37,8 @@
 import typing as ta
 
 from ... import check
-from ..coro import BytesSteppedCoro
-from ..coro import BytesSteppedReaderCoro
+from ..coro.stepped import BytesSteppedCoro
+from ..coro.stepped import BytesSteppedReaderCoro
 from .abc import CompressorObject
 from .abc import NeedsInputDecompressorObject
 from .abc import UnconsumedTailDecompressorObject

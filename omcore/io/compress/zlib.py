@@ -3,8 +3,8 @@ import functools
 import typing as ta
 
 from ... import lang
-from ..coro import BytesSteppedCoro
-from ..coro import BytesSteppedReaderCoro
+from ..coro.stepped import BytesSteppedCoro
+from ..coro.stepped import BytesSteppedReaderCoro
 from .adapters import CompressorObjectIncrementalAdapter
 from .adapters import DecompressorObjectIncrementalAdapter
 from .base import Compression

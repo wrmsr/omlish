@@ -1,8 +1,8 @@
 import abc
 
 from ... import lang
-from ..coro import BytesSteppedCoro
-from ..coro import BytesSteppedReaderCoro
+from ..coro.stepped import BytesSteppedCoro
+from ..coro.stepped import BytesSteppedReaderCoro
 
 
 ##

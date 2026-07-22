@@ -3,7 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ..coro import BytesSteppedCoro
+from ..coro.stepped import BytesSteppedCoro
 from .base import Compression
 from .base import IncrementalCompression
 from .codecs import make_compression_codec

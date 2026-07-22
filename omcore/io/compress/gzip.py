@@ -43,9 +43,9 @@ import typing as ta
 from ... import cached
 from ... import check
 from ... import lang
-from ..coro import BytesSteppedCoro
-from ..coro import BytesSteppedReaderCoro
 from ..coro.readers import PrependableBytesCoroReader
+from ..coro.stepped import BytesSteppedCoro
+from ..coro.stepped import BytesSteppedReaderCoro
 from .base import Compression
 from .base import IncrementalCompression
 from .codecs import make_compression_codec

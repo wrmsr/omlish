@@ -3,7 +3,6 @@ import typing as ta
 from ... import check
 from ... import lang
 from ..streambufs.segmented import SegmentedByteStreamBuffer
-from .consts import DEFAULT_BUFFER_SIZE
 from .direct import BytesDirectCoro
 from .direct import StrDirectCoro
 
@@ -119,6 +118,9 @@ def joined_str_stepped_coro(g: StrSteppedCoro[R]) -> StrDirectCoro[R]:
 
 
 ##
+
+
+DEFAULT_BUFFER_SIZE = 4 * 0x1000
 
 
 def read_into_bytes_stepped_coro(

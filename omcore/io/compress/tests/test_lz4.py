@@ -1,7 +1,7 @@
 import io
 
 from ....testing import pytest as ptu
-from ...coro import read_into_bytes_stepped_coro
+from ...coro.stepped import read_into_bytes_stepped_coro
 from ..lz4 import Lz4Compression
 
 
