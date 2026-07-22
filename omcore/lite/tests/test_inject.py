@@ -331,6 +331,26 @@ class TestScopes(unittest.TestCase):
             self.assertEqual(i[int], 420)
             self.assertEqual(i[float], 4.2)
 
+    def test_seedless_scopes(self):
+        class Ss(ExclusiveInjectorScope):
+            pass
+        i = inj.create_injector(
+            inj.bind_scope(Ss),
+            inj.bind(420, in_=Ss),
+        )
+        for _ in range(2):
+            with i[Ss].enter({}):
+                self.assertEqual(i[int], 420)
+
+        class Cs(ContextvarInjectorScope):
+            pass
+        i2 = inj.create_injector(
+            inj.bind_scope(Cs),
+            inj.bind('x', in_=Cs),
+        )
+        with i2[Cs].enter({}):
+            self.assertEqual(i2[str], 'x')
+
     def test_cv_scopes(self):
         class Ss(ContextvarInjectorScope):
             pass

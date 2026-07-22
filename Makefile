@@ -432,6 +432,10 @@ test-lite:
 		$$(${PYPROJECT} venv $$V exe) -m omcore.testing.unittest -vb $$LITE_PATHS ; \
 	done
 
+.PHONY: test-lite-fast
+test-lite-fast:
+	OM_UNITTEST_SKIP_SLOW= ${MAKE} test-lite
+
 # docker
 
 .PHONY: venv-docker

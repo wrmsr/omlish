@@ -36,7 +36,7 @@ def __om_amalg__():  # noqa
             dict(path='injectinspect.py', sha1='fb45c2fdf144bdbe558e3427f38bc39121e277bd'),
             dict(path='reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
             dict(path='maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
-            dict(path='inject.py', sha1='93121be32ed6ada3bb274951e94836196eccf257'),
+            dict(path='inject.py', sha1='7dd6067b626c4c6a371b7a0e50eac54e320fcf3a'),
         ],
     )
 
@@ -1766,7 +1766,11 @@ _INJECTOR_EAGER_ARRAY_KEY: InjectorKey[_InjectorEager] = InjectorKey(_InjectorEa
 
 
 class _Injector(Injector):
-    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = []
+    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = [
+        # Scopes with no bound seeds must still be constructible - InjectorScope.__init__ unconditionally provides the
+        # seed array key. Array bindings merge, so bound seeds simply extend this empty default.
+        InjectorBinding(InjectorKey(_InjectorScopeSeed, array=True), ArrayInjectorProvider([])),
+    ]
 
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()

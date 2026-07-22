@@ -128,7 +128,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/asyncs/asyncio/timeouts.py', sha1='cfde8108f1128ceea3502c77eefb015fb43a6239'),
             dict(path='../../omcore/configs/formats.py', sha1='9263da888199b408e902490244e9d5caddc69821'),
             dict(path='../../omcore/configs/nginx.py', sha1='3aae64e28f450c35632721dad9aaf47044d576af'),
-            dict(path='../../omcore/lite/inject.py', sha1='93121be32ed6ada3bb274951e94836196eccf257'),
+            dict(path='../../omcore/lite/inject.py', sha1='7dd6067b626c4c6a371b7a0e50eac54e320fcf3a'),
             dict(path='../../omcore/logs/contexts.py', sha1='529adb527492309bf8cde342271ac6ea2ebbf8a1'),
             dict(path='../../omcore/logs/std/json.py', sha1='d1ff35ac871de63efec2b64ae5c63e63d295a8d5'),
             dict(path='../../omcore/subprocesses/run.py', sha1='425596d73f3b5cbe1ab936718c77e39a88283350'),
@@ -10268,7 +10268,11 @@ _INJECTOR_EAGER_ARRAY_KEY: InjectorKey[_InjectorEager] = InjectorKey(_InjectorEa
 
 
 class _Injector(Injector):
-    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = []
+    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = [
+        # Scopes with no bound seeds must still be constructible - InjectorScope.__init__ unconditionally provides the
+        # seed array key. Array bindings merge, so bound seeds simply extend this empty default.
+        InjectorBinding(InjectorKey(_InjectorScopeSeed, array=True), ArrayInjectorProvider([])),
+    ]
 
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()

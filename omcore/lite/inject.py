@@ -593,7 +593,11 @@ _INJECTOR_EAGER_ARRAY_KEY: InjectorKey[_InjectorEager] = InjectorKey(_InjectorEa
 
 
 class _Injector(Injector):
-    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = []
+    _DEFAULT_BINDINGS: ta.ClassVar[ta.List[InjectorBinding]] = [
+        # Scopes with no bound seeds must still be constructible - InjectorScope.__init__ unconditionally provides the
+        # seed array key. Array bindings merge, so bound seeds simply extend this empty default.
+        InjectorBinding(InjectorKey(_InjectorScopeSeed, array=True), ArrayInjectorProvider([])),
+    ]
 
     def __init__(self, bs: InjectorBindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
