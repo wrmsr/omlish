@@ -64,7 +64,7 @@ def __om_amalg__():  # noqa
             dict(path='../../../../omcore/io/streambufs/errors.py', sha1='6b04cc2e4ba5461692128938a2bd5c261486746b'),
             dict(path='../../../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../../omcore/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
-            dict(path='../../../../omcore/lite/bytes.py', sha1='5edf3e1dd70f26415154e8d352f0983aef2c6fc6'),
+            dict(path='../../../../omcore/lite/bytes.py', sha1='8efb16035a9da52a70b346f603eac6e04b28dc8c'),
             dict(path='../../../../omcore/lite/cached.py', sha1='4f5466ce20a485428519e284b2a388a9ef8e4786'),
             dict(path='../../../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../../../omcore/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
@@ -1676,14 +1676,14 @@ def bytes_like_to_bytes_strict(bl: BytesLike, /) -> bytes:
 
 
 def memoryview_to_bytes(mv: memoryview, /) -> Bytes:
-    if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+    if (mv.c_contiguous and ((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
         return obj  # type: ignore[return-value]
 
     return mv.tobytes()
 
 
 def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
-    if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+    if (mv.c_contiguous and ((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
         return obj  # type: ignore[return-value]
 
     return mv.tobytes()

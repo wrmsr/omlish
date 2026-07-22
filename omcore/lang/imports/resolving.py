@@ -23,11 +23,14 @@ def can_import(name: str, package: str | None = None) -> bool:
 ##
 
 
-def try_import(spec: str) -> types.ModuleType | None:
-    s = spec.lstrip('.')
-    l = len(spec) - len(s)
+def try_import(name: str, package: str | None = None) -> types.ModuleType | None:
+    """
+    Returns the named module (the leaf, for dotted names), or None if it cannot be imported. Relative names resolve
+    against the given package - passing one's own __package__ - and raise TypeError without one.
+    """
+
     try:
-        return __import__(s, globals(), level=l)
+        return importlib.import_module(name, package)
     except ImportError:
         return None
 

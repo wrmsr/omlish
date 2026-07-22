@@ -24,7 +24,7 @@ def __om_amalg__():  # noqa
         src_files=[
             dict(path='errors.py', sha1='6b04cc2e4ba5461692128938a2bd5c261486746b'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../lite/bytes.py', sha1='5edf3e1dd70f26415154e8d352f0983aef2c6fc6'),
+            dict(path='../../lite/bytes.py', sha1='8efb16035a9da52a70b346f603eac6e04b28dc8c'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
             dict(path='base.py', sha1='0f0cea0fe05f9d7b4669a7b3871bc78e12af98f6'),
@@ -314,14 +314,14 @@ def bytes_like_to_bytes_strict(bl: BytesLike, /) -> bytes:
 
 
 def memoryview_to_bytes(mv: memoryview, /) -> Bytes:
-    if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+    if (mv.c_contiguous and ((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
         return obj  # type: ignore[return-value]
 
     return mv.tobytes()
 
 
 def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
-    if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+    if (mv.c_contiguous and ((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
         return obj  # type: ignore[return-value]
 
     return mv.tobytes()

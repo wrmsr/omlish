@@ -1,10 +1,12 @@
 import math
+import sys
 
 import pytest
 
 from ..capture import ImportCaptureErrors
 from ..proxy import _ProxyImporter
 from ..proxy import proxy_import
+from ..proxy import proxy_init
 
 
 def test_proxy():
@@ -32,6 +34,47 @@ def test_proxy_importer_module_tree():
 def test_capture_foreign_attr_error():
     with pytest.raises(ImportCaptureErrors.AttrError):
         from . import badcapture  # noqa
+
+
+def test_proxy_init_aliased_attrs():
+    from . import aliasinit  # noqa
+
+    assert 'alias' not in aliasinit.__dict__
+    assert aliasinit.alias.MARKER == 420  # type: ignore[attr-defined]
+    assert 'alias' in aliasinit.__dict__  # cached by LazyGlobals
+
+    assert aliasinit.m2.MARKER2 == 421  # type: ignore[attr-defined]
+
+
+def test_proxy_init_dotted_spec():
+    glo: dict = {'__name__': 'fakemod', '__package__': ''}
+    proxy_init(glo, 'importlib.resources.abc')
+
+    assert 'abc' not in glo
+    v = glo['__getattr__']('abc')
+
+    import importlib.resources.abc
+    assert v is importlib.resources.abc
+
+
+def test_proxy_init_multi_dot_relative_spec():
+    glo: dict = {'__name__': 'fakemod2', '__package__': 'omcore.lang'}
+    proxy_init(glo, '..lang.maybes')
+
+    assert 'maybes' not in glo
+    v = glo['__getattr__']('maybes')
+
+    from ... import maybes
+    assert v is maybes
+
+
+def test_auto_proxy_import_eager():
+    sys.modules.pop('colorsys', None)
+
+    from . import eagerimp  # noqa
+
+    assert 'colorsys' in sys.modules
+    assert eagerimp.colorsys.hsv_to_rgb is sys.modules['colorsys'].hsv_to_rgb
 
 
 def test_auto_proxy_init():

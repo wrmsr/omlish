@@ -394,7 +394,7 @@ def proxy_init(
     if attrs is None:
         attrs = [None]
 
-    whole_attr = spec.split('.', maxsplit=1)[-1]
+    whole_attr = spec.rpartition('.')[2]
     al: list[tuple[str | None, str]] = []
     for attr in attrs:
         if attr is None:
@@ -422,7 +422,9 @@ def proxy_init(
 
     pi.add(
         name,
-        children=[r for l, r in al if r is not None],
+        # The registered children are the *imported* attr names - the local as-names are bound via set_fn below and
+        # need not (and for aliases, must not) exist on the module.
+        children=[l for l, _ in al if l is not None],
     )
 
     for imp_attr, as_attr in al:
@@ -519,8 +521,10 @@ class _AutoProxyImport(_AutoProxy):
                 self._mod_globals[a] = pm
 
         if self._eager:
+            # Actually import now - errors surface at module-body time. Note that pi.lookup on a registered module
+            # name would merely return its (still-lazy) proxy.
             for ci in cap.imports.values():
-                pi.lookup(ci.module.name)
+                importlib.import_module(ci.module.name)
 
         if self._update_exports:
             self._ic.update_exports()
