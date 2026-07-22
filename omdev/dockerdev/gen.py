@@ -49,7 +49,7 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
         Env([
             ('LANG', 'en_US.UTF-8'),
             ('LANGUAGE', 'en_US:en'),
-            ('LC_ALL', 'en_US.UTF-8'),
+            ('LC_COLLATE', 'C'),
         ]),
     ]))
 

@@ -82,7 +82,7 @@ def __om_amalg__():  # noqa
             dict(path='../../../../omcore/formats/yaml/backends.py', sha1='b6bdba7cc029eaa23f6d029731a12db355d32bf9'),
             dict(path='../../../../omcore/io/streambufs/types.py', sha1='3edeaaa038f975595ba3eeea10f7e313d84723bb'),
             dict(path='../../../../omcore/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
-            dict(path='../../../../omcore/lite/marshal.py', sha1='ac3c3893224557048f8cd1b637edd60747d261e7'),
+            dict(path='../../../../omcore/lite/marshal.py', sha1='9b3f4ff802344313147f412f8f028922afc52b2f'),
             dict(path='../../../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omcore/logs/infos.py', sha1='c6a4599ad727fbee7c3d8eb1bce80846f8106079'),
             dict(path='../../../../omcore/logs/metrics/base.py', sha1='38429b7e804533da9a1dd356cf563ac4cff82aa2'),
@@ -4378,6 +4378,20 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
     def _is_abstract(cls, ty: type) -> bool:
         return abc.ABC in ty.__bases__ or Abstract in ty.__bases__
 
+    @classmethod
+    def _get_field_type_hints(cls, ty: type) -> ta.Optional[ta.Mapping[str, ta.Any]]:
+        """
+        Best-effort resolution of string / forward-ref field annotations (`from __future__ import annotations` modules,
+        self-referential fields) against their defining modules' namespaces, mro-aware. Returns None on failure (e.g.
+        TYPE_CHECKING-only names, classes exec'd into namespaces absent from sys.modules) - callers fall back to the
+        raw annotations, preserving behavior for already-evaluated ones.
+        """
+
+        try:
+            return ta.get_type_hints(ty)
+        except Exception:  # noqa
+            return None
+
     #
 
     def make_obj_marshaler(
@@ -4426,13 +4440,14 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
                 return EnumObjMarshaler(ty)
 
             if dc.is_dataclass(ty):
+                hints = self._get_field_type_hints(ty) or {}
                 return FieldsObjMarshaler(
                     ty,
                     [
                         FieldsObjMarshaler.Field(
                             att=f.name,
                             key=check.non_empty_str(fk),
-                            m=rec(f.type),
+                            m=rec(hints.get(f.name, f.type)),
                             omit_if_none=check.isinstance(f.metadata.get(OBJ_MARSHALER_OMIT_IF_NONE, False), bool),
                         )
                         for f in dc.fields(ty)
@@ -4445,6 +4460,7 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
                 )
 
             if issubclass(ty, tuple) and hasattr(ty, '_fields'):
+                hints = self._get_field_type_hints(ty) or {}
                 return FieldsObjMarshaler(
                     ty,
                     [
@@ -4452,7 +4468,10 @@ class ObjMarshalerManagerImpl(ObjMarshalerManager):
                             att=p.name,
                             key=p.name,
                             # Untyped collections.namedtuple fields have empty annotations - marshal them dynamically.
-                            m=rec(p.annotation if p.annotation is not inspect.Parameter.empty else ta.Any),
+                            m=rec(hints.get(
+                                p.name,
+                                p.annotation if p.annotation is not inspect.Parameter.empty else ta.Any,
+                            )),
                         )
                         for p in inspect.signature(ty).parameters.values()
                     ],

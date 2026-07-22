@@ -1,4 +1,4 @@
-# ruff: noqa: PT009 PT027 UP006 UP007 UP036 UP045
+# ruff: noqa: PT009 PT027 UP006 UP007 UP036 UP037 UP045
 import abc
 import collections
 import dataclasses as dc
@@ -12,6 +12,7 @@ import unittest
 import uuid
 
 from .. import marshal as msh
+from . import futanns
 
 
 ##
@@ -457,6 +458,40 @@ class TestFieldsMarshaling(unittest.TestCase):
         m = msh.marshal_obj(o)
         self.assertEqual(m, {'x': 1, 'y': 'a'})
         u: TypedNt = msh.unmarshal_obj(m, TypedNt)
+        self.assertEqual(u, o)
+
+
+##
+
+
+@dc.dataclass
+class RecursiveNode:
+    v: int
+    child: ta.Optional['RecursiveNode'] = None
+
+
+class TestForwardRefs(unittest.TestCase):
+    def test_recursive_dataclass(self):
+        o = RecursiveNode(1, RecursiveNode(2))
+        m = msh.marshal_obj(o)
+        self.assertEqual(m, {'v': 1, 'child': {'v': 2, 'child': None}})
+        u: RecursiveNode = msh.unmarshal_obj(m, RecursiveNode)
+        self.assertEqual(u, o)
+
+    def test_future_annotations_dataclass(self):
+        for o in [
+            futanns.FutPoint(1, 'a'),
+            futanns.FutPoint(2),
+        ]:
+            m = msh.marshal_obj(o)
+            u: futanns.FutPoint = msh.unmarshal_obj(m, futanns.FutPoint)
+            self.assertEqual(u, o)
+
+    def test_future_annotations_namedtuple(self):
+        o = futanns.FutNt(1, 'b')
+        m = msh.marshal_obj(o)
+        self.assertEqual(m, {'a': 1, 'b': 'b'})
+        u: futanns.FutNt = msh.unmarshal_obj(m, futanns.FutNt)
         self.assertEqual(u, o)
 
 
