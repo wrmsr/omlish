@@ -82,6 +82,8 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .impls import (  # noqa
+        new_persistent_seq,
+
         new_persistent_map,
 
         new_sorted_map,
