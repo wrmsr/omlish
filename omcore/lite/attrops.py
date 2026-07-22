@@ -396,11 +396,11 @@ class AttrOps(ta.Generic[T]):
     ) -> 'AttrOps[T]':
         if all(a is self.NOT_SET for a in (repr, hash, eq)):
             repr = hash = eq = True  # noqa
-        if repr:
+        if repr is not self.NOT_SET and repr:
             locals_dct.update(__repr__=self.repr)
-        if hash:
+        if hash is not self.NOT_SET and hash:
             locals_dct.update(__hash__=self.hash)
-        if eq:
+        if eq is not self.NOT_SET and eq:
             locals_dct.update(__eq__=self.eq)
         return self
 

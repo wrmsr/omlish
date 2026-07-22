@@ -45,13 +45,13 @@ def install_dataclass_cache_hash(
         if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
+        # dict lookup, not attribute - an eq=True/frozen=False dataclass sets __hash__ to None in the class dict, which
+        # is just as unusable here as an absent or inherited one.
         if (
-                cls.__hash__ is object.__hash__ or
-                '__hash__' not in cls.__dict__
+                (real_hash := cls.__dict__.get('__hash__')) is None or
+                real_hash is object.__hash__
         ):
             raise TypeError(cls)
-
-        real_hash = cls.__hash__
 
         def cached_hash(self) -> int:
             try:
@@ -198,18 +198,26 @@ def dataclass_descriptor_method(*bind_attrs: str, bind_owner: bool = False) -> t
 
 def install_dataclass_kw_only_init():
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
-        real_init = cls.__init__  # type: ignore[misc]
+        real_init = cls.__init__
 
-        flds = dc.fields(cls)  # noqa
+        # The real __init__'s params are the init=True fields plus InitVar pseudo-fields (which dc.fields omits), in
+        # field order - init=False fields must be excluded or the generated call will not match its signature.
+        flds = [
+            f
+            for f in getattr(cls, dc._FIELDS).values()  # type: ignore[attr-defined]  # noqa
+            if f._field_type is dc._FIELD_INITVAR or (f._field_type is dc._FIELD and f.init)  # type: ignore[attr-defined]  # noqa
+        ]
 
         if any(f.name == 'self' for f in flds):
             self_name = '__dataclass_self__'
         else:
             self_name = 'self'
 
+        # default_factory fields cannot have their default baked into the signature - a MISSING sentinel default is
+        # filtered out of the forwarded kwargs so the real init invokes the factory per-call.
         src = '\n'.join([
             'def __init__(',
             f'    {self_name},',
@@ -217,7 +225,11 @@ def install_dataclass_kw_only_init():
             *[
                 ''.join([
                     f'    {f.name}: __dataclass_type_{f.name}__',
-                    f' = __dataclass_default_{f.name}__' if f.default is not dc.MISSING else '',
+                    (
+                        f' = __dataclass_default_{f.name}__' if f.default is not dc.MISSING else
+                        ' = __dataclass_MISSING__' if f.default_factory is not dc.MISSING else  # noqa
+                        ''
+                    ),
                     ',',
                 ])
                 for f in flds
@@ -228,12 +240,25 @@ def install_dataclass_kw_only_init():
             *[
                 f'        {f.name}={f.name},'
                 for f in flds
+                if f.default_factory is dc.MISSING  # noqa
             ],
+            '        **{',
+            '            k: v',
+            '            for k, v in [',
+            *[
+                f'                ({f.name!r}, {f.name}),'
+                for f in flds
+                if f.default_factory is not dc.MISSING  # noqa
+            ],
+            '            ]',
+            '            if v is not __dataclass_MISSING__',
+            '        },',
             '    )',
         ])
 
         ns: dict = {
             '__dataclass_None__': None,
+            '__dataclass_MISSING__': dc.MISSING,
             '__dataclass_real_init__': real_init,
             **{
                 f'__dataclass_type_{f.name}__': f.type

@@ -76,18 +76,18 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/formats/toml/writer.py', sha1='0091ad73e098694861c006960c6b7b7bf07a7b69'),
             dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omcore/lite/asyncs.py', sha1='6bd4b8ecc310ac1df19bafaf6eb85a1a284f65d5'),
-            dict(path='../../omcore/lite/attrops.py', sha1='9cccd4d487a5ae3c6f9d4f556bcf7c2786cc8f11'),
+            dict(path='../../omcore/lite/attrops.py', sha1='536474f5dfc9375c8fcb7e0ad1066ac0727a7d1b'),
             dict(path='../../omcore/lite/bytes.py', sha1='5edf3e1dd70f26415154e8d352f0983aef2c6fc6'),
-            dict(path='../../omcore/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../omcore/lite/cached.py', sha1='4f5466ce20a485428519e284b2a388a9ef8e4786'),
             dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../omcore/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
             dict(path='../../omcore/lite/injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
             dict(path='../../omcore/lite/io.py', sha1='a60d94f0bdbb2b1541d363c301314682d1686240'),
             dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
-            dict(path='../../omcore/lite/pycharm.py', sha1='6f84e57f02e2f1075918002f89e4201910d2a15e'),
-            dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../omcore/lite/pycharm.py', sha1='498c05eaf9d2bf9ff9449a9b4ec7d44336a7f5b4'),
+            dict(path='../../omcore/lite/reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
             dict(path='../../omcore/lite/resources.py', sha1='1365cb6046eb929358e7c86a3fda20d95fd4a296'),
-            dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../omcore/lite/strings.py', sha1='b31b8e4b0e4fec4562ea3fa602e4ef2475e5fe7c'),
             dict(path='../../omcore/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
             dict(path='../../omcore/logs/levels.py', sha1='bd87ff6a281e361cbab4f205802187b2080044e6'),
             dict(path='../../omcore/logs/std/filters.py', sha1='3ec3856ade50561f99ce9463f54737ab1126d410'),
@@ -111,7 +111,7 @@ def __om_amalg__():  # noqa
             dict(path='../../omcore/lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
             dict(path='../../omcore/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
             dict(path='../../omcore/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../omcore/lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
+            dict(path='../../omcore/lite/timeouts.py', sha1='e7b2d3b364e7b99aba287f0f97f4dc8a5492bd94'),
             dict(path='../../omcore/logs/infos.py', sha1='c6a4599ad727fbee7c3d8eb1bce80846f8106079'),
             dict(path='../../omcore/logs/metrics/base.py', sha1='38429b7e804533da9a1dd356cf563ac4cff82aa2'),
             dict(path='../../omcore/logs/protocols.py', sha1='2e13388c65699c4aa89f32b78be8496b94fc40bb'),
@@ -2155,11 +2155,11 @@ class AttrOps(ta.Generic[T]):
     ) -> 'AttrOps[T]':
         if all(a is self.NOT_SET for a in (repr, hash, eq)):
             repr = hash = eq = True  # noqa
-        if repr:
+        if repr is not self.NOT_SET and repr:
             locals_dct.update(__repr__=self.repr)
-        if hash:
+        if hash is not self.NOT_SET and hash:
             locals_dct.update(__hash__=self.hash)
-        if eq:
+        if eq is not self.NOT_SET and eq:
             locals_dct.update(__eq__=self.eq)
         return self
 
@@ -2248,6 +2248,8 @@ class _AbstractCachedNullary:
         raise TypeError
 
     def __get__(self, instance, owner=None):  # noqa
+        if instance is None:
+            return self
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
 
@@ -3348,15 +3350,19 @@ def pycharm_debug_connect(prd: PycharmRemoteDebug) -> None:
 def pycharm_debug_preamble(prd: PycharmRemoteDebug) -> str:
     import inspect
     import textwrap
-    return textwrap.dedent(f"""
-        {inspect.getsource(pycharm_debug_connect)}
 
-        pycharm_debug_connect(PycharmRemoteDebug(
-            {prd.port!r},
-            host={prd.host!r},
-            install_version={prd.install_version!r},
-        ))
-    """)
+    # The function source must not pass through dedent with the template - its body lines have less indentation than
+    # the template's, which would leave the def line indented relative to its body.
+    return '\n'.join([
+        inspect.getsource(pycharm_debug_connect),
+        textwrap.dedent(f"""
+            pycharm_debug_connect(PycharmRemoteDebug(
+                {prd.port!r},
+                host={prd.host!r},
+                install_version={prd.install_version!r},
+            ))
+        """),
+    ])
 
 
 ########################################
@@ -3379,7 +3385,8 @@ def is_generic_alias(obj: ta.Any, *, origin: ta.Any = None) -> bool:
     )
 
 
-is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
+# ta.get_origin returns the collections.abc class, never the typing alias.
+is_callable_alias = functools.partial(is_generic_alias, origin=ta.get_origin(ta.Callable[..., ta.Any]))
 
 
 ##
@@ -3497,10 +3504,10 @@ def is_dunder(name: str) -> bool:
 
 def is_sunder(name: str) -> bool:
     return (
+        len(name) > 2 and
         name[0] == name[-1] == '_' and
         name[1:2] != '_' and
-        name[-2:-1] != '_' and
-        len(name) > 2
+        name[-2:-1] != '_'
     )
 
 
@@ -3514,22 +3521,25 @@ def strip_with_newline(s: str) -> str:
 
 
 @ta.overload
-def split_keep_delimiter(s: str, d: str) -> str: ...
+def split_keep_delimiter(s: str, d: str) -> ta.List[str]: ...
 
 
 @ta.overload
-def split_keep_delimiter(s: bytes, d: bytes) -> bytes: ...
+def split_keep_delimiter(s: bytes, d: bytes) -> ta.List[bytes]: ...
 
 
 def split_keep_delimiter(s, d):
+    if not d:
+        raise ValueError(d)
+    dl = len(d)
     ps = []
     i = 0
     while i < len(s):
         if (n := s.find(d, i)) < i:
             ps.append(s[i:])
             break
-        ps.append(s[i:n + 1])
-        i = n + 1
+        ps.append(s[i:n + dl])
+        i = n + dl
     return ps
 
 
@@ -7278,7 +7288,8 @@ class Timeout(Abstract):
         if isinstance(obj, CanFloat):
             return DeadlineTimeout(cls._now() + float(obj))
 
-        if isinstance(obj, ta.Iterable):
+        # str/bytes are Iterable but iterate to themselves, which would recurse forever.
+        if isinstance(obj, ta.Iterable) and not isinstance(obj, (str, bytes)):
             return CompositeTimeout(*[Timeout.of(c) for c in obj])
 
         if obj is Timeout.DEFAULT:
@@ -7370,10 +7381,10 @@ class CompositeTimeout(Timeout):
         return any(c.expired() for c in self.children)
 
     def remaining(self) -> float:
-        return min(c.remaining() for c in self.children)
+        return min((c.remaining() for c in self.children), default=float('inf'))
 
     def __call__(self) -> float:
-        return min(c() for c in self.children)
+        return min((c() for c in self.children), default=float('inf'))
 
     def or_(self, o: ta.Any) -> ta.Any:
         if self.can_expire:

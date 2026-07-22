@@ -1,4 +1,4 @@
-# ruff: noqa: PT009 PT027 UP045
+# ruff: noqa: PT009 PT027 UP006 UP045
 import dataclasses as dc
 import typing as ta
 import unittest
@@ -71,6 +71,23 @@ class TestCacheHash(unittest.TestCase):
         self.assertEqual(f.thing.num_times_hashed, 1)
         self.assertEqual(h1, h2)
 
+    def test_cache_hash_rejects_unhashable(self):
+        # eq=True/frozen=False dataclasses set __hash__ to None - there is nothing to cache.
+        @dc.dataclass()
+        class Foo:
+            i: int
+
+        with self.assertRaises(TypeError):
+            install_dataclass_cache_hash()(Foo)
+
+    def test_cache_hash_rejects_default_hash(self):
+        @dc.dataclass(eq=False)
+        class Foo:
+            i: int
+
+        with self.assertRaises(TypeError):
+            install_dataclass_cache_hash()(Foo)
+
 
 ##
 
@@ -142,6 +159,53 @@ class TestKwOnlyInit(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             Foo(1, '2')
+
+    def test_kw_only_init_default_factory(self):
+        @install_dataclass_kw_only_init()
+        @dc.dataclass()
+        class Foo:
+            i: int
+            l: ta.List[int] = dc.field(default_factory=list)
+
+        f = Foo(i=1)
+        self.assertEqual(f.l, [])
+        self.assertIsNot(f.l, Foo(i=2).l)
+
+        f = Foo(i=1, l=[3])
+        self.assertEqual(f.l, [3])
+
+    def test_kw_only_init_non_init_field(self):
+        @install_dataclass_kw_only_init()
+        @dc.dataclass()
+        class Foo:
+            i: int
+            j: int = dc.field(default=2, init=False)
+
+        f = Foo(i=1)
+        self.assertEqual(f.j, 2)
+
+        with self.assertRaises(TypeError):
+            Foo(i=1, j=3)  # type: ignore[call-arg]
+
+    def test_kw_only_init_init_var(self):
+        @install_dataclass_kw_only_init()
+        @dc.dataclass()
+        class Foo:
+            i: int
+            iv: dc.InitVar[int] = 3
+
+            def __post_init__(self, iv):
+                self.i += iv
+
+        self.assertEqual(Foo(i=1).i, 4)
+        self.assertEqual(Foo(i=1, iv=10).i, 11)
+
+    def test_kw_only_init_rejects_non_dataclass(self):
+        with self.assertRaises(TypeError):
+            install_dataclass_kw_only_init()(int)
+
+        with self.assertRaises(TypeError):
+            install_dataclass_kw_only_init()(42)
 
 
 ##

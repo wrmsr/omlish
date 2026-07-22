@@ -144,3 +144,21 @@ def test_seq_view_slice_roundtrip():
                 assert v.materialize() == expected, f'materialize mismatch for {slc}'
                 assert data[v.slice] == expected, f'slice property mismatch for {slc}'
                 assert list(v) == expected, f'iter mismatch for {slc}'
+
+
+def test_seq_view_index():
+    data = [10, 20, 30, 40, 20]
+    v = SeqView(data)
+    for value in data:
+        for start in [0, 1, 2, -2, -5]:
+            for stop in [None, 2, 5, -1]:
+                try:
+                    expected = data.index(value, start, *([] if stop is None else [stop]))
+                except ValueError:
+                    with pytest.raises(ValueError):  # noqa
+                        v.index(value, start, stop)
+                else:
+                    assert v.index(value, start, stop) == expected
+
+    with pytest.raises(ValueError):  # noqa
+        v.index(99)

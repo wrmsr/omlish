@@ -1,3 +1,5 @@
+import io
+
 import pytest
 
 from ..iterables import common_prefix_len
@@ -6,6 +8,7 @@ from ..iterables import indexes
 from ..iterables import itergen
 from ..iterables import peek
 from ..iterables import prodrange
+from ..iterables import readiter
 
 
 def test_consume():
@@ -69,3 +72,9 @@ def test_common_prefix_len():
 
 def test_indexes():
     assert indexes('bac') == {'b': 0, 'a': 1, 'c': 2}
+
+
+def test_readiter():
+    assert list(readiter(io.StringIO('abcdef'), 4)) == ['abcd', 'ef']
+    assert list(readiter(io.BytesIO(b'abcdef'), 4)) == [b'abcd', b'ef']
+    assert list(readiter(io.StringIO(''), 4)) == []

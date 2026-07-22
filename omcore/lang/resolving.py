@@ -35,7 +35,9 @@ def get_fqcn_cls(fqcn: str, *, nocheck: bool = False) -> type:
         raise TypeError(fqcn)
 
     parts = fqcn.split('.')
-    pos = next(i for i, p in enumerate(parts) if p[0].isupper())
+    pos = next((i for i, p in enumerate(parts) if p and p[0].isupper()), None)
+    if pos is None:
+        raise ResolvableClassNameError(fqcn)
     mps, qps = parts[:pos], parts[pos:]
     mod = importlib.import_module('.'.join(mps))
 

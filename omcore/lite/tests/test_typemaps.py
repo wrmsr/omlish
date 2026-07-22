@@ -112,3 +112,15 @@ class TestDynamicTypeMap(unittest.TestCase):
         self.assertEqual(got, [a])
         # Identity should be stable across repeated lookups while the key is alive
         self.assertIs(dtm[A], got)
+
+    def test_contains(self):
+        class A:
+            pass
+
+        class B:
+            pass
+
+        tm = TypeMap([A()])
+
+        self.assertIn(A, tm)
+        self.assertNotIn(B, tm)

@@ -18,3 +18,8 @@ def test_resolvable():
     with pytest.raises(ResolvableClassNameError):
         class Bad(Resolvable):  # noqa
             pass
+
+
+def test_get_fqcn_cls_no_class_part():
+    with pytest.raises(ResolvableClassNameError):
+        get_fqcn_cls('os.path')

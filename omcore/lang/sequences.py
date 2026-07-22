@@ -135,9 +135,9 @@ class SeqView(ta.Sequence[T]):
 
     def index(self, value: ta.Any, start: int = 0, stop: int | None = None) -> int:
         sub = self._range[slice(start, stop, 1)]
-        for off, i in enumerate(sub):
+        for i in sub:
             if self._data[i] == value:
-                return off
+                return self._range.index(i)
         raise ValueError(f'{value!r} is not in view')
 
     #

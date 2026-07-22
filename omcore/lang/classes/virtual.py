@@ -1,5 +1,4 @@
 import abc
-import types
 import typing as ta
 
 from .abstract import make_abstract
@@ -34,6 +33,8 @@ class _VirtualMeta(abc.ABCMeta):
         if Virtual not in bases:
             raise TypeError
 
+        user_subclasshook = namespace.pop('__subclasshook__', None)
+
         for k, v in list(namespace.items()):
             absv = make_abstract(v)
             if absv is not v:
@@ -44,8 +45,6 @@ class _VirtualMeta(abc.ABCMeta):
             for k, v in namespace.items()
             if getattr(v, '__isabstractmethod__', False)
         }
-
-        user_subclasshook = namespace.pop('__subclasshook__', None)
 
         def get_missing_reqs(cls):
             reqset = set(reqs)
@@ -59,7 +58,8 @@ class _VirtualMeta(abc.ABCMeta):
             if get_missing_reqs(subclass):
                 return False
             if user_subclasshook is not None:
-                ret = user_subclasshook(cls, subclass)  # noqa
+                # The user hook is usually a (non-callable) classmethod object - bind it via the descriptor protocol.
+                ret = user_subclasshook.__get__(None, cls)(subclass)
             else:
                 ret = super(kls, cls).__subclasshook__(subclass)  # type: ignore
             return True if ret is NotImplemented else ret
@@ -113,19 +113,20 @@ class Picklable(Virtual):
 ##
 
 
-class Callable(NotInstantiable, Final, ta.Generic[T], metaclass=abc.ABCMeta):
-    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
-        raise TypeError
+class _CallableMeta(abc.ABCMeta):
+    # These must live on the metaclass - issubclass() looks its hook up on type(cls), so class-level definitions would
+    # be silently bypassed (while isinstance() via ABCMeta would still find them, giving contradictory, cache-order-
+    # dependent results).
 
-    @classmethod
     def __instancecheck__(cls, instance: object) -> bool:
         return callable(instance)
 
-    @classmethod
     def __subclasscheck__(cls, subclass: type) -> bool:
-        if not hasattr(subclass, '__call__'):  # noqa
-            return False
-        call = subclass.__call__
-        if isinstance(call, types.MethodWrapperType) and call.__self__ is subclass:
-            return False
-        return True
+        # Instance callability is determined by __call__ on the type's mro - attribute access on the class would also
+        # find a metaclass __call__, which makes the *class* callable, not its instances.
+        return any('__call__' in c.__dict__ for c in subclass.__mro__)
+
+
+class Callable(NotInstantiable, Final, ta.Generic[T], metaclass=_CallableMeta):
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
+        raise TypeError

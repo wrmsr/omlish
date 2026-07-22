@@ -22,6 +22,8 @@ class _AbstractCachedNullary:
         raise TypeError
 
     def __get__(self, instance, owner=None):  # noqa
+        if instance is None:
+            return self
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
 

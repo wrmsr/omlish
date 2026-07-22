@@ -52,18 +52,20 @@ def get_abstracts(cls: type, *, include_internal: bool = False) -> frozenset[str
 
 
 def make_abstract(obj: T) -> T:
-    if callable(obj):
-        return abc.abstractmethod(obj)
-
-    elif isinstance(obj, property):
+    if isinstance(obj, property):
         return ta.cast(T, property(
             abc.abstractmethod(obj.fget) if obj.fget is not None else None,
             abc.abstractmethod(obj.fset) if obj.fset is not None else None,
             abc.abstractmethod(obj.fdel) if obj.fdel is not None else None,
         ))
 
+    # Must precede the callable branch - staticmethod objects are callable since 3.10, and abc.abstractmethod cannot
+    # set __isabstractmethod__ on them directly.
     elif isinstance(obj, (classmethod, staticmethod)):
         return ta.cast(T, type(obj)(abc.abstractmethod(obj.__func__)))
+
+    elif callable(obj):
+        return abc.abstractmethod(obj)
 
     else:
         return obj

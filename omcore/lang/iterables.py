@@ -1,6 +1,7 @@
 import collections.abc
 import functools
 import itertools
+import operator
 import typing as ta
 
 
@@ -161,7 +162,7 @@ def readiter(f: ta.IO, sz: int) -> ta.Iterator[ta.AnyStr]: ...
 
 
 def readiter(f, sz):
-    return iter(functools.partial(f.read, sz), None)
+    return itertools.takewhile(operator.truth, map(f.read, itertools.repeat(sz)))
 
 
 ##

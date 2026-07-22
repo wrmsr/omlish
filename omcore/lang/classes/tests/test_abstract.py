@@ -5,6 +5,7 @@ import pytest
 
 from ....lite.abstract import Abstract
 from ..abstract import is_abstract
+from ..abstract import make_abstract
 
 
 def test_abstract():
@@ -96,3 +97,30 @@ def test_is_abstract():
 
     class E(D):
         pass
+
+
+def test_make_abstract():
+    def f():
+        pass
+
+    assert getattr(make_abstract(f), '__isabstractmethod__', False)
+
+    sm = make_abstract(staticmethod(f))
+    assert isinstance(sm, staticmethod)
+    assert getattr(sm.__func__, '__isabstractmethod__', False)
+
+    def h(cls):
+        pass
+
+    cm = make_abstract(classmethod(h))
+    assert isinstance(cm, classmethod)
+    assert getattr(cm.__func__, '__isabstractmethod__', False)
+
+    def g(self):
+        pass
+
+    p = make_abstract(property(g))
+    assert isinstance(p, property)
+    assert getattr(p.fget, '__isabstractmethod__', False)
+
+    assert make_abstract(42) == 42

@@ -24,7 +24,8 @@ def is_generic_alias(obj: ta.Any, *, origin: ta.Any = None) -> bool:
     )
 
 
-is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
+# ta.get_origin returns the collections.abc class, never the typing alias.
+is_callable_alias = functools.partial(is_generic_alias, origin=ta.get_origin(ta.Callable[..., ta.Any]))
 
 
 ##

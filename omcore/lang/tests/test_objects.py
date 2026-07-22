@@ -1,8 +1,11 @@
 import typing as ta
 
+from ...lite.maybes import Maybe
 from ..objects import Identity
 from ..objects import SimpleProxy
+from ..objects import arg_repr
 from ..objects import deep_subclass_tree
+from ..objects import opt_or_just_repr
 
 
 def test_simple_proxy():
@@ -84,3 +87,16 @@ def test_deep_subclass_tree():
         CBA: set(),
         DA: set(),
     }
+
+
+def test_arg_repr():
+    assert arg_repr() == ''
+    assert arg_repr('ab') == "'ab'"
+    assert arg_repr(1, 'x', k=2) == "1, 'x', k=2"
+
+
+def test_opt_or_just_repr():
+    assert opt_or_just_repr(None) is None
+    assert opt_or_just_repr(5) == '5'
+    assert opt_or_just_repr(Maybe.just(5)) == '5'
+    assert opt_or_just_repr(Maybe.empty()) is None

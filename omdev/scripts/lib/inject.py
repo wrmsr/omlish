@@ -34,7 +34,7 @@ def __om_amalg__():  # noqa
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='injectinspect.py', sha1='dc31d2d1c4abf943255f4cfac8abb2987401baa9'),
-            dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
             dict(path='maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
             dict(path='inject.py', sha1='8136e16e99019cf01fc18a4b87d0fa1a9d55e23f'),
         ],
@@ -902,7 +902,8 @@ def is_generic_alias(obj: ta.Any, *, origin: ta.Any = None) -> bool:
     )
 
 
-is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
+# ta.get_origin returns the collections.abc class, never the typing alias.
+is_callable_alias = functools.partial(is_generic_alias, origin=ta.get_origin(ta.Callable[..., ta.Any]))
 
 
 ##

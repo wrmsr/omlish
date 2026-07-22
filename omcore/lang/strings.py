@@ -33,7 +33,7 @@ def must_remove_prefix(s: StrOrBytesT, pfx: StrOrBytesT) -> StrOrBytesT:
 def must_remove_suffix(s: StrOrBytesT, sfx: StrOrBytesT) -> StrOrBytesT:
     if not s.endswith(sfx):  # type: ignore
         raise ValueError(f'{s!r} does not end with {sfx!r}')
-    return s[:-len(sfx)]  # type: ignore
+    return s[:len(s) - len(sfx)]  # type: ignore
 
 
 ##
@@ -95,10 +95,10 @@ def is_dunder(name: str) -> bool:
 
 def is_sunder(name: str) -> bool:
     return (
+        len(name) > 2 and
         name[0] == name[-1] == '_' and
         name[1:2] != '_' and
-        name[-2:-1] != '_' and
-        len(name) > 2
+        name[-2:-1] != '_'
     )
 
 

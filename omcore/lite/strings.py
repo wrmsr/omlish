@@ -1,3 +1,4 @@
+# ruff: noqa: UP006
 import typing as ta
 
 
@@ -32,10 +33,10 @@ def is_dunder(name: str) -> bool:
 
 def is_sunder(name: str) -> bool:
     return (
+        len(name) > 2 and
         name[0] == name[-1] == '_' and
         name[1:2] != '_' and
-        name[-2:-1] != '_' and
-        len(name) > 2
+        name[-2:-1] != '_'
     )
 
 
@@ -49,22 +50,25 @@ def strip_with_newline(s: str) -> str:
 
 
 @ta.overload
-def split_keep_delimiter(s: str, d: str) -> str: ...
+def split_keep_delimiter(s: str, d: str) -> ta.List[str]: ...
 
 
 @ta.overload
-def split_keep_delimiter(s: bytes, d: bytes) -> bytes: ...
+def split_keep_delimiter(s: bytes, d: bytes) -> ta.List[bytes]: ...
 
 
 def split_keep_delimiter(s, d):
+    if not d:
+        raise ValueError(d)
+    dl = len(d)
     ps = []
     i = 0
     while i < len(s):
         if (n := s.find(d, i)) < i:
             ps.append(s[i:])
             break
-        ps.append(s[i:n + 1])
-        i = n + 1
+        ps.append(s[i:n + dl])
+        i = n + dl
     return ps
 
 

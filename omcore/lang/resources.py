@@ -73,6 +73,8 @@ def get_relative_resources(
     if package:
         pkg_parts = package.split('.')
         if num_up:
+            if num_up >= len(pkg_parts):
+                raise ValueError(path)
             pkg_parts = pkg_parts[:-num_up]
         anchor = '.'.join([*pkg_parts, *path_parts])
         for pf in importlib_resources.files(anchor).iterdir():

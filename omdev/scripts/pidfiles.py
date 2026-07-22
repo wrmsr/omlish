@@ -54,12 +54,12 @@ def __om_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../lite/cached.py', sha1='4f5466ce20a485428519e284b2a388a9ef8e4786'),
             dict(path='../../lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../lite/dataclasses.py', sha1='8a28322d561255096b849137b33aed42c49047b7'),
+            dict(path='../../lite/dataclasses.py', sha1='3b669fb919a91a6d5dd21c4dbf5ab63650e1bac7'),
             dict(path='../../lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
-            dict(path='../../lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../lite/reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
+            dict(path='../../lite/strings.py', sha1='b31b8e4b0e4fec4562ea3fa602e4ef2475e5fe7c'),
             dict(path='../../lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
             dict(path='../../logs/levels.py', sha1='bd87ff6a281e361cbab4f205802187b2080044e6'),
             dict(path='pidfile.py', sha1='1082f109ec1272d7c281707b9620ae6a9a241a9f'),
@@ -68,7 +68,7 @@ def __om_amalg__():  # noqa
             dict(path='../../lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
             dict(path='../../lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
             dict(path='../../lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../lite/timeouts.py', sha1='2866f276bc45dafdd02a6daf2e8a8b4753e9fb9a'),
+            dict(path='../../lite/timeouts.py', sha1='e7b2d3b364e7b99aba287f0f97f4dc8a5492bd94'),
             dict(path='../../logs/protocols.py', sha1='2e13388c65699c4aa89f32b78be8496b94fc40bb'),
             dict(path='../../argparse/cli.py', sha1='cbfc5b8a9863db3e643df46f268937cbba65b126'),
             dict(path='../../lite/args.py', sha1='ae96b0baeb376617a63c0e64632ab2c5ff4171a8'),
@@ -288,6 +288,8 @@ class _AbstractCachedNullary:
         raise TypeError
 
     def __get__(self, instance, owner=None):  # noqa
+        if instance is None:
+            return self
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
 
@@ -1007,13 +1009,13 @@ def install_dataclass_cache_hash(
         if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
+        # dict lookup, not attribute - an eq=True/frozen=False dataclass sets __hash__ to None in the class dict, which
+        # is just as unusable here as an absent or inherited one.
         if (
-                cls.__hash__ is object.__hash__ or
-                '__hash__' not in cls.__dict__
+                (real_hash := cls.__dict__.get('__hash__')) is None or
+                real_hash is object.__hash__
         ):
             raise TypeError(cls)
-
-        real_hash = cls.__hash__
 
         def cached_hash(self) -> int:
             try:
@@ -1160,18 +1162,26 @@ def dataclass_descriptor_method(*bind_attrs: str, bind_owner: bool = False) -> t
 
 def install_dataclass_kw_only_init():
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
-        real_init = cls.__init__  # type: ignore[misc]
+        real_init = cls.__init__
 
-        flds = dc.fields(cls)  # noqa
+        # The real __init__'s params are the init=True fields plus InitVar pseudo-fields (which dc.fields omits), in
+        # field order - init=False fields must be excluded or the generated call will not match its signature.
+        flds = [
+            f
+            for f in getattr(cls, dc._FIELDS).values()  # type: ignore[attr-defined]  # noqa
+            if f._field_type is dc._FIELD_INITVAR or (f._field_type is dc._FIELD and f.init)  # type: ignore[attr-defined]  # noqa
+        ]
 
         if any(f.name == 'self' for f in flds):
             self_name = '__dataclass_self__'
         else:
             self_name = 'self'
 
+        # default_factory fields cannot have their default baked into the signature - a MISSING sentinel default is
+        # filtered out of the forwarded kwargs so the real init invokes the factory per-call.
         src = '\n'.join([
             'def __init__(',
             f'    {self_name},',
@@ -1179,7 +1189,11 @@ def install_dataclass_kw_only_init():
             *[
                 ''.join([
                     f'    {f.name}: __dataclass_type_{f.name}__',
-                    f' = __dataclass_default_{f.name}__' if f.default is not dc.MISSING else '',
+                    (
+                        f' = __dataclass_default_{f.name}__' if f.default is not dc.MISSING else
+                        ' = __dataclass_MISSING__' if f.default_factory is not dc.MISSING else  # noqa
+                        ''
+                    ),
                     ',',
                 ])
                 for f in flds
@@ -1190,12 +1204,25 @@ def install_dataclass_kw_only_init():
             *[
                 f'        {f.name}={f.name},'
                 for f in flds
+                if f.default_factory is dc.MISSING  # noqa
             ],
+            '        **{',
+            '            k: v',
+            '            for k, v in [',
+            *[
+                f'                ({f.name!r}, {f.name}),'
+                for f in flds
+                if f.default_factory is not dc.MISSING  # noqa
+            ],
+            '            ]',
+            '            if v is not __dataclass_MISSING__',
+            '        },',
             '    )',
         ])
 
         ns: dict = {
             '__dataclass_None__': None,
+            '__dataclass_MISSING__': dc.MISSING,
             '__dataclass_real_init__': real_init,
             **{
                 f'__dataclass_type_{f.name}__': f.type
@@ -1335,7 +1362,8 @@ def is_generic_alias(obj: ta.Any, *, origin: ta.Any = None) -> bool:
     )
 
 
-is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
+# ta.get_origin returns the collections.abc class, never the typing alias.
+is_callable_alias = functools.partial(is_generic_alias, origin=ta.get_origin(ta.Callable[..., ta.Any]))
 
 
 ##
@@ -1439,10 +1467,10 @@ def is_dunder(name: str) -> bool:
 
 def is_sunder(name: str) -> bool:
     return (
+        len(name) > 2 and
         name[0] == name[-1] == '_' and
         name[1:2] != '_' and
-        name[-2:-1] != '_' and
-        len(name) > 2
+        name[-2:-1] != '_'
     )
 
 
@@ -1456,22 +1484,25 @@ def strip_with_newline(s: str) -> str:
 
 
 @ta.overload
-def split_keep_delimiter(s: str, d: str) -> str: ...
+def split_keep_delimiter(s: str, d: str) -> ta.List[str]: ...
 
 
 @ta.overload
-def split_keep_delimiter(s: bytes, d: bytes) -> bytes: ...
+def split_keep_delimiter(s: bytes, d: bytes) -> ta.List[bytes]: ...
 
 
 def split_keep_delimiter(s, d):
+    if not d:
+        raise ValueError(d)
+    dl = len(d)
     ps = []
     i = 0
     while i < len(s):
         if (n := s.find(d, i)) < i:
             ps.append(s[i:])
             break
-        ps.append(s[i:n + 1])
-        i = n + 1
+        ps.append(s[i:n + dl])
+        i = n + dl
     return ps
 
 
@@ -3283,7 +3314,8 @@ class Timeout(Abstract):
         if isinstance(obj, CanFloat):
             return DeadlineTimeout(cls._now() + float(obj))
 
-        if isinstance(obj, ta.Iterable):
+        # str/bytes are Iterable but iterate to themselves, which would recurse forever.
+        if isinstance(obj, ta.Iterable) and not isinstance(obj, (str, bytes)):
             return CompositeTimeout(*[Timeout.of(c) for c in obj])
 
         if obj is Timeout.DEFAULT:
@@ -3375,10 +3407,10 @@ class CompositeTimeout(Timeout):
         return any(c.expired() for c in self.children)
 
     def remaining(self) -> float:
-        return min(c.remaining() for c in self.children)
+        return min((c.remaining() for c in self.children), default=float('inf'))
 
     def __call__(self) -> float:
-        return min(c() for c in self.children)
+        return min((c() for c in self.children), default=float('inf'))
 
     def or_(self, o: ta.Any) -> ta.Any:
         if self.can_expire:

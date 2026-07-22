@@ -20,6 +20,15 @@ class TestCached(unittest.TestCase):
             self.assertEqual(f(), 'f')
             self.assertEqual(c, 1)
 
+    def test_cached_nullary_class_access(self):
+        class C:
+            @cached.cached_nullary
+            def f(self):
+                return 420
+
+        self.assertIs(C.f, C.__dict__['f'])
+        self.assertEqual(C().f(), 420)
+
     def test_cached_nullary_method(self):
         c = 0
 

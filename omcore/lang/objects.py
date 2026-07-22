@@ -13,10 +13,10 @@ T = ta.TypeVar('T')
 
 
 def arg_repr(*args: ta.Any, **kwargs: ta.Any) -> str:
-    return ', '.join(*(
+    return ', '.join(
         list(map(repr, args)) +
-        [f'{k}={v!r}' for k, v in kwargs.items()]
-    ))
+        [f'{k}={v!r}' for k, v in kwargs.items()],
+    )
 
 
 def opt_repr(obj: ta.Any) -> str | None:
@@ -34,7 +34,7 @@ def just_repr(obj: Maybe) -> str | None:
 def opt_or_just_repr(obj: ta.Any) -> str | None:
     if isinstance(obj, Maybe):
         if obj.present:
-            return repr(obj)
+            return repr(obj.must())
         return None
     return opt_repr(obj)
 

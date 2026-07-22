@@ -114,8 +114,10 @@ class GenericNamespaceMeta(abc.ABCMeta, ta.Generic[V]):
     def __iter__(cls) -> ta.Iterator[tuple[str, V]]:
         return iter(cls.__namespace_attrs__.items())
 
-    def __contains__(self, n: str) -> bool:
-        return n in self.__namespace_values__
+    def __contains__(cls, n: str) -> bool:
+        if cls.__namespace_case_insensitive__:
+            n = n.lower()
+        return n in cls.__namespace_values__
 
     def __getitem__(cls, n: str) -> V:
         if cls.__namespace_case_insensitive__:

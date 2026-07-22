@@ -105,3 +105,15 @@ def test_bases_handling():
         pass
 
     assert E.__bases__ == (Namespace, NotInstantiable, Abstract)
+
+
+def test_namespace_case_insensitive_contains():
+    class Foo(Namespace, case_insensitive=True):
+        Bar = 1
+
+    assert Foo['Bar'] == 1
+    assert Foo['bar'] == 1
+    assert 'Bar' in Foo
+    assert 'bar' in Foo
+    assert 'BAR' in Foo
+    assert 'baz' not in Foo

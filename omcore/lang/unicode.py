@@ -21,6 +21,8 @@ _IDENT_START_CHAR_SPEC = _CharSpec(
     },
     {
         '_',
+        '\u1885',
+        '\u1886',
         '\u2118',
         '\u212E',
         '\u309B',
@@ -67,11 +69,15 @@ _IDENT_CONT_CHAR_SPEC = _CharSpec(
 def _is_char_in_spec(spec: _CharSpec, c: str) -> bool:
     if len(c) != 1:
         raise ValueError(c)
+    if (
+            unicodedata.category(c) in spec.cats or
+            c in spec.chars
+    ):
+        return True
+    n = unicodedata.normalize('NFKC', c)
     return (
-        unicodedata.category(c) in spec.cats or
-        c in spec.chars or
-        unicodedata.category(unicodedata.normalize('NFKC', c)) in spec.cats or
-        unicodedata.normalize('NFKC', c) in spec.chars
+        len(n) == 1 and
+        (unicodedata.category(n) in spec.cats or n in spec.chars)
     )
 
 
@@ -84,4 +90,8 @@ def is_ident_cont(c: str) -> bool:
 
 
 def is_ident(name: str) -> bool:
-    return is_ident_start(name[0]) and all(is_ident_cont(c) for c in name[1:])
+    return (
+        bool(name) and
+        is_ident_start(name[0]) and
+        all(is_ident_cont(c) for c in name[1:])
+    )

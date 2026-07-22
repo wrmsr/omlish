@@ -1,3 +1,4 @@
+import itertools
 import typing as ta
 
 from ... import check
@@ -131,7 +132,8 @@ def read_into_bytes_stepped_coro(
 ) -> ta.Iterator[lang.Bytes]:
     yield from lang.genmap(  # type: ignore[misc]
         joined_bytes_stepped_coro(g),
-        lang.readiter(f, read_size),
+        # The trailing empty is the coro protocol's termination signal, prompting the final flush.
+        itertools.chain(lang.readiter(f, read_size), [b'']),
     )
 
 
@@ -143,7 +145,8 @@ def read_into_str_stepped_coro(
 ) -> ta.Iterator[str]:
     yield from lang.genmap(
         joined_str_stepped_coro(g),
-        lang.readiter(f, read_size),
+        # The trailing empty is the coro protocol's termination signal, prompting the final flush.
+        itertools.chain(lang.readiter(f, read_size), ['']),
     )
 
 

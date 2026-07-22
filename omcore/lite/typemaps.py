@@ -78,7 +78,7 @@ class TypeMap(ta.Generic[T]):
         return iter(self._lst)
 
     def __contains__(self, ty: ta.Type[T]) -> bool:
-        return ty in self._lst
+        return ty in self._dct
 
     def get(self, ty: ta.Type[T]) -> ta.Optional[T]:
         return self._dct.get(ty)

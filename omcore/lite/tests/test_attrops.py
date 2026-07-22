@@ -52,6 +52,25 @@ class TestAttrOps(unittest.TestCase):
         assert repr(p2) == 'Point(x=40, y=30)'
         assert p1 == p2
 
+    def test_install_subset(self):
+        ops: AttrOps = AttrOps('x')
+
+        ns: dict = {}
+        ops.install(ns)
+        self.assertEqual(sorted(ns), ['__eq__', '__hash__', '__repr__'])
+
+        ns = {}
+        ops.install(ns, repr=True)
+        self.assertEqual(sorted(ns), ['__repr__'])
+
+        ns = {}
+        ops.install(ns, hash=True, eq=True)
+        self.assertEqual(sorted(ns), ['__eq__', '__hash__'])
+
+        ns = {}
+        ops.install(ns, repr=False)
+        self.assertEqual(sorted(ns), [])
+
     def test_kwargs(self):
         class P0:
             def __init__(self, x: int, y: int) -> None:

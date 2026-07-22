@@ -101,6 +101,11 @@ class AbstractGeneratorCapture(Abstract, ta.Generic[O, I, R]):
 class GeneratorCapture(AbstractGeneratorCapture[O, I, R], ta.Generator[O, I, R]):
     value: R
 
+    def _set_value(self, e: StopIteration) -> None:
+        # Only the first StopIteration carries the return value - later ones from the exhausted generator carry None.
+        if not hasattr(self, 'value'):
+            self.value = e.value
+
     def __iter__(self):
         return self
 
@@ -108,21 +113,21 @@ class GeneratorCapture(AbstractGeneratorCapture[O, I, R], ta.Generator[O, I, R])
         try:
             return next(self._g)
         except StopIteration as e:
-            self.value = e.value
+            self._set_value(e)
             raise
 
     def send(self, v):
         try:
             return self._g.send(v)
         except StopIteration as e:
-            self.value = e.value
+            self._set_value(e)
             raise
 
     def throw(self, *args):
         try:
             return self._g.throw(*args)
         except StopIteration as e:
-            self.value = e.value
+            self._set_value(e)
             raise
 
 
@@ -217,6 +222,8 @@ class GeneratorMappedIterator(ta.Generic[O, I, R]):
         return self
 
     def __next__(self) -> O:
+        if self._value.present:
+            raise StopIteration
         i = next(self._it)
         try:
             o = self._g.send(i)

@@ -13,6 +13,13 @@ class TestReflect(unittest.TestCase):
         self.assertTrue(rfl.is_generic_alias(ta.Sequence[int]))
         self.assertFalse(rfl.is_generic_alias(int))
 
+    def test_is_callable_alias(self):
+        self.assertTrue(rfl.is_callable_alias(ta.Callable[[int], str]))
+        self.assertTrue(rfl.is_callable_alias(ta.Callable[..., str]))
+        self.assertTrue(rfl.is_callable_alias(ta.Callable))
+        self.assertFalse(rfl.is_callable_alias(ta.Sequence[int]))
+        self.assertFalse(rfl.is_callable_alias(int))
+
     def test_is_union_alias(self):
         self.assertTrue(rfl.is_union_alias(ta.Union[int, str]))
         self.assertTrue(rfl.is_union_alias(ta.Optional[int]))

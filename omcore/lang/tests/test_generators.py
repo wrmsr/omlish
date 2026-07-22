@@ -123,3 +123,35 @@ def test_genmap():
     it = genmap(f(), range(40, 50))
     assert list(it) == [41, 42]
     assert it.value.must() == '!'
+
+
+def test_genmap_renext_preserves_value():
+    @autostart
+    def f():
+        i = yield
+        while True:
+            if i == 42:
+                return '!'
+            i = yield i + 1
+
+    it = genmap(f(), range(40, 50))
+    assert list(it) == [41, 42]
+    assert it.value.must() == '!'
+
+    # Iterating again after exhaustion must not consume more input or clobber the captured value.
+    assert list(it) == []
+    assert it.value.must() == '!'
+
+
+def test_capture_generator_renext_preserves_value():
+    def f():
+        yield 1
+        return '!'
+
+    gc = capture_generator(f())
+    assert list(gc) == [1]
+    assert gc.value == '!'
+
+    with pytest.raises(StopIteration):
+        next(gc)
+    assert gc.value == '!'

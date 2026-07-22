@@ -92,7 +92,8 @@ class Timeout(Abstract):
         if isinstance(obj, CanFloat):
             return DeadlineTimeout(cls._now() + float(obj))
 
-        if isinstance(obj, ta.Iterable):
+        # str/bytes are Iterable but iterate to themselves, which would recurse forever.
+        if isinstance(obj, ta.Iterable) and not isinstance(obj, (str, bytes)):
             return CompositeTimeout(*[Timeout.of(c) for c in obj])
 
         if obj is Timeout.DEFAULT:
@@ -184,10 +185,10 @@ class CompositeTimeout(Timeout):
         return any(c.expired() for c in self.children)
 
     def remaining(self) -> float:
-        return min(c.remaining() for c in self.children)
+        return min((c.remaining() for c in self.children), default=float('inf'))
 
     def __call__(self) -> float:
-        return min(c() for c in self.children)
+        return min((c() for c in self.children), default=float('inf'))
 
     def or_(self, o: ta.Any) -> ta.Any:
         if self.can_expire:

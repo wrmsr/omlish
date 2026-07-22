@@ -222,11 +222,13 @@ class ContextWrapped:
     def __init__(self, fn: ta.Callable, cm: str | ContextWrappable) -> None:
         super().__init__()
 
+        # update_wrapper copies fn.__dict__ - which, when stacking these decorators, contains the inner wrapper's own
+        # state - so it must run before this instance's state is set.
+        functools.update_wrapper(self, fn)
+
         self._fn = (fn,)
         self._cm = cm
         self._name: str | None = None
-
-        functools.update_wrapper(self, fn)
 
     @property
     def _fn(self):
@@ -263,9 +265,11 @@ class ContextWrapped:
         else:
             raise TypeError(cm)
         ret = type(self)(fn, cm)
-        if self._name is not None:
-            with contextlib.suppress(TypeError):
+        if self._name is not None and instance is not None:
+            try:
                 instance.__dict__[self._name] = ret
+            except (AttributeError, TypeError):
+                pass
         return ret
 
     def __call__(self, *args, **kwargs):

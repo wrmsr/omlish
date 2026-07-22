@@ -61,8 +61,8 @@ class _AsyncGeneratorWithReturn(AsyncGeneratorWithReturn[O, I, R]):
     def asend(self, value):
         return self._ag.asend(value)
 
-    def athrow(self, typ, val=None, tb=None):
-        return self._ag.athrow(typ, val, tb)
+    def athrow(self, *args):
+        return self._ag.athrow(*args)
 
     def aclose(self):
         return self._ag.aclose()

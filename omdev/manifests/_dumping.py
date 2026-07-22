@@ -38,11 +38,11 @@ def __om_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../omcore/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omcore/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../omcore/lite/cached.py', sha1='4f5466ce20a485428519e284b2a388a9ef8e4786'),
             dict(path='../../omcore/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../omcore/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
-            dict(path='../../omcore/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../omcore/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
+            dict(path='../../omcore/lite/reflect.py', sha1='fab4ef6f45f278ce7bffcd811cd170b40db107a8'),
+            dict(path='../../omcore/lite/strings.py', sha1='b31b8e4b0e4fec4562ea3fa602e4ef2475e5fe7c'),
             dict(path='../../omcore/lite/marshal.py', sha1='94561fd6c1adc06d87a62cc9750290ac263fc824'),
             dict(path='dumping.py', sha1='4837c54c1019dcb85fbfaa8086f5efb98025358a'),
         ],
@@ -233,6 +233,8 @@ class _AbstractCachedNullary:
         raise TypeError
 
     def __get__(self, instance, owner=None):  # noqa
+        if instance is None:
+            return self
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
 
@@ -1007,7 +1009,8 @@ def is_generic_alias(obj: ta.Any, *, origin: ta.Any = None) -> bool:
     )
 
 
-is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
+# ta.get_origin returns the collections.abc class, never the typing alias.
+is_callable_alias = functools.partial(is_generic_alias, origin=ta.get_origin(ta.Callable[..., ta.Any]))
 
 
 ##
@@ -1111,10 +1114,10 @@ def is_dunder(name: str) -> bool:
 
 def is_sunder(name: str) -> bool:
     return (
+        len(name) > 2 and
         name[0] == name[-1] == '_' and
         name[1:2] != '_' and
-        name[-2:-1] != '_' and
-        len(name) > 2
+        name[-2:-1] != '_'
     )
 
 
@@ -1128,22 +1131,25 @@ def strip_with_newline(s: str) -> str:
 
 
 @ta.overload
-def split_keep_delimiter(s: str, d: str) -> str: ...
+def split_keep_delimiter(s: str, d: str) -> ta.List[str]: ...
 
 
 @ta.overload
-def split_keep_delimiter(s: bytes, d: bytes) -> bytes: ...
+def split_keep_delimiter(s: bytes, d: bytes) -> ta.List[bytes]: ...
 
 
 def split_keep_delimiter(s, d):
+    if not d:
+        raise ValueError(d)
+    dl = len(d)
     ps = []
     i = 0
     while i < len(s):
         if (n := s.find(d, i)) < i:
             ps.append(s[i:])
             break
-        ps.append(s[i:n + 1])
-        i = n + 1
+        ps.append(s[i:n + dl])
+        i = n + dl
     return ps
 
 

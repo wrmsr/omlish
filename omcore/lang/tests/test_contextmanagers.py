@@ -63,6 +63,49 @@ def test_context_wrapped():
     assert gcm.count == 2
 
 
+def test_context_wrapped_stacked():
+    events: list = []
+
+    class CM:
+        def __init__(self, name):
+            self.name = name
+
+        def __enter__(self):
+            events.append(('enter', self.name))
+
+        def __exit__(self, et, e, tb):
+            events.append(('exit', self.name))
+
+    @context_wrapped(CM('outer'))
+    @context_wrapped(CM('inner'))
+    def f():
+        events.append('body')
+
+    f()
+    assert events == [('enter', 'outer'), ('enter', 'inner'), 'body', ('exit', 'inner'), ('exit', 'outer')]
+
+
+def test_context_wrapped_class_access():
+    class CM:
+        count = 0
+
+        def __enter__(self):
+            self.count += 1
+
+        def __exit__(self, et, e, tb):
+            pass
+
+    class C:
+        cm = CM()
+
+        @context_wrapped('cm')
+        def f(self, x):
+            return x + 2
+
+    assert C.f is not None
+    assert C().f(1) == 3
+
+
 def test_contextmanager_class():
     class C(ContextManager[int]):
         c = 0

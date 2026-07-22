@@ -38,7 +38,7 @@ def __om_amalg__():  # noqa
             dict(path='gostd.py', sha1='34b51b06f942650ae8528eea69af9202a007065e'),
             dict(path='../../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
-            dict(path='../../../lite/dataclasses.py', sha1='8a28322d561255096b849137b33aed42c49047b7'),
+            dict(path='../../../lite/dataclasses.py', sha1='3b669fb919a91a6d5dd21c4dbf5ab63650e1bac7'),
             dict(path='errors.py', sha1='298b4d892d840ce98afb520143da35c56b98fb39'),
             dict(path='tokens.py', sha1='3c3cb038c1008425577157906ec0ccce4b5ce14d'),
             dict(path='ast.py', sha1='e06a0e8a88ef896e4194e4f053dc7e2e14bbe631'),
@@ -1176,13 +1176,13 @@ def install_dataclass_cache_hash(
         if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
+        # dict lookup, not attribute - an eq=True/frozen=False dataclass sets __hash__ to None in the class dict, which
+        # is just as unusable here as an absent or inherited one.
         if (
-                cls.__hash__ is object.__hash__ or
-                '__hash__' not in cls.__dict__
+                (real_hash := cls.__dict__.get('__hash__')) is None or
+                real_hash is object.__hash__
         ):
             raise TypeError(cls)
-
-        real_hash = cls.__hash__
 
         def cached_hash(self) -> int:
             try:
@@ -1329,18 +1329,26 @@ def dataclass_descriptor_method(*bind_attrs: str, bind_owner: bool = False) -> t
 
 def install_dataclass_kw_only_init():
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
-        real_init = cls.__init__  # type: ignore[misc]
+        real_init = cls.__init__
 
-        flds = dc.fields(cls)  # noqa
+        # The real __init__'s params are the init=True fields plus InitVar pseudo-fields (which dc.fields omits), in
+        # field order - init=False fields must be excluded or the generated call will not match its signature.
+        flds = [
+            f
+            for f in getattr(cls, dc._FIELDS).values()  # type: ignore[attr-defined]  # noqa
+            if f._field_type is dc._FIELD_INITVAR or (f._field_type is dc._FIELD and f.init)  # type: ignore[attr-defined]  # noqa
+        ]
 
         if any(f.name == 'self' for f in flds):
             self_name = '__dataclass_self__'
         else:
             self_name = 'self'
 
+        # default_factory fields cannot have their default baked into the signature - a MISSING sentinel default is
+        # filtered out of the forwarded kwargs so the real init invokes the factory per-call.
         src = '\n'.join([
             'def __init__(',
             f'    {self_name},',
@@ -1348,7 +1356,11 @@ def install_dataclass_kw_only_init():
             *[
                 ''.join([
                     f'    {f.name}: __dataclass_type_{f.name}__',
-                    f' = __dataclass_default_{f.name}__' if f.default is not dc.MISSING else '',
+                    (
+                        f' = __dataclass_default_{f.name}__' if f.default is not dc.MISSING else
+                        ' = __dataclass_MISSING__' if f.default_factory is not dc.MISSING else  # noqa
+                        ''
+                    ),
                     ',',
                 ])
                 for f in flds
@@ -1359,12 +1371,25 @@ def install_dataclass_kw_only_init():
             *[
                 f'        {f.name}={f.name},'
                 for f in flds
+                if f.default_factory is dc.MISSING  # noqa
             ],
+            '        **{',
+            '            k: v',
+            '            for k, v in [',
+            *[
+                f'                ({f.name!r}, {f.name}),'
+                for f in flds
+                if f.default_factory is not dc.MISSING  # noqa
+            ],
+            '            ]',
+            '            if v is not __dataclass_MISSING__',
+            '        },',
             '    )',
         ])
 
         ns: dict = {
             '__dataclass_None__': None,
+            '__dataclass_MISSING__': dc.MISSING,
             '__dataclass_real_init__': real_init,
             **{
                 f'__dataclass_type_{f.name}__': f.type

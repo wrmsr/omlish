@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import typing as ta
+import warnings
 
 import pytest
 
@@ -115,3 +116,22 @@ def test_cext():
 
     assert ex.value.args[0] == [19]
     assert c == 21
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_async_generator_with_return_athrow():
+    @async_generator_with_return
+    async def ag(set_value):
+        try:
+            yield 1
+        except ValueError:
+            pass
+        yield 2
+
+    a = ag()
+    assert (await a.__anext__()) == 1
+
+    # The single-arg form must be forwarded as-is - promoting it to the 3-arg form raises DeprecationWarning.
+    with warnings.catch_warnings():
+        warnings.simplefilter('error', DeprecationWarning)
+        assert (await a.athrow(ValueError('x'))) == 2

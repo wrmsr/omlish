@@ -39,12 +39,16 @@ def pycharm_debug_connect(prd: PycharmRemoteDebug) -> None:
 def pycharm_debug_preamble(prd: PycharmRemoteDebug) -> str:
     import inspect
     import textwrap
-    return textwrap.dedent(f"""
-        {inspect.getsource(pycharm_debug_connect)}
 
-        pycharm_debug_connect(PycharmRemoteDebug(
-            {prd.port!r},
-            host={prd.host!r},
-            install_version={prd.install_version!r},
-        ))
-    """)
+    # The function source must not pass through dedent with the template - its body lines have less indentation than
+    # the template's, which would leave the def line indented relative to its body.
+    return '\n'.join([
+        inspect.getsource(pycharm_debug_connect),
+        textwrap.dedent(f"""
+            pycharm_debug_connect(PycharmRemoteDebug(
+                {prd.port!r},
+                host={prd.host!r},
+                install_version={prd.install_version!r},
+            ))
+        """),
+    ])

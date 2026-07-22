@@ -17,6 +17,9 @@ class _IntersectionMeta(type):
         try:
             ibc = Intersection
         except NameError:
+            # Bootstrapping Intersection itself - it gets an empty bases tuple purely for attribute uniformity, the
+            # check hooks below special-case it before consulting this.
+            dct.update(__intersection_bases__=())
             return super_meta(super(), cls, name, bases, dct)
 
         ibl: list[type] = []
@@ -24,7 +27,7 @@ class _IntersectionMeta(type):
         for b in bases:
             if b is ibc:
                 continue
-            elif isinstance(type(b), _IntersectionMeta):
+            elif isinstance(b, _IntersectionMeta):
                 for ib in b.__intersection_bases__:
                     if ib not in ibs:
                         ibl.append(ib)
@@ -38,9 +41,16 @@ class _IntersectionMeta(type):
         return super_meta(super(), cls, name, bases, dct)
 
     def __instancecheck__(cls, instance: object) -> bool:
+        if cls is Intersection:
+            raise TypeError('isinstance cannot be checked against Intersection itself')
         return all(isinstance(instance, ib) for ib in cls.__intersection_bases__)
 
     def __subclasscheck__(cls, subclass: type) -> bool:
+        # Against Intersection itself the check is nominal - 'is subclass an intersection class' - as with
+        # issubclass(X, ta.Protocol). Concrete intersection classes really do inherit Intersection, so the default
+        # type check answers this exactly.
+        if cls is Intersection:
+            return super().__subclasscheck__(subclass)
         return all(issubclass(subclass, ib) for ib in cls.__intersection_bases__)
 
 
