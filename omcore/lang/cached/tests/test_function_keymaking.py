@@ -150,6 +150,53 @@ def test_var_positional_with_kw_only():
     assert km(k=9) == ((), 9)
 
 
+def test_defaulted_pk_before_var_positional():
+    # Defaulted pos-or-kw params preceding *args are GENERAL-tier: the INLINE miss path would re-pass them by keyword,
+    # colliding with re-passed varargs when they were filled positionally.
+    c = 0
+
+    @cached_function
+    def f(a=1, *args):
+        nonlocal c
+        c += 1
+        return (a, args)
+
+    assert f(10, 20) == (10, (20,))
+    assert f(10, 20) == (10, (20,))
+    assert c == 1
+    assert f() == (1, ())
+    assert c == 2
+    assert f(a=1) == (1, ())  # explicit default -> distinct key from omitted
+    assert c == 3
+
+    c = 0
+
+    @cached_function
+    def g(a, b=2, *args):
+        nonlocal c
+        c += 1
+        return (a, b, args)
+
+    assert g(1, 2, 3) == (1, 2, (3,))
+    assert g(1, 2, 3) == (1, 2, (3,))
+    assert c == 1
+    assert g(1) == (1, 2, ())
+    assert c == 2
+
+    c = 0
+
+    @cached_function
+    def h(a=1, *args, **kw):
+        nonlocal c
+        c += 1
+        return (a, args, kw)
+
+    assert h(9, 8) == (9, (8,), {})
+    assert h(9, 8, k=7) == (9, (8,), {'k': 7})
+    assert h(9, 8) == (9, (8,), {})
+    assert c == 2
+
+
 ##
 
 

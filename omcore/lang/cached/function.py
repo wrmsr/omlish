@@ -18,9 +18,9 @@ Keys come in three tiers:
   pickle-stable _OMITTED_ARG sentinel (distinct from explicitly passing a value equal to the default, matching
   functools.lru_cache), and the miss path reconstructs the original call, omitting args whose value is that sentinel.
 - GENERAL: the fallback for anything the inline tier can't express (functools.partial-wrapped functions, defaulted
-  positional-only params, hostile param names) - a code-generated per-signature key maker canonicalizes
-  (*args, **kwargs) into a key tuple exactly reproducing the calling convention. This facility remains the
-  calling-convention authority for the future cext.
+  positional-only params, defaulted pos-or-kw params preceding *args, hostile param names) - a code-generated
+  per-signature key maker canonicalizes (*args, **kwargs) into a key tuple exactly reproducing the calling convention.
+  This facility remains the calling-convention authority for the future cext.
 
 Binding is instance-dict based: a descriptor's `__get__` installs a lightweight per-instance bound wrapper in
 `instance.__dict__[name]` (shadowing the non-data descriptor - later accesses never re-bind). Everything shared across
@@ -46,6 +46,9 @@ python-only until vectorcall-based argument parsing is warranted.
 
 TODO:
  - cext species (see above) - also gets the hot path out of debugger singlestepping
+ - INLINE defaulted pos-or-kw params preceding *args (currently GENERAL): reconstruction is possible - a non-empty
+   received varargs tuple implies every preceding defaulted pk param was necessarily filled positionally, so the miss
+   path can branch: `if va:` re-pass them positionally ahead of *va, else the existing omission-filtered kwargs dict
  - significant_kwargs_order=False - stdlib has significant kwarg order
  - integrate / expose with collections.cache
  - weakrefs (selectable by arg)
@@ -310,10 +313,12 @@ _INLINE_FORBIDDEN_PARAM_NAMES: ta.AbstractSet[str] = frozenset(['KeyError'])
 def _inline_shape(ps: ParamSpec) -> tuple | None:
     """
     Encodes a ParamSpec as a hashable signature shape for the INLINE tier, or returns None when the signature is
-    ineligible (defaulted positional-only params, __-prefixed or reserved param names).
+    ineligible (defaulted positional-only params, defaulted pos-or-kw params preceding *args, __-prefixed or reserved
+    param names).
     """
 
     out: list = []
+    dflt_pk = False
     for p in ps.with_seps:
         if isinstance(p, ParamSeparator):
             out.append(p.value)
@@ -330,8 +335,14 @@ def _inline_shape(ps: ParamSpec) -> tuple | None:
         elif isinstance(p, KwOnlyParam):
             out.append(('ko', name, p.default.present))
         elif isinstance(p, ValParam):
+            if p.default.present:
+                dflt_pk = True
             out.append(('pk', name, p.default.present))
         elif isinstance(p, ArgsParam):
+            if dflt_pk:
+                # Miss-path reconstruction re-passes defaulted pk params by keyword, which collides with re-passed
+                # varargs when they were filled positionally - fall back to the key maker (see module TODO).
+                return None
             out.append(('va', name, False))
         elif isinstance(p, KwargsParam):
             out.append(('vk', name, False))
@@ -916,8 +927,8 @@ class _SpeciesCodeGen(Final):
         """
         Returns (pre-lines, call-src) for invoking the value fn on a miss. For the INLINE tier this reconstructs the
         original call: non-defaulted positionals pass positionally, defaulted params whose value is the omission
-        sentinel are omitted (rebuilt into a kwargs dict - equivalent for pk/ko params, which is why defaulted
-        positional-only params are GENERAL-tier).
+        sentinel are omitted (rebuilt into a kwargs dict - equivalent for pk/ko params only in the absence of *args,
+        which is why defaulted positional-only params and defaulted pos-or-kw params preceding *args are GENERAL-tier).
         """
 
         spec = self._spec
@@ -1181,6 +1192,9 @@ def _make_descriptor(
         key_maker=res.key_maker,
         no_map=res.key_shape is _KeyShape.NULLARY,
         bound_resolution=bound_res,
+        # The raw classmethod object is not callable - direct calls take the unbound (cls, ...) signature, matching
+        # the unbound direct-call keying above.
+        value_fn=unwrap_func(fn) if cls_scope else None,
     )
 
 

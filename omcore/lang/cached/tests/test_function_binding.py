@@ -9,6 +9,7 @@ import weakref
 
 import pytest
 
+from ..function import _BoundCachedFunction
 from ..function import _DescriptorCachedFunction
 from ..function import _FreeCachedFunction
 from ..function import cached_function
@@ -17,8 +18,6 @@ from ..function import cached_function
 ##
 
 
-# @FIXME
-@pytest.mark.xfail
 def test_instance_binding_caches_in_instance_dict():
     class C:
         def __init__(self, v):
@@ -34,12 +33,10 @@ def test_instance_binding_caches_in_instance_dict():
     assert 'm' in c.__dict__  # bound wrapper memoized on the instance
     b2 = c.m
     assert b1 is b2  # subsequent access returns the memoized bound wrapper (no rebind)
-    assert isinstance(b1, _DescriptorCachedFunction)
+    assert isinstance(b1, _BoundCachedFunction)
     assert isinstance(C.__dict__['m'], _DescriptorCachedFunction)
 
 
-# @FIXME
-@pytest.mark.xfail
 def test_per_instance_cache_isolation():
     n = 0
 
@@ -61,7 +58,7 @@ def test_per_instance_cache_isolation():
     assert c2.m() == ('m', 2)
     assert n == 2
     # distinct instances -> distinct value stores
-    assert c1.m._values is not c2.m._values  # type: ignore  # noqa
+    assert c1.m._v is not c2.m._v  # type: ignore  # noqa
 
 
 def test_descriptor_and_bound_have_distinct_value_stores():
@@ -79,8 +76,6 @@ def test_descriptor_and_bound_have_distinct_value_stores():
 ##
 
 
-# @FIXME
-@pytest.mark.xfail
 def test_classmethod_owner_caching_and_subclass_distinctness():
     calls = []
 
@@ -100,7 +95,7 @@ def test_classmethod_owner_caching_and_subclass_distinctness():
     assert K.cm() == 'K'
     assert calls == ['K']  # cached on owner K
     # owner-bound wrapper installed on the class itself
-    assert isinstance(K.__dict__['cm'], _DescriptorCachedFunction)
+    assert isinstance(K.__dict__['cm'], _BoundCachedFunction)
 
     assert L.cm() == 'L'  # subclass recomputes against its own owner
     assert L.cm() == 'L'
@@ -123,6 +118,31 @@ def test_classmethod_instance_access_shares_class_cache():
     assert calls == ['K']
     assert K().cm() == 'K'  # instance access of a classmethod hits the class cache
     assert calls == ['K']
+
+
+def test_classmethod_descriptor_direct_call():
+    # The descriptor is itself a directly-callable species - for classmethods the direct call takes the unbound
+    # (cls, ...) signature, keying every argument including cls.
+    calls = []
+
+    class K:
+        @cached_function
+        @classmethod
+        def cm(cls, x):
+            calls.append((cls, x))
+            return (cls, x)
+
+    class L(K):
+        pass
+
+    desc = K.__dict__['cm']  # must be grabbed before any attribute access installs a bound wrapper
+    assert isinstance(desc, _DescriptorCachedFunction)
+
+    assert desc(K, 1) == (K, 1)
+    assert desc(K, 1) == (K, 1)
+    assert calls == [(K, 1)]
+    assert desc(L, 1) == (L, 1)  # cls is a key component
+    assert calls == [(K, 1), (L, 1)]
 
 
 ##
@@ -203,50 +223,6 @@ def test_custom_get_is_honored():
     assert cd.get_count == 1  # bound exactly once for this instance
     assert c.m() == ('m', 7)
     assert cd.get_count == 1  # memoized bound wrapper -> no further __get__
-
-
-##
-
-
-# @FIXME
-@pytest.mark.xfail
-def test_unbound_call_via_class_is_currently_broken():
-    # KNOWN limitation (see function.py TODO "reconcile A().f() with A.f(A())"): calling an instance method through the
-    # class with an explicit instance does not currently route through the instance cache and raises.
-    class C:
-        def __init__(self, v):
-            self.v = v
-
-        @cached_function
-        def m(self):
-            return ('m', self.v)
-
-    c = C(1)
-    assert c.m() == ('m', 1)
-    with pytest.raises(TypeError):
-        C.m(c)
-
-
-# @FIXME
-@pytest.mark.xfail
-def test_mismatched_attr_name_breaks_instance_caching():
-    # KNOWN footgun: the bound-wrapper instance-dict key is derived from the *function* __name__, not the attribute name
-    # it is bound under. When they differ, per-instance memoization is ineffective (recomputes each access).
-    n = 0
-
-    def _impl(self):
-        nonlocal n
-        n += 1
-        return n
-
-    class C:
-        foo = cached_function(_impl)
-
-    c = C()
-    assert c.foo() == 1
-    assert c.foo() == 2  # not cached: each `c.foo` access rebinds under key '_impl', never 'foo'
-    assert '_impl' in c.__dict__
-    assert 'foo' not in c.__dict__
 
 
 ##
