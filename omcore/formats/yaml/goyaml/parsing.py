@@ -810,7 +810,8 @@ def yaml_create_document_tokens(tokens: ta.List[YamlParseToken]) -> YamlErrorOr[
                 return tks
             if len(tks) != 0:
                 tks[0].set_group_type(YamlParseTokenGroupType.DOCUMENT)
-                check.not_none(tks[0].group).tokens = list(check.not_none(tks[0].group).tokens)
+                # tks[0].Group.Tokens = append([]*Token{tk}, tks[0].Group.Tokens...)
+                check.not_none(tks[0].group).tokens = [tk, *check.not_none(tks[0].group).tokens]
                 ret.extend(tks)
                 return ret
             ret.append(YamlParseToken(
@@ -1492,10 +1493,11 @@ class YamlParser:
             elif not is_first:
                 return YamlSyntaxError("',' or '}' must be specified", YamlParseToken.raw_token(tk))
 
-            if YamlParseToken.type(tk := ctx.current_token()) == YamlTokenType.MAPPING_END:
+            # go scopes this shadow to the if statement; the outer tk must survive for the err_tk fallback below.
+            if YamlParseToken.type(tk2 := ctx.current_token()) == YamlTokenType.MAPPING_END:
                 # this case is here: "{ elem, }".
                 # In this case, ignore the last element and break mapping parsing.
-                node.end = YamlParseToken.raw_token(tk)
+                node.end = YamlParseToken.raw_token(tk2)
                 break
 
             map_key_tk = ctx.current_token()
@@ -1520,7 +1522,7 @@ class YamlParser:
                 ctx2 = ctx.with_child(self.map_key_text(key0))
                 colon_tk = check.not_none(check.not_none(map_key_tk).group).last()
 
-                if self.is_flow_map_delim(check.not_none(ctx2.next_token())):
+                if self.is_flow_map_delim(ctx2.next_token()):
                     value1 = YamlNodeMakers.new_null_node(ctx2, ctx2.insert_null_token(check.not_none(colon_tk)))
                     if isinstance(value1, YamlError):
                         return value1
@@ -1555,7 +1557,7 @@ class YamlParser:
                     node.values.append(map_value)
 
             else:
-                if not self.is_flow_map_delim(check.not_none(ctx.next_token())):
+                if not self.is_flow_map_delim(ctx.next_token()):
                     err_tk = map_key_tk
                     if err_tk is None:
                         err_tk = tk
@@ -1594,8 +1596,10 @@ class YamlParser:
         ctx.go_next()  # skip mapping end token.
         return node
 
-    def is_flow_map_delim(self, tk: YamlParseToken) -> bool:
-        return tk.type() == YamlTokenType.MAPPING_END or tk.type() == YamlTokenType.COLLECT_ENTRY
+    def is_flow_map_delim(self, tk: ta.Optional[YamlParseToken]) -> bool:
+        # nil-receiver tolerant in go: Type() of a nil token is Unknown, so a missing token is not a delimiter.
+        typ = YamlParseToken.type(tk)
+        return typ == YamlTokenType.MAPPING_END or typ == YamlTokenType.COLLECT_ENTRY
 
     def parse_map(self, ctx: YamlParsingContext) -> YamlErrorOr[MappingYamlNode]:
         key_tk = check.not_none(ctx.current_token())
@@ -2231,15 +2235,16 @@ class YamlParser:
                 YamlParseToken.type(tk) == YamlTokenType.SEQUENCE_ENTRY and
                 YamlParseToken.column(tk) == YamlParseToken.column(seq_tk)
         ):
+            entry_tk = tk  # go shadows seqTk with the current entry token here
             head_comment = self.parse_head_comment(ctx)
             ctx.go_next()  # skip sequence entry token
 
             ctx2 = ctx.with_index(len(seq_node.values))
-            value = self.parse_sequence_value(ctx2, check.not_none(seq_tk))
+            value = self.parse_sequence_value(ctx2, check.not_none(entry_tk))
             if isinstance(value, YamlError):
                 return value
-            seq_entry = yaml_sequence_entry(YamlParseToken.raw_token(seq_tk), value, head_comment)
-            if (err := yaml_set_line_comment(ctx2, seq_entry, seq_tk)) is not None:
+            seq_entry = yaml_sequence_entry(YamlParseToken.raw_token(entry_tk), value, head_comment)
+            if (err := yaml_set_line_comment(ctx2, seq_entry, entry_tk)) is not None:
                 return err
             seq_entry.set_path(ctx2.path)
             seq_node.value_head_comments.append(head_comment)

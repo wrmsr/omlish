@@ -32,6 +32,8 @@ from .errors import EofYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
+from .gostd import yaml_go_trim_prefix
+from .gostd import yaml_go_trim_suffix
 from .tokens import YamlNumberType
 from .tokens import YamlPosition
 from .tokens import YamlToken
@@ -361,7 +363,11 @@ class YamlAsts:
     # bool_ create node for boolean value
     @classmethod
     def bool_(cls, tk: YamlToken) -> 'BoolYamlNode':
-        b = cls._parse_bool(tk.value)
+        # b, _ := strconv.ParseBool(tk.Value) - the parse error is discarded and the zero value kept.
+        try:
+            b = cls._parse_bool(tk.value)
+        except ValueError:
+            b = False
         return BoolYamlNode(
             token=tk,
             value=b,
@@ -399,6 +405,9 @@ class YamlAsts:
             value = float('inf')
         elif tk.value in ('-.inf', '-.Inf', '-.INF'):
             value = float('-inf')
+        else:
+            # go's switch has no default; the node keeps the zero value.
+            value = 0.0
         node = InfinityYamlNode(
             token=tk,
             value=value,
@@ -850,7 +859,10 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
             values: ta.List[str] = []
             for v in self.value.split(lbc):
                 values.append(f'{space}{indent}{v}')
-            block = lbc.join(values).rstrip(f'{lbc}{indent}{space}').rstrip(f'{indent}{space}')
+            block = yaml_go_trim_suffix(
+                yaml_go_trim_suffix(lbc.join(values), f'{lbc}{indent}{space}'),
+                f'{indent}{space}',
+            )
             return f'{header}{lbc}{block}'
         elif len(self.value) > 0 and (self.value[0] == '{' or self.value[0] == '['):
             return f"'{self.value}'"
@@ -876,7 +888,10 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
             values: ta.List[str] = []
             for v in self.value.split(lbc):
                 values.append(f'{space}{indent}{v}')
-            block = lbc.join(values).rstrip(f'{lbc}{indent}{space}').rstrip(f'  {space}')
+            block = yaml_go_trim_suffix(
+                yaml_go_trim_suffix(lbc.join(values), f'{lbc}{indent}{space}'),
+                f'  {space}',
+            )
             return f'{header}{lbc}{block}'
         elif len(self.value) > 0 and (self.value[0] == '{' or self.value[0] == '['):
             return f"'{self.value}'"
@@ -989,7 +1004,7 @@ class MergeKeyYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> YamlErrorOr[str]:
-        return str(self)
+        return self.string()
 
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
@@ -1592,7 +1607,7 @@ class SequenceYamlNode(BaseYamlNode, ArrayYamlNode):
                 # If multi-line string, the space characters for indent have already been added, so delete them.
                 prefix = space + '  '
                 for i in range(1, len(splitted_values)):
-                    splitted_values[i] = splitted_values[i].lstrip(prefix)
+                    splitted_values[i] = yaml_go_trim_prefix(splitted_values[i], prefix)
 
             new_values: ta.List[str] = [trimmed_first_value]
             for i in range(1, len(splitted_values)):
@@ -2058,7 +2073,10 @@ def yaml_ast_walk(v: YamlAstVisitor, node: YamlNode) -> None:
     v = v_
 
     n = node
-    if isinstance(n, (CommentYamlNode, NullYamlNode)):
+    # go's type switch has an empty `case *CommentNode:` arm - a comment node's own comment is not walked.
+    if isinstance(n, CommentYamlNode):
+        pass
+    elif isinstance(n, NullYamlNode):
         yaml_ast_walk_comment(v, n)
     if isinstance(n, IntegerYamlNode):
         yaml_ast_walk_comment(v, n)
@@ -2142,7 +2160,8 @@ class YamlParentFinder:
     target: YamlNode
 
     def walk(self, parent: YamlNode, node: ta.Optional[YamlNode]) -> ta.Optional[YamlNode]:
-        if self.target == node:
+        # go compares interface pointers here, so structural (dataclass) equality must not be used.
+        if self.target is node:
             return parent
 
         n = node
@@ -2242,7 +2261,8 @@ class InvalidMergeTypeYamlError(YamlError):
 def yaml_ast_merge(dst: YamlNode, src: YamlNode) -> ta.Optional[YamlError]:
     if isinstance(src, DocumentYamlNode):
         doc: DocumentYamlNode = src
-        src = check.not_none(doc.body)
+        # go tolerates a nil doc.Body here; the type assertions below then fail and ErrInvalidMergeType is returned.
+        src = ta.cast(YamlNode, doc.body)
 
     err = InvalidMergeTypeYamlError(dst=dst, src=src)
     if dst.type() == YamlNodeType.DOCUMENT:

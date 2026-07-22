@@ -27,6 +27,12 @@ from .errors import EofYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
+from .gostd import YamlGoStrconvError
+from .gostd import YamlGoStrconvRangeError
+from .gostd import yaml_go_parse_int
+from .gostd import yaml_go_rune_str
+from .gostd import yaml_go_trim_prefix
+from .gostd import yaml_go_trim_suffix
 from .tokens import YAML_RESERVED_TAG_KEYWORD_MAP
 from .tokens import YamlIndicator
 from .tokens import YamlPosition
@@ -222,7 +228,7 @@ class YamlScanningContext:
 
                 removed_new_line_char_count = new_line_char_count - 1
                 while removed_new_line_char_count > 0:
-                    src = list(''.join(src).rstrip('\n'))
+                    src = list(yaml_go_trim_suffix(''.join(src), '\n'))
                     removed_new_line_char_count -= 1
 
             # If the text ends with a space character, remove all of them.
@@ -409,14 +415,17 @@ class YamlMultiLineState:
 
 
 def _yaml_first_line_indent_column_by_opt(opt: str) -> int:
-    opt = opt.lstrip('-')
-    opt = opt.lstrip('+')
-    opt = opt.rstrip('-')
-    opt = opt.rstrip('+')
-    try:
-        return int(opt, 10)
-    except ValueError:
+    opt = yaml_go_trim_prefix(opt, '-')
+    opt = yaml_go_trim_prefix(opt, '+')
+    opt = yaml_go_trim_suffix(opt, '-')
+    opt = yaml_go_trim_suffix(opt, '+')
+    # i, _ := strconv.ParseInt(opt, 10, 64) - a range error still yields strconv's clamped value.
+    i = yaml_go_parse_int(opt, 10, 64)
+    if isinstance(i, YamlGoStrconvRangeError):
+        return i.value
+    if isinstance(i, YamlGoStrconvError):
         return 0
+    return i
 
 
 ##
@@ -828,7 +837,7 @@ class YamlScanner:
                     else:
                         progress = 3
                         code_num = _yaml_hex_runes_to_int(src[idx + 2: idx + progress + 1])
-                        value += chr(code_num)
+                        value += yaml_go_rune_str(code_num)
 
                 elif next_char == 'u':
                     # \u0000 style must have 5 characters at least.
@@ -880,7 +889,7 @@ class YamlScanner:
                         code_num = ((high - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000
                         progress += 6
 
-                    value += chr(code_num)
+                    value += yaml_go_rune_str(code_num)
 
                 elif next_char == 'U':
                     # \U00000000 style must have 9 characters at least.
@@ -895,7 +904,7 @@ class YamlScanner:
 
                     progress = 9
                     code_num = _yaml_hex_runes_to_int(src[idx + 2: idx + 10])
-                    value += chr(code_num)
+                    value += yaml_go_rune_str(code_num)
 
                 elif next_char == '\n':
                     is_first_line_char = True
@@ -1372,7 +1381,7 @@ class YamlScanner:
             if tk is not None and tk.type == YamlTokenType.MAPPING_VALUE:
                 return False
 
-        if ''.join(ctx.obuf).lstrip(' ').startswith('\t') and not ''.join(ctx.buf).startswith('\t'):
+        if yaml_go_trim_prefix(''.join(ctx.obuf), ' ').startswith('\t') and not ''.join(ctx.buf).startswith('\t'):
             invalid_tk = YamlTokenMakers.new_invalid(
                 yaml_error('tab character cannot use as a map key directly'),
                 ''.join(ctx.obuf),
@@ -1464,10 +1473,11 @@ class YamlScanner:
             return False
 
         nc = ctx.next_char()
-        if nc != 0 and nc != ' ' and nc != '\t' and not self.is_new_line_char(nc):
+        # go compares nc against rune(0); the translation's next_char returns '' at end of source.
+        if nc != '' and nc != ' ' and nc != '\t' and not self.is_new_line_char(nc):
             return False
 
-        if ''.join(ctx.obuf).lstrip(' ').startswith('\t'):
+        if yaml_go_trim_prefix(''.join(ctx.obuf), ' ').startswith('\t'):
             invalid_tk = YamlTokenMakers.new_invalid(
                 yaml_error('tab character cannot use as a sequence delimiter'),
                 ''.join(ctx.obuf),
@@ -1500,19 +1510,18 @@ class YamlScanner:
             return None
 
         org_opt = opt
-        opt = opt.lstrip('-')
-        opt = opt.lstrip('+')
-        opt = opt.rstrip('-')
-        opt = opt.rstrip('+')
+        opt = yaml_go_trim_prefix(opt, '-')
+        opt = yaml_go_trim_prefix(opt, '+')
+        opt = yaml_go_trim_suffix(opt, '-')
+        opt = yaml_go_trim_suffix(opt, '+')
         if len(opt) == 0:
             return None
 
         if opt == '0':
             return yaml_error(f'invalid header option: {org_opt!r}')
 
-        try:
-            i = int(opt, 10)
-        except ValueError:
+        i = yaml_go_parse_int(opt, 10, 64)
+        if isinstance(i, YamlGoStrconvError):
             return yaml_error(f'invalid header option: {org_opt!r}')
 
         if i > 9:
@@ -1877,8 +1886,9 @@ class YamlScanner:
 
         if err is not None:
             # var invalidTokenErr *InvalidTokenError
-            # if errors.As(err, &invalidTokenErr):
-            #     lst = append(lst, invalidTokenErr.Token)
+            # if errors.As(err, &invalidTokenErr) { tokens = append(tokens, invalidTokenErr.Token) }
+            if isinstance(err, InvalidTokenYamlError):
+                lst.append(err.token)
             return lst, err
 
         return lst, None

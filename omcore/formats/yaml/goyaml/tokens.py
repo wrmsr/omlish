@@ -23,12 +23,20 @@ import dataclasses as dc
 import datetime
 import enum
 import functools
+import re
 import typing as ta
 
 from ....lite.dataclasses import dataclass_field_required
+from .errors import GenericYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
+from .gostd import YamlGoStrconvError
+from .gostd import YamlGoStrconvRangeError
+from .gostd import yaml_go_parse_float
+from .gostd import yaml_go_parse_int
+from .gostd import yaml_go_parse_uint
+from .gostd import yaml_go_trim_prefix
 
 
 ##
@@ -454,6 +462,8 @@ def _yaml_is_number(value: str) -> bool:
         # var numErr *strconv.NumError
         # if errors.As(err, &numErr) && errors.Is(numErr.Err, strconv.ErrRange) {
         #     return true
+        if isinstance(num, GenericYamlError) and isinstance(num.obj, YamlGoStrconvRangeError):
+            return True
 
         return False
 
@@ -472,21 +482,21 @@ def _yaml_to_number(value: str) -> YamlErrorOr[ta.Optional[YamlNumberValue]]:
         return None
 
     is_negative = value.startswith('-')
-    normalized = value.lstrip('+').lstrip('-').replace('_', '')
+    normalized = yaml_go_trim_prefix(yaml_go_trim_prefix(value, '+'), '-').replace('_', '')
 
     typ: YamlNumberType
     base = 0
 
     if normalized.startswith('0x'):
-        normalized = normalized.lstrip('0x')
+        normalized = yaml_go_trim_prefix(normalized, '0x')
         base = 16
         typ = YamlNumberType.HEX
     elif normalized.startswith('0o'):
-        normalized = normalized.lstrip('0o')
+        normalized = yaml_go_trim_prefix(normalized, '0o')
         base = 8
         typ = YamlNumberType.OCTET
     elif normalized.startswith('0b'):
-        normalized = normalized.lstrip('0b')
+        normalized = yaml_go_trim_prefix(normalized, '0b')
         base = 2
         typ = YamlNumberType.BINARY
     elif normalized.startswith('0') and len(normalized) > 1 and dot_count == 0:
@@ -504,15 +514,20 @@ def _yaml_to_number(value: str) -> YamlErrorOr[ta.Optional[YamlNumberValue]]:
 
     v: ta.Any
     if typ == YamlNumberType.FLOAT:
-        try:
-            v = float(text)
-        except ValueError as e:
-            return yaml_error(e)
+        f = yaml_go_parse_float(text)
+        if isinstance(f, YamlGoStrconvError):
+            return yaml_error(f)
+        v = f
+    elif is_negative:
+        i = yaml_go_parse_int(text, base, 64)
+        if isinstance(i, YamlGoStrconvError):
+            return yaml_error(i)
+        v = i
     else:
-        try:
-            v = int(text, base)
-        except ValueError as e:
-            return yaml_error(e)
+        u = yaml_go_parse_uint(text, base, 64)
+        if isinstance(u, YamlGoStrconvError):
+            return yaml_error(u)
+        v = u
 
     return YamlNumberValue(
         type=typ,
@@ -526,24 +541,62 @@ def _yaml_to_number(value: str) -> YamlErrorOr[ta.Optional[YamlNumberValue]]:
 
 # This is a subset of the formats permitted by the regular expression defined at http:#yaml.org/type/timestamp.html.
 # Note that time.Parse cannot handle: "2001-12-14 21:59:43.10 -5" from the examples.
-YAML_TIMESTAMP_FORMATS = (
-    '%Y-%m-%dT%H:%M:%S.%fZ',  # RFC3339Nano
-    '%Y-%m-%dt%H:%M:%S.%fZ',  # RFC3339Nano with lower-case "t"
-    '%Y-%m-%d %H:%M:%S',      # DateTime
-    '%Y-%m-%d',               # DateOnly
-
-    # Not in examples, but to preserve backward compatibility by quoting time values
-    '%H:%M',
+#
+# The go implementation matches against the following time.Parse layouts:
+#
+#     time.RFC3339Nano ("2006-01-02T15:04:05.999999999Z07:00")
+#     "2006-01-02t15:04:05.999999999Z07:00"  # RFC3339Nano with lower-case "t"
+#     time.DateTime ("2006-01-02 15:04:05")
+#     time.DateOnly ("2006-01-02")
+#     # Not in examples, but to preserve backward compatibility by quoting time values
+#     "15:4"
+#
+# strptime cannot reproduce time.Parse's semantics (its zero-padded fields require exactly two digits while the "15"
+# hour field accepts one or two, fractional seconds are optional with any number of digits and either '.' or ',' as
+# the separator, and the "Z07:00" zone matches a literal upper-case 'Z' or a strict "+hh:mm" numeric offset with
+# hh <= 24 and mm <= 59), so the shapes are matched with regexes and the field ranges validated separately. All of
+# the above was verified empirically against go.
+_YAML_RFC3339_TIMESTAMP_PAT = re.compile(
+    r'(\d{4})-(\d{2})-(\d{2})[Tt](\d{1,2}):(\d{2}):(\d{2})(?:[.,]\d+)?(?:Z|([+-])(\d{2}):(\d{2}))',
 )
+# time.Parse permits a fractional second after the seconds field even when the layout has none.
+_YAML_DATE_TIME_TIMESTAMP_PAT = re.compile(r'(\d{4})-(\d{2})-(\d{2}) (\d{1,2}):(\d{2}):(\d{2})(?:[.,]\d+)?')
+_YAML_DATE_ONLY_TIMESTAMP_PAT = re.compile(r'(\d{4})-(\d{2})-(\d{2})')
+_YAML_HOUR_MINUTE_TIMESTAMP_PAT = re.compile(r'(\d{1,2}):(\d{1,2})')
+
+
+def _yaml_is_valid_date(y: int, mo: int, d: int) -> bool:
+    try:
+        # go's time package permits year zero; substitute another leap year for the day-range check.
+        datetime.date(y if y > 0 else 4, mo, d)
+    except ValueError:
+        return False
+    return True
 
 
 def _yaml_is_timestamp(value: str) -> bool:
-    for format_str in YAML_TIMESTAMP_FORMATS:
-        try:
-            datetime.datetime.strptime(value, format_str)  # noqa
-            return True
-        except ValueError:
-            continue
+    if (m := _YAML_RFC3339_TIMESTAMP_PAT.fullmatch(value)) is not None:
+        y, mo, d, h, mi, s = (int(g) for g in m.group(1, 2, 3, 4, 5, 6))
+        if not _yaml_is_valid_date(y, mo, d):
+            return False
+        if h > 23 or mi > 59 or s > 59:
+            return False
+        if m.group(7) is not None and (int(m.group(8)) > 24 or int(m.group(9)) > 59):
+            return False
+        return True
+
+    if (m := _YAML_DATE_TIME_TIMESTAMP_PAT.fullmatch(value)) is not None:
+        y, mo, d, h, mi, s = (int(g) for g in m.group(1, 2, 3, 4, 5, 6))
+        return _yaml_is_valid_date(y, mo, d) and h <= 23 and mi <= 59 and s <= 59
+
+    if (m := _YAML_DATE_ONLY_TIMESTAMP_PAT.fullmatch(value)) is not None:
+        y, mo, d = (int(g) for g in m.group(1, 2, 3))
+        return _yaml_is_valid_date(y, mo, d)
+
+    if (m := _YAML_HOUR_MINUTE_TIMESTAMP_PAT.fullmatch(value)) is not None:
+        h, mi = (int(g) for g in m.group(1, 2))
+        return h <= 23 and mi <= 59
+
     return False
 
 

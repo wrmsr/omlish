@@ -245,11 +245,6 @@ class DataclassCodeGen:
             if not _is_generated_py_file(gen_file_path):
                 raise RuntimeError(f'Refusing to overwrite non-generated file: {gen_file_path!r}')
 
-            if not output.dumped:
-                if not self._dry_run:
-                    os.unlink(gen_file_path)
-                return
-
         #
 
         lines = [

@@ -18,7 +18,6 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ##
-import base64
 import dataclasses as dc
 import datetime
 import enum
@@ -56,6 +55,12 @@ from .errors import EofYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
+from .gostd import YamlGoStrconvError
+from .gostd import YamlGoStrconvRangeError
+from .gostd import yaml_go_atoi
+from .gostd import yaml_go_b64_std_decode
+from .gostd import yaml_go_parse_float
+from .gostd import yaml_go_sprint
 from .parsing import YAML_PARSE_COMMENTS
 from .parsing import YamlOption
 from .parsing import YamlParseMode
@@ -274,16 +279,23 @@ class YamlDecoder:
         return self.decode_depth > self.MAX_DECODE_DEPTH
 
     def cast_to_float(self, v: ta.Any) -> ta.Any:
-        if isinstance(v, float):
+        if isinstance(v, bool):
+            # go's switch has no bool case, so bools fall through to the untyped zero. Checked first because python
+            # bool is a subclass of int.
+            return 0
+        elif isinstance(v, float):
             return v
         elif isinstance(v, int):
             return float(v)
         elif isinstance(v, str):
             # if error occurred, return zero value
-            try:
-                return float(v)
-            except ValueError:
-                return 0
+            # f, _ := strconv.ParseFloat(vv, 64) - a range error still yields strconv's clamped value.
+            f = yaml_go_parse_float(v)
+            if isinstance(f, YamlGoStrconvRangeError):
+                return f.value
+            if isinstance(f, YamlGoStrconvError):
+                return 0.0
+            return f
         return 0
 
     def map_key_node_to_string(self, ctx: YamlDecodeContext, node: MapKeyYamlNode) -> YamlErrorOr[str]:
@@ -294,7 +306,7 @@ class YamlDecoder:
             return 'null'
         if isinstance(key, str):
             return key
-        return str(key)
+        return yaml_go_sprint(key)
 
     def set_to_map_value(
             self,
@@ -485,16 +497,18 @@ class YamlDecoder:
             self.add_comment_to_map(foot_comment_path, yaml_foot_comment(*texts))
 
     def add_comment_to_map(self, path: str, comment: YamlComment) -> None:
-        tcm = check.not_none(self.to_comment_map)[path]
-        for c in tcm:
+        # go indexes the map twice; a missing key yields a nil slice to iterate and append then creates the entry.
+        cm = check.not_none(self.to_comment_map)
+        for c in cm.get(path, []):
             if c.position == comment.position:
                 # already added same comment
                 return
 
+        tcm = cm.setdefault(path, [])
         tcm.append(comment)
         tcm.sort(key=lambda c: c.position)
 
-    def node_to_value(self, ctx: YamlDecodeContext, node: YamlNode) -> YamlErrorOr[ta.Any]:
+    def node_to_value(self, ctx: YamlDecodeContext, node: ta.Optional[YamlNode]) -> YamlErrorOr[ta.Any]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -531,23 +545,27 @@ class YamlDecoder:
                     if v is None:
                         return ''
 
-                    return str(v)
+                    return yaml_go_sprint(v)
 
                 rtk = n.start.value
                 if rtk == YamlReservedTagKeywords.TIMESTAMP:
+                    # t, _ := d.castToTime(ctx, n.Value) - the zero time.Time (which is UTC) on error, never nil.
                     t = self.cast_to_time(ctx, check.not_none(n.value))
                     if isinstance(t, YamlError):
-                        return None
+                        return datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc)  # noqa
                     return t
 
                 elif rtk == YamlReservedTagKeywords.INTEGER:
                     v = self.node_to_value(ctx, check.not_none(n.value))
                     if isinstance(v, YamlError):
                         return v
-                    try:
-                        return int(str(v))
-                    except ValueError:
+                    # i, _ := strconv.Atoi(fmt.Sprint(v)) - a range error still yields strconv's clamped value.
+                    i = yaml_go_atoi(yaml_go_sprint(v))
+                    if isinstance(i, YamlGoStrconvRangeError):
+                        return i.value
+                    if isinstance(i, YamlGoStrconvError):
                         return 0
+                    return i
 
                 elif rtk == YamlReservedTagKeywords.FLOAT:
                     v = self.node_to_value(ctx, check.not_none(n.value))
@@ -564,25 +582,23 @@ class YamlDecoder:
                         return v
                     if not isinstance(v, str):
                         return YamlSyntaxError(
-                            f'cannot convert {str(v)!r} to string',
+                            f'cannot convert {yaml_go_sprint(v)!r} to string',
                             check.not_none(check.not_none(n.value).get_token()),
                         )
-                    try:
-                        return base64.b64decode(v)
-                    except ValueError:
-                        return None
+                    # b, _ := base64.StdEncoding.DecodeString(str) - the partial decode is kept on error.
+                    return yaml_go_b64_std_decode(v)
 
                 elif rtk == YamlReservedTagKeywords.BOOLEAN:
                     v = self.node_to_value(ctx, check.not_none(n.value))
                     if isinstance(v, YamlError):
                         return v
-                    l = str(v).lower()
+                    l = yaml_go_sprint(v).lower()
                     if l in ('true', 't', '1', 'yes'):
                         return True
                     if l in ('false', 'f', '0', 'no'):
                         return False
                     return YamlSyntaxError(
-                        f'cannot convert {v!r} to boolean',
+                        f'cannot convert {yaml_go_sprint(v)!r} to boolean',
                         check.not_none(check.not_none(n.value).get_token()),
                     )
 
@@ -592,7 +608,7 @@ class YamlDecoder:
                         return v
                     if v is None:
                         return ''
-                    return str(v)
+                    return yaml_go_sprint(v)
 
                 elif rtk == YamlReservedTagKeywords.MAPPING:
                     return self.node_to_value(ctx, check.not_none(n.value))
@@ -630,7 +646,8 @@ class YamlDecoder:
                 except KeyError:
                     pass
                 else:
-                    return self.node_to_value(ctx, check.not_none(node2))
+                    # node2 may be the None recursion placeholder; go passes the nil node through and gets nil back.
+                    return self.node_to_value(ctx, node2)
                 return YamlSyntaxError(
                     f'could not find alias {text!r}',
                     check.not_none(check.not_none(n.value).get_token()),
@@ -726,7 +743,8 @@ class YamlDecoder:
 
             elif isinstance(n, AliasYamlNode):
                 alias_name = check.not_none(check.not_none(n.value).get_token()).value
-                node2 = self.anchor_node_map[alias_name]
+                # go map indexing yields nil for a missing key, caught by the nil check below.
+                node2 = self.anchor_node_map.get(alias_name)
                 if node2 is None:
                     return yaml_error(f'cannot find anchor by alias name {alias_name}')
                 return self.get_map_node(node2, is_merge)
@@ -761,7 +779,8 @@ class YamlDecoder:
 
             if isinstance(alias := node, AliasYamlNode):
                 alias_name = check.not_none(check.not_none(alias.value).get_token()).value
-                node2 = self.anchor_node_map[alias_name]
+                # go map indexing yields nil for a missing key, caught by the nil check below.
+                node2 = self.anchor_node_map.get(alias_name)
                 if node2 is None:
                     return yaml_error(f'cannot find anchor by alias name {alias_name}')
                 return self.get_array_node(node2)
@@ -789,7 +808,8 @@ class YamlDecoder:
                 if isinstance(av := self.decode_value(ctx.with_anchor(anchor_name), check.not_none(anchor.value)), YamlError):  # noqa
                     return av
                 self.anchor_value_map[anchor_name] = av
-                return None
+                # go writes the decoded value into dst and returns nil; with no dst, the value is the return value.
+                return av
 
             src_val = self.node_to_value(ctx, src)
             if isinstance(src_val, YamlError):
@@ -806,7 +826,7 @@ class YamlDecoder:
         node: YamlNode,
         ignore_merge_key: bool,
         get_key_or_value_node: ta.Callable[[MapYamlNodeIter], YamlNode],
-    ) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
+    ) -> YamlErrorOr[ta.Optional[ta.Dict[str, YamlNode]]]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -826,7 +846,8 @@ class YamlDecoder:
                     merge_map = self.key_to_node_map(ctx, map_iter.value(), ignore_merge_key, get_key_or_value_node)
                     if isinstance(merge_map, YamlError):
                         return merge_map
-                    for k, v in merge_map.items():
+                    # merge_map may be None (see the non-string key case below); go ranges over the nil map as empty.
+                    for k, v in (merge_map or {}).items():
                         if (err := self.validate_duplicate_key(key_map, k, v)) is not None:
                             return err
                         key_to_node_map[k] = v
@@ -835,7 +856,9 @@ class YamlDecoder:
                     if isinstance(key_val, YamlError):
                         return key_val
                     if not isinstance(key := key_val, str):
-                        return yaml_error('???')
+                        # go bug preserved: `return nil, err` with a nil err - a non-string key yields a nil map with
+                        # no error, which callers iterate as empty.
+                        return None
                     if (err := self.validate_duplicate_key(key_map, key, key_node)) is not None:
                         return err
                     key_to_node_map[key] = get_key_or_value_node(map_iter)
@@ -849,7 +872,7 @@ class YamlDecoder:
         ctx: YamlDecodeContext,
         node: YamlNode,
         ignore_merge_key: bool,
-    ) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
+    ) -> YamlErrorOr[ta.Optional[ta.Dict[str, YamlNode]]]:
         m = self.key_to_node_map(ctx, node, ignore_merge_key, lambda node_map: node_map.key())
         if isinstance(m, YamlError):
             return m
@@ -860,7 +883,7 @@ class YamlDecoder:
         ctx: YamlDecodeContext,
         node: YamlNode,
         ignore_merge_key: bool,
-    ) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
+    ) -> YamlErrorOr[ta.Optional[ta.Dict[str, YamlNode]]]:
         m = self.key_to_node_map(ctx, node, ignore_merge_key, lambda node_map: node_map.value())
         if isinstance(m, YamlError):
             return m
@@ -900,12 +923,15 @@ class YamlDecoder:
         return None
 
     def file_to_reader(self, file: str) -> YamlErrorOr[YamlBytesReader]:
-        with open(file, 'rb') as f:
-            bs = f.read()
+        try:
+            with open(file, 'rb') as f:
+                bs = f.read()
+        except OSError as e:
+            return yaml_error(e)
         return ImmediateYamlBytesReader(bs)
 
     def is_yaml_file(self, file: str) -> bool:
-        ext = file.rsplit('.', maxsplit=1)[-1]
+        ext = os.path.splitext(file)[1]  # filepath.Ext includes the dot
         if ext == '.yml':
             return True
         if ext == '.yaml':
@@ -925,12 +951,11 @@ class YamlDecoder:
         return readers
 
     def readers_under_dir_recursive(self, d: str) -> YamlErrorOr[ta.List[YamlBytesReader]]:
+        # go's filepath.Walk applies is_yaml_file to every visited path with no file-type check.
         readers: ta.List[YamlBytesReader] = []
         for dp, _, fns in os.walk(d):
             for fn in fns:
                 path = os.path.join(dp, fn)
-                if not os.path.isfile(path):
-                    continue
                 if not self.is_yaml_file(path):
                     continue
                 if isinstance(reader := self.file_to_reader(path), YamlError):
@@ -975,7 +1000,8 @@ class YamlDecoder:
         normalized_file = YamlFile()
         for doc in f.docs:
             # try to decode YamlNode to value and map anchor value to anchorMap
-            if isinstance(v := self.node_to_value(ctx, check.not_none(doc.body)), YamlError):
+            # doc.body may be None (empty document); go's nodeToValue matches no case for nil and returns nil.
+            if isinstance(v := self.node_to_value(ctx, doc.body), YamlError):
                 return v
             if v is not None or (doc.body is not None and doc.body.type() == YamlNodeType.NULL):
                 normalized_file.docs.append(doc)
@@ -1003,9 +1029,8 @@ class YamlDecoder:
         self.decode_depth = 0
         self.anchor_value_map = {}
         pf = check.not_none(self.parsed_file)
-        if len(pf.docs) == 0:
-            # empty document.
-            return None
+        # NOTE: for zero-document files go zeroes the destination value here and then falls through to the
+        # stream-index check below, which returns io.EOF; with no destination there is nothing to zero.
         if len(pf.docs) <= self.stream_index:
             return EofYamlError()
         body = pf.docs[self.stream_index].body
@@ -1050,8 +1075,9 @@ class YamlDecoder:
             if (err := self.decode_init(ctx)) is not None:
                 return err
         # resolve references to the anchor on the same file
-        if (err := self.node_to_value(ctx, node)) is not None:
-            return err
+        # go discards the pre-pass value and only checks its error; the result comes from decode_value below.
+        if isinstance(err2 := self.node_to_value(ctx, node), YamlError):
+            return err2
         if isinstance(v := self.decode_value(ctx, node), YamlError):
             return v
         return v
@@ -1063,5 +1089,8 @@ class YamlDecoder:
 def yaml_decode(s: str) -> ta.Any:
     d = YamlDecoder(ImmediateYamlBytesReader(s.encode()))
     if isinstance(v := d.decode(), YamlError):
+        # if err == io.EOF { return nil } - yaml.Unmarshal treats EOF (an empty stream) as a nil value.
+        if isinstance(v, EofYamlError):
+            return None
         raise v
     return v
