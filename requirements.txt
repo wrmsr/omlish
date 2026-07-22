@@ -1,6 +1,6 @@
 #### optional
 
-greenlet==3.5.3
+greenlet==3.5.4
 
 pyyaml==6.0.3
 
