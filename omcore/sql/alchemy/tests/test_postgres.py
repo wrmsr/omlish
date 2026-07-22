@@ -111,6 +111,7 @@ async def _test_postgres_async(url: str) -> None:
             assert rows[0].name == 'some name 1'
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 15), reason='Fatal Python error: Segmentation fault')
 @ptu.skip.if_cant_import('asyncpg')
 @pytest.mark.asyncs('asyncio')
 @mark_sql_backend('postgres')
