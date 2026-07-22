@@ -419,7 +419,6 @@ def _yaml_first_line_indent_column_by_opt(opt: str) -> int:
     opt = yaml_go_trim_prefix(opt, '+')
     opt = yaml_go_trim_suffix(opt, '-')
     opt = yaml_go_trim_suffix(opt, '+')
-    # i, _ := strconv.ParseInt(opt, 10, 64) - a range error still yields strconv's clamped value.
     i = yaml_go_parse_int(opt, 10, 64)
     if isinstance(i, YamlGoStrconvRangeError):
         return i.value
@@ -1473,7 +1472,6 @@ class YamlScanner:
             return False
 
         nc = ctx.next_char()
-        # go compares nc against rune(0); the translation's next_char returns '' at end of source.
         if nc != '' and nc != ' ' and nc != '\t' and not self.is_new_line_char(nc):
             return False
 
@@ -1886,7 +1884,6 @@ class YamlScanner:
 
         if err is not None:
             # var invalidTokenErr *InvalidTokenError
-            # if errors.As(err, &invalidTokenErr) { tokens = append(tokens, invalidTokenErr.Token) }
             if isinstance(err, InvalidTokenYamlError):
                 lst.append(err.token)
             return lst, err

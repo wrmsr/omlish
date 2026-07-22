@@ -810,7 +810,6 @@ def yaml_create_document_tokens(tokens: ta.List[YamlParseToken]) -> YamlErrorOr[
                 return tks
             if len(tks) != 0:
                 tks[0].set_group_type(YamlParseTokenGroupType.DOCUMENT)
-                # tks[0].Group.Tokens = append([]*Token{tk}, tks[0].Group.Tokens...)
                 check.not_none(tks[0].group).tokens = [tk, *check.not_none(tks[0].group).tokens]
                 ret.extend(tks)
                 return ret
@@ -1597,7 +1596,6 @@ class YamlParser:
         return node
 
     def is_flow_map_delim(self, tk: ta.Optional[YamlParseToken]) -> bool:
-        # nil-receiver tolerant in go: Type() of a nil token is Unknown, so a missing token is not a delimiter.
         typ = YamlParseToken.type(tk)
         return typ == YamlTokenType.MAPPING_END or typ == YamlTokenType.COLLECT_ENTRY
 

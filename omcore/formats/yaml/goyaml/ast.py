@@ -363,7 +363,6 @@ class YamlAsts:
     # bool_ create node for boolean value
     @classmethod
     def bool_(cls, tk: YamlToken) -> 'BoolYamlNode':
-        # b, _ := strconv.ParseBool(tk.Value) - the parse error is discarded and the zero value kept.
         try:
             b = cls._parse_bool(tk.value)
         except ValueError:
@@ -406,7 +405,6 @@ class YamlAsts:
         elif tk.value in ('-.inf', '-.Inf', '-.INF'):
             value = float('-inf')
         else:
-            # go's switch has no default; the node keeps the zero value.
             value = 0.0
         node = InfinityYamlNode(
             token=tk,
@@ -2073,7 +2071,6 @@ def yaml_ast_walk(v: YamlAstVisitor, node: YamlNode) -> None:
     v = v_
 
     n = node
-    # go's type switch has an empty `case *CommentNode:` arm - a comment node's own comment is not walked.
     if isinstance(n, CommentYamlNode):
         pass
     elif isinstance(n, NullYamlNode):
@@ -2160,7 +2157,6 @@ class YamlParentFinder:
     target: YamlNode
 
     def walk(self, parent: YamlNode, node: ta.Optional[YamlNode]) -> ta.Optional[YamlNode]:
-        # go compares interface pointers here, so structural (dataclass) equality must not be used.
         if self.target is node:
             return parent
 
@@ -2261,7 +2257,6 @@ class InvalidMergeTypeYamlError(YamlError):
 def yaml_ast_merge(dst: YamlNode, src: YamlNode) -> ta.Optional[YamlError]:
     if isinstance(src, DocumentYamlNode):
         doc: DocumentYamlNode = src
-        # go tolerates a nil doc.Body here; the type assertions below then fail and ErrInvalidMergeType is returned.
         src = ta.cast(YamlNode, doc.body)
 
     err = InvalidMergeTypeYamlError(dst=dst, src=src)
