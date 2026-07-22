@@ -64,6 +64,17 @@ class Loop:
 
     #
 
+    def _add_new_message(self, *messages: Message) -> None:
+        self._context = dc.replace(
+            self._context,
+
+            messages=[*(self._context.messages or []), *messages],
+        )
+
+        self._new_messages.extend(messages)
+
+    #
+
     async def _emit(self, event: Event) -> None:
         if (sink := self._sink) is not None:
             await sink(event)
@@ -101,7 +112,7 @@ class Loop:
 
         message = await self._llm_complete()  # noqa
 
-        self._new_messages.append(message)
+        self._add_new_message(message)
 
         if message.stop_reason is not None:
             await self._emit(TurnEndEvent(
@@ -118,10 +129,19 @@ class Loop:
                 tool = self._context.tools_by_name[tool_call.name]
 
                 tool_result = await tool.executor(ToolContext(  # noqa
+                    args=tool_call.args,
+
                     llm_tool_call=tool_call,
                 ))
 
-                raise NotImplementedError
+                tool_result_message = llm.ToolResultMessage(
+                    tool_call_id=tool_call.id,
+                    tool_name=tool_call.name,
+
+                    content=(tool_result.content,),
+                )
+
+                self._add_new_message(tool_result_message)
 
         await self._emit(TurnEndEvent(
             message=message,

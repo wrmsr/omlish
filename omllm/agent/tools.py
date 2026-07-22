@@ -15,13 +15,15 @@ type ToolExecutor = ta.Callable[[ToolContext], ta.Awaitable[ToolResult]]
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
 class ToolContext:
-    llm_tool_call: llm.ToolCall
+    args: ta.Mapping[str, ta.Any]
+
+    llm_tool_call: llm.ToolCall | None = None
 
 
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
 class ToolResult:
-    pass
+    content: llm.TextContent
 
 
 @ta.final

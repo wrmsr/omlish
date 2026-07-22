@@ -1,5 +1,6 @@
 import pytest
 
+from omcore import check
 from omcore.secrets.tests.harness import HarnessSecrets
 
 from ... import llm
@@ -40,7 +41,13 @@ async def test_loop(harness):
 
 
 async def execute_weather_tool(ctx: ToolContext) -> ToolResult:
-    raise NotImplementedError
+    location = check.non_empty_str(ctx.args['location'])
+
+    if 'edinburgh' in location.lower():
+        return ToolResult(content=llm.TextContent('The weather in Edinburgh, Scotland is sunny.'))
+
+    else:
+        return ToolResult(content=llm.TextContent('Invalid location'))
 
 
 WEATHER_TOOL = Tool(
