@@ -21,7 +21,7 @@ class Cache(ta.MutableMapping[K, V]):
 
     @abc.abstractmethod
     def reap(self) -> None:
-        pass
+        raise NotImplementedError
 
     class Stats(ta.NamedTuple):
         seq: int

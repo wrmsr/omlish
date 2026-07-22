@@ -136,9 +136,24 @@ class _CacheDescriptor:
 
         return inner
 
+    def _get_static_built(self) -> ta.Callable:
+        if self.__static_built is None:
+            self.__static_built = self._build(self._fn, self._static)
+        return self.__static_built
+
     def __get__(self, instance, owner=None):
         if self._scope == Scope.STATIC:
-            cache = self._static
+            if instance is None:
+                return self._get_static_built()
+
+            fn = self._build(self._fn.__get__(instance, owner), self._static)  # noqa
+            try:
+                # Cache the bound wrapper so later attribute fetches skip the rebuild. Best-effort: instances without
+                # a __dict__ just rebuild per access.
+                setattr(instance, self._name, fn)  # type: ignore
+            except AttributeError:
+                pass
+            return fn
 
         elif self._scope == Scope.CLASS:
             if owner is None:
@@ -148,31 +163,34 @@ class _CacheDescriptor:
             except KeyError:
                 cache = self._by_class[owner] = new_cache(**self._kwargs)  # type: ignore
 
-        elif self._scope == Scope.INSTANCE:
+            # Wrap the *unbound* function and let the descriptor protocol bind each access - the cache is shared
+            # per-class, so the instance must flow into the call (and thus the key) naturally. Binding to the first
+            # accessor here would permanently capture it, and every later instance would be prepended as a stray
+            # positional arg by the replaced attribute's own binding.
+            fn = self._build(self._fn, cache)
+            setattr(owner, self._name, fn)  # type: ignore
+
             if instance is not None:
-                cache = new_cache()
-            else:
+                return fn.__get__(instance, owner)
+            return fn
+
+        elif self._scope == Scope.INSTANCE:
+            if instance is None:
                 @functools.wraps(self._fn)
                 def trampoline(this, *args, **kwargs):
                     return self.__get__(this, owner)(*args, **kwargs)
                 return trampoline
 
+            cache = new_cache(**self._kwargs)
+            fn = self._build(self._fn.__get__(instance, owner), cache)  # noqa
+            setattr(instance, self._name, fn)  # type: ignore
+            return fn
+
         else:
             raise TypeError
 
-        fn = self._build(self._fn.__get__(instance, owner), cache)  # noqa
-
-        if self._scope == Scope.CLASS:
-            setattr(owner, self._name, fn)  # type: ignore
-        elif self._scope == Scope.INSTANCE:
-            setattr(instance, self._name, fn)  # type: ignore
-
-        return fn
-
     def __call__(self, *args, **kwargs):
-        if self.__static_built is None:
-            self.__static_built = self._build(self._fn, self._static)
-        return self.__static_built(*args, **kwargs)
+        return self._get_static_built()(*args, **kwargs)
 
 
 def cache(

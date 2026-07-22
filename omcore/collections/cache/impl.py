@@ -64,6 +64,7 @@ class CacheImpl(Cache[K, V]):
             'lfu_next',
             'key',
             'value',
+            'cache_key',
             'weight',
             'written',
             'accessed',
@@ -80,6 +81,11 @@ class CacheImpl(Cache[K, V]):
         lfu_next: CacheImpl.Link
         key: ta.Any | weakref.ref
         value: ta.Any | weakref.ref
+        # Only set under identity_keys: the id() the link is stored under in _cache, kept so _kill can remove the
+        # entry even after a weak key has died and its id can no longer be recomputed. Deliberately absent otherwise -
+        # under weak (non-identity) keys, storing the key here would be a strong ref defeating the weakness, and the
+        # WeakKeyDictionary already drops dead-key entries on its own.
+        cache_key: int
         weight: float
         written: float
         accessed: float
@@ -111,7 +117,7 @@ class CacheImpl(Cache[K, V]):
     def __init__(
             self,
             *,
-            max_size: int = DEFAULT_MAX_SIZE,
+            max_size: int | None = DEFAULT_MAX_SIZE,
             max_weight: float | None = None,
             identity_keys: bool = False,
             expire_after_access: float | None = None,
@@ -127,6 +133,12 @@ class CacheImpl(Cache[K, V]):
             track_frequency: bool | None = None,
     ) -> None:
         super().__init__()
+
+        # A non-positive bound would make the eviction loop in __setitem__ try to evict from an empty cache.
+        if max_size is not None and max_size < 1:
+            raise ValueError(f'max_size must be positive: {max_size!r}')
+        if max_weight is not None and max_weight <= 0:
+            raise ValueError(f'max_weight must be positive: {max_weight!r}')
 
         if clock is None:
             if expire_after_access is not None or expire_after_write is not None:
@@ -213,15 +225,25 @@ class CacheImpl(Cache[K, V]):
         if link is self._root:
             raise RuntimeError
 
-        key = link.key
-        if self._weak_keys:
-            if key is not None:
-                key = key()
-            if key is None:
-                key = SKIP
+        if link.unlinked:
+            return
 
-        if key is not SKIP:
-            cache_key = id(key) if self._identity_keys else key
+        cache_key: ta.Any
+        if self._identity_keys:
+            # The stored id, not id(key): under weak keys the key may already be dead, and a dict entry left behind
+            # would leak - and, once the id is reused, surface a corrupt-link error on an innocent lookup.
+            cache_key = link.cache_key
+        else:
+            key = link.key
+            if self._weak_keys:
+                if key is not None:
+                    key = key()
+                if key is None:
+                    # The WeakKeyDictionary drops dead-key entries on its own.
+                    key = SKIP
+            cache_key = key
+
+        if cache_key is not SKIP:
             cache_link = self._cache.get(cache_key)
             if cache_link is link:
                 del self._cache[cache_key]
@@ -269,7 +291,7 @@ class CacheImpl(Cache[K, V]):
 
         link = self._cache[cache_key]
         if link.unlinked:
-            raise Exception
+            raise RuntimeError(f'unlinked link found in cache: {link!r}')
 
         def fail():
             with contextlib.suppress(KeyError):
@@ -393,6 +415,12 @@ class CacheImpl(Cache[K, V]):
             link.key = make_ref(key, self._weak_keys)
             link.value = make_ref(value, self._weak_values)
 
+            cache_key: ta.Any
+            if self._identity_keys:
+                link.cache_key = cache_key = id(key)
+            else:
+                cache_key = key
+
             link.weight = weight
             link.written = link.accessed = self._clock()
             link.hits = 0
@@ -419,7 +447,6 @@ class CacheImpl(Cache[K, V]):
             self._max_size_ever = max(self._size, self._max_size_ever)
             self._max_weight_ever = max(self._weight, self._max_weight_ever)
 
-            cache_key = id(key) if self._identity_keys else key
             self._cache[cache_key] = link
 
     def __delitem__(self, key: K) -> None:
@@ -450,25 +477,34 @@ class CacheImpl(Cache[K, V]):
             else:
                 return True
 
-    def __iter__(self) -> ta.Iterator[K]:
+    def _list_keys(self, *, reverse: bool = False) -> list[K]:
+        # A snapshot, not a live generator: a generator would suspend while still holding the lock, blocking every
+        # other thread until the iterator happened to be exhausted or collected.
         with self._lock():
             self._reap()
 
-            link = self._root.ins_prev
+            keys: list[K] = []
+            link = self._root.ins_prev if reverse else self._root.ins_next
+
             while link is not self._root:
                 key = link.key
                 if self._weak_keys:
                     if key is not None:
                         key = key()
                     if key is not None:
-                        yield key
+                        keys.append(key)
                 else:
-                    yield key  # type: ignore
+                    keys.append(key)  # type: ignore
 
-                nxt = link.ins_prev
-                if nxt is link:
-                    raise ValueError
-                link = nxt
+                link = link.ins_prev if reverse else link.ins_next
+
+            return keys
+
+    def __iter__(self) -> ta.Iterator[K]:
+        return iter(self._list_keys())
+
+    def __reversed__(self) -> ta.Iterator[K]:
+        return iter(self._list_keys(reverse=True))
 
     @property
     def stats(self) -> Cache.Stats:
