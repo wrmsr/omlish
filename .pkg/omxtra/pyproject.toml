@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/om'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
-version = '0.0.30'
+version = '0.0.31'
 classifiers = [
     'Intended Audience :: Developers',
     'Operating System :: OS Independent',
@@ -23,12 +23,12 @@ classifiers = [
 ]
 description = 'omxtra'
 dependencies = [
-    'omcore == 0.0.30',
+    'omcore == 0.0.31',
 ]
 
 [project.optional-dependencies]
 all = [
-    'omdev == 0.0.30',
+    'omdev == 0.0.31',
     'greenlet ~= 3.5',
     'paramiko ~= 5.0',
     'asyncssh ~= 2.24',
@@ -36,7 +36,7 @@ all = [
     'wikitextparser ~= 1.0',
 ]
 omdev = [
-    'omdev == 0.0.30',
+    'omdev == 0.0.31',
 ]
 async = [
     'greenlet ~= 3.5',

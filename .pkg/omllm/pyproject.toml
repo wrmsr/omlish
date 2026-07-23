@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/om'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
-version = '0.0.30'
+version = '0.0.31'
 classifiers = [
     'Intended Audience :: Developers',
     'Operating System :: OS Independent',
@@ -23,16 +23,16 @@ classifiers = [
 ]
 description = 'omllm'
 dependencies = [
-    'omcore == 0.0.30',
+    'omcore == 0.0.31',
 ]
 
 [project.optional-dependencies]
 all = [
-    'omdev == 0.0.30',
+    'omdev == 0.0.31',
     'huggingface-hub ~= 1.24',
 ]
 omdev = [
-    'omdev == 0.0.30',
+    'omdev == 0.0.31',
 ]
 huggingface = [
     'huggingface-hub ~= 1.24',
