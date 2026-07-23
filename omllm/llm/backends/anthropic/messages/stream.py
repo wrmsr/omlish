@@ -83,7 +83,7 @@ class SseEventProcessor(BaseBackendSseEventProcessor):
 ##
 
 
-class OpenaiCompletionsStreamBackend(BaseHttpBackend, StreamBackend):
+class AnthropicMessagesStreamBackend(BaseHttpBackend, StreamBackend):
     async def stream(self, context: Context, options: Options | None = None) -> AiStream:
         raw_request = RequestPreparer(  # noqa
             self._model,
@@ -96,14 +96,14 @@ class OpenaiCompletionsStreamBackend(BaseHttpBackend, StreamBackend):
         #
 
         http_headers = {
-            **({'authorization': f'Bearer {self._api_key.reveal()}'} if self._api_key is not None else {}),
+            **({'x-api-key': self._api_key.reveal()} if self._api_key is not None else {}),
             'content-type': 'application/json',
             'accept': 'application/json',
             **(self._model_http.extra_headers or {}),
         }
 
         http_request = http.HttpClientRequest(
-            self._base_url + '/chat/completions',
+            self._base_url + '/messages',
             headers=http_headers,
             data=json.dumps(raw_request).encode('utf-8'),
         )

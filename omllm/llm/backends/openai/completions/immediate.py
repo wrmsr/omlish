@@ -11,14 +11,14 @@ from ....types.content import ToolCall
 from ....types.context import Context
 from ....types.messages import AiMessage
 from ....types.options import Options
-from ..base import BaseBackend
+from ...base.http import BaseHttpBackend
 from .requests import RequestPreparer
 
 
 ##
 
 
-class OpenaiCompletionsImmediateBackend(BaseBackend, ImmediateBackend):
+class OpenaiCompletionsImmediateBackend(BaseHttpBackend, ImmediateBackend):
     async def immediate(self, context: Context, options: Options | None = None) -> AiMessage:
         raw_request = RequestPreparer(
             self._model,

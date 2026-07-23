@@ -1,41 +1,20 @@
 from omcore import check
 from omcore.formats.json import all as json
 from omcore.http import all as http
-from omcore.secrets import all as sec
 
 from ....types.backends import ImmediateBackend
 from ....types.content import TextContent
 from ....types.context import Context
 from ....types.messages import AiMessage
-from ....types.models import Model
 from ....types.options import Options
+from ...base.http import BaseHttpBackend
 from .requests import RequestPreparer
 
 
 ##
 
 
-class AnthropicMessagesImmediateBackend(ImmediateBackend):
-    def __init__(
-            self,
-            model: Model,
-            *,
-            api_key: sec.Secret | None = None,
-            http_client: http.AsyncHttpClient | None = None,
-    ) -> None:
-        super().__init__()
-
-        self._model = model
-        self._api_key = api_key
-        self._http_client = http_client
-
-        self._model_http = check.not_none(model.http)
-        self._base_url = check.non_empty_str(self._model_http.base_url).rstrip('/')
-
-    @property
-    def model(self) -> Model:
-        return self._model
-
+class AnthropicMessagesImmediateBackend(BaseHttpBackend, ImmediateBackend):
     async def immediate(self, context: Context, options: Options | None = None) -> AiMessage:
         raw_request = RequestPreparer(
             self._model,

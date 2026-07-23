@@ -10,7 +10,7 @@ from ...types.models import Model
 ##
 
 
-class BaseBackend(Backend, lang.Abstract):
+class BaseHttpBackend(Backend, lang.Abstract):
     def __init__(
             self,
             model: Model,
